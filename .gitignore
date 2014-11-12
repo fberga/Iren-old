@@ -41,3 +41,27 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# AppConfig
+*.config
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.cache
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+
