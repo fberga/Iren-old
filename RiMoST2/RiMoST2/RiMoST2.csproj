@@ -117,6 +117,8 @@
     </EmbeddedResource>
     <None Include="App.config" />
     <None Include="RiMoST2.docx" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Connection.cs" />
     <Compile Include="DataBase.cs" />
     <Compile Include="RiMoST.cs">
       <SubType>Component</SubType>
