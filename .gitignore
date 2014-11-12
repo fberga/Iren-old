@@ -65,3 +65,7 @@ bld/
 [Oo]bj/
 
 
+
+RiMoST2/RiMoST2/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+*.cache
+*.suo
