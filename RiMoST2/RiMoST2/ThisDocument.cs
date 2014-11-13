@@ -14,12 +14,14 @@ using System.Collections.Specialized;
 using DataTable = System.Data.DataTable;
 using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
+using Microsoft.Office.Interop.Word;
+using System.Reflection;
 
 namespace RiMoST2
 {
     public partial class ThisDocument
     {
-        static DataBase _db;
+        public static DataBase _db;
 
         private void ThisDocument_Startup(object sender, System.EventArgs e)
         {
@@ -27,8 +29,6 @@ namespace RiMoST2
             object password = System.String.Empty;
             object useIRM = false;
             object enforceStyleLock = false;
-
-            //TODO caricare dinamicamente i nomi che vistano il foglio
 
             NameValueCollection appSet = ConfigurationManager.AppSettings;
 
@@ -74,6 +74,13 @@ namespace RiMoST2
                 ref noReset, ref password, ref useIRM, ref enforceStyleLock);
         }
 
+        private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            object saveMod = WdSaveOptions.wdDoNotSaveChanges;
+            object missing = Missing.Value;
+            this.Close(ref saveMod, ref missing, ref missing);
+        }
+
         private void ThisDocument_Shutdown(object sender, System.EventArgs e)
         {
         }
@@ -86,10 +93,12 @@ namespace RiMoST2
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(ThisDocument_Startup);
-            this.Shutdown += new System.EventHandler(ThisDocument_Shutdown);
+            this.Startup += new System.EventHandler(this.ThisDocument_Startup);
+            this.Shutdown += new System.EventHandler(this.ThisDocument_Shutdown);
+            this.BeforeClose += new System.ComponentModel.CancelEventHandler(this.ThisDocument_BeforeClose);
         }
 
         #endregion
+
     }
 }

@@ -10,7 +10,7 @@ using System.Data;
 
 namespace RiMoST2
 {
-    class DataBase
+    public class DataBase
     {
         #region Variabili
 
@@ -51,11 +51,11 @@ namespace RiMoST2
 
         public void Insert(string storedProcedure, Dictionary<String, Object> parameters)
         {
-            if (!parameters.ContainsKey("@IdApplicazione"))
+            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
-            if (!parameters.ContainsKey("@IdUtente"))
+            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
                 parameters.Add("@IdUtente", _idUtenteAttivo);
-            if (!parameters.ContainsKey("@Data"))
+            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
                 parameters.Add("@Data", _dataAttiva);
 
             _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
@@ -63,11 +63,11 @@ namespace RiMoST2
 
         public DataTable Select(string storedProcedure, Dictionary<String, Object> parameters)
         {
-            if (!parameters.ContainsKey("@IdApplicazione"))
+            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
-            if (!parameters.ContainsKey("@IdUtente"))
+            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
                 parameters.Add("@IdUtente", _idUtenteAttivo);
-            if (!parameters.ContainsKey("@Data"))
+            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
                 parameters.Add("@Data", _dataAttiva);
 
             using (SqlDataReader dr = _cmd.SqlCmd(storedProcedure, parameters).ExecuteReader())

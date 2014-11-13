@@ -19,25 +19,31 @@ namespace RiMoST2 {
         
         internal Microsoft.Office.Tools.ActionsPane ActionsPane;
         
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl4;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl5;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl1;
+        
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         internal Microsoft.Office.Interop.Word.Application ThisApplication;
         
-        internal Microsoft.Office.Tools.Word.Controls.DateTimePicker dtDataRichiesta;
-        
-        internal Microsoft.Office.Tools.Word.Controls.ComboBox cmbStrumento;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbDataInvio;
-        
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtOggetto;
+        internal Microsoft.Office.Tools.Word.Controls.TextBox txtNote;
         
         internal Microsoft.Office.Tools.Word.Controls.TextBox txtDescrizione;
         
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtNote;
+        internal Microsoft.Office.Tools.Word.Controls.TextBox txtOggetto;
+        
+        internal Microsoft.Office.Tools.Word.Controls.ComboBox cmbStrumento;
+        
+        internal Microsoft.Office.Tools.Word.Controls.DateTimePicker dtDataCreazione;
+        
+        internal Microsoft.Office.Tools.Word.Controls.Label lbDataInvio;
+        
+        internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
         
         /// 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -136,6 +142,9 @@ namespace RiMoST2 {
         private void BeginInitialization() {
             this.BeginInit();
             this.ActionsPane.BeginInit();
+            this.plainTextContentControl4.BeginInit();
+            this.plainTextContentControl5.BeginInit();
+            this.plainTextContentControl1.BeginInit();
         }
         
         /// 
@@ -143,6 +152,9 @@ namespace RiMoST2 {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void EndInitialization() {
+            this.plainTextContentControl1.EndInit();
+            this.plainTextContentControl5.EndInit();
+            this.plainTextContentControl4.EndInit();
             this.ActionsPane.EndInit();
             this.EndInit();
         }
@@ -153,13 +165,16 @@ namespace RiMoST2 {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeControls() {
             this.ActionsPane = Globals.Factory.CreateActionsPane(null, null, "ActionsPane", "ActionsPane", this);
-            this.dtDataRichiesta = new Microsoft.Office.Tools.Word.Controls.DateTimePicker(Globals.Factory, this.ItemProvider, this.HostContext, "0F7AED42602DB5045150B7810D302A852C2DE0", "0F7AED42602DB5045150B7810D302A852C2DE0", this, "dtDataRichiesta");
-            this.cmbStrumento = new Microsoft.Office.Tools.Word.Controls.ComboBox(Globals.Factory, this.ItemProvider, this.HostContext, "4DC4A472B42B454449E49CF94B9489509B9F64", "4DC4A472B42B454449E49CF94B9489509B9F64", this, "cmbStrumento");
-            this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
-            this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
-            this.txtOggetto = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", this, "txtOggetto");
-            this.txtDescrizione = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "629B715FF6805664A936BBA7654A658BAE8D66", "629B715FF6805664A936BBA7654A658BAE8D66", this, "txtDescrizione");
+            this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "77677295", "plainTextContentControl4", this);
+            this.plainTextContentControl5 = Globals.Factory.CreatePlainTextContentControl(null, null, "75971759", "plainTextContentControl5", this);
+            this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "3740960896", "plainTextContentControl1", this);
             this.txtNote = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "7694A411B7412F747D17B5027A9DF6D62D6A37", "7694A411B7412F747D17B5027A9DF6D62D6A37", this, "txtNote");
+            this.txtDescrizione = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "629B715FF6805664A936BBA7654A658BAE8D66", "629B715FF6805664A936BBA7654A658BAE8D66", this, "txtDescrizione");
+            this.txtOggetto = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", this, "txtOggetto");
+            this.cmbStrumento = new Microsoft.Office.Tools.Word.Controls.ComboBox(Globals.Factory, this.ItemProvider, this.HostContext, "4DC4A472B42B454449E49CF94B9489509B9F64", "4DC4A472B42B454449E49CF94B9489509B9F64", this, "cmbStrumento");
+            this.dtDataCreazione = new Microsoft.Office.Tools.Word.Controls.DateTimePicker(Globals.Factory, this.ItemProvider, this.HostContext, "0F7AED42602DB5045150B7810D302A852C2DE0", "0F7AED42602DB5045150B7810D302A852C2DE0", this, "dtDataCreazione");
+            this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
+            this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
         }
         
         /// 
@@ -168,40 +183,22 @@ namespace RiMoST2 {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
             // 
-            // dtDataRichiesta
+            // ActionsPane
             // 
-            this.dtDataRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dtDataRichiesta.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtDataRichiesta.Name = "dtDataRichiesta";
+            this.ActionsPane.AutoSize = false;
+            this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             // 
-            // cmbStrumento
+            // plainTextContentControl4
             // 
-            this.cmbStrumento.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cmbStrumento.Name = "cmbStrumento";
+            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
-            // lbIdRichiesta
+            // plainTextContentControl5
             // 
-            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbIdRichiesta.Name = "lbIdRichiesta";
-            this.lbIdRichiesta.Text = "id";
+            this.plainTextContentControl5.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
-            // lbDataInvio
+            // plainTextContentControl1
             // 
-            this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.lbDataInvio.Name = "lbDataInvio";
-            this.lbDataInvio.Text = "data";
-            // 
-            // txtOggetto
-            // 
-            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtOggetto.Multiline = true;
-            this.txtOggetto.Name = "txtOggetto";
-            // 
-            // txtDescrizione
-            // 
-            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescrizione.Multiline = true;
-            this.txtDescrizione.Name = "txtDescrizione";
+            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
             // txtNote
             // 
@@ -209,20 +206,50 @@ namespace RiMoST2 {
             this.txtNote.Multiline = true;
             this.txtNote.Name = "txtNote";
             // 
-            // ActionsPane
+            // txtDescrizione
             // 
-            this.ActionsPane.AutoSize = false;
-            this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
+            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDescrizione.Multiline = true;
+            this.txtDescrizione.Name = "txtDescrizione";
+            // 
+            // txtOggetto
+            // 
+            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOggetto.Multiline = true;
+            this.txtOggetto.Name = "txtOggetto";
+            // 
+            // cmbStrumento
+            // 
+            this.cmbStrumento.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmbStrumento.Name = "cmbStrumento";
+            // 
+            // dtDataCreazione
+            // 
+            this.dtDataCreazione.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.dtDataCreazione.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtDataCreazione.Name = "dtDataCreazione";
+            // 
+            // lbDataInvio
+            // 
+            this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.lbDataInvio.Name = "lbDataInvio";
+            this.lbDataInvio.Text = "data";
+            // 
+            // lbIdRichiesta
+            // 
+            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbIdRichiesta.Name = "lbIdRichiesta";
+            this.lbIdRichiesta.Text = "id";
             // 
             // ThisDocument
             // 
-            this.dtDataRichiesta.BindingContext = this.BindingContext;
-            this.cmbStrumento.BindingContext = this.BindingContext;
-            this.lbIdRichiesta.BindingContext = this.BindingContext;
-            this.lbDataInvio.BindingContext = this.BindingContext;
-            this.txtOggetto.BindingContext = this.BindingContext;
-            this.txtDescrizione.BindingContext = this.BindingContext;
             this.txtNote.BindingContext = this.BindingContext;
+            this.txtDescrizione.BindingContext = this.BindingContext;
+            this.txtOggetto.BindingContext = this.BindingContext;
+            this.cmbStrumento.BindingContext = this.BindingContext;
+            this.dtDataCreazione.BindingContext = this.BindingContext;
+            this.lbDataInvio.BindingContext = this.BindingContext;
+            this.lbIdRichiesta.BindingContext = this.BindingContext;
         }
         
         /// 
@@ -237,6 +264,9 @@ namespace RiMoST2 {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void OnShutdown() {
+            this.plainTextContentControl1.Dispose();
+            this.plainTextContentControl5.Dispose();
+            this.plainTextContentControl4.Dispose();
             this.ActionsPane.Dispose();
             base.OnShutdown();
         }

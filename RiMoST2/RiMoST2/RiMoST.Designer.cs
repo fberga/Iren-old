@@ -35,60 +35,68 @@
         private void InitializeComponent()
         {
             this.tbRichiestaModifica = this.Factory.CreateRibbonTab();
+            this.group2 = this.Factory.CreateRibbonGroup();
+            this.btnChiudi = this.Factory.CreateRibbonButton();
             this.group1 = this.Factory.CreateRibbonGroup();
-            this.btnApri = this.Factory.CreateRibbonButton();
-            this.btnSalva = this.Factory.CreateRibbonButton();
             this.btnReset = this.Factory.CreateRibbonButton();
             this.btnInvia = this.Factory.CreateRibbonButton();
+            this.group3 = this.Factory.CreateRibbonGroup();
             this.tbRichiestaModifica.SuspendLayout();
+            this.group2.SuspendLayout();
             this.group1.SuspendLayout();
             // 
             // tbRichiestaModifica
             // 
+            this.tbRichiestaModifica.Groups.Add(this.group2);
             this.tbRichiestaModifica.Groups.Add(this.group1);
+            this.tbRichiestaModifica.Groups.Add(this.group3);
             this.tbRichiestaModifica.Label = "Richiesta Modifica";
             this.tbRichiestaModifica.Name = "tbRichiestaModifica";
             // 
+            // group2
+            // 
+            this.group2.Items.Add(this.btnChiudi);
+            this.group2.Label = "Chiudi";
+            this.group2.Name = "group2";
+            // 
+            // btnChiudi
+            // 
+            this.btnChiudi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnChiudi.Image = global::RiMoST2.Properties.Resources.Close_icon;
+            this.btnChiudi.Label = "Chiudi senza inviare";
+            this.btnChiudi.Name = "btnChiudi";
+            this.btnChiudi.ShowImage = true;
+            this.btnChiudi.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChiudi_Click);
+            // 
             // group1
             // 
-            this.group1.Items.Add(this.btnApri);
-            this.group1.Items.Add(this.btnSalva);
             this.group1.Items.Add(this.btnReset);
             this.group1.Items.Add(this.btnInvia);
             this.group1.Label = "Modifica";
             this.group1.Name = "group1";
             // 
-            // btnApri
-            // 
-            this.btnApri.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnApri.Image = global::RiMoST2.Properties.Resources.open_icon;
-            this.btnApri.Label = "Apri";
-            this.btnApri.Name = "btnApri";
-            this.btnApri.ShowImage = true;
-            // 
-            // btnSalva
-            // 
-            this.btnSalva.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnSalva.Image = global::RiMoST2.Properties.Resources.save_icon;
-            this.btnSalva.Label = "Salva su questo computer";
-            this.btnSalva.Name = "btnSalva";
-            this.btnSalva.ShowImage = true;
-            // 
             // btnReset
             // 
             this.btnReset.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnReset.Image = global::RiMoST2.Properties.Resources.reset_icon;
+            this.btnReset.Image = global::RiMoST2.Properties.Resources.Reset_icon;
             this.btnReset.Label = "Cancella il contenuto del foglio";
             this.btnReset.Name = "btnReset";
             this.btnReset.ShowImage = true;
+            this.btnReset.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReset_Click);
             // 
             // btnInvia
             // 
             this.btnInvia.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnInvia.Image = global::RiMoST2.Properties.Resources.send_icon;
+            this.btnInvia.Image = global::RiMoST2.Properties.Resources.Send_icon;
             this.btnInvia.Label = "Conferma e invia";
             this.btnInvia.Name = "btnInvia";
             this.btnInvia.ShowImage = true;
+            this.btnInvia.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnInvia_Click);
+            // 
+            // group3
+            // 
+            this.group3.Label = "group3";
+            this.group3.Name = "group3";
             // 
             // RiMoST
             // 
@@ -99,6 +107,8 @@
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.RiMoST_Load);
             this.tbRichiestaModifica.ResumeLayout(false);
             this.tbRichiestaModifica.PerformLayout();
+            this.group2.ResumeLayout(false);
+            this.group2.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
 
@@ -109,9 +119,10 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tbRichiestaModifica;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInvia;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnApri;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnReset;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnSalva;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChiudi;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group3;
     }
 
     partial class ThisRibbonCollection
