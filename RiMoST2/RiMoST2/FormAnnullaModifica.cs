@@ -24,11 +24,11 @@ namespace RiMoST2
                 {"@IdRichiesta", "all"}
             };
 
-
             DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
             dv.RowFilter = "IdTipologiaStato <> 4";
             cmbRichiesta.DataSource = dv;
             cmbRichiesta.DisplayMember = "IdRichiesta";
+            //cmbRichiesta_SelectedIndexChanged(null, new EventArgs());
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -57,6 +57,13 @@ namespace RiMoST2
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void cmbRichiesta_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DataRowView row = (DataRowView)cmbRichiesta.SelectedItem;
+            string path = @"file:///" + row["NomeFile"];
+            DocPreview.Navigate(path);
         }
     }
 }
