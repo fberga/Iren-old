@@ -63,9 +63,49 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Bin_icon {
+            get {
+                object obj = ResourceManager.GetObject("Bin_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Close_icon {
             get {
-                object obj = ResourceManager.GetObject("Close-icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Close_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Eraser_icon {
+            get {
+                object obj = ResourceManager.GetObject("Eraser_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Print_icon {
+            get {
+                object obj = ResourceManager.GetObject("Print_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Refresh_icon {
+            get {
+                object obj = ResourceManager.GetObject("Refresh_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -75,7 +115,7 @@ namespace RiMoST2.Properties {
         /// </summary>
         internal static System.Drawing.Bitmap Reset_icon {
             get {
-                object obj = ResourceManager.GetObject("Reset-icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Reset_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -85,7 +125,7 @@ namespace RiMoST2.Properties {
         /// </summary>
         internal static System.Drawing.Bitmap Send_icon {
             get {
-                object obj = ResourceManager.GetObject("Send-icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Send_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

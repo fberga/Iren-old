@@ -5,7 +5,7 @@ using System.Text;
 using System.Data.SqlClient;
 using System.Data;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Core
 {
     class Command
     {
@@ -30,8 +30,8 @@ namespace RiMoST2
         {
             return SqlCmd(commandText, CommandType.StoredProcedure);
         }
-        
-        public SqlCommand SqlCmd(string commandText, CommandType commandType, Dictionary<string, object> parameters, int timeout = 300)
+
+        public SqlCommand SqlCmd(string commandText, CommandType commandType, QryParams parameters, int timeout = 300)
         {
             SqlCommand cmd = SqlCmd(commandText, commandType, timeout);
             try
@@ -43,12 +43,12 @@ namespace RiMoST2
                         par.Value = parameters[par.ParameterName];
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {                
             }
             return cmd;
         }
-        public SqlCommand SqlCmd(string commandText, Dictionary<String, Object> parameters)
+        public SqlCommand SqlCmd(string commandText, QryParams parameters)
         {
             return SqlCmd(commandText, CommandType.StoredProcedure, parameters);
         }

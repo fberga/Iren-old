@@ -8,7 +8,7 @@ using System.Data.SqlClient;
 using DataTable = System.Data.DataTable;
 using System.Data;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Core
 {
     public class DataBase
     {
@@ -49,7 +49,7 @@ namespace RiMoST2
             _idApplicazione = idApplicazione;
         }
 
-        public void Insert(string storedProcedure, Dictionary<String, Object> parameters)
+        public void Insert(string storedProcedure, QryParams parameters)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -61,7 +61,7 @@ namespace RiMoST2
             _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
         }
 
-        public DataTable Select(string storedProcedure, Dictionary<String, Object> parameters)
+        public DataTable Select(string storedProcedure, QryParams parameters)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -80,7 +80,7 @@ namespace RiMoST2
 
         public DataTable Select(string storedProcedure)
         {
-            Dictionary<String, Object> parameters = new Dictionary<string, object>();
+            QryParams parameters = new QryParams();
             return Select(storedProcedure, parameters);
         }
 

@@ -6,10 +6,10 @@ using System.Text;
 using System.Data.SqlClient;
 using System.Data;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Core
 {
     //singleton
-    class Connection : IDisposable
+    public class Connection : IDisposable
     {
         #region Variabili
 
@@ -40,7 +40,7 @@ namespace RiMoST2
         private Connection() {
             //la prima volta che viene lanciata la dll controlla che i parametri siano protetti
             //e nell'eventualità li protegge
-            CryptSection();
+            CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
         }
 
         #endregion
@@ -66,11 +66,11 @@ namespace RiMoST2
         #region Metodi Privati
         
         //cripta i dati di connessione se sono in chiaro
-        private void CryptSection()
+        public static void CryptSection(System.Reflection.Assembly executingAssembly)
         {
-            Configuration config =
-                ConfigurationManager.OpenExeConfiguration(
-                ConfigurationUserLevel.None);
+            //var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var location = executingAssembly.Location;
+            var config = ConfigurationManager.OpenExeConfiguration(location);
 
             string provider = "RsaProtectedConfigurationProvider";
             ConfigurationSection connStrings = config.ConnectionStrings;

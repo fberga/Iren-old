@@ -16,6 +16,7 @@ using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
 using Microsoft.Office.Interop.Word;
 using System.Reflection;
+using Iren.FrontOffice.Core;
 
 namespace RiMoST2
 {
@@ -25,10 +26,7 @@ namespace RiMoST2
 
         private void ThisDocument_Startup(object sender, System.EventArgs e)
         {
-            object noReset = false;
-            object password = System.String.Empty;
-            object useIRM = false;
-            object enforceStyleLock = false;
+            Connection.CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
 
             NameValueCollection appSet = ConfigurationManager.AppSettings;
 
@@ -39,10 +37,8 @@ namespace RiMoST2
             Word.Table tb = this.Tables[1];
 
             tb.Rows[tb.Rows.Count].Cells.Split(rowNum, colNum);
-            
 
-            int i = 0;
-            int j = 0;
+            int i = 0, j = 0;            
             foreach (string usr in users)
             {
                 tb.Cell((tb.Rows.Count - rowNum) + i + 1, (j % colNum) + 1).Range.Text = usr;
@@ -64,17 +60,39 @@ namespace RiMoST2
             lbDataInvio.Text = DateTime.Now.ToShortDateString();
 
             txtDescrizione.Multiline = true;
-            txtDescrizione.Height = 199.5f;
+            txtDescrizione.Height = 265.5f;
             txtNote.Multiline = true;
-            txtNote.Height = 99.75f;
+            txtNote.Height = 54.75f;
             txtOggetto.Multiline = true;
-            txtOggetto.Height = 34.5f;
+            txtOggetto.Height = 33f;
+
+            AddProtection();
+        }
+
+        public void AddProtection()
+        {
+            object noReset = false;
+            object password = System.String.Empty;
+            object useIRM = false;
+            object enforceStyleLock = false;
 
             this.Protect(Word.WdProtectionType.wdAllowOnlyFormFields,
                 ref noReset, ref password, ref useIRM, ref enforceStyleLock);
         }
 
+        public void RemoveProtection()
+        {
+            object password = System.String.Empty;
+
+            this.Unprotect(ref password);
+        }
+
         private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            CloseWithoutSaving();
+        }
+
+        public void CloseWithoutSaving()
         {
             object saveMod = WdSaveOptions.wdDoNotSaveChanges;
             object missing = Missing.Value;
@@ -83,9 +101,16 @@ namespace RiMoST2
 
         private void ThisDocument_Shutdown(object sender, System.EventArgs e)
         {
+            Application.Quit();
+            
         }
 
         #region Codice generato dalla finestra di progettazione di VSTO
+
+        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        {
+            return new Ribbon();
+        }
 
         /// <summary>
         /// Metodo richiesto per il supporto della finestra di progettazione - non modificare
@@ -99,6 +124,5 @@ namespace RiMoST2
         }
 
         #endregion
-
     }
 }

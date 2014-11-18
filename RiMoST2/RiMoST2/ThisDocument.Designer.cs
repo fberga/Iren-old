@@ -183,38 +183,24 @@ namespace RiMoST2 {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
             // 
-            // ActionsPane
-            // 
-            this.ActionsPane.AutoSize = false;
-            this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            // 
-            // plainTextContentControl4
-            // 
-            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // plainTextContentControl5
-            // 
-            this.plainTextContentControl5.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // plainTextContentControl1
-            // 
-            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
             // txtNote
             // 
-            this.txtNote.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtNote.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtNote.MaxLength = 255;
             this.txtNote.Multiline = true;
             this.txtNote.Name = "txtNote";
             // 
             // txtDescrizione
             // 
-            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDescrizione.MaxLength = 1000;
             this.txtDescrizione.Multiline = true;
             this.txtDescrizione.Name = "txtDescrizione";
             // 
             // txtOggetto
             // 
-            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOggetto.MaxLength = 100;
             this.txtOggetto.Multiline = true;
             this.txtOggetto.Name = "txtOggetto";
             // 
@@ -233,13 +219,28 @@ namespace RiMoST2 {
             // 
             this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.lbDataInvio.Name = "lbDataInvio";
-            this.lbDataInvio.Text = "data";
             // 
             // lbIdRichiesta
             // 
             this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbIdRichiesta.Name = "lbIdRichiesta";
-            this.lbIdRichiesta.Text = "id";
+            // 
+            // ActionsPane
+            // 
+            this.ActionsPane.AutoSize = false;
+            this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
+            // 
+            // plainTextContentControl4
+            // 
+            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl5
+            // 
+            this.plainTextContentControl5.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl1
+            // 
+            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
             // ThisDocument
             // 
