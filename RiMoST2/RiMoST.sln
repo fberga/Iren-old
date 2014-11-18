@@ -4,11 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiMoST", "RiMoST2\RiMoST.csproj", "{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FCADEFC1-E09D-4A75-A9F0-668D0B2E2410}"
-	ProjectSection(SolutionItems) = preProject
-		Local.testsettings = Local.testsettings
-		RiMoST2.vsmdi = RiMoST2.vsmdi
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
