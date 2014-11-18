@@ -107,10 +107,10 @@ namespace RiMoST2
 
         #region Codice generato dalla finestra di progettazione di VSTO
 
-        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        {
-            return new Ribbon();
-        }
+        //protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        //{
+        //    return new Ribbon();
+        //}
 
         /// <summary>
         /// Metodo richiesto per il supporto della finestra di progettazione - non modificare

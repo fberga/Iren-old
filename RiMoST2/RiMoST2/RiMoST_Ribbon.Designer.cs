@@ -36,40 +36,47 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RiMoST_Ribbon));
             this.tbRichiestaModifica = this.Factory.CreateRibbonTab();
+            this.group3 = this.Factory.CreateRibbonGroup();
             this.group2 = this.Factory.CreateRibbonGroup();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.group4 = this.Factory.CreateRibbonGroup();
+            this.chkIsDraft = this.Factory.CreateRibbonCheckBox();
+            this.cbAnniDisponibili = this.Factory.CreateRibbonComboBox();
             this.btnChiudi = this.Factory.CreateRibbonButton();
             this.btnInvia = this.Factory.CreateRibbonButton();
+            this.btnSalvaBozza = this.Factory.CreateRibbonButton();
             this.btnReset = this.Factory.CreateRibbonButton();
             this.btnRefresh = this.Factory.CreateRibbonButton();
             this.btnPrint = this.Factory.CreateRibbonButton();
             this.btnAnnulla = this.Factory.CreateRibbonButton();
+            this.btnModifica = this.Factory.CreateRibbonButton();
             this.tbRichiestaModifica.SuspendLayout();
+            this.group3.SuspendLayout();
             this.group2.SuspendLayout();
             this.group1.SuspendLayout();
             this.group4.SuspendLayout();
             // 
             // tbRichiestaModifica
             // 
+            this.tbRichiestaModifica.Groups.Add(this.group3);
             this.tbRichiestaModifica.Groups.Add(this.group2);
             this.tbRichiestaModifica.Groups.Add(this.group1);
             this.tbRichiestaModifica.Groups.Add(this.group4);
             this.tbRichiestaModifica.Label = "Richiesta Modifica";
             this.tbRichiestaModifica.Name = "tbRichiestaModifica";
             // 
+            // group3
+            // 
+            this.group3.Items.Add(this.btnChiudi);
+            this.group3.Label = "Chiudi";
+            this.group3.Name = "group3";
+            // 
             // group2
             // 
-            this.group2.Items.Add(this.btnChiudi);
-            this.group2.Items.Add(this.separator1);
             this.group2.Items.Add(this.btnInvia);
+            this.group2.Items.Add(this.btnSalvaBozza);
             this.group2.Label = "Azioni";
             this.group2.Name = "group2";
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
             // 
             // group1
             // 
@@ -81,9 +88,26 @@
             // 
             // group4
             // 
+            this.group4.Items.Add(this.cbAnniDisponibili);
+            this.group4.Items.Add(this.chkIsDraft);
             this.group4.Items.Add(this.btnAnnulla);
+            this.group4.Items.Add(this.btnModifica);
             this.group4.Label = "Gestione Richieste";
             this.group4.Name = "group4";
+            // 
+            // chkIsDraft
+            // 
+            this.chkIsDraft.Label = "Bozza";
+            this.chkIsDraft.Name = "chkIsDraft";
+            // 
+            // cbAnniDisponibili
+            // 
+            this.cbAnniDisponibili.Image = global::RiMoST2.Properties.Resources.calendar_icon;
+            this.cbAnniDisponibili.Label = " ";
+            this.cbAnniDisponibili.Name = "cbAnniDisponibili";
+            this.cbAnniDisponibili.ScreenTip = "Seleziona l\'anno";
+            this.cbAnniDisponibili.ShowImage = true;
+            this.cbAnniDisponibili.ShowLabel = false;
             // 
             // btnChiudi
             // 
@@ -102,6 +126,15 @@
             this.btnInvia.Name = "btnInvia";
             this.btnInvia.ShowImage = true;
             this.btnInvia.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnInvia_Click);
+            // 
+            // btnSalvaBozza
+            // 
+            this.btnSalvaBozza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnSalvaBozza.Image = global::RiMoST2.Properties.Resources.save_icon;
+            this.btnSalvaBozza.Label = "Salva Bozza";
+            this.btnSalvaBozza.Name = "btnSalvaBozza";
+            this.btnSalvaBozza.ShowImage = true;
+            this.btnSalvaBozza.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSalvaBozza_Click);
             // 
             // btnReset
             // 
@@ -139,6 +172,15 @@
             this.btnAnnulla.ShowImage = true;
             this.btnAnnulla.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnAnnulla_Click);
             // 
+            // btnModifica
+            // 
+            this.btnModifica.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnModifica.Image = global::RiMoST2.Properties.Resources.edit_icon;
+            this.btnModifica.Label = "Modifica Richiesta";
+            this.btnModifica.Name = "btnModifica";
+            this.btnModifica.ShowImage = true;
+            this.btnModifica.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnModifica_Click);
+            // 
             // RiMoST_Ribbon
             // 
             this.Name = "RiMoST_Ribbon";
@@ -148,6 +190,8 @@
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.RiMoST_Load);
             this.tbRichiestaModifica.ResumeLayout(false);
             this.tbRichiestaModifica.PerformLayout();
+            this.group3.ResumeLayout(false);
+            this.group3.PerformLayout();
             this.group2.ResumeLayout(false);
             this.group2.PerformLayout();
             this.group1.ResumeLayout(false);
@@ -169,7 +213,11 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnPrint;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group4;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAnnulla;
-        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnModifica;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnSalvaBozza;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox chkIsDraft;
+        internal Microsoft.Office.Tools.Ribbon.RibbonComboBox cbAnniDisponibili;
     }
 
     partial class ThisRibbonCollection

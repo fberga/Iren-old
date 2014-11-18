@@ -23,9 +23,15 @@ namespace RiMoST2
         FormAnnullaModifica _formAnnullaModifica;
 
         private void RiMoST_Load(object sender, RibbonUIEventArgs e)
-        {            
-
-            //Globals.Ribbons.RiMoST.RibbonUI.InvalidateControlMso("TabSetTableTools");
+        {
+            DataTable dt = ThisDocument._db.Select("spGetAvailableYears");
+            foreach (DataRow r in dt.Rows) 
+            {
+                RibbonDropDownItem i = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();;
+                i.Label = r["Anno"].ToString();
+                cbAnniDisponibili.Items.Add(i);
+            }
+            cbAnniDisponibili.Text = cbAnniDisponibili.Items[0].Label;
         }
 
         private void getAvailableID()
@@ -88,36 +94,8 @@ namespace RiMoST2
             }
             else
             {
-                if (Globals.ThisDocument.txtOggetto.Text == "" || Globals.ThisDocument.txtDescrizione.Text == "")
-                {
-                    MessageBox.Show("Alcuni campi obbligatori non sono stati compilati. Compilare i campi evidenziati!", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                    Globals.ThisDocument.RemoveProtection();
-                    Globals.ThisDocument.Application.ScreenUpdating = false;
-
-                    ToNormal("Oggetto", WdColorIndex.wdBlack, "*");
-                    ToNormal("Descrizione", WdColorIndex.wdBlack, "*");
-
-                    if (Globals.ThisDocument.txtOggetto.Text == "")
-                        Highlight("Oggetto", WdColorIndex.wdRed, "*");
-                    
-                    if (Globals.ThisDocument.txtDescrizione.Text == "")
-                        Highlight("Descrizione", WdColorIndex.wdRed, "*");
-
-                    Globals.ThisDocument.Application.ScreenUpdating = true;
-                    Globals.ThisDocument.AddProtection();
-                }
-                else
-                {
-                    Globals.ThisDocument.RemoveProtection();
-                    Globals.ThisDocument.Application.ScreenUpdating = false;
-                    
-                    ToNormal("Oggetto", WdColorIndex.wdBlack, "*");
-                    ToNormal("Descrizione", WdColorIndex.wdBlack, "*");
-                    
-                    Globals.ThisDocument.Application.ScreenUpdating = true;
-                    Globals.ThisDocument.AddProtection();
-                    
+                if(!EmptyFields()) 
+                {    
                     if (MessageBox.Show("Sicuro di voler inviare il documento?", "Stampa e invia?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
                     {
                         Regex rgx = new Regex(@"(\[[^\[\]]*\])");
@@ -210,6 +188,76 @@ namespace RiMoST2
             }
             _formAnnullaModifica.WindowState = FormWindowState.Normal;
             _formAnnullaModifica.Focus();
+        }
+
+        private bool EmptyFields()
+        {
+            if (Globals.ThisDocument.txtOggetto.Text == "" || Globals.ThisDocument.txtDescrizione.Text == "")
+            {
+                MessageBox.Show("Alcuni campi obbligatori non sono stati compilati. Compilare i campi evidenziati!", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                Globals.ThisDocument.RemoveProtection();
+                Globals.ThisDocument.Application.ScreenUpdating = false;
+
+                ToNormal("Oggetto", WdColorIndex.wdBlack, "*");
+                ToNormal("Descrizione", WdColorIndex.wdBlack, "*");
+
+                if (Globals.ThisDocument.txtOggetto.Text == "")
+                    Highlight("Oggetto", WdColorIndex.wdRed, "*");
+
+                if (Globals.ThisDocument.txtDescrizione.Text == "")
+                    Highlight("Descrizione", WdColorIndex.wdRed, "*");
+
+                Globals.ThisDocument.Application.ScreenUpdating = true;
+                Globals.ThisDocument.AddProtection();
+
+                return true;
+            }
+
+            Globals.ThisDocument.RemoveProtection();
+            Globals.ThisDocument.Application.ScreenUpdating = false;
+
+            ToNormal("Oggetto", WdColorIndex.wdBlack, "*");
+            ToNormal("Descrizione", WdColorIndex.wdBlack, "*");
+
+            Globals.ThisDocument.Application.ScreenUpdating = true;
+            Globals.ThisDocument.AddProtection();
+            
+            return false;
+        }
+
+        private void btnSalvaBozza_Click(object sender, RibbonControlEventArgs e)
+        {
+            if (!EmptyFields())
+            {
+                DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
+                DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
+
+                QryParams parameters = new QryParams()
+                {
+                    {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
+                    {"@DataCreazione", Globals.ThisDocument.dtDataCreazione.Value.ToString("yyyyMMdd")},
+                    {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
+                    {"@IdApplicazione", strumento["IdApplicazione"]},
+                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text},
+                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text},
+                    {"@Note", Globals.ThisDocument.txtNote.Text},
+                };
+
+                try
+                {
+                    ThisDocument._db.Insert("spSaveRequestAsDraft", parameters);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnModifica_Click(object sender, RibbonControlEventArgs e)
+        {
+
         }
     }
 }

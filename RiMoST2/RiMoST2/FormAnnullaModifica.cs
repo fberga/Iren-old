@@ -25,7 +25,7 @@ namespace RiMoST2
             };
 
             DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
-            dv.RowFilter = "IdTipologiaStato <> 4";
+            dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + Globals.Ribbons.RiMoST.cbAnniDisponibili.Text + "'";
             cmbRichiesta.DataSource = dv;
             cmbRichiesta.DisplayMember = "IdRichiesta";
             //cmbRichiesta_SelectedIndexChanged(null, new EventArgs());

@@ -214,6 +214,15 @@
   <ItemGroup>
     <EmbeddedResource Include="Ribbon.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\save-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\edit-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\calendar-icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" />
   <ProjectExtensions>

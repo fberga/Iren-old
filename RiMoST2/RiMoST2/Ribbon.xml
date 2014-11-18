@@ -1,23 +1,27 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <customUI onLoad="Ribbon_Load" xmlns="http://schemas.microsoft.com/office/2006/01/customui">
     <ribbon startFromScratch="true">
-        <tabs>
-            <tab id="tbRichiestaModifica" label="Richiesta Modifica">
-                <group id="group2" label="Azioni">
-                    <button id="btnChiudi" getImage="btnChiudi_getImage" onAction="btnChiudi_Click" label="Chiudi" size="large" />
-                    <separator id="separator1" />
-                    <button id="btnInvia" getImage="btnInvia_getImage" onAction="btnInvia_Click" label="Conferma e invia" size="large" />
-                </group>
-                <group id="group1" label="Modifica">
-                    <button id="btnReset" getImage="btnReset_getImage" onAction="btnReset_Click" label="Cancella Modifiche" size="large" />
-                    <button id="btnRefresh" getImage="btnRefresh_getImage" onAction="btnRefresh_Click" label="Aggiorna n°" size="large" />
-                    <button id="btnPrint" getImage="btnPrint_getImage" onAction="btnPrint_Click" label="Stampa" size="large" />
-                </group>
-                <group id="group4" label="Gestione Richieste">
-                    <button id="btnAnnulla" getImage="btnAnnulla_getImage" onAction="btnAnnulla_Click" label="Annulla una richiesta" size="large" />
-                </group>
-            </tab>
-        </tabs>
+      <tabs>
+        <tab id="tbRichiestaModifica" label="Richiesta Modifica">
+          <group id="group3" label="Chiudi">
+            <button id="btnChiudi" onAction="btnChiudi_Click" label="Chiudi" size="large" />
+          </group>
+          <group id="group2" label="Azioni">
+            <button id="btnInvia" onAction="btnInvia_Click" label="Conferma e invia" size="large" />
+            <button id="btnSalvaBozza" onAction="btnSalvaBozza_Click" label="Salva Bozza" size="large" />
+          </group>
+          <group id="group1" label="Modifica">
+            <button id="btnReset" onAction="btnReset_Click" label="Cancella Modifiche" size="large" />
+            <button id="btnRefresh" onAction="btnRefresh_Click" label="Aggiorna n°" size="large" />
+            <button id="btnPrint" onAction="btnPrint_Click" label="Stampa" size="large" />
+          </group>
+          <group id="group4" label="Gestione Richieste">
+            <button id="btnAnnulla" onAction="btnAnnulla_Click" label="Annulla una richiesta" size="large" />
+            <button id="btnModifica" onAction="btnModifica_Click" label="Modifica Richiesta" size="large" />
+            <checkBox id="chkIsDraft" label="Bozza" />
+          </group>
+        </tab>
+      </tabs>
         <contextualTabs>
           <tabSet idMso="TabSetTableTools" visible="false" />
         </contextualTabs>
