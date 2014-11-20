@@ -243,9 +243,9 @@ namespace RiMoST2
                                     {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
                                     {"@IdTipologiaStato", 1},
                                     {"@IdApplicazione", strumento["IdApplicazione"]},
-                                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text},
-                                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text},
-                                    {"@Note", Globals.ThisDocument.txtNote.Text},
+                                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text.Trim()},
+                                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text.Trim()},
+                                    {"@Note", Globals.ThisDocument.txtNote.Text.Trim()},
                                     {"@NomeFile", savePath}
                                 };
 
@@ -300,9 +300,9 @@ namespace RiMoST2
                     {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
                     {"@IdTipologiaStato", 7},
                     {"@IdApplicazione", strumento["IdApplicazione"]},
-                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text},
-                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text},
-                    {"@Note", Globals.ThisDocument.txtNote.Text}
+                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text.Trim()},
+                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text.Trim()},
+                    {"@Note", Globals.ThisDocument.txtNote.Text.Trim()}
                 };
 
                 try
@@ -375,7 +375,7 @@ namespace RiMoST2
         
         public Bitmap btnReset_getImage(Office.IRibbonControl control)
         {
-            return Resources.Eraser_icon;
+            return Resources.Reset_icon;
         }
         public Bitmap btnInvia_getImage(Office.IRibbonControl control)
         {

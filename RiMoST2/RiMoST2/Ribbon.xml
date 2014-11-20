@@ -24,7 +24,7 @@
             <button id="btnReset" 
                     getImage="btnReset_getImage" 
                     onAction="btnReset_Click" 
-                    label="Cancella Modifiche" size="large" />
+                    label="Nuova Modifica" size="large" />
             <button id="btnRefresh" 
                     getImage="btnRefresh_getImage" 
                     onAction="btnRefresh_Click" 

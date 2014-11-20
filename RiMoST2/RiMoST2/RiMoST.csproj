@@ -20,7 +20,7 @@
     <PublishUrl>W:\RiMoST\</PublishUrl>
     <InstallUrl>\\PC1009235\Applicazioni VSTO\RiMoST\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.1.4</ApplicationVersion>
+    <ApplicationVersion>1.0.1.5</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -227,6 +227,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\support-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\File-New-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" />
