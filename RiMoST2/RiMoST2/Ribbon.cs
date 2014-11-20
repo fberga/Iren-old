@@ -18,6 +18,7 @@ using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
 using RiMoST2.Properties;
 using System.Drawing;
+using System.Deployment.Application;
 
 namespace RiMoST2
 {
@@ -28,6 +29,16 @@ namespace RiMoST2
 
         private Office.IRibbonUI ribbon;
         FormAnnullaModifica _formAnnullaModifica;
+        internal int _cbAnniDispCount = 0;
+        internal int _cbAnniDispIndex = 0;
+        internal List<string> _cbAnniDispLabels;
+        internal string _cbAnniDispValue = "";
+        internal System.Version _appV;
+        internal System.Version _coreV;
+        internal bool _chkIsDraftEnabled = true;
+        internal bool _chkIsDraft = false;
+        internal bool _btnSalvaBozzaEnabled = true;
+        internal bool _btnRefreshEnabled = true;
 
         #endregion
 
@@ -41,27 +52,58 @@ namespace RiMoST2
 
         #region Metodi Privati
 
+        private System.Version getCurrentV()
+        {
+            try
+            {
+                return ApplicationDeployment.CurrentDeployment.CurrentVersion;
+            }
+            catch (Exception)
+            {
+                return Assembly.GetExecutingAssembly().GetName().Version;
+            }
+        }
+
+        private bool EmptyFields()
+        {
+            if (Globals.ThisDocument.txtOggetto.Text == "" || Globals.ThisDocument.txtDescrizione.Text == "")
+            {
+                MessageBox.Show("Alcuni campi obbligatori non sono stati compilati. Compilare i campi evidenziati!", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                Globals.ThisDocument.RemoveProtection();
+                Globals.ThisDocument.Application.ScreenUpdating = false;
+
+                ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
+                ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
+
+                if (Globals.ThisDocument.txtOggetto.Text == "")
+                    ThisDocument.Highlight("Oggetto", Word.WdColorIndex.wdRed, "*");
+
+                if (Globals.ThisDocument.txtDescrizione.Text == "")
+                    ThisDocument.Highlight("Descrizione", Word.WdColorIndex.wdRed, "*");
+
+                Globals.ThisDocument.Application.ScreenUpdating = true;
+                Globals.ThisDocument.AddProtection();
+
+                return true;
+            }
+
+            Globals.ThisDocument.RemoveProtection();
+            Globals.ThisDocument.Application.ScreenUpdating = false;
+
+            ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
+            ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
+
+            Globals.ThisDocument.Application.ScreenUpdating = true;
+            Globals.ThisDocument.AddProtection();
+
+            return false;
+        }
+
         private void getAvailableID()
         {
             DataTable dt = ThisDocument._db.Select("spGetFirstAvailableID");
             Globals.ThisDocument.lbIdRichiesta.Text = dt.Rows[0][0].ToString();
-        }
-
-        private void Highlight(string textToFind, Word.WdColorIndex color, string highlightMark = "")
-        {
-            Word.Find finder = Globals.ThisDocument.Content.Find;
-            finder.Text = textToFind;
-            finder.Replacement.Text = finder.Text + highlightMark;
-            finder.Replacement.Font.ColorIndex = color;
-            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
-        }
-        private void ToNormal(string textToFind, Word.WdColorIndex color, string highlightMark = "")
-        {
-            Word.Find finder = Globals.ThisDocument.Content.Find;
-            finder.Text = textToFind + highlightMark;
-            finder.Replacement.Text = textToFind;
-            finder.Replacement.Font.ColorIndex = color;
-            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
         }
 
         private void Print()
@@ -90,125 +132,130 @@ namespace RiMoST2
         public void Ribbon_Load(Office.IRibbonUI ribbonUI)
         {
             this.ribbon = ribbonUI;
+
+            DataTable dt = ThisDocument._db.Select("spGetAvailableYears");
+            _cbAnniDispLabels = new List<string>();
+            foreach (DataRow r in dt.Rows) 
+            {
+                RibbonDropDownItem i = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();;
+                i.Label = r["Anno"].ToString();
+                _cbAnniDispLabels.Add(r["Anno"].ToString());
+            }
+            _cbAnniDispCount = _cbAnniDispLabels.Count;
+            _appV = getCurrentV();
+            _coreV = ThisDocument._db.GetCurrentV();
         }
+
         public void btnReset_Click(Office.IRibbonControl control)
         {
             if (MessageBox.Show("Sicuro di voler cancellare il contenuto dei campi?", "Cancellare campi?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
             {
                 Globals.ThisDocument.cmbStrumento.SelectedIndex = 0;
+                ((DataView)Globals.ThisDocument.cmbStrumento.DataSource).RowFilter = "";
+                Globals.ThisDocument.cmbStrumento.Enabled = true;
                 Globals.ThisDocument.txtDescrizione.Text = "";
                 Globals.ThisDocument.txtOggetto.Text = "";
                 Globals.ThisDocument.txtNote.Text = "";
                 Globals.ThisDocument.dtDataCreazione.Value = DateTime.Now;
 
+                _btnRefreshEnabled = true;
+                _btnSalvaBozzaEnabled = true;
+                _chkIsDraft = false;
+                this.ribbon.InvalidateControl("chkIsDraft");
+                this.ribbon.Invalidate();
                 getAvailableID();
             }
         }
         public void btnInvia_Click(Office.IRibbonControl control)
         {
-            object copies = "1";
-            object pages = "";
-            object range = Word.WdPrintOutRange.wdPrintAllDocument;
-            object items = Word.WdPrintOutItem.wdPrintDocumentContent;
-            object pageType = Word.WdPrintOutPages.wdPrintAllPages;
-            object oTrue = true;
-            object oFalse = false;
-            object missing = Missing.Value;
-
-            QryParams parameters = new QryParams()
+            if (_chkIsDraft)
             {
-                {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text}
-            };
-
-            DataTable dt = ThisDocument._db.Select("spGetRichiesta", parameters);
-            if (dt.Rows.Count > 0)
-            {
-                MessageBox.Show("Esiste già una richiesta con lo stesso codice. Premere sul tasto di refresh per ottenerne uno nuovo", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("La richiesta è contrassegnata come bozza. Togliere la spunta e riprovare.", "Impossibile salvare!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
             else
             {
-                if (Globals.ThisDocument.txtOggetto.Text == "" || Globals.ThisDocument.txtDescrizione.Text == "")
+                object oTrue = true;
+                object oFalse = false;
+                object missing = Missing.Value;
+
+                QryParams parameters = new QryParams()
                 {
-                    MessageBox.Show("Alcuni campi obbligatori non sono stati compilati. Compilare i campi evidenziati!", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text}
+                };
 
-                    Globals.ThisDocument.RemoveProtection();
-                    Globals.ThisDocument.Application.ScreenUpdating = false;
-
-                    ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
-                    ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
-
-                    if (Globals.ThisDocument.txtOggetto.Text == "")
-                        Highlight("Oggetto", Word.WdColorIndex.wdRed, "*");
-
-                    if (Globals.ThisDocument.txtDescrizione.Text == "")
-                        Highlight("Descrizione", Word.WdColorIndex.wdRed, "*");
-
-                    Globals.ThisDocument.Application.ScreenUpdating = true;
-                    Globals.ThisDocument.AddProtection();
+                DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
+                dv.RowFilter = "IdTipologiaStato <> 7";
+                if (dv.Count > 0)
+                {
+                    MessageBox.Show("Esiste già una richiesta con lo stesso codice. Premere sul tasto di refresh per ottenerne uno nuovo", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
-                    Globals.ThisDocument.RemoveProtection();
-                    Globals.ThisDocument.Application.ScreenUpdating = false;
-
-                    ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
-                    ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
-
-                    Globals.ThisDocument.Application.ScreenUpdating = true;
-                    Globals.ThisDocument.AddProtection();
-
-                    if (MessageBox.Show("Sicuro di voler inviare il documento?", "Stampa e invia?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+                    if (!EmptyFields())
                     {
-                        Regex rgx = new Regex(@"(\[[^\[\]]*\])");
-                        string saveName = ConfigurationManager.AppSettings["saveNameFormat"];
-
-                        foreach (Match m in rgx.Matches(saveName))
+                        if (MessageBox.Show("Sicuro di voler inviare il documento?", "Stampa e invia?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
                         {
+                            Globals.ThisDocument.RemoveProtection();
+                            Globals.ThisDocument.Application.ScreenUpdating = false;
+
+                            ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
+                            ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
+
+                            Globals.ThisDocument.Application.ScreenUpdating = true;
+                            Globals.ThisDocument.AddProtection();
+
+                            _btnSalvaBozzaEnabled = false;
+
+                            Regex rgx = new Regex(@"(\[[^\[\]]*\])");
+                            string saveName = ConfigurationManager.AppSettings["saveNameFormat"];
+
+                            foreach (Match m in rgx.Matches(saveName))
+                            {
+                                try
+                                {
+                                    Control c = (Control)Globals.ThisDocument.Controls[m.Value.Replace("[", "").Replace("]", "")];
+                                    saveName = saveName.Replace(m.Value, c.Text);
+                                }
+                                catch (ArgumentOutOfRangeException)
+                                {
+
+                                }
+                            }
+                            rgx = new Regex(@"([^\.\-_a-zA-Z0-9]+)");
+
+                            string name = rgx.Replace(saveName, "_");
+
+                            object savePath = Path.Combine(ConfigurationManager.AppSettings["savePath"], name + ".pdf");
+                            object format = Word.WdSaveFormat.wdFormatPDF;
                             try
                             {
-                                Control c = (Control)Globals.ThisDocument.Controls[m.Value.Replace("[", "").Replace("]", "")];
-                                saveName = saveName.Replace(m.Value, c.Text);
+                                Globals.ThisDocument.SaveAs2(ref savePath, ref format, ref oTrue, ref missing, ref oFalse,
+                                    ref missing, ref oFalse, ref missing, ref missing, ref oFalse, ref oFalse, ref missing,
+                                    ref missing, ref missing, ref missing, ref missing, ref missing);
+
+                                DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
+                                DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
+
+                                parameters = new QryParams()
+                                {
+                                    {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
+                                    {"@DataCreazione", Globals.ThisDocument.dtDataCreazione.Value.ToString("yyyyMMdd")},
+                                    {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
+                                    {"@IdTipologiaStato", 1},
+                                    {"@IdApplicazione", strumento["IdApplicazione"]},
+                                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text},
+                                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text},
+                                    {"@Note", Globals.ThisDocument.txtNote.Text},
+                                    {"@NomeFile", savePath}
+                                };
+
+                                ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
+                                Print();
                             }
-                            catch (ArgumentOutOfRangeException)
+                            catch (Exception)
                             {
-
+                                MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
-                        }
-                        rgx = new Regex(@"([^\.\-_a-zA-Z0-9]+)");
-
-                        string name = rgx.Replace(saveName, "_");
-
-                        object savePath = Path.Combine(ConfigurationManager.AppSettings["savePath"], name + ".pdf");
-                        object format = Word.WdSaveFormat.wdFormatPDF;
-                        try
-                        {
-                            Globals.ThisDocument.SaveAs2(ref savePath, ref format, ref oTrue, ref missing, ref oFalse,
-                                ref missing, ref oFalse, ref missing, ref missing, ref oFalse, ref oFalse, ref missing,
-                                ref missing, ref missing, ref missing, ref missing, ref missing);
-
-                            DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
-                            DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
-
-                            parameters = new QryParams()
-                            {
-                                {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
-                                {"@DataCreazione", Globals.ThisDocument.dtDataCreazione.Value.ToString("yyyyMMdd")},
-                                {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
-                                {"@IdApplicazione", strumento["IdApplicazione"]},
-                                {"@Oggetto", Globals.ThisDocument.txtOggetto.Text},
-                                {"@Descr", Globals.ThisDocument.txtDescrizione.Text},
-                                {"@Note", Globals.ThisDocument.txtNote.Text},
-                                {"@NomeFile", savePath}
-                            };
-
-
-                            ThisDocument._db.Insert("spAddNewRichiestaModifica", parameters);
-
-                            Print();
-                        }
-                        catch (Exception)
-                        {
-                            MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -230,13 +277,102 @@ namespace RiMoST2
         {
             if (_formAnnullaModifica == null || _formAnnullaModifica.IsDisposed)
             {
-                _formAnnullaModifica = new FormAnnullaModifica();
+                _formAnnullaModifica = new FormAnnullaModifica(_cbAnniDispValue);
                 _formAnnullaModifica.Show();
             }
             _formAnnullaModifica.WindowState = FormWindowState.Normal;
             _formAnnullaModifica.Focus();
         }
+        public void btnSalvaBozza_Click(Office.IRibbonControl control)
+        {
+            if (!EmptyFields())
+            {
+                DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
+                DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
 
+                _chkIsDraft = true;
+                this.ribbon.InvalidateControl("chkIsDraft");
+
+                QryParams parameters = new QryParams()
+                {
+                    {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
+                    {"@DataCreazione", Globals.ThisDocument.dtDataCreazione.Value.ToString("yyyyMMdd")},
+                    {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
+                    {"@IdTipologiaStato", 7},
+                    {"@IdApplicazione", strumento["IdApplicazione"]},
+                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text},
+                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text},
+                    {"@Note", Globals.ThisDocument.txtNote.Text}
+                };
+
+                try
+                {
+                    ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+        public void btnModifica_Click(Office.IRibbonControl control)
+        {
+            SelezionaModifica selMod = new SelezionaModifica(_cbAnniDispValue, _chkIsDraft, _btnRefreshEnabled);
+            selMod.ShowDialog();
+            _chkIsDraft = selMod._chkIsDraft;
+            _btnRefreshEnabled = selMod._btnRefreshEnabled;
+            this.ribbon.InvalidateControl("chkIsDraft");
+            this.ribbon.Invalidate();
+            selMod.Dispose();
+        }
+        public void chkIsDraft_Click(Office.IRibbonControl control, bool pressed)
+        {
+            _chkIsDraft = pressed;
+        }
+        
+        public bool chkIsDraft_getPressed(Office.IRibbonControl control) 
+        {
+            return _chkIsDraft;
+        }
+        
+        public int cbAnniDisp_ItemCount(Office.IRibbonControl control)
+        {
+            return _cbAnniDispCount;
+        }
+        public string cbAnniDisp_ItemLabel(Office.IRibbonControl control, int i)
+        {
+            return _cbAnniDispLabels[i];
+        }
+        public int cbAnniDisp_getSelectedItemIndex(Office.IRibbonControl control)
+        {
+            return _cbAnniDispIndex;
+        }
+        public void cbAnniDisp_onAction(Office.IRibbonControl control, string itemID, int itemIndex)
+        {
+            _cbAnniDispValue = _cbAnniDispLabels[itemIndex];
+            _cbAnniDispIndex = itemIndex;
+        }
+        public string lbVersioneApp_getLabel(Office.IRibbonControl control)
+        {
+            return "  App v" + _appV.ToString();
+        }
+        public string lbCoreV_getLabel(Office.IRibbonControl control)
+        {
+            return "  Core v" + _coreV.ToString();
+        }
+        public bool chkIsDraft_getEnabled(Office.IRibbonControl control)
+        {
+            return _chkIsDraftEnabled;
+        }
+        public bool btnSalvaBozza_enabled(Office.IRibbonControl control)
+        {
+            return _btnSalvaBozzaEnabled;
+        }
+        public bool btnRefresh_getEnabled(Office.IRibbonControl control)
+        {
+            return _btnRefreshEnabled;
+        }
+        
         public Bitmap btnReset_getImage(Office.IRibbonControl control)
         {
             return Resources.Eraser_icon;
@@ -260,6 +396,18 @@ namespace RiMoST2
         public Bitmap btnAnnulla_getImage(Office.IRibbonControl control)
         {
             return Resources.Bin_icon;
+        }
+        public Bitmap btnSalvaBozza_getImage(Office.IRibbonControl control)
+        {
+            return Resources.save_icon;
+        }
+        public Bitmap btnModifica_getImage(Office.IRibbonControl control)
+        {
+            return Resources.edit_icon;
+        }
+        public Bitmap cbAnniDisponibili_getImage(Office.IRibbonControl control)
+        {
+            return Resources.calendar_icon;
         }
 
         #endregion

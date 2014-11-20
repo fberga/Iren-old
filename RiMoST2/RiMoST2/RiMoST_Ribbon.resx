@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="tbRichiestaModifica.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="group3.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="btnChiudi.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnChiudi.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -459,6 +468,42 @@
         x2vnMbUAAAAASUVORK5CYII=
 </value>
   </data>
+  <data name="btnChiudi.Label" xml:space="preserve">
+    <value>Chiudi</value>
+  </data>
+  <data name="&gt;&gt;btnChiudi.Name" xml:space="preserve">
+    <value>btnChiudi</value>
+  </data>
+  <data name="&gt;&gt;btnChiudi.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnChiudi.Parent" xml:space="preserve">
+    <value>group3</value>
+  </data>
+  <data name="&gt;&gt;btnChiudi.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="group3.Label" xml:space="preserve">
+    <value>Chiudi</value>
+  </data>
+  <data name="&gt;&gt;group3.Name" xml:space="preserve">
+    <value>group3</value>
+  </data>
+  <data name="&gt;&gt;group3.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.GroupView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;group3.Parent" xml:space="preserve">
+    <value>tbRichiestaModifica</value>
+  </data>
+  <data name="&gt;&gt;group3.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="group2.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="btnInvia.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <data name="btnInvia.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -835,6 +880,78 @@
         k/EfNRyO/w+tPj8XJnJn3QAAAABJRU5ErkJggg==
 </value>
   </data>
+  <data name="btnInvia.Label" xml:space="preserve">
+    <value>Conferma e invia</value>
+  </data>
+  <data name="&gt;&gt;btnInvia.Name" xml:space="preserve">
+    <value>btnInvia</value>
+  </data>
+  <data name="&gt;&gt;btnInvia.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnInvia.Parent" xml:space="preserve">
+    <value>group2</value>
+  </data>
+  <data name="&gt;&gt;btnInvia.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="btnSalvaBozza.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="btnSalvaBozza.Label" xml:space="preserve">
+    <value>Salva Bozza</value>
+  </data>
+  <data name="&gt;&gt;btnSalvaBozza.Name" xml:space="preserve">
+    <value>btnSalvaBozza</value>
+  </data>
+  <data name="&gt;&gt;btnSalvaBozza.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnSalvaBozza.Parent" xml:space="preserve">
+    <value>group2</value>
+  </data>
+  <data name="&gt;&gt;btnSalvaBozza.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="group2.Label" xml:space="preserve">
+    <value>Azioni</value>
+  </data>
+  <data name="&gt;&gt;group2.Name" xml:space="preserve">
+    <value>group2</value>
+  </data>
+  <data name="&gt;&gt;group2.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.GroupView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;group2.Parent" xml:space="preserve">
+    <value>tbRichiestaModifica</value>
+  </data>
+  <data name="&gt;&gt;group2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <metadata name="group1.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="btnReset.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="btnReset.Label" xml:space="preserve">
+    <value>Cancella Modifiche</value>
+  </data>
+  <data name="&gt;&gt;btnReset.Name" xml:space="preserve">
+    <value>btnReset</value>
+  </data>
+  <data name="&gt;&gt;btnReset.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnReset.Parent" xml:space="preserve">
+    <value>group1</value>
+  </data>
+  <data name="&gt;&gt;btnReset.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="btnRefresh.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <data name="btnRefresh.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -1117,6 +1234,24 @@
         jsaIgKCv/n0N+kQ3qU8A64/643APY/4fal0NNGw5t2YAAAAASUVORK5CYII=
 </value>
   </data>
+  <data name="btnRefresh.Label" xml:space="preserve">
+    <value>Aggiorna n°</value>
+  </data>
+  <data name="&gt;&gt;btnRefresh.Name" xml:space="preserve">
+    <value>btnRefresh</value>
+  </data>
+  <data name="&gt;&gt;btnRefresh.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnRefresh.Parent" xml:space="preserve">
+    <value>group1</value>
+  </data>
+  <data name="&gt;&gt;btnRefresh.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <metadata name="btnPrint.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <data name="btnPrint.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -1361,5 +1496,243 @@
         rIt1sS7WxbpYF+tiXayLdbEu1sW6WBfrYl2si3WxLtbFulgX62Jd/ucvb7zx/wEgEQZPM6qsrgAAAABJ
         RU5ErkJggg==
 </value>
+  </data>
+  <data name="btnPrint.Label" xml:space="preserve">
+    <value>Stampa</value>
+  </data>
+  <data name="&gt;&gt;btnPrint.Name" xml:space="preserve">
+    <value>btnPrint</value>
+  </data>
+  <data name="&gt;&gt;btnPrint.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnPrint.Parent" xml:space="preserve">
+    <value>group1</value>
+  </data>
+  <data name="&gt;&gt;btnPrint.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="group1.Label" xml:space="preserve">
+    <value>Modifica</value>
+  </data>
+  <data name="&gt;&gt;group1.Name" xml:space="preserve">
+    <value>group1</value>
+  </data>
+  <data name="&gt;&gt;group1.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.GroupView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;group1.Parent" xml:space="preserve">
+    <value>tbRichiestaModifica</value>
+  </data>
+  <data name="&gt;&gt;group1.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <metadata name="group4.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="cbAnniDisponibili.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="cbAnniDisponibili.Label" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="cbAnniDisponibili.ScreenTip" xml:space="preserve">
+    <value>Seleziona l'anno</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="cbAnniDisponibili.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="&gt;&gt;cbAnniDisponibili.Name" xml:space="preserve">
+    <value>cbAnniDisponibili</value>
+  </data>
+  <data name="&gt;&gt;cbAnniDisponibili.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ComboBoxView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;cbAnniDisponibili.Parent" xml:space="preserve">
+    <value>group4</value>
+  </data>
+  <data name="&gt;&gt;cbAnniDisponibili.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="chkIsDraft.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="chkIsDraft.Label" xml:space="preserve">
+    <value>Bozza</value>
+  </data>
+  <data name="&gt;&gt;chkIsDraft.Name" xml:space="preserve">
+    <value>chkIsDraft</value>
+  </data>
+  <data name="&gt;&gt;chkIsDraft.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.CheckBoxView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;chkIsDraft.Parent" xml:space="preserve">
+    <value>group4</value>
+  </data>
+  <data name="&gt;&gt;chkIsDraft.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <metadata name="btnAnnulla.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="btnAnnulla.Label" xml:space="preserve">
+    <value>Annulla una richiesta</value>
+  </data>
+  <data name="&gt;&gt;btnAnnulla.Name" xml:space="preserve">
+    <value>btnAnnulla</value>
+  </data>
+  <data name="&gt;&gt;btnAnnulla.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnAnnulla.Parent" xml:space="preserve">
+    <value>group4</value>
+  </data>
+  <data name="&gt;&gt;btnAnnulla.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <metadata name="btnModifica.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="btnModifica.Label" xml:space="preserve">
+    <value>Modifica Richiesta</value>
+  </data>
+  <data name="&gt;&gt;btnModifica.Name" xml:space="preserve">
+    <value>btnModifica</value>
+  </data>
+  <data name="&gt;&gt;btnModifica.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.ButtonView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;btnModifica.Parent" xml:space="preserve">
+    <value>group4</value>
+  </data>
+  <data name="&gt;&gt;btnModifica.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="group4.Label" xml:space="preserve">
+    <value>Gestione Richieste</value>
+  </data>
+  <data name="&gt;&gt;group4.Name" xml:space="preserve">
+    <value>group4</value>
+  </data>
+  <data name="&gt;&gt;group4.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.GroupView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;group4.Parent" xml:space="preserve">
+    <value>tbRichiestaModifica</value>
+  </data>
+  <data name="&gt;&gt;group4.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="tbRichiestaModifica.Label" xml:space="preserve">
+    <value>Richiesta Modifica</value>
+  </data>
+  <data name="&gt;&gt;tbRichiestaModifica.Name" xml:space="preserve">
+    <value>tbRichiestaModifica</value>
+  </data>
+  <data name="&gt;&gt;tbRichiestaModifica.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.TabView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <metadata name="tabVersione.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="groupVersione.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="lbVersioneLabel.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="lbVersioneLabel.Label" xml:space="preserve">
+    <value>RiMoST                                </value>
+  </data>
+  <data name="&gt;&gt;lbVersioneLabel.Name" xml:space="preserve">
+    <value>lbVersioneLabel</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneLabel.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.LabelView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneLabel.Parent" xml:space="preserve">
+    <value>groupVersione</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneLabel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="lbVersioneApp.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="lbVersioneApp.Label" xml:space="preserve">
+    <value>lbVersioneApp</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneApp.Name" xml:space="preserve">
+    <value>lbVersioneApp</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneApp.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.LabelView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneApp.Parent" xml:space="preserve">
+    <value>groupVersione</value>
+  </data>
+  <data name="&gt;&gt;lbVersioneApp.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <metadata name="lbCoreV.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="lbCoreV.Label" xml:space="preserve">
+    <value>lbCoreV</value>
+  </data>
+  <data name="&gt;&gt;lbCoreV.Name" xml:space="preserve">
+    <value>lbCoreV</value>
+  </data>
+  <data name="&gt;&gt;lbCoreV.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.LabelView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;lbCoreV.Parent" xml:space="preserve">
+    <value>groupVersione</value>
+  </data>
+  <data name="&gt;&gt;lbCoreV.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="groupVersione.Label" xml:space="preserve">
+    <value>System Info</value>
+  </data>
+  <data name="&gt;&gt;groupVersione.Name" xml:space="preserve">
+    <value>groupVersione</value>
+  </data>
+  <data name="&gt;&gt;groupVersione.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.GroupView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;groupVersione.Parent" xml:space="preserve">
+    <value>tabVersione</value>
+  </data>
+  <data name="&gt;&gt;groupVersione.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabVersione.Label" xml:space="preserve">
+    <value>Versione</value>
+  </data>
+  <data name="&gt;&gt;tabVersione.Name" xml:space="preserve">
+    <value>tabVersione</value>
+  </data>
+  <data name="&gt;&gt;tabVersione.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.TabView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="$this.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="&gt;&gt;RiMoST_Ribbon.OfficeMenu.Name" xml:space="preserve">
+    <value>RiMoST_Ribbon.OfficeMenu</value>
+  </data>
+  <data name="&gt;&gt;RiMoST_Ribbon.OfficeMenu.Type" xml:space="preserve">
+    <value>Microsoft.VisualStudio.Tools.Office.Ribbon.View.OfficeMenuView, Microsoft.VisualStudio.Tools.Office.Designer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;RiMoST_Ribbon.OfficeMenu.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;RiMoST_Ribbon.OfficeMenu.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
 </root>

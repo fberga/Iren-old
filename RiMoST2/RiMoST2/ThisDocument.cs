@@ -22,7 +22,13 @@ namespace RiMoST2
 {
     public partial class ThisDocument
     {
+        #region Variabili
+
         public static DataBase _db;
+
+        #endregion
+
+        #region Callbacks
 
         private void ThisDocument_Startup(object sender, System.EventArgs e)
         {
@@ -66,8 +72,26 @@ namespace RiMoST2
             txtOggetto.Multiline = true;
             txtOggetto.Height = 33f;
 
+            object what = Word.WdGoToItem.wdGoToLine;
+            object which = Word.WdGoToDirection.wdGoToLast;
+            object missing = Missing.Value;
+
             AddProtection();
         }
+        private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            CloseWithoutSaving();
+        }
+        #pragma warning disable 0467
+        private void ThisDocument_Shutdown(object sender, System.EventArgs e)
+        {
+            Application.Quit();
+        }
+        #pragma warning restore 0467
+
+        #endregion
+
+        #region Metodi
 
         public void AddProtection()
         {
@@ -79,17 +103,10 @@ namespace RiMoST2
             this.Protect(Word.WdProtectionType.wdAllowOnlyFormFields,
                 ref noReset, ref password, ref useIRM, ref enforceStyleLock);
         }
-
         public void RemoveProtection()
         {
             object password = System.String.Empty;
-
             this.Unprotect(ref password);
-        }
-
-        private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            CloseWithoutSaving();
         }
 
         public void CloseWithoutSaving()
@@ -99,18 +116,31 @@ namespace RiMoST2
             this.Close(ref saveMod, ref missing, ref missing);
         }
 
-        private void ThisDocument_Shutdown(object sender, System.EventArgs e)
+        public static void Highlight(string textToFind, Word.WdColorIndex color, string highlightMark = "")
         {
-            Application.Quit();
-            
+            Word.Find finder = Globals.ThisDocument.Content.Find;
+            finder.Text = textToFind;
+            finder.Replacement.Text = finder.Text + highlightMark;
+            finder.Replacement.Font.ColorIndex = color;
+            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
         }
+        public static void ToNormal(string textToFind, Word.WdColorIndex color, string highlightMark = "")
+        {
+            Word.Find finder = Globals.ThisDocument.Content.Find;
+            finder.Text = textToFind + highlightMark;
+            finder.Replacement.Text = textToFind;
+            finder.Replacement.Font.ColorIndex = color;
+            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
+        }
+
+        #endregion
 
         #region Codice generato dalla finestra di progettazione di VSTO
 
-        //protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        //{
-        //    return new Ribbon();
-        //}
+        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        {
+            return new Ribbon();
+        }
 
         /// <summary>
         /// Metodo richiesto per il supporto della finestra di progettazione - non modificare

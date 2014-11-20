@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 
 using DataTable = System.Data.DataTable;
 using System.Data;
+using System.Reflection;
 
 namespace Iren.FrontOffice.Core
 {
@@ -82,6 +83,11 @@ namespace Iren.FrontOffice.Core
         {
             QryParams parameters = new QryParams();
             return Select(storedProcedure, parameters);
+        }
+
+        public System.Version GetCurrentV()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         #endregion

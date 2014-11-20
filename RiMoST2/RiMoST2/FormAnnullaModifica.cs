@@ -12,11 +12,19 @@ namespace RiMoST2
 {
     public partial class FormAnnullaModifica : Form
     {
-        public FormAnnullaModifica()
+        #region Variabili
+        string _anno;
+        #endregion
+
+        #region Costruttori
+        public FormAnnullaModifica(string anno)
         {
+            _anno = anno;
             InitializeComponent();
         }
+        #endregion
 
+        #region Callbacks
         private void FormAnnullaModifica_Load(object sender, EventArgs e)
         {
             QryParams parameters = new QryParams() 
@@ -25,7 +33,7 @@ namespace RiMoST2
             };
 
             DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
-            dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + Globals.Ribbons.RiMoST.cbAnniDisponibili.Text + "'";
+            dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
             cmbRichiesta.DataSource = dv;
             cmbRichiesta.DisplayMember = "IdRichiesta";
             //cmbRichiesta_SelectedIndexChanged(null, new EventArgs());
@@ -65,5 +73,6 @@ namespace RiMoST2
             string path = @"file:///" + row["NomeFile"];
             DocPreview.Navigate(path);
         }
+        #endregion
     }
 }

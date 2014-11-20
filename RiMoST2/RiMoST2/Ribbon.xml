@@ -3,27 +3,71 @@
     <ribbon startFromScratch="true">
       <tabs>
         <tab id="tbRichiestaModifica" label="Richiesta Modifica">
-          <group id="group3" label="Chiudi">
-            <button id="btnChiudi" onAction="btnChiudi_Click" label="Chiudi" size="large" />
+          <group id="groupChiudi" label="Chiudi">
+            <button id="btnChiudi" 
+                    getImage="btnChiudi_getImage" 
+                    onAction="btnChiudi_Click" 
+                    label="Chiudi" size="large" />
           </group>
-          <group id="group2" label="Azioni">
-            <button id="btnInvia" onAction="btnInvia_Click" label="Conferma e invia" size="large" />
-            <button id="btnSalvaBozza" onAction="btnSalvaBozza_Click" label="Salva Bozza" size="large" />
+          <group id="groupAzioni" label="Azioni">
+            <button id="btnInvia" 
+                    getImage="btnInvia_getImage" 
+                    onAction="btnInvia_Click" 
+                    label="Conferma e invia" size="large" />
+            <button id="btnSalvaBozza" 
+                    getEnabled="btnSalvaBozza_enabled"
+                    getImage="btnSalvaBozza_getImage" 
+                    onAction="btnSalvaBozza_Click" 
+                    label="Salva Bozza" size="large" />
           </group>
-          <group id="group1" label="Modifica">
-            <button id="btnReset" onAction="btnReset_Click" label="Cancella Modifiche" size="large" />
-            <button id="btnRefresh" onAction="btnRefresh_Click" label="Aggiorna n°" size="large" />
-            <button id="btnPrint" onAction="btnPrint_Click" label="Stampa" size="large" />
+          <group id="groupModifica" label="Modifica">
+            <button id="btnReset" 
+                    getImage="btnReset_getImage" 
+                    onAction="btnReset_Click" 
+                    label="Cancella Modifiche" size="large" />
+            <button id="btnRefresh" 
+                    getImage="btnRefresh_getImage" 
+                    onAction="btnRefresh_Click" 
+                    getEnabled="btnRefresh_getEnabled" 
+                    label="Aggiorna n°" size="large" />
+            <button id="btnPrint" 
+                    getImage="btnPrint_getImage" 
+                    onAction="btnPrint_Click" 
+                    label="Stampa" size="large" />
           </group>
-          <group id="group4" label="Gestione Richieste">
-            <button id="btnAnnulla" onAction="btnAnnulla_Click" label="Annulla una richiesta" size="large" />
-            <button id="btnModifica" onAction="btnModifica_Click" label="Modifica Richiesta" size="large" />
-            <checkBox id="chkIsDraft" label="Bozza" />
+          <group id="groupGestione" label="Gestione Richieste">
+            <dropDown id="cbAnniDisponibili"
+                      getImage="cbAnniDisponibili_getImage" 
+                      getItemCount="cbAnniDisp_ItemCount"
+                      getItemLabel="cbAnniDisp_ItemLabel"
+                      getSelectedItemIndex="cbAnniDisp_getSelectedItemIndex"
+                      onAction="cbAnniDisp_onAction"
+                      showLabel="false" screentip="Seleziona l'anno" />
+            <checkBox id="chkIsDraft" 
+                      onAction="chkIsDraft_Click" 
+                      getEnabled="chkIsDraft_getEnabled"
+                      getPressed="chkIsDraft_getPressed"
+                      label="Bozza" />
+            <button id="btnAnnulla" 
+                    getImage="btnAnnulla_getImage" 
+                    onAction="btnAnnulla_Click" 
+                    label="Annulla una richiesta" size="large" />
+            <button id="btnModifica" 
+                    getImage="btnModifica_getImage" 
+                    onAction="btnModifica_Click" 
+                    label="Modifica Richiesta" size="large" />
+          </group>
+        </tab>
+        <tab id="tabVersione" label="Versione">
+          <group id="groupVersione" label="System Info">
+            <labelControl id="lbVersioneLabel" label="RiMoST                    " />
+            <labelControl id="lbVersioneApp" getLabel="lbVersioneApp_getLabel" />
+            <labelControl id="lbCoreV" getLabel="lbCoreV_getLabel" />
           </group>
         </tab>
       </tabs>
-        <contextualTabs>
-          <tabSet idMso="TabSetTableTools" visible="false" />
-        </contextualTabs>
+      <contextualTabs>
+        <tabSet idMso="TabSetTableTools" visible="false" />
+      </contextualTabs>
     </ribbon>
 </customUI>
