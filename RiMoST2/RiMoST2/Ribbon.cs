@@ -116,6 +116,20 @@ namespace RiMoST2
             }
         }
 
+        private void ChangeBozzaVisibility(bool visible)
+        {
+            if (!visible)
+            {
+                Globals.ThisDocument.lbBozza.Text = "";
+                Globals.ThisDocument.lbBozza.Image = null;
+            }
+            else
+            {
+                Globals.ThisDocument.lbBozza.Text = "Bozza";
+                Globals.ThisDocument.lbBozza.Image = Resources.Editing_Edit_icon;
+            }
+        }
+
         #endregion
 
         #region Membri IRibbonExtensibility
@@ -197,6 +211,8 @@ namespace RiMoST2
                         {
                             Globals.ThisDocument.RemoveProtection();
                             Globals.ThisDocument.Application.ScreenUpdating = false;
+
+                            Globals.ThisDocument.lbBozza.Visible = false;
 
                             ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
                             ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
@@ -327,11 +343,13 @@ namespace RiMoST2
         }
         public void chkIsDraft_Click(Office.IRibbonControl control, bool pressed)
         {
+            ChangeBozzaVisibility(pressed);
             _chkIsDraft = pressed;
         }
         
         public bool chkIsDraft_getPressed(Office.IRibbonControl control) 
         {
+            ChangeBozzaVisibility(_chkIsDraft);
             return _chkIsDraft;
         }
         

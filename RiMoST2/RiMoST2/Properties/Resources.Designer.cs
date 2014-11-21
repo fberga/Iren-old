@@ -103,6 +103,16 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Editing_Edit_icon {
+            get {
+                object obj = ResourceManager.GetObject("Editing_Edit_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Eraser_icon {
             get {
                 object obj = ResourceManager.GetObject("Eraser_icon", resourceCulture);

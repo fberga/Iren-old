@@ -45,6 +45,10 @@ namespace RiMoST2 {
         
         internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
         
+        internal Microsoft.Office.Tools.Word.Controls.Label lbBozza;
+        
+        internal System.Windows.Forms.PictureBox pictureBox1;
+        
         /// 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
@@ -175,6 +179,7 @@ namespace RiMoST2 {
             this.dtDataCreazione = new Microsoft.Office.Tools.Word.Controls.DateTimePicker(Globals.Factory, this.ItemProvider, this.HostContext, "0F7AED42602DB5045150B7810D302A852C2DE0", "0F7AED42602DB5045150B7810D302A852C2DE0", this, "dtDataCreazione");
             this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
             this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
+            this.lbBozza = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7B9EC241A701717415879457738F48AB11E347", "7B9EC241A701717415879457738F48AB11E347", this, "lbBozza");
         }
         
         /// 
@@ -182,6 +187,9 @@ namespace RiMoST2 {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ThisDocument));
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             // 
             // txtNote
             // 
@@ -220,11 +228,6 @@ namespace RiMoST2 {
             this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.lbDataInvio.Name = "lbDataInvio";
             // 
-            // lbIdRichiesta
-            // 
-            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbIdRichiesta.Name = "lbIdRichiesta";
-            // 
             // ActionsPane
             // 
             this.ActionsPane.AutoSize = false;
@@ -242,8 +245,38 @@ namespace RiMoST2 {
             // 
             this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(23, 23);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Text = "pictureBox1";
+            // 
+            // lbIdRichiesta
+            // 
+            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbIdRichiesta.Name = "lbIdRichiesta";
+            // 
+            // lbBozza
+            // 
+            this.lbBozza.BackColor = System.Drawing.Color.Transparent;
+            this.lbBozza.Enabled = false;
+            this.lbBozza.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.lbBozza.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbBozza.ForeColor = System.Drawing.Color.Black;
+            this.lbBozza.Image = ((System.Drawing.Image)(resources.GetObject("lbBozza.Image")));
+            this.lbBozza.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lbBozza.Name = "lbBozza";
+            this.lbBozza.Text = "Bozza";
+            this.lbBozza.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // ThisDocument
             // 
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.txtNote.BindingContext = this.BindingContext;
             this.txtDescrizione.BindingContext = this.BindingContext;
             this.txtOggetto.BindingContext = this.BindingContext;
@@ -251,6 +284,7 @@ namespace RiMoST2 {
             this.dtDataCreazione.BindingContext = this.BindingContext;
             this.lbDataInvio.BindingContext = this.BindingContext;
             this.lbIdRichiesta.BindingContext = this.BindingContext;
+            this.lbBozza.BindingContext = this.BindingContext;
         }
         
         /// 

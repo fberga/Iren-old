@@ -32,6 +32,7 @@ namespace RiMoST2
 
         private void ThisDocument_Startup(object sender, System.EventArgs e)
         {
+            Globals.ThisDocument.pictureBox1.Visible = false;
             Connection.CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
 
             NameValueCollection appSet = ConfigurationManager.AppSettings;
@@ -151,8 +152,11 @@ namespace RiMoST2
             this.Startup += new System.EventHandler(this.ThisDocument_Startup);
             this.Shutdown += new System.EventHandler(this.ThisDocument_Shutdown);
             this.BeforeClose += new System.ComponentModel.CancelEventHandler(this.ThisDocument_BeforeClose);
+
         }
 
         #endregion
+
+
     }
 }
