@@ -13,9 +13,9 @@ namespace Iren.FrontOffice.Tools {
     
     
     /// 
-    [Microsoft.VisualStudio.Tools.Applications.Runtime.StartupObjectAttribute(2)]
+    [Microsoft.VisualStudio.Tools.Applications.Runtime.StartupObjectAttribute(1)]
     [global::System.Security.Permissions.PermissionSetAttribute(global::System.Security.Permissions.SecurityAction.Demand, Name="FullTrust")]
-    public sealed partial class Foglio2 : Microsoft.Office.Tools.Excel.WorksheetBase {
+    public sealed partial class Main : Microsoft.Office.Tools.Excel.WorksheetBase {
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
@@ -23,7 +23,7 @@ namespace Iren.FrontOffice.Tools {
         /// 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
-        public Foglio2(global::Microsoft.Office.Tools.Excel.Factory factory, global::System.IServiceProvider serviceProvider) : 
+        public Main(global::Microsoft.Office.Tools.Excel.Factory factory, global::System.IServiceProvider serviceProvider) : 
                 base(factory, serviceProvider, "Foglio2", "Foglio2") {
         }
         
@@ -33,7 +33,7 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void Initialize() {
             base.Initialize();
-            Globals.Foglio2 = this;
+            Globals.Main = this;
             global::System.Windows.Forms.Application.EnableVisualStyles();
             this.InitializeCachedData();
             this.InitializeControls();
@@ -136,6 +136,9 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
+            // 
+            // Main
+            // 
         }
         
         /// 
@@ -148,15 +151,15 @@ namespace Iren.FrontOffice.Tools {
     
     internal sealed partial class Globals {
         
-        private static Foglio2 _Foglio2;
+        private static Main _Main;
         
-        internal static Foglio2 Foglio2 {
+        internal static Main Main {
             get {
-                return _Foglio2;
+                return _Main;
             }
             set {
-                if ((_Foglio2 == null)) {
-                    _Foglio2 = value;
+                if ((_Main == null)) {
+                    _Main = value;
                 }
                 else {
                     throw new System.NotSupportedException();

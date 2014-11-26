@@ -12,16 +12,8 @@ using Office = Microsoft.Office.Core;
 
 namespace Iren.FrontOffice.Tools
 {
-    public partial class Foglio3
+    public partial class Main
     {
-        private void Foglio3_Startup(object sender, System.EventArgs e)
-        {
-        }
-
-        private void Foglio3_Shutdown(object sender, System.EventArgs e)
-        {
-        }
-
         #region Codice generato dalla finestra di progettazione di VSTO
 
         /// <summary>
@@ -30,11 +22,18 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(Foglio3_Startup);
-            this.Shutdown += new System.EventHandler(Foglio3_Shutdown);
+            this.Startup += new System.EventHandler(Main_Startup);
+            this.Shutdown += new System.EventHandler(Main_Shutdown);
         }
 
         #endregion
 
+        private void Main_Startup(object sender, System.EventArgs e)
+        {
+        }
+
+        private void Main_Shutdown(object sender, System.EventArgs e)
+        {
+        }
     }
 }

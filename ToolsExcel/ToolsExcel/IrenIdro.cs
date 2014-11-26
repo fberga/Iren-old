@@ -10,15 +10,15 @@ using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-namespace Iren.FrontOffice.Tools
+namespace FrontOffice.Tools
 {
-    public partial class Foglio2
+    public partial class IrenIdro
     {
-        private void Foglio2_Startup(object sender, System.EventArgs e)
+        private void Foglio4_Startup(object sender, System.EventArgs e)
         {
         }
 
-        private void Foglio2_Shutdown(object sender, System.EventArgs e)
+        private void Foglio4_Shutdown(object sender, System.EventArgs e)
         {
         }
 
@@ -30,8 +30,8 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(Foglio2_Startup);
-            this.Shutdown += new System.EventHandler(Foglio2_Shutdown);
+            this.Startup += new System.EventHandler(Foglio4_Startup);
+            this.Shutdown += new System.EventHandler(Foglio4_Shutdown);
         }
 
         #endregion

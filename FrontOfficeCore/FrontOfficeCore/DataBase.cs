@@ -13,6 +13,53 @@ namespace Iren.FrontOffice.Core
 {
     public class DataBase
     {
+        #region Nomi di Sistema
+
+        public enum TipologiaLOG
+        {
+            LogErrore = 1,
+            LogCarica = 2,
+            LogGenera = 3,
+            LogEsporta = 4,
+            LogModifica = 5,
+            LogAccesso = 6
+        }
+
+        public const string ALL = "ALL";
+
+        public struct StoredProcedure
+        {
+            public const string UTENTE = "spUtente",
+            GETVERSION = "spGetVersione",
+            LOG = "spLog",
+            INSERT_LOG = "spInsertLog",
+            APP_INFO = "spApplicazioneInformazione",
+            AZIONE = "spAzione",
+            CATEGORIA = "spCategoria",
+            AZIONECATEGORIA = "spAzioneCategoria",
+            ENTITAAZIONE = "spEntitaAzione",
+            ENTITAINFORMAZIONE = "spEntitaInformazione",
+            ENTITAAZIONEINFORMAZIONE = "spEntitaAzioneInformazione",
+            CALCOLO = "spCalcolo",
+            CALCOLOINFORMAZIONE = "spCalcoloInformazione",
+            ENTITACALCOLO = "spEntitaCalcolo",
+            ENTITAGRAFICO = "spEntitaGrafico",
+            ENTITAGRAFICOINFORMAZIONE = "spEntitaGraficoInformazione",
+            ENTITACOMMITMENT = "spEntitaCommitment",
+            ENTITARAMPA = "spEntitaRampa",
+            ENTITAASSETTO = "spEntitaAssetto",
+            ENTITAPROPRIETA = "spEntitaProprieta",
+            ENTITAINFORMAZIONEFORMATTAZIONE = "spEntitaInformazioneFormattazione",
+            TIPOLOGIACHECK = "spTipologiaCheck",
+            TIPOLOGIARAMPA = "spTipologiaRampa",
+            CATEGORIAENTITA = "spCategoriaEntita",
+            APP_RIEPILOGO = "spApplicazioneRiepilogo",
+            INS_PROG_PARAM = "spInsertProgrammazione_Parametro",
+            CHECK_MOD_STRUCT = "spCheckModificaStruttura";
+        }
+
+        #endregion
+
         #region Variabili
 
         private Command _cmd;
@@ -83,6 +130,17 @@ namespace Iren.FrontOffice.Core
         {
             QryParams parameters = new QryParams();
             return Select(storedProcedure, parameters);
+        }
+
+        public void InsertLog(TipologiaLOG tipologia, string messaggio)
+        {
+            QryParams logParam = new QryParams()
+            {
+                {"@IdTipologia", tipologia},
+                {"@Messaggio", messaggio}
+            };
+
+            Insert(StoredProcedure.INSERT_LOG, logParam);
         }
 
         public System.Version GetCurrentV()

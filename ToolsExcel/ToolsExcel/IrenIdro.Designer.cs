@@ -9,28 +9,22 @@
 //------------------------------------------------------------------------------
 
 #pragma warning disable 414
-namespace Iren.FrontOffice.Tools {
+namespace FrontOffice.Tools {
     
     
     /// 
-    [Microsoft.VisualStudio.Tools.Applications.Runtime.StartupObjectAttribute(0)]
+    [Microsoft.VisualStudio.Tools.Applications.Runtime.StartupObjectAttribute(3)]
     [global::System.Security.Permissions.PermissionSetAttribute(global::System.Security.Permissions.SecurityAction.Demand, Name="FullTrust")]
-    public sealed partial class ThisWorkbook : Microsoft.Office.Tools.Excel.WorkbookBase {
-        
-        internal Microsoft.Office.Tools.ActionsPane ActionsPane;
+    public sealed partial class IrenIdro : Microsoft.Office.Tools.Excel.WorksheetBase {
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
         
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
-        internal Microsoft.Office.Interop.Excel.Application ThisApplication;
-        
         /// 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
-        public ThisWorkbook(global::Microsoft.Office.Tools.Excel.Factory factory, global::System.IServiceProvider serviceProvider) : 
-                base(factory, serviceProvider, "ThisWorkbook", "ThisWorkbook") {
-            Globals.Factory = factory;
+        public IrenIdro(global::Microsoft.Office.Tools.Excel.Factory factory, global::System.IServiceProvider serviceProvider) : 
+                base(factory, serviceProvider, "Foglio4", "Foglio4") {
         }
         
         /// 
@@ -39,8 +33,7 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void Initialize() {
             base.Initialize();
-            this.ThisApplication = this.GetHostItem<Microsoft.Office.Interop.Excel.Application>(typeof(Microsoft.Office.Interop.Excel.Application), "Application");
-            Globals.ThisWorkbook = this;
+            Globals.IrenIdro = this;
             global::System.Windows.Forms.Application.EnableVisualStyles();
             this.InitializeCachedData();
             this.InitializeControls();
@@ -121,7 +114,6 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void BeginInitialization() {
             this.BeginInit();
-            this.ActionsPane.BeginInit();
         }
         
         /// 
@@ -129,7 +121,6 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void EndInitialization() {
-            this.ActionsPane.EndInit();
             this.EndInit();
         }
         
@@ -138,7 +129,6 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeControls() {
-            this.ActionsPane = Globals.Factory.CreateActionsPane(null, null, "ActionsPane", "ActionsPane", this);
         }
         
         /// 
@@ -147,12 +137,7 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
             // 
-            // ActionsPane
-            // 
-            this.ActionsPane.AutoSize = false;
-            this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            // 
-            // ThisWorkbook
+            // IrenIdro
             // 
         }
         
@@ -162,78 +147,24 @@ namespace Iren.FrontOffice.Tools {
         private bool NeedsFill(string MemberName) {
             return this.DataHost.NeedsFill(this, MemberName);
         }
-        
-        /// 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
-        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
-        protected override void OnShutdown() {
-            this.ActionsPane.Dispose();
-            base.OnShutdown();
-        }
     }
     
-    /// 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
     internal sealed partial class Globals {
         
-        /// 
-        private Globals() {
-        }
+        private static IrenIdro _IrenIdro;
         
-        private static ThisWorkbook _ThisWorkbook;
-        
-        private static global::Microsoft.Office.Tools.Excel.Factory _factory;
-        
-        private static ThisRibbonCollection _ThisRibbonCollection;
-        
-        internal static ThisWorkbook ThisWorkbook {
+        internal static IrenIdro IrenIdro {
             get {
-                return _ThisWorkbook;
+                return _IrenIdro;
             }
             set {
-                if ((_ThisWorkbook == null)) {
-                    _ThisWorkbook = value;
+                if ((_IrenIdro == null)) {
+                    _IrenIdro = value;
                 }
                 else {
                     throw new System.NotSupportedException();
                 }
             }
-        }
-        
-        internal static global::Microsoft.Office.Tools.Excel.Factory Factory {
-            get {
-                return _factory;
-            }
-            set {
-                if ((_factory == null)) {
-                    _factory = value;
-                }
-                else {
-                    throw new System.NotSupportedException();
-                }
-            }
-        }
-        
-        internal static ThisRibbonCollection Ribbons {
-            get {
-                if ((_ThisRibbonCollection == null)) {
-                    _ThisRibbonCollection = new ThisRibbonCollection(_factory.GetRibbonFactory());
-                }
-                return _ThisRibbonCollection;
-            }
-        }
-    }
-    
-    /// 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
-    internal sealed partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonCollectionBase {
-        
-        /// 
-        internal ThisRibbonCollection(global::Microsoft.Office.Tools.Ribbon.RibbonFactory factory) : 
-                base(factory) {
         }
     }
 }

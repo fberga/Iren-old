@@ -212,8 +212,6 @@ namespace RiMoST2
                             Globals.ThisDocument.RemoveProtection();
                             Globals.ThisDocument.Application.ScreenUpdating = false;
 
-                            Globals.ThisDocument.lbBozza.Visible = false;
-
                             ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
                             ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
 

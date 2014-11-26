@@ -31,8 +31,7 @@ namespace RiMoST2
         #region Callbacks
 
         private void ThisDocument_Startup(object sender, System.EventArgs e)
-        {
-            Globals.ThisDocument.pictureBox1.Visible = false;
+        {            
             Connection.CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
 
             NameValueCollection appSet = ConfigurationManager.AppSettings;

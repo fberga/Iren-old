@@ -13,9 +13,9 @@ namespace Iren.FrontOffice.Tools {
     
     
     /// 
-    [Microsoft.VisualStudio.Tools.Applications.Runtime.StartupObjectAttribute(3)]
+    [Microsoft.VisualStudio.Tools.Applications.Runtime.StartupObjectAttribute(2)]
     [global::System.Security.Permissions.PermissionSetAttribute(global::System.Security.Permissions.SecurityAction.Demand, Name="FullTrust")]
-    public sealed partial class Foglio3 : Microsoft.Office.Tools.Excel.WorksheetBase {
+    public sealed partial class IrenTermo : Microsoft.Office.Tools.Excel.WorksheetBase {
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
@@ -23,7 +23,7 @@ namespace Iren.FrontOffice.Tools {
         /// 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
-        public Foglio3(global::Microsoft.Office.Tools.Excel.Factory factory, global::System.IServiceProvider serviceProvider) : 
+        public IrenTermo(global::Microsoft.Office.Tools.Excel.Factory factory, global::System.IServiceProvider serviceProvider) : 
                 base(factory, serviceProvider, "Foglio3", "Foglio3") {
         }
         
@@ -33,7 +33,7 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void Initialize() {
             base.Initialize();
-            Globals.Foglio3 = this;
+            Globals.IrenTermo = this;
             global::System.Windows.Forms.Application.EnableVisualStyles();
             this.InitializeCachedData();
             this.InitializeControls();
@@ -136,6 +136,9 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
+            // 
+            // IrenTermo
+            // 
         }
         
         /// 
@@ -148,15 +151,15 @@ namespace Iren.FrontOffice.Tools {
     
     internal sealed partial class Globals {
         
-        private static Foglio3 _Foglio3;
+        private static IrenTermo _IrenTermo;
         
-        internal static Foglio3 Foglio3 {
+        internal static IrenTermo IrenTermo {
             get {
-                return _Foglio3;
+                return _IrenTermo;
             }
             set {
-                if ((_Foglio3 == null)) {
-                    _Foglio3 = value;
+                if ((_IrenTermo == null)) {
+                    _IrenTermo = value;
                 }
                 else {
                     throw new System.NotSupportedException();

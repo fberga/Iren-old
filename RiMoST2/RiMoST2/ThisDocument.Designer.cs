@@ -179,7 +179,7 @@ namespace RiMoST2 {
             this.dtDataCreazione = new Microsoft.Office.Tools.Word.Controls.DateTimePicker(Globals.Factory, this.ItemProvider, this.HostContext, "0F7AED42602DB5045150B7810D302A852C2DE0", "0F7AED42602DB5045150B7810D302A852C2DE0", this, "dtDataCreazione");
             this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
             this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
-            this.lbBozza = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7B9EC241A701717415879457738F48AB11E347", "7B9EC241A701717415879457738F48AB11E347", this, "lbBozza");
+            this.lbBozza = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "87C342FB78AFE38449D8A65789FCAD05FD0FE8", "87C342FB78AFE38449D8A65789FCAD05FD0FE8", this, "lbBozza");
         }
         
         /// 
@@ -228,6 +228,11 @@ namespace RiMoST2 {
             this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.lbDataInvio.Name = "lbDataInvio";
             // 
+            // lbIdRichiesta
+            // 
+            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbIdRichiesta.Name = "lbIdRichiesta";
+            // 
             // ActionsPane
             // 
             this.ActionsPane.AutoSize = false;
@@ -256,22 +261,12 @@ namespace RiMoST2 {
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Text = "pictureBox1";
             // 
-            // lbIdRichiesta
-            // 
-            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbIdRichiesta.Name = "lbIdRichiesta";
-            // 
             // lbBozza
             // 
-            this.lbBozza.BackColor = System.Drawing.Color.Transparent;
             this.lbBozza.Enabled = false;
-            this.lbBozza.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.lbBozza.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbBozza.ForeColor = System.Drawing.Color.Black;
-            this.lbBozza.Image = ((System.Drawing.Image)(resources.GetObject("lbBozza.Image")));
             this.lbBozza.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lbBozza.Name = "lbBozza";
-            this.lbBozza.Text = "Bozza";
             this.lbBozza.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // ThisDocument

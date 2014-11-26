@@ -10,14 +10,14 @@ using Microsoft.Office.Tools.Excel;
 using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
+using Microsoft.Office.Core;
+using ComFunc = Iren.FrontOffice.Tools.CommonFunctions;
 
 namespace Iren.FrontOffice.Tools
 {
     public partial class Log
     {
         #region Variabili
-
-        private DataSet _localDB;
 
         #endregion
 
@@ -38,22 +38,22 @@ namespace Iren.FrontOffice.Tools
 
         #region Metodi
 
-        public object[,] DataTableToObjArray(System.Data.DataTable dt)
-        {
-            object[,] o = new object[dt.Rows.Count, dt.Columns.Count];
+        //public object[,] DataTableToObjArray(System.Data.DataTable dt)
+        //{
+        //    object[,] o = new object[dt.Rows.Count, dt.Columns.Count];
 
-            int i = 0;
-            foreach (System.Data.DataRow row in dt.Rows)
-            {
-                int j = 0;
-                foreach (System.Data.DataColumn col in dt.Columns)
-                {
-                    o[i, j++] = row[col];
-                }
-                i++;
-            }
-            return o;
-        }
+        //    int i = 0;
+        //    foreach (System.Data.DataRow row in dt.Rows)
+        //    {
+        //        int j = 0;
+        //        foreach (System.Data.DataColumn col in dt.Columns)
+        //        {
+        //            o[i, j++] = row[col];
+        //        }
+        //        i++;
+        //    }
+        //    return o;
+        //}
 
         #endregion
 
@@ -61,18 +61,19 @@ namespace Iren.FrontOffice.Tools
 
         private void Log_Startup(object sender, EventArgs e)
         {
-            _localDB = new DataSet();
-
-            foreach (Office.CustomXMLPart xmlPart in Globals.ThisWorkbook.CustomXMLParts.SelectByNamespace(ThisWorkbook.NS))
+            ListObject logObj;
+            try
             {
-                StringReader sr = new StringReader(xmlPart.XML);
-                _localDB.ReadXml(sr);
+                logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
             }
-
-            DataTable dt = _localDB.Tables["Log"];
-
-            Range[Cells[2, 1], Cells[dt.Rows.Count, dt.Columns.Count]].Value = DataTableToObjArray(dt);
-
+            catch (Exception)
+            {
+                logObj = Controls.AddListObject(Range["A1"], "LogList");
+            }
+            logObj.AutoSetDataBoundColumnHeaders = true;
+            logObj.DataSource = ComFunc.LocalDB;
+            logObj.DataMember = ComFunc.Tab.LOG;
+            logObj.Range.EntireColumn.AutoFit();
         }
 
         private void Log_Shutdown(object sender, EventArgs e)
