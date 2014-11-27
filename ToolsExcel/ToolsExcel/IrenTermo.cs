@@ -14,7 +14,7 @@ namespace Iren.FrontOffice.Tools
 {
     public partial class IrenTermo
     {
-        public const string CATEGORIA = "abcd";
+        public const string CATEGORIA = "IREN_60T";
 
         #region Codice generato dalla finestra di progettazione di VSTO
 

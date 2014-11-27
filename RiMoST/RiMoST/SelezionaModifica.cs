@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using Iren.FrontOffice.Core;
 using System.Globalization;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Tools
 {
     public partial class SelezionaModifica : Form
     {

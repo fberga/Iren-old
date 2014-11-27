@@ -2,15 +2,16 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Resources;
 
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
 // set di attributi. Modificare i valori degli attributi per modificare le informazioni
 // associate a un assembly.
-[assembly: AssemblyTitle("RiMoST2")]
+[assembly: AssemblyTitle("RiMoST")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RiMoST2")]
+[assembly: AssemblyProduct("RiMoST")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -37,3 +38,4 @@ using System.Security;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ProvaTest")]
+[assembly: NeutralResourcesLanguageAttribute("it-IT")]

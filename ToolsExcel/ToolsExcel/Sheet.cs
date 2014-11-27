@@ -11,7 +11,7 @@ using System.Data;
 
 namespace Iren.FrontOffice.Tools
 {
-    class Sheet<T>
+    class Sheet<T> : CommonFunctions
     {
         #region Strutture
 
@@ -45,21 +45,18 @@ namespace Iren.FrontOffice.Tools
 
         #region Variabili
 
-        T _categoria;
-        string siglaCategoria;
+        string _siglaCategoria;
         Worksheet _ws;
         
         #endregion
 
         public Sheet(T categoria)
-        {
-            _categoria = categoria;
-
+        {            
             Type t = categoria.GetType();
             PropertyInfo p = t.GetProperty("Base");
             _ws = (Worksheet) p.GetValue(categoria, null);
             FieldInfo f = t.GetField("CATEGORIA");
-            siglaCategoria = f.GetValue(categoria).ToString();
+            _siglaCategoria = f.GetValue(categoria).ToString();
             StdStyles();
         }
 
@@ -86,24 +83,6 @@ namespace Iren.FrontOffice.Tools
 
                 gotoBar.Interior.ColorIndex = 15;
             }
-        }
-
-        private void setBorders(NamedRange rng, string borders)
-        {
-            //Regex reg = new Regex();
-
-            
-
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlContinuous;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeTop].Weight = Excel.XlBorderWeight.xlMedium;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlContinuous;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeBottom].Weight = Excel.XlBorderWeight.xlMedium;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlContinuous;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeLeft].Weight = Excel.XlBorderWeight.xlMedium;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlContinuous;
-            //gotoBar.Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
-            //gotoBar.Borders.ColorIndex = 1;
-
         }
 
         public void Clear()
@@ -148,9 +127,13 @@ namespace Iren.FrontOffice.Tools
         public void LoadStructure()
         {
             DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
-            //dvCE.RowFilter = "SiglaCategoria = " + _categoria.;
+            foreach (DataRowView rCE in dvCE)
+            {
 
+
+            }
         }
     }
 }

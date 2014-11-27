@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Iren.FrontOffice.Core;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Tools
 {
     public partial class FormAnnullaModifica : Form
     {
@@ -32,7 +32,7 @@ namespace RiMoST2
                 {"@IdRichiesta", "all"}
             };
 
-            DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
+            DataView dv = Ribbon._db.Select("spGetRichiesta", parameters).DefaultView;
             dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
             cmbRichiesta.DataSource = dv;
             cmbRichiesta.DisplayMember = "IdRichiesta";
@@ -51,7 +51,7 @@ namespace RiMoST2
                 };
                 try
                 {
-                    ThisDocument._db.Insert("spAnnullaRichiesta", parameters);
+                    Ribbon._db.Insert("spAnnullaRichiesta", parameters);
                 }
                 catch (Exception)
                 {

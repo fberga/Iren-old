@@ -17,14 +17,16 @@ using DataView = System.Data.DataView;
 using Microsoft.Office.Interop.Word;
 using System.Reflection;
 using Iren.FrontOffice.Core;
+using System.IO;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Tools
 {
     public partial class ThisDocument
     {
         #region Variabili
 
         public static DataBase _db;
+        public static string _idStruttura;
 
         #endregion
 
@@ -34,9 +36,8 @@ namespace RiMoST2
         {            
             Connection.CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
 
-            NameValueCollection appSet = ConfigurationManager.AppSettings;
-
-            string[] users = appSet.GetValues("utentiVisto")[0].Split(',');
+            _idStruttura = ConfigurationManager.AppSettings["idStruttura"];
+            string[] users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
             int rowNum = (int)Math.Ceiling(users.Length / 5.0);
             int colNum = (int)Math.Ceiling((decimal)users.Length / rowNum);
 
@@ -55,12 +56,12 @@ namespace RiMoST2
 
             _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
 
-            DataView dtView = _db.Select("spGetApplicazioniDisponibili").DefaultView;
+            DataView dtView = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura).DefaultView;
 
             cmbStrumento.DataSource = dtView;
-            cmbStrumento.DisplayMember = "DesApplicazione";            
+            cmbStrumento.DisplayMember = "DesApplicazione";
 
-            DataTable dt = _db.Select("spGetFirstAvailableID");
+            DataTable dt = _db.Select("spGetFirstAvailableID", "@IdStruttura=" + _idStruttura);
             lbIdRichiesta.Text = dt.Rows[0][0].ToString();
 
             lbDataInvio.Text = DateTime.Now.ToShortDateString();

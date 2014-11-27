@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 
 #pragma warning disable 414
-namespace RiMoST2 {
+namespace Iren.FrontOffice.Tools {
     
     
     /// 
@@ -18,12 +18,6 @@ namespace RiMoST2 {
     public sealed partial class ThisDocument : Microsoft.Office.Tools.Word.DocumentBase {
         
         internal Microsoft.Office.Tools.ActionsPane ActionsPane;
-        
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl4;
-        
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl5;
-        
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl1;
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
@@ -46,8 +40,6 @@ namespace RiMoST2 {
         internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
         
         internal Microsoft.Office.Tools.Word.Controls.Label lbBozza;
-        
-        internal System.Windows.Forms.PictureBox pictureBox1;
         
         /// 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -145,10 +137,7 @@ namespace RiMoST2 {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void BeginInitialization() {
             this.BeginInit();
-            this.ActionsPane.BeginInit();
-            this.plainTextContentControl4.BeginInit();
-            this.plainTextContentControl5.BeginInit();
-            this.plainTextContentControl1.BeginInit();
+            this.ActionsPane.BeginInit();            
         }
         
         /// 
@@ -156,9 +145,6 @@ namespace RiMoST2 {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void EndInitialization() {
-            this.plainTextContentControl1.EndInit();
-            this.plainTextContentControl5.EndInit();
-            this.plainTextContentControl4.EndInit();
             this.ActionsPane.EndInit();
             this.EndInit();
         }
@@ -169,9 +155,6 @@ namespace RiMoST2 {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeControls() {
             this.ActionsPane = Globals.Factory.CreateActionsPane(null, null, "ActionsPane", "ActionsPane", this);
-            this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "77677295", "plainTextContentControl4", this);
-            this.plainTextContentControl5 = Globals.Factory.CreatePlainTextContentControl(null, null, "75971759", "plainTextContentControl5", this);
-            this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "3740960896", "plainTextContentControl1", this);
             this.txtNote = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "7694A411B7412F747D17B5027A9DF6D62D6A37", "7694A411B7412F747D17B5027A9DF6D62D6A37", this, "txtNote");
             this.txtDescrizione = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "629B715FF6805664A936BBA7654A658BAE8D66", "629B715FF6805664A936BBA7654A658BAE8D66", this, "txtDescrizione");
             this.txtOggetto = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", this, "txtOggetto");
@@ -188,8 +171,6 @@ namespace RiMoST2 {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ThisDocument));
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             // 
             // txtNote
             // 
@@ -238,29 +219,6 @@ namespace RiMoST2 {
             this.ActionsPane.AutoSize = false;
             this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             // 
-            // plainTextContentControl4
-            // 
-            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // plainTextContentControl5
-            // 
-            this.plainTextContentControl5.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // plainTextContentControl1
-            // 
-            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(23, 23);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 1;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Text = "pictureBox1";
-            // 
             // lbBozza
             // 
             this.lbBozza.Enabled = false;
@@ -271,7 +229,6 @@ namespace RiMoST2 {
             // 
             // ThisDocument
             // 
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.txtNote.BindingContext = this.BindingContext;
             this.txtDescrizione.BindingContext = this.BindingContext;
             this.txtOggetto.BindingContext = this.BindingContext;
@@ -294,9 +251,6 @@ namespace RiMoST2 {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void OnShutdown() {
-            this.plainTextContentControl1.Dispose();
-            this.plainTextContentControl5.Dispose();
-            this.plainTextContentControl4.Dispose();
             this.ActionsPane.Dispose();
             base.OnShutdown();
         }

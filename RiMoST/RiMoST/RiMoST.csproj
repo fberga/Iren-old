@@ -20,7 +20,7 @@
     <PublishUrl>W:\RiMoST\</PublishUrl>
     <InstallUrl>\\PC1009235\Applicazioni VSTO\RiMoST\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.1.12</ApplicationVersion>
+    <ApplicationVersion>1.0.2.2</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

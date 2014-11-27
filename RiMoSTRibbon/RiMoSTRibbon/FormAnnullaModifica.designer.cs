@@ -1,4 +1,4 @@
-﻿namespace RiMoST2
+﻿namespace Iren.FrontOffice.Tools
 {
     partial class FormAnnullaModifica
     {

@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using DataTable = System.Data.DataTable;
 using System.Data;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Iren.FrontOffice.Core
 {
@@ -86,6 +87,8 @@ namespace Iren.FrontOffice.Core
             Connection.SetConnStr(dbName);
         }
 
+        //public DataBase() {}
+
         #endregion
 
         #region Metodi
@@ -107,6 +110,27 @@ namespace Iren.FrontOffice.Core
                 parameters.Add("@Data", _dataAttiva);
 
             _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
+        }
+
+        private QryParams getParamsFromString(string parameters)
+        {
+            Regex regex = new Regex(@"@\w+[=:][^;:=]+");
+            MatchCollection paramsList = regex.Matches(parameters);
+            Regex split = new Regex("[=:]");
+            QryParams o = new QryParams();
+            foreach (Match par in paramsList)
+            {
+                string[] keyVal = split.Split(par.Value);
+                if (keyVal.Length != 2)
+                    throw new InvalidExpressionException("The provided list of parameters is invalid.");
+                o.Add(keyVal[0], keyVal[1]);
+            }
+            return o;
+        }
+
+        public DataTable Select(string storedProcedure, String parameters)
+        {
+            return Select(storedProcedure, getParamsFromString(parameters));
         }
 
         public DataTable Select(string storedProcedure, QryParams parameters)

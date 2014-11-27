@@ -16,11 +16,10 @@ using Word = Microsoft.Office.Interop.Word;
 using DataTable = System.Data.DataTable;
 using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
-using RiMoST2.Properties;
 using System.Drawing;
 using System.Deployment.Application;
 
-namespace RiMoST2
+namespace Iren.FrontOffice.Tools
 {
     [ComVisible(true)]
     public class Ribbon : Office.IRibbonExtensibility
@@ -39,13 +38,15 @@ namespace RiMoST2
         internal bool _chkIsDraft = false;
         internal bool _btnSalvaBozzaEnabled = true;
         internal bool _btnRefreshEnabled = true;
+        public static DataBase _db;
 
         #endregion
 
         #region Costruttori
 
-        public Ribbon()
+        public Ribbon(ref DataBase db)
         {
+            _db = db;
         }
 
         #endregion
@@ -100,10 +101,10 @@ namespace RiMoST2
             return false;
         }
 
-        private void getAvailableID()
+        private string getAvailableID()
         {
-            DataTable dt = ThisDocument._db.Select("spGetFirstAvailableID");
-            Globals.ThisDocument.lbIdRichiesta.Text = dt.Rows[0][0].ToString();
+            DataTable dt = _db.Select("spGetFirstAvailableID");
+            return dt.Rows[0][0].ToString();
         }
 
         private void Print()
@@ -147,17 +148,17 @@ namespace RiMoST2
         {
             this.ribbon = ribbonUI;
 
-            DataTable dt = ThisDocument._db.Select("spGetAvailableYears");
+            DataTable dt = _db.Select("spGetAvailableYears");
             _cbAnniDispLabels = new List<string>();
             foreach (DataRow r in dt.Rows) 
             {
-                RibbonDropDownItem i = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();;
+                RibbonDropDownItem i = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();
                 i.Label = r["Anno"].ToString();
                 _cbAnniDispLabels.Add(r["Anno"].ToString());
             }
             _cbAnniDispCount = _cbAnniDispLabels.Count;
             _appV = getCurrentV();
-            _coreV = ThisDocument._db.GetCurrentV();
+            _coreV = _db.GetCurrentV();
         }
 
         public void btnReset_Click(Office.IRibbonControl control)
@@ -197,7 +198,7 @@ namespace RiMoST2
                     {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text}
                 };
 
-                DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
+                DataView dv = _db.Select("spGetRichiesta", parameters).DefaultView;
                 dv.RowFilter = "IdTipologiaStato <> 7";
                 if (dv.Count > 0)
                 {
@@ -263,7 +264,7 @@ namespace RiMoST2
                                     {"@NomeFile", savePath}
                                 };
 
-                                ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
+                                _db.Insert("spSaveRichiestaModifica", parameters);
                                 Print();
                             }
                             catch (Exception)
@@ -321,7 +322,7 @@ namespace RiMoST2
 
                 try
                 {
-                    ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
+                    _db.Insert("spSaveRichiestaModifica", parameters);
                 }
                 catch (Exception)
                 {
