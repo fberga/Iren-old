@@ -6,11 +6,17 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		FrontOffice|Any CPU = FrontOffice|Any CPU
+		Portafoglio|Any CPU = Portafoglio|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.FrontOffice|Any CPU.ActiveCfg = FrontOffice|Any CPU
+		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.FrontOffice|Any CPU.Build.0 = FrontOffice|Any CPU
+		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Portafoglio|Any CPU.ActiveCfg = Portafoglio|Any CPU
+		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Portafoglio|Any CPU.Build.0 = Portafoglio|Any CPU
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
