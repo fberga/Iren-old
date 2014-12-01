@@ -17,11 +17,11 @@
     <SolutionID>fae8f896-2939-438a-91af-b7e0c687fb5e</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\PC1009235\Applicazioni VSTO\RiMoST\</PublishUrl>
+    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\Portafoglio\</PublishUrl>
     <InstallUrl />
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.2.2</ApplicationVersion>
-    <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
+    <ApplicationVersion>1.0.2.4</ApplicationVersion>
+    <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
@@ -273,7 +273,7 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="RiMoST.docx" HostPackage="{763FDC83-64E5-4651-AC9B-28C4FEB985A1}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="DOC" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files\Microsoft Office\Office14\WINWORD.EXE" DebugInfoCommandLine="/w &quot;[$OUTPUT]RiMoST.docx&quot;" />
         <Host Name="Word Document" Path=".\RiMoST.docx" GeneratedCodeNamespace="RiMoST2" PublishedHash="CFECFF3FB805E9A295392C4C85A42160CA201773">
-          <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="F40C331C4000645755245FB64185D2C5B3DC3582" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
+          <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="030027837DA020DCA16E1E91D13751F67EB4A38D" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>
@@ -282,6 +282,9 @@
     <Delete Files="$(TargetDir)$(TargetFileName).config" />
     <Copy SourceFiles="$(ProjectDir)App.config.$(Configuration)" DestinationFiles="$(TargetDir)$(TargetFileName).config" />
   </Target>
+  <PropertyGroup>
+    <PreBuildEvent>copy "$(ProjectDir)\App.config.$(Configuration)" "$(ProjectDir)App.config"</PreBuildEvent>
+  </PropertyGroup>
   <!--
     To modify your build process, add your task inside one of the targets below and uncomment it.
     Other similar extension points exist, see Microsoft.Common.targets.

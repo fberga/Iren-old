@@ -30,6 +30,7 @@ namespace Iren.FrontOffice.Tools
                 CALCOLO = "Calcolo",
                 CALCOLOINFORMAZIONE = "CalcoloInformazione",
                 ENTITACALCOLO = "EntitaCalcolo",
+                ENTITAGRAFICO = "EntitaGrafico",
                 ENTITAGRAFICOINFORMAZIONE = "EntitaGraficoInformazione",
                 ENTITACOMMITMENT = "EntitaCommitment",
                 ENTITARAMPA = "EntitaRampa",
@@ -134,6 +135,27 @@ namespace Iren.FrontOffice.Tools
             initLog();
         }
 
+        public static int GetOreIntervallo(DateTime inizio, DateTime fine)
+        {
+            return (int)(fine.AddDays(1).ToUniversalTime() - inizio.ToUniversalTime()).TotalHours;
+        }
+
+        public static int GetOreGiorno(DateTime giorno)
+        {
+            DateTime giornoSucc = giorno.AddDays(1);
+            return (int)(giornoSucc.ToUniversalTime() - giorno.ToUniversalTime()).TotalHours;
+        }
+
+        public static string GetSuffissoData(DateTime inizio, DateTime giorno)
+        {
+            if (inizio > giorno)
+            {
+                return "DATA0";
+            }
+            TimeSpan dayDiff = inizio - giorno;
+            return "DATA" + (dayDiff.Days + 1);
+        }
+
         public static void AggiornaStrutturaDati()
         {
             CaricaAzioni();
@@ -146,6 +168,7 @@ namespace Iren.FrontOffice.Tools
             CaricaCalcolo();
             CaricaCalcoloInformazione();
             CaricaEntitaCalcolo();
+            CaricaEntitaGrafico();
             CaricaEntitaGraficoInformazione();
             CaricaEntitaCommitment();
             CaricaEntitaRampa();
@@ -157,7 +180,6 @@ namespace Iren.FrontOffice.Tools
 
 
         }
-
         #region Aggiorna Struttura Dati
         
         private static bool CaricaAzioni()
@@ -372,6 +394,27 @@ namespace Iren.FrontOffice.Tools
                 return false;
             }
         }
+        private static bool CaricaEntitaGrafico()
+        {
+            try
+            {
+                string name = Tab.ENTITAGRAFICO;
+                ResetTable(name);
+                QryParams parameters = new QryParams() 
+                {
+                    {"@SiglaEntita", DataBase.ALL},
+                    {"@SiglaGrafico", DataBase.ALL}
+                };
+                DataTable dt = _db.Select(DataBase.StoredProcedure.ENTITAGRAFICO, parameters);
+                dt.TableName = name;
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
         private static bool CaricaEntitaGraficoInformazione()
         {
             try
@@ -528,8 +571,6 @@ namespace Iren.FrontOffice.Tools
         }
         
         #endregion
-
-
 
         public static void Close()
         {

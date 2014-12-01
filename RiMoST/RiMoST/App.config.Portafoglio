@@ -5,7 +5,7 @@
     <add key="DB" value="RiMoST_TEST" />
     <add key="utentiVisto" value="Cometto"/>
     <add key="savePath" value="\\master.local\to\MERCATO_ELE\Programmazione\Strumenti\CaricatorePEXCA\ARCHIVIO\RiMoST"/>
-    <add key="saveNameFormat" value="Richiesta-[lbIdRichiesta]"/>
+    <add key="saveNameFormat" value="Portafoglio-Richiesta-[lbIdRichiesta]"/>
   </appSettings>
   <connectionStrings>
     <add name="RiMoST_TEST"

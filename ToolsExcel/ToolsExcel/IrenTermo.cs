@@ -9,12 +9,14 @@ using Microsoft.Office.Tools.Excel;
 using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
+using System.Configuration;
+using System.Globalization;
 
 namespace Iren.FrontOffice.Tools
 {
     public partial class IrenTermo
     {
-        public const string CATEGORIA = "IREN_60T";
+        public Dictionary<string, object> config = new Dictionary<string, object>();
 
         #region Codice generato dalla finestra di progettazione di VSTO
 
@@ -39,6 +41,13 @@ namespace Iren.FrontOffice.Tools
 
         private void IrenTermo_Startup(object sender, EventArgs e)
         {
+            //inizializzo parametri da file di configurazione
+            config.Add("SiglaCategoria", "IREN_60T");
+            config.Add("IntervalloGiorni", int.Parse(ConfigurationManager.AppSettings["IntervalloGiorni"]));
+            config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], 
+                "yyyyMMdd", CultureInfo.InvariantCulture));
+
+
             Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
             s.Clear();
             s.LoadStructure();

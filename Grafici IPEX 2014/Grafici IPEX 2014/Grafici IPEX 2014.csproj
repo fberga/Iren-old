@@ -15,7 +15,7 @@
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>\\PC1009235\Applicazioni VSTO\Grafici IPEX\</PublishUrl>
+    <PublishUrl>\\PC1009235\Applicazioni\Grafici IPEX\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -25,12 +25,13 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>\\PC1009235\Applicazioni\Grafici IPEX\</InstallUrl>
     <TargetCulture>it-IT</TargetCulture>
     <ProductName>Grafici IPEX</ProductName>
     <PublisherName>Filippo Bergamin</PublisherName>
     <SuiteName>Iren Tools</SuiteName>
     <ApplicationRevision>5</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationVersion>1.0.0.5</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
