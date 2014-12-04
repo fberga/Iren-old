@@ -31,21 +31,19 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "10.0.0.0")]
         internal Microsoft.Office.Interop.Word.Application ThisApplication;
         
-        internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbBozza;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbDataInvio;
-        
-        internal Microsoft.Office.Tools.Word.Controls.DateTimePicker dtDataCreazione;
-        
-        internal Microsoft.Office.Tools.Word.Controls.ComboBox cmbStrumento;
-        
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtOggetto;
+        internal Microsoft.Office.Tools.Word.Controls.TextBox txtNote;
         
         internal Microsoft.Office.Tools.Word.Controls.TextBox txtDescrizione;
         
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtNote;
+        internal Microsoft.Office.Tools.Word.Controls.TextBox txtOggetto;
+        
+        internal Microsoft.Office.Tools.Word.Controls.ComboBox cmbStrumento;
+        
+        internal Microsoft.Office.Tools.Word.Controls.Label lbBozza;
+        
+        internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
+        
+        internal Microsoft.Office.Tools.Word.Controls.Label lbDataInvio;
         
         internal System.Windows.Forms.PictureBox pictureBox1;
         
@@ -172,14 +170,13 @@ namespace Iren.FrontOffice.Tools {
             this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "77677295", "plainTextContentControl4", this);
             this.plainTextContentControl5 = Globals.Factory.CreatePlainTextContentControl(null, null, "75971759", "plainTextContentControl5", this);
             this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "3740960896", "plainTextContentControl1", this);
-            this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
-            this.lbBozza = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "87C342FB78AFE38449D8A65789FCAD05FD0FE8", "87C342FB78AFE38449D8A65789FCAD05FD0FE8", this, "lbBozza");
-            this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
-            this.dtDataCreazione = new Microsoft.Office.Tools.Word.Controls.DateTimePicker(Globals.Factory, this.ItemProvider, this.HostContext, "0F7AED42602DB5045150B7810D302A852C2DE0", "0F7AED42602DB5045150B7810D302A852C2DE0", this, "dtDataCreazione");
-            this.cmbStrumento = new Microsoft.Office.Tools.Word.Controls.ComboBox(Globals.Factory, this.ItemProvider, this.HostContext, "4DC4A472B42B454449E49CF94B9489509B9F64", "4DC4A472B42B454449E49CF94B9489509B9F64", this, "cmbStrumento");
-            this.txtOggetto = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", this, "txtOggetto");
-            this.txtDescrizione = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "629B715FF6805664A936BBA7654A658BAE8D66", "629B715FF6805664A936BBA7654A658BAE8D66", this, "txtDescrizione");
             this.txtNote = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "7694A411B7412F747D17B5027A9DF6D62D6A37", "7694A411B7412F747D17B5027A9DF6D62D6A37", this, "txtNote");
+            this.txtDescrizione = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "629B715FF6805664A936BBA7654A658BAE8D66", "629B715FF6805664A936BBA7654A658BAE8D66", this, "txtDescrizione");
+            this.txtOggetto = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", this, "txtOggetto");
+            this.cmbStrumento = new Microsoft.Office.Tools.Word.Controls.ComboBox(Globals.Factory, this.ItemProvider, this.HostContext, "4DC4A472B42B454449E49CF94B9489509B9F64", "4DC4A472B42B454449E49CF94B9489509B9F64", this, "cmbStrumento");
+            this.lbBozza = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "87C342FB78AFE38449D8A65789FCAD05FD0FE8", "87C342FB78AFE38449D8A65789FCAD05FD0FE8", this, "lbBozza");
+            this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
+            this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
         }
         
         /// 
@@ -190,46 +187,6 @@ namespace Iren.FrontOffice.Tools {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ThisDocument));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            // 
-            // lbIdRichiesta
-            // 
-            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbIdRichiesta.Name = "lbIdRichiesta";
-            // 
-            // lbBozza
-            // 
-            this.lbBozza.Name = "lbBozza";
-            // 
-            // lbDataInvio
-            // 
-            this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbDataInvio.Name = "lbDataInvio";
-            // 
-            // dtDataCreazione
-            // 
-            this.dtDataCreazione.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dtDataCreazione.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtDataCreazione.Name = "dtDataCreazione";
-            // 
-            // cmbStrumento
-            // 
-            this.cmbStrumento.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cmbStrumento.Name = "cmbStrumento";
-            // 
-            // txtOggetto
-            // 
-            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtOggetto.Name = "txtOggetto";
-            // 
-            // txtDescrizione
-            // 
-            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescrizione.Name = "txtDescrizione";
-            // 
-            // txtNote
-            // 
-            this.txtNote.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtNote.Name = "txtNote";
             // 
             // ActionsPane
             // 
@@ -259,17 +216,54 @@ namespace Iren.FrontOffice.Tools {
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Text = "pictureBox1";
             // 
+            // txtNote
+            // 
+            this.txtNote.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtNote.Name = "txtNote";
+            // 
+            // txtDescrizione
+            // 
+            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDescrizione.Name = "txtDescrizione";
+            // 
+            // txtOggetto
+            // 
+            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOggetto.Name = "txtOggetto";
+            // 
+            // cmbStrumento
+            // 
+            this.cmbStrumento.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmbStrumento.Name = "cmbStrumento";
+            // 
+            // lbBozza
+            // 
+            this.lbBozza.Enabled = false;
+            this.lbBozza.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbBozza.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lbBozza.Name = "lbBozza";
+            this.lbBozza.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbIdRichiesta
+            // 
+            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbIdRichiesta.Name = "lbIdRichiesta";
+            // 
+            // lbDataInvio
+            // 
+            this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbDataInvio.Name = "lbDataInvio";
+            // 
             // ThisDocument
             // 
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.lbIdRichiesta.BindingContext = this.BindingContext;
-            this.lbBozza.BindingContext = this.BindingContext;
-            this.lbDataInvio.BindingContext = this.BindingContext;
-            this.dtDataCreazione.BindingContext = this.BindingContext;
-            this.cmbStrumento.BindingContext = this.BindingContext;
-            this.txtOggetto.BindingContext = this.BindingContext;
-            this.txtDescrizione.BindingContext = this.BindingContext;
             this.txtNote.BindingContext = this.BindingContext;
+            this.txtDescrizione.BindingContext = this.BindingContext;
+            this.txtOggetto.BindingContext = this.BindingContext;
+            this.cmbStrumento.BindingContext = this.BindingContext;
+            this.lbBozza.BindingContext = this.BindingContext;
+            this.lbIdRichiesta.BindingContext = this.BindingContext;
+            this.lbDataInvio.BindingContext = this.BindingContext;
         }
         
         /// 

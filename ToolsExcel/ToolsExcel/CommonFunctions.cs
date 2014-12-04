@@ -6,6 +6,7 @@ using System.Data;
 using Iren.FrontOffice.Core;
 using Office = Microsoft.Office.Core;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -152,7 +153,7 @@ namespace Iren.FrontOffice.Tools
             {
                 return "DATA0";
             }
-            TimeSpan dayDiff = inizio - giorno;
+            TimeSpan dayDiff = giorno - inizio;
             return "DATA" + (dayDiff.Days + 1);
         }
 

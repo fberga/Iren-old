@@ -14,11 +14,17 @@
                     getImage="btnInvia_getImage" 
                     onAction="btnInvia_Click" 
                     label="Conferma e invia" size="large" />
-            <button id="btnSalvaBozza" 
+            <toggleButton id="chkIsDraft"
+                          getImage="chkIsDraft_getImage"
+                          onAction="chkIsDraft_Click"
+                          getEnabled="chkIsDraft_getEnabled"
+                          getPressed="chkIsDraft_getPressed"
+                          label="Bozza" size="large" />
+            <!--<button id="btnSalvaBozza"
                     getEnabled="btnSalvaBozza_enabled"
                     getImage="btnSalvaBozza_getImage" 
                     onAction="btnSalvaBozza_Click" 
-                    label="Salva Bozza" size="large" />
+                    label="Salva Bozza" size="large" />-->
           </group>
           <group id="groupModifica" label="Modifica">
             <button id="btnReset" 
@@ -36,18 +42,13 @@
                     label="Stampa" size="large" />
           </group>
           <group id="groupGestione" label="Gestione Richieste">
+            <labelControl id="lbAnniDisponibili" label="Filtra per anno:" />
             <dropDown id="cbAnniDisponibili"
-                      getImage="cbAnniDisponibili_getImage" 
                       getItemCount="cbAnniDisp_ItemCount"
                       getItemLabel="cbAnniDisp_ItemLabel"
                       getSelectedItemIndex="cbAnniDisp_getSelectedItemIndex"
                       onAction="cbAnniDisp_onAction"
                       showLabel="false" screentip="Seleziona l'anno" />
-            <checkBox id="chkIsDraft" 
-                      onAction="chkIsDraft_Click" 
-                      getEnabled="chkIsDraft_getEnabled"
-                      getPressed="chkIsDraft_getPressed"
-                      label="Bozza" />
             <button id="btnAnnulla" 
                     getImage="btnAnnulla_getImage" 
                     onAction="btnAnnulla_Click" 
@@ -55,7 +56,7 @@
             <button id="btnModifica" 
                     getImage="btnModifica_getImage" 
                     onAction="btnModifica_Click" 
-                    label="Modifica Richiesta" size="large" />
+                    label="Modifica una bozza" size="large" />
           </group>
         </tab>
         <tab id="tabVersione" label="Versione">

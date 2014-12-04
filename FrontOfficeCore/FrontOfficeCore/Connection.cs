@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Data.SqlClient;
 using System.Data;
+using System.IO;
 
 namespace Iren.FrontOffice.Core
 {
@@ -15,7 +16,7 @@ namespace Iren.FrontOffice.Core
 
         private static Connection _conn;
         private static string _connStr;
-        private static SqlConnection _sqlConn;
+        private static SqlConnection _sqlConn;        
 
         #endregion
 
@@ -40,7 +41,7 @@ namespace Iren.FrontOffice.Core
         private Connection() {
             //la prima volta che viene lanciata la dll controlla che i parametri siano protetti
             //e nell'eventualità li protegge
-            CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
+            //CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
         }
 
         #endregion
@@ -63,18 +64,17 @@ namespace Iren.FrontOffice.Core
 
         #endregion
 
-        #region Metodi Privati
-        
+        #region Metodi Pubblici
+
         //cripta i dati di connessione se sono in chiaro
-        public static void CryptSection(System.Reflection.Assembly executingAssembly)
+        public static void CryptSection(string location)
         {
-            //var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-            var location = executingAssembly.Location;
-            var config = ConfigurationManager.OpenExeConfiguration(location);
+            ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
+            fileMap.ExeConfigFilename = location;
+            var config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
 
             string provider = "RsaProtectedConfigurationProvider";
             ConfigurationSection connStrings = config.ConnectionStrings;
-
             if (connStrings != null)
             {
                 if (!connStrings.SectionInformation.IsProtected)
@@ -84,15 +84,35 @@ namespace Iren.FrontOffice.Core
                         connStrings.SectionInformation.ProtectSection(provider);
 
                         connStrings.SectionInformation.ForceSave = true;
-                        config.Save(ConfigurationSaveMode.Full);
+                        config.Save(ConfigurationSaveMode.Modified);
                     }
                 }
             }
         }
+        //public static void CryptSection(System.Reflection.Assembly executingAssembly)
+        //{
+        //    //var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+        //    var location = executingAssembly.Location;
+        //    //var location = Path.Combine(Environment.SpecialFolder.LocalApplicationData, "";
+        //    var config = ConfigurationManager.OpenExeConfiguration(location);
 
-        #endregion
+        //    string provider = "RsaProtectedConfigurationProvider";
+        //    ConfigurationSection connStrings = config.ConnectionStrings;
 
-        #region Metodi Pubblici
+        //    if (connStrings != null)
+        //    {
+        //        if (!connStrings.SectionInformation.IsProtected)
+        //        {
+        //            if (!connStrings.ElementInformation.IsLocked)
+        //            {
+        //                connStrings.SectionInformation.ProtectSection(provider);
+
+        //                connStrings.SectionInformation.ForceSave = true;
+        //                config.Save(ConfigurationSaveMode.Full);
+        //            }
+        //        }
+        //    }
+        //}
 
         public SqlConnection OpenConnection()
         {

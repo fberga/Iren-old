@@ -17,11 +17,11 @@
     <SolutionID>fae8f896-2939-438a-91af-b7e0c687fb5e</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\Portafoglio\</PublishUrl>
+    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\FrontOffice\</PublishUrl>
     <InstallUrl />
     <TargetCulture>it</TargetCulture>
     <ApplicationVersion>1.0.2.4</ApplicationVersion>
-    <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
+    <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
@@ -111,9 +111,9 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FrontOfficeCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="FrontOfficeCore, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>W:\FrontOfficeCore\FrontOfficeCore.dll</HintPath>
+      <HintPath>\\pc1009235\Applicazioni\FrontOfficeCore\FrontOfficeCore.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -172,7 +172,9 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="App.config.Debug" />
+    <None Include="App.config.Debug">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="App.config.FrontOffice" />
     <None Include="App.config.Portafoglio" />
     <None Include="App.config.Release" />
@@ -266,6 +268,9 @@
   <ItemGroup>
     <None Include="res\Editing-Edit-icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="res\draft-icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" />
   <ProjectExtensions>
@@ -273,7 +278,7 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="RiMoST.docx" HostPackage="{763FDC83-64E5-4651-AC9B-28C4FEB985A1}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="DOC" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files\Microsoft Office\Office14\WINWORD.EXE" DebugInfoCommandLine="/w &quot;[$OUTPUT]RiMoST.docx&quot;" />
         <Host Name="Word Document" Path=".\RiMoST.docx" GeneratedCodeNamespace="RiMoST2" PublishedHash="CFECFF3FB805E9A295392C4C85A42160CA201773">
-          <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="030027837DA020DCA16E1E91D13751F67EB4A38D" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
+          <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="248EBE99C053606ED0093997ABAB1F802D28EC21" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

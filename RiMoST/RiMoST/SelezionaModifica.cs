@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Iren.FrontOffice.Core;
 using System.Globalization;
+using System.Configuration;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -32,12 +33,8 @@ namespace Iren.FrontOffice.Tools
         #region Callbacks
         private void SelezionaModifica_Load(object sender, EventArgs e)
         {
-            QryParams parameters = new QryParams() 
-            {
-                {"@IdTipologiaStato", "7"}
-            };
 
-            DataView dv = ThisDocument._db.Select("spGetRichiesta", parameters).DefaultView;
+            DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdTipologiaStato:7; @IdStruttura:" + ThisDocument._idStruttura).DefaultView;
             dv.RowFilter = "IdRichiesta LIKE '%" + _anno + "'";
             cmbRichiesta.DataSource = dv;
             cmbRichiesta.DisplayMember = "IdRichiesta";
@@ -58,7 +55,6 @@ namespace Iren.FrontOffice.Tools
             {
                 DataRowView row = (DataRowView)cmbRichiesta.SelectedItem;
                 Globals.ThisDocument.lbIdRichiesta.Text = "" + row["IdRichiesta"];
-                Globals.ThisDocument.dtDataCreazione.Value = DateTime.ParseExact("" + row["DataInvio"], "yyyyMMdd", CultureInfo.InvariantCulture);
                 ((DataView)Globals.ThisDocument.cmbStrumento.DataSource).RowFilter = "IdApplicazione = " + row["IdApplicazione"];
                 Globals.ThisDocument.cmbStrumento.Enabled = false;
                 Globals.ThisDocument.txtOggetto.Text = "" + row["Oggetto"];

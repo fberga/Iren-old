@@ -151,7 +151,7 @@ namespace Iren.FrontOffice.Tools
             _cbAnniDispLabels = new List<string>();
             foreach (DataRow r in dt.Rows) 
             {
-                RibbonDropDownItem i = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();;
+                RibbonDropDownItem i = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();
                 i.Label = r["Anno"].ToString();
                 _cbAnniDispLabels.Add(r["Anno"].ToString());
             }
@@ -170,102 +170,96 @@ namespace Iren.FrontOffice.Tools
                 Globals.ThisDocument.txtDescrizione.Text = "";
                 Globals.ThisDocument.txtOggetto.Text = "";
                 Globals.ThisDocument.txtNote.Text = "";
-                Globals.ThisDocument.dtDataCreazione.Value = DateTime.Now;
 
                 _btnRefreshEnabled = true;
-                _btnSalvaBozzaEnabled = true;
                 _chkIsDraft = false;
+                _chkIsDraftEnabled = true;
                 this.ribbon.InvalidateControl("chkIsDraft");
-                this.ribbon.Invalidate();
+                this.ribbon.InvalidateControl("btnSalvaBozza");
+                this.ribbon.InvalidateControl("btnRefresh");
                 getAvailableID();
             }
         }
         public void btnInvia_Click(Office.IRibbonControl control)
         {
-            if (_chkIsDraft)
+            object oTrue = true;
+            object oFalse = false;
+            object missing = Missing.Value;
+
+            DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdRichiesta=" + Globals.ThisDocument.lbIdRichiesta.Text + ";@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
+            dv.RowFilter = "IdTipologiaStato <> 7";
+            if (dv.Count > 0)
             {
-                MessageBox.Show("La richiesta è contrassegnata come bozza. Togliere la spunta e riprovare.", "Impossibile salvare!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                MessageBox.Show("Esiste già una richiesta con lo stesso codice. Premere sul tasto di refresh per ottenerne uno nuovo", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
-                object oTrue = true;
-                object oFalse = false;
-                object missing = Missing.Value;
-
-                DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdRichiesta=" + Globals.ThisDocument.lbIdRichiesta.Text + ";@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
-                dv.RowFilter = "IdTipologiaStato <> 7";
-                if (dv.Count > 0)
+                if (!EmptyFields())
                 {
-                    MessageBox.Show("Esiste già una richiesta con lo stesso codice. Premere sul tasto di refresh per ottenerne uno nuovo", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    if (!EmptyFields())
+                    if (_chkIsDraft || MessageBox.Show("Sicuro di voler inviare il documento?", "Stampa e invia?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
                     {
-                        if (MessageBox.Show("Sicuro di voler inviare il documento?", "Stampa e invia?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+                        Globals.ThisDocument.RemoveProtection();
+                        Globals.ThisDocument.Application.ScreenUpdating = false;
+
+                        ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
+                        ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
+
+                        Globals.ThisDocument.Application.ScreenUpdating = true;
+                        Globals.ThisDocument.AddProtection();
+
+                        _btnRefreshEnabled = !_chkIsDraft;
+                        if (!_chkIsDraft)
+                            _chkIsDraftEnabled = false;
+                        this.ribbon.InvalidateControl("chkIsDraft");
+                        this.ribbon.InvalidateControl("btnRefresh");
+
+                        string saveName = ConfigurationManager.AppSettings["saveNameFormat"];
+                        foreach (Match m in Regex.Matches(saveName, @"(\[[^\[\]]*\])"))
                         {
-                            Globals.ThisDocument.RemoveProtection();
-                            Globals.ThisDocument.Application.ScreenUpdating = false;
-
-                            ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
-                            ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
-
-                            Globals.ThisDocument.Application.ScreenUpdating = true;
-                            Globals.ThisDocument.AddProtection();
-
-                            _btnSalvaBozzaEnabled = false;
-
-                            Regex rgx = new Regex(@"(\[[^\[\]]*\])");
-                            string saveName = ConfigurationManager.AppSettings["saveNameFormat"];
-
-                            foreach (Match m in rgx.Matches(saveName))
-                            {
-                                try
-                                {
-                                    Control c = (Control)Globals.ThisDocument.Controls[m.Value.Replace("[", "").Replace("]", "")];
-                                    saveName = saveName.Replace(m.Value, c.Text);
-                                }
-                                catch (ArgumentOutOfRangeException)
-                                {
-
-                                }
-                            }
-                            rgx = new Regex(@"([^\.\-_a-zA-Z0-9]+)");
-
-                            string name = rgx.Replace(saveName, "_");
-
-                            object savePath = Path.Combine(ConfigurationManager.AppSettings["savePath"], name + ".pdf");
-                            object format = Word.WdSaveFormat.wdFormatPDF;
                             try
                             {
+                                Control c = (Control)Globals.ThisDocument.Controls[m.Value.Replace("[", "").Replace("]", "")];
+                                saveName = saveName.Replace(m.Value, c.Text);
+                            }
+                            catch (ArgumentOutOfRangeException)
+                            {
+
+                            }
+                        }
+                        string name = Regex.Replace(saveName, @"([^\.\-_a-zA-Z0-9]+)", "_");
+                        object savePath = Path.Combine(ConfigurationManager.AppSettings["savePath"], name + ".pdf");
+                        object format = Word.WdSaveFormat.wdFormatPDF;
+                        try
+                        {
+                            if(!_chkIsDraft)
                                 Globals.ThisDocument.SaveAs2(ref savePath, ref format, ref oTrue, ref missing, ref oFalse,
                                     ref missing, ref oFalse, ref missing, ref missing, ref oFalse, ref oFalse, ref missing,
                                     ref missing, ref missing, ref missing, ref missing, ref missing);
 
-                                DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
-                                DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
+                            DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
+                            DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
 
-                                QryParams parameters = new QryParams()
-                                {
-                                    {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
-                                    {"@IdStruttura", ThisDocument._idStruttura},
-                                    {"@DataCreazione", Globals.ThisDocument.dtDataCreazione.Value.ToString("yyyyMMdd")},
-                                    {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
-                                    {"@IdTipologiaStato", 1},
-                                    {"@IdApplicazione", strumento["IdApplicazione"]},
-                                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text.Trim()},
-                                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text.Trim()},
-                                    {"@Note", Globals.ThisDocument.txtNote.Text.Trim()},
-                                    {"@NomeFile", savePath}
-                                };
-
-                                ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
-                                Print();
-                            }
-                            catch (Exception)
+                            QryParams parameters = new QryParams()
                             {
-                                MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
+                                {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
+                                {"@IdStruttura", ThisDocument._idStruttura},
+                                {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
+                                {"@IdTipologiaStato", _chkIsDraft ? 7:1},
+                                {"@IdApplicazione", strumento["IdApplicazione"]},
+                                {"@Oggetto", Globals.ThisDocument.txtOggetto.Text.Trim()},
+                                {"@Descr", Globals.ThisDocument.txtDescrizione.Text.Trim()},
+                                {"@Note", Globals.ThisDocument.txtNote.Text.Trim()},
+                                {"@NomeFile", savePath}
+                            };
+
+                            ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
+                            
+                            if (!_chkIsDraft)
+                                Print();
+                        }
+                        catch (Exception)
+                        {
+                            MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -293,53 +287,22 @@ namespace Iren.FrontOffice.Tools
             _formAnnullaModifica.WindowState = FormWindowState.Normal;
             _formAnnullaModifica.Focus();
         }
-        public void btnSalvaBozza_Click(Office.IRibbonControl control)
-        {
-            if (!EmptyFields())
-            {
-                DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
-                DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
-
-                _chkIsDraft = true;
-                this.ribbon.InvalidateControl("chkIsDraft");
-
-                QryParams parameters = new QryParams()
-                {
-                    {"@IdRichiesta", Globals.ThisDocument.lbIdRichiesta.Text},
-                    {"@IdStruttura", ThisDocument._idStruttura},
-                    {"@DataCreazione", Globals.ThisDocument.dtDataCreazione.Value.ToString("yyyyMMdd")},
-                    {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
-                    {"@IdTipologiaStato", 7},
-                    {"@IdApplicazione", strumento["IdApplicazione"]},
-                    {"@Oggetto", Globals.ThisDocument.txtOggetto.Text.Trim()},
-                    {"@Descr", Globals.ThisDocument.txtDescrizione.Text.Trim()},
-                    {"@Note", Globals.ThisDocument.txtNote.Text.Trim()}
-                };
-
-                try
-                {
-                    ThisDocument._db.Insert("spSaveRichiestaModifica", parameters);
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Salvataggio non riuscito... Riprovare più tardi.", "Errore!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
         public void btnModifica_Click(Office.IRibbonControl control)
         {
             SelezionaModifica selMod = new SelezionaModifica(_cbAnniDispValue, _chkIsDraft, _btnRefreshEnabled);
             selMod.ShowDialog();
             _chkIsDraft = selMod._chkIsDraft;
             _btnRefreshEnabled = selMod._btnRefreshEnabled;
+            this.ribbon.InvalidateControl("btnRefresh");
             this.ribbon.InvalidateControl("chkIsDraft");
-            this.ribbon.Invalidate();
             selMod.Dispose();
         }
         public void chkIsDraft_Click(Office.IRibbonControl control, bool pressed)
         {
             ChangeBozzaVisibility(pressed);
             _chkIsDraft = pressed;
+            _btnRefreshEnabled = !pressed;
+            this.ribbon.InvalidateControl("btnRefresh");
         }
         
         public bool chkIsDraft_getPressed(Office.IRibbonControl control) 
@@ -377,15 +340,11 @@ namespace Iren.FrontOffice.Tools
         {
             return _chkIsDraftEnabled;
         }
-        public bool btnSalvaBozza_enabled(Office.IRibbonControl control)
-        {
-            return _btnSalvaBozzaEnabled;
-        }
         public bool btnRefresh_getEnabled(Office.IRibbonControl control)
         {
             return _btnRefreshEnabled;
         }
-        
+
         public Bitmap btnReset_getImage(Office.IRibbonControl control)
         {
             return Resources.Reset_icon;
@@ -393,6 +352,10 @@ namespace Iren.FrontOffice.Tools
         public Bitmap btnInvia_getImage(Office.IRibbonControl control)
         {
             return Resources.Send_icon;
+        }
+        public Bitmap chkIsDraft_getImage(Office.IRibbonControl control)
+        {
+            return Resources.draft_icon;
         }
         public Bitmap btnChiudi_getImage(Office.IRibbonControl control)
         {
@@ -409,10 +372,6 @@ namespace Iren.FrontOffice.Tools
         public Bitmap btnAnnulla_getImage(Office.IRibbonControl control)
         {
             return Resources.Bin_icon;
-        }
-        public Bitmap btnSalvaBozza_getImage(Office.IRibbonControl control)
-        {
-            return Resources.save_icon;
         }
         public Bitmap btnModifica_getImage(Office.IRibbonControl control)
         {

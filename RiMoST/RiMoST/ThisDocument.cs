@@ -33,9 +33,8 @@ namespace Iren.FrontOffice.Tools
         #region Callbacks
 
         private void ThisDocument_Startup(object sender, System.EventArgs e)
-        {            
-            Connection.CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
-
+        {
+            SetAppConfigEnvironment();
             _idStruttura = ConfigurationManager.AppSettings["idStruttura"];
             string[] users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
             int rowNum = (int)Math.Ceiling(users.Length / 5.0);
@@ -93,6 +92,19 @@ namespace Iren.FrontOffice.Tools
         #endregion
 
         #region Metodi
+
+        private void SetAppConfigEnvironment()
+        {
+            string file = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RiMoST/RiMoST.config");
+            if (File.Exists(AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString()))
+            {
+                Directory.CreateDirectory(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RiMoST"));
+                File.Copy(AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString(), file, true);
+                File.Delete(AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString());
+            }
+            AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", file);
+            Connection.CryptSection(file);
+        }
 
         public void AddProtection()
         {
