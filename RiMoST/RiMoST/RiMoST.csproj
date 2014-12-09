@@ -77,10 +77,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>RiMoST2_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>RiMoST_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>71C5553C1CDA57979B7AE257B74FBF43467E9216</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>F6EB7027320161E8D98D66D85D269681C2A564FB</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Portafoglio|AnyCPU' ">
     <OutputPath>bin\Portafolgio\</OutputPath>
@@ -202,6 +202,7 @@
     <Compile Include="ThisDocument.cs">
       <DependentUpon>RiMoST.docx</DependentUpon>
     </Compile>
+    <None Include="RiMoST_TemporaryKey.pfx" />
     <None Include="ThisDocument.Designer.xml">
       <DependentUpon>ThisDocument.cs</DependentUpon>
     </None>
@@ -276,7 +277,7 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="RiMoST.docx" HostPackage="{763FDC83-64E5-4651-AC9B-28C4FEB985A1}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="DOC" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files\Microsoft Office\Office14\WINWORD.EXE" DebugInfoCommandLine="/w &quot;[$OUTPUT]RiMoST.docx&quot;" />
+        <ProjectProperties HostName="RiMoST.docx" HostPackage="{763FDC83-64E5-4651-AC9B-28C4FEB985A1}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="DOC" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE" DebugInfoCommandLine="/w &quot;[$OUTPUT]RiMoST.docx&quot;" />
         <Host Name="Word Document" Path=".\RiMoST.docx" GeneratedCodeNamespace="RiMoST2" PublishedHash="CFECFF3FB805E9A295392C4C85A42160CA201773">
           <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="248EBE99C053606ED0093997ABAB1F802D28EC21" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
         </Host>

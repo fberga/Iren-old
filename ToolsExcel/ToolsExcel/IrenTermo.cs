@@ -28,7 +28,6 @@ namespace Iren.FrontOffice.Tools
         {
             this.Startup += new System.EventHandler(this.IrenTermo_Startup);
             this.Shutdown += new System.EventHandler(this.IrenTermo_Shutdown);
-            this.Change += new Microsoft.Office.Interop.Excel.DocEvents_ChangeEventHandler(this.IrenTermo_Change);
 
         }
 
@@ -52,16 +51,5 @@ namespace Iren.FrontOffice.Tools
             s.Clear();
             s.LoadStructure();
         }
-
-        public void UpdateStructure()
-        {
-            
-        }
-
-        private void IrenTermo_Change(Excel.Range Target)
-        {
-            
-        }
-
     }
 }

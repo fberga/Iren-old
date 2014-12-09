@@ -13,20 +13,38 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
     <OfficeApplication>Excel</OfficeApplication>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <BootstrapperComponentsLocation>HomeSite</BootstrapperComponentsLocation>
     <ProjectGuid>{AE6FB491-AB07-41C0-BD1F-4BE4EE799814}</ProjectGuid>
     <SolutionID>4818c659-0c03-4f91-8f0c-5e0e9375d22f</SolutionID>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <PublishUrl>publish\</PublishUrl>
+    <InstallUrl />
+    <TargetCulture>it</TargetCulture>
+    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>days</UpdateIntervalUnits>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
+    <ProductName>ToolsExcel</ProductName>
+    <PublisherName />
+    <SupportUrl />
+    <FriendlyName>ToolsExcel</FriendlyName>
+    <OfficeApplicationDescription />
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 e x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
-      <Visible>false</Visible>
-      <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
@@ -62,12 +80,13 @@
     <ManifestKeyFile>ToolsExcel_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>4B054E155D8900F832BAE618139DB7FBFB99E40C</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>2A77029A78A06BEA7549E868004812D29898CC43</ManifestCertificateThumbprint>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FrontOfficeCore">
       <HintPath>\\PC1009235\Applicazioni VSTO\FrontOfficeCore\FrontOfficeCore.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.Tools.Office.Runtime.v10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
@@ -190,6 +209,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="SistemaComandi.xlsm" />
+    <None Include="ToolsExcel_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ThisWorkbook.Designer.xml">
@@ -224,12 +244,12 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
+        <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
         <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="FrontOffice.Tools">
+          <HostItem Name="Foglio4" Code="IrenIdro.cs" CanonicalName="Foglio4" DisplayName="Iren Idro" Blueprint="IrenIdro.Designer.xml" GeneratedCode="IrenIdro.Designer.cs" />
           <HostItem Name="Foglio3" Code="IrenTermo.cs" CanonicalName="Foglio3" DisplayName="Iren Termo" Blueprint="IrenTermo.Designer.xml" GeneratedCode="IrenTermo.Designer.cs" />
           <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
           <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="Foglio4" Code="IrenIdro.cs" CanonicalName="Foglio4" DisplayName="Iren Idro" Blueprint="IrenIdro.Designer.xml" GeneratedCode="IrenIdro.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>

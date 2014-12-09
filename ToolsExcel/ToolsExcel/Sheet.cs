@@ -53,6 +53,12 @@ namespace Iren.FrontOffice.Tools
         Worksheet _ws;
         Dictionary<string, object> _config;
         Dictionary<string, NamedRange> _ranges = new Dictionary<string, NamedRange>();
+        DateTime _dataInizio;
+        DateTime _dataFine;
+        int _colonnaInizio;
+        int _intervalloOre;
+        int _rigaAttiva;
+        int _intervalloGiorni;
         
         #endregion
 
@@ -68,10 +74,16 @@ namespace Iren.FrontOffice.Tools
             StdStyles();
         }
 
-        //private U getCategoria<U>(T cat)
-        //{
-        //    return (U)Convert.ChangeType(cat, typeof(U));
-        //}
+        private delegate void CicloGiorni(int oreGiorno, string suffissoData, DateTime giorno);
+        private void EseguiCicloGiorni(CicloGiorni callback)
+        {
+            for (DateTime giorno = _dataInizio; giorno <= _dataFine; giorno = giorno.AddDays(1))
+            {
+                int oreGiorno = GetOreGiorno(giorno);
+                string suffissoData = GetSuffissoData(_dataInizio, giorno);
+                callback(oreGiorno, suffissoData, giorno);
+            }
+        }
 
         public void AddNamedRange(Excel.Range rng, string name, string internalName = "")
         {
@@ -87,7 +99,6 @@ namespace Iren.FrontOffice.Tools
                 _ranges.Add(internalName, _ws.Controls.AddNamedRange(rng, name));
             }
         }
-
         private void SetAllBorders(Excel.Style s, int colorIndex, Excel.XlBorderWeight weight)
         {
             s.Borders.ColorIndex = 1;
@@ -95,13 +106,17 @@ namespace Iren.FrontOffice.Tools
             s.Borders[Excel.XlBordersIndex.xlDiagonalDown].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
             s.Borders[Excel.XlBordersIndex.xlDiagonalUp].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
         }
-
         public static void RangeStyle(Excel.Range rng, string style)
         {
-            MatchCollection paramsList = Regex.Matches(style, @"\w+[=][^;=]+");
+            MatchCollection paramsList = Regex.Matches(style, @"\w+[=:]((\[.*\])|([^;:=]+))");
             foreach (Match par in paramsList)
             {
-                string[] keyVal = Regex.Split(par.Value, "[=]");
+                string[] keyVal;
+                if (Regex.IsMatch(par.Value, @"\[.*\]"))
+                    keyVal = Regex.Split(par.Value, @"[:=](?=\[.*\])");
+                else
+                    keyVal = Regex.Split(par.Value, @"[:=]");
+
                 if (keyVal.Length != 2)
                     throw new InvalidExpressionException("The provided list of parameters is invalid.");
 
@@ -148,11 +163,11 @@ namespace Iren.FrontOffice.Tools
                         rng.Interior.Pattern = (Excel.XlPattern)Enum.Parse(typeof(Excel.XlPattern), backPattern);
                         break;
                     case "borders":
-                        MatchCollection borders = Regex.Matches(keyVal[1], @"(Top|Left|Bottom|Right|InsideH|InsideV)(:\w*)?", RegexOptions.IgnoreCase);
+                        MatchCollection borders = Regex.Matches(keyVal[1], @"(Top|Left|Bottom|Right|InsideH|InsideV)([:=]\w*)?", RegexOptions.IgnoreCase);
                         rng.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
                         foreach (Match border in borders)
                         {
-                            string[] b = border.Value.Split(':');
+                            string[] b = Regex.Split(border.Value,@"[:=]\s*");
 
                             Excel.XlBordersIndex index = Excel.XlBordersIndex.xlEdgeTop;
                             Excel.XlBorderWeight weight = Excel.XlBorderWeight.xlThin;
@@ -214,7 +229,6 @@ namespace Iren.FrontOffice.Tools
                 }
             }
         }
-
         private void StdStyles()
         {
             Excel.Style gotoBar;
@@ -295,6 +309,22 @@ namespace Iren.FrontOffice.Tools
                 chartsBar.Interior.ColorIndex = 2;
                 chartsBar.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
             }
+
+            Excel.Style allDati;
+            try
+            {
+                allDati = Globals.ThisWorkbook.Styles["allDatiStyle"];
+            }
+            catch
+            {
+                allDati = Globals.ThisWorkbook.Styles.Add("allDatiStyle");
+                allDati.Font.Size = 10;
+                allDati.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                allDati.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                allDati.NumberFormat = "#,###.000;-#,###.000;-";
+                allDati.Interior.ColorIndex = 2;
+                SetAllBorders(allDati, 1, Excel.XlBorderWeight.xlThin);
+            }
         }
 
         public void Clear()
@@ -336,91 +366,111 @@ namespace Iren.FrontOffice.Tools
             DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            DateTime dataInizio = (DateTime)_config["DataInizio"];
-            int intervalloGiorni = (int)_config["IntervalloGiorni"];
+            _dataInizio = (DateTime)_config["DataInizio"];
+            _intervalloGiorni = (int)_config["IntervalloGiorni"];
 
             InitBarraNavigazione(dvCE);
 
             //int intervalloOre;
-            int rigaAttiva = Struttura.ROW_BLOCK + 1;
+            _rigaAttiva = Struttura.ROW_BLOCK + 1;
 
             foreach (DataRowView entita in dvCE)
             {
                 string siglaEntita = ""+entita["SiglaEntita"];
                 dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
-                DateTime dataFine;
                 if (dvEP.Count > 0)
-                    dataFine = dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
+                    _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                 else
-                    dataFine = dataInizio.AddDays(intervalloGiorni);
+                    _dataFine = _dataInizio.AddDays(_intervalloGiorni);
 
-                InitBloccoEntita(entita, dataInizio, dataFine, ref rigaAttiva);                
+                InitBloccoEntita(entita);                
 
             }
         }
 
-        private void InitBloccoEntita(DataRowView entita, DateTime dataInizio, DateTime dataFine, ref int rigaAttiva)
+        private void InitBarraNavigazione(DataView entita)
         {
+            object[] descrizioni = new object[entita.Count];
+            int i = -1;
+            foreach (DataRowView e in entita)
+            {
+                descrizioni[++i] = e["DesEntitaBreve"];
+                _ws.Cells[Struttura.ROW_GOTO, Struttura.COL_BLOCK + i].Name = e["siglaEntita"] + Simboli.UNION + "GOTO";
+            }
+
+            Excel.Range rng = _ws.Range[_ws.Cells[Struttura.ROW_GOTO, Struttura.COL_BLOCK],
+                _ws.Cells[Struttura.ROW_GOTO, Struttura.COL_BLOCK + i]];
+            string gotoMenuRangeName = _config["SiglaCategoria"] + Simboli.UNION + "GOTO_MENU";
+
+            AddNamedRange(rng, gotoMenuRangeName, "gotoMenuRange");
+            _ranges["gotoMenuRange"].Value = descrizioni;
+            _ranges["gotoMenuRange"].Style = "navBarStyle";
+        }
+
+        private void InitBloccoEntita(DataRowView entita)
+        {
+            _rigaAttiva++;
             DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
             grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
 
             DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
 
-            int colonnaInizio = Struttura.COL_BLOCK;
-            int intervalloOre = CommonFunctions.GetOreIntervallo(dataInizio, dataFine);
+            _colonnaInizio = Struttura.COL_BLOCK;
+            _intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
 
             //titolo + data
-            InsertTitoloEntita(entita, ref rigaAttiva, colonnaInizio, dataInizio, dataFine);
+            InsertTitoloEntita(entita);
             //grafici
-            InsertGraficiEntita(grafici, ref rigaAttiva, colonnaInizio, intervalloOre);
+            InsertGraficiEntita(grafici);
+            //ore
+            InsertOre(entita["SiglaEntita"]);
             //informazioni + ore
-            InsertInformazioniEntita(informazioni, ref rigaAttiva, colonnaInizio - 2, intervalloOre);
+            InsertInformazioniEntita(entita["SiglaEntita"], informazioni);
         }
-
-        private void InsertTitoloEntita(DataRowView entita, ref int rigaAttiva, int colonnaInizio, DateTime dataInizio, DateTime dataFine)
+        #region Blocco entità
+        
+        private void InsertTitoloEntita(DataRowView entita)
         {
-            for (var giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
-            {
-                int oreGiorno = CommonFunctions.GetOreGiorno(giorno);
-                string suffissoData = CommonFunctions.GetSuffissoData(dataInizio, giorno);
+            int colonnaInizio = _colonnaInizio;
+            EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno)
+               {
+                   string rangeTitolo = entita["SiglaEntita"] + Simboli.UNION + "T" + Simboli.UNION + suffissoData;
+                   string rangeData = entita["SiglaEntita"] + Simboli.UNION + suffissoData;
 
-                string rangeTitolo = entita["SiglaEntita"] + Simboli.UNION + "T" + Simboli.UNION + suffissoData;
-                string rangeData = entita["SiglaEntita"] + Simboli.UNION + suffissoData;
+                   Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio],
+                           _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
 
-                Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio],
-                        _ws.Cells[rigaAttiva, colonnaInizio + oreGiorno - 1]];
+                   AddNamedRange(rng, rangeTitolo);
 
-                AddNamedRange(rng, rangeTitolo);
+                   _ranges[rangeTitolo].Merge();
+                   _ranges[rangeTitolo].Style = "titleBarStyle";
+                   _ranges[rangeTitolo].Value = entita["DesEntita"].ToString().ToUpperInvariant();
+                   _ranges[rangeTitolo].RowHeight = 25;
 
-                _ranges[rangeTitolo].Merge();
-                _ranges[rangeTitolo].Style = "titleBarStyle";
-                _ranges[rangeTitolo].Value = entita["DesEntita"].ToString().ToUpperInvariant();
-                _ranges[rangeTitolo].RowHeight = 25;
+                   rng = _ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaInizio],
+                           _ws.Cells[_rigaAttiva + 1, colonnaInizio + oreGiorno - 1]];
 
-                rng = _ws.Range[_ws.Cells[rigaAttiva + 1, colonnaInizio],
-                        _ws.Cells[rigaAttiva + 1, colonnaInizio + oreGiorno - 1]];
+                   AddNamedRange(rng, rangeData);
 
-                AddNamedRange(rng, rangeData);
+                   _ranges[rangeData].Merge();
+                   _ranges[rangeData].Style = "dateBarStyle";
+                   _ranges[rangeData].Value = giorno.ToString("MM/dd/yyyy");
+                   _ranges[rangeData].RowHeight = 20;
 
-                _ranges[rangeData].Merge();
-                _ranges[rangeData].Style = "dateBarStyle";
-                _ranges[rangeData].Value = giorno.ToString("MM/dd/yyyy");
-                _ranges[rangeData].RowHeight = 20;       
-
-                colonnaInizio += oreGiorno;
-            }
-            rigaAttiva++;
+                   colonnaInizio += oreGiorno;
+               });
+            _rigaAttiva++;
         }
-        private void InsertGraficiEntita(DataView grafici, ref int rigaAttiva, int colonnaInizio, int intervalloOre)
+        private void InsertGraficiEntita(DataView grafici)
         {            
             int i = 1;
             foreach (DataRowView grafico in grafici)
             {
                 string graficoRange = grafico["SiglaEntita"] + Simboli.UNION + "GRAFICO" + (grafici.Count > 1 ? ""+i++ : "");
 
-                Excel.Range rng = _ws.Range[_ws.Cells[++rigaAttiva, colonnaInizio],
-                    _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
+                Excel.Range rng = _ws.Range[_ws.Cells[++_rigaAttiva, _colonnaInizio],
+                    _ws.Cells[_rigaAttiva, _colonnaInizio + _intervalloOre - 1]];
 
                 AddNamedRange(rng, graficoRange);
 
@@ -428,11 +478,41 @@ namespace Iren.FrontOffice.Tools
                 _ranges[graficoRange].Style = "chartsBarStyle";
                 _ranges[graficoRange].RowHeight = 200;
             }
-            rigaAttiva++;
+            _rigaAttiva++;
         }
-        private void InsertInformazioniEntita(DataView informazioni, ref int rigaAttiva, int colonnaInizio, int intervalloOre)
+        private void InsertOre(object siglaEntita)
         {
-            int count = 0;
+            string style = "Align=center;Bold=true;FontSize=10;ForeColor=1;BackColor=15;Format=##;Borders=[InsideV:thin,Top:medium,Bottom:medium,Right:medium,Left:medium]";
+            _ws.Rows[_rigaAttiva].RowHeight = 20;
+            int colonnaInizio = _colonnaInizio;
+
+            EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno) 
+                {
+                    RangeStyle(_ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]], style);
+                    for (int i = colonnaInizio; i < colonnaInizio + oreGiorno; i++)
+                    {
+                        _ws.Cells[_rigaAttiva, i].Name = siglaEntita + Simboli.UNION + suffissoData + Simboli.UNION + "H" + (i - colonnaInizio + 1);
+                        _ws.Cells[_rigaAttiva, i].Value = (i - colonnaInizio + 1);
+                    }
+                    colonnaInizio += oreGiorno;
+                });
+            _rigaAttiva++;
+        }
+
+        private void InsertInformazioniEntita(object siglaEntita, DataView informazioni)
+        {
+            //creo e formatto il range ALLDATI
+            int colonnaInizio = _colonnaInizio;
+
+            EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno)
+                {
+                    Excel.Range allDati = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva + informazioni.Count - 1, colonnaInizio + oreGiorno - 1]];
+                    allDati.Style = "allDatiStyle";
+                    allDati.Name = siglaEntita + Simboli.UNION + "ALLDATI" + Simboli.UNION + suffissoData;
+                    colonnaInizio += oreGiorno;
+                });
+
+            int colonnaTitoloInfo = _colonnaInizio - 2;
             foreach (DataRowView info in informazioni)
             {
                 string siglaEntitaInfo = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]).ToString();
@@ -440,24 +520,25 @@ namespace Iren.FrontOffice.Tools
                 string bordoTop = "Top:" + (informazioni[0] == info ||  info["InizioGruppo"].ToString() == "1" ? "medium" : "thin");
                 string bordoBottom = "Bottom:" + (informazioni[informazioni.Count - 1] == info ? "medium" : "thin");
                 bool grassetto = info["Grassetto"].ToString() == "1";
-                int backColor = (info["Editabile"].ToString() == "1" ? 15 : 48);
-                string style = "";
+                int backColor = (info["BackColor"] is DBNull ? 0 : (int)info["BackColor"]);
+                backColor = backColor == 0 || backColor == 2 ? (info["Editabile"].ToString() == "1" ? 15 : 48) : backColor;
 
+                //proprietà di stile comuni
+                string style = "FontSize=" + info["FontSize"] + ";BackColor=" + backColor + ";"
+                    + "ForeColor=" + info["ForeColor"] + ";Visible=" + info["Visibile"] + ";";
+
+                //personalizzazioni a seconda della tipologia di informazione
                 if (info["SiglaTipologiaInformazione"].ToString() == "TITOLO2")
                 {
-                    Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
-                    style = "Merge=true;Bold=" + (grassetto) + ";FontSize=" + info["FontSize"] + ";BackColor=" + info["BackColor"] + ";"
-                        + "ForeColor=" + info["ForeColor"] + ";Borders=[" + bordoTop + "," + bordoBottom + "];Visible=" + info["Visibile"];
-                    
+                    Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaTitoloInfo], _ws.Cells[_rigaAttiva, colonnaTitoloInfo + _intervalloOre + 1]];
+                    style += "Bold:" + (grassetto) + ";Merge:true;Borders:[" + bordoTop + "," + bordoBottom + ", Right:medium]";
                     RangeStyle(rng, style);
                     rng.Value = info["DesInformazione"].ToString();
                 }
                 else
                 {
-                    Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + 1]];
-                    style += "Bold=false;FontSize=9;BackColor=" + backColor + ";"
-                        + "Borders=[insidev:thin,right:medium," + bordoTop + "," + bordoBottom + "];Visible=" + info["Visibile"];
-                        
+                    Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaTitoloInfo], _ws.Cells[_rigaAttiva, colonnaTitoloInfo + 1]];
+                    style += "Borders:[insidev:thin,right:medium," + bordoTop + "," + bordoBottom + "]";
                     RangeStyle(rng, style);
 
                     object[] valori = new object[2];
@@ -468,7 +549,7 @@ namespace Iren.FrontOffice.Tools
                     if (siglaEntitaInfo == "UP_BUS")
                     {
                         nome = siglaEntitaInfo + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + "DATA0.H24";
-                        _ws.Cells[rigaAttiva, colonnaInizio + 1].Interior.ColorIndex = 2;
+                        _ws.Cells[_rigaAttiva, colonnaTitoloInfo + 1].Interior.ColorIndex = 2;
 
                         if (info["SiglaInformazione"].ToString() == "VOL_INVASO")
                         {
@@ -488,38 +569,33 @@ namespace Iren.FrontOffice.Tools
                         nome = siglaEntitaInfo + Simboli.UNION + "SEL" + info["Selezione"];
                     }
 
-
                     //scrivo i valori sulle celle
                     rng.Value = valori;
                     //scrivo i nomi dove necessario
-                    _ws.Cells[rigaAttiva, colonnaInizio].Name = siglaEntitaInfo + Simboli.UNION + info["SiglaInformazione"];
+                    _ws.Cells[_rigaAttiva, colonnaTitoloInfo].Name = siglaEntitaInfo + Simboli.UNION + info["SiglaInformazione"];
                     if(nome != "")
-                        _ws.Cells[rigaAttiva, colonnaInizio + 1].Name = nome;
+                        _ws.Cells[_rigaAttiva, colonnaTitoloInfo + 1].Name = nome;
                     //cambio impostazioni per la seconda cella
-                    _ws.Cells[rigaAttiva, colonnaInizio + 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    _ws.Cells[_rigaAttiva, colonnaTitoloInfo + 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+                    //scrivo i nomi per le ore e personalizzo lo stile dove necessario
+                    int colonnaAttiva = _colonnaInizio;
+                    EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno)
+                        {
+                            for (int i = 0; i < oreGiorno; i++)
+                            {
+                                int oraAttiva = colonnaAttiva + i;
+                                _ws.Cells[_rigaAttiva, oraAttiva].Name = (siglaEntita + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + suffissoData + Simboli.UNION + "H" + i);
+                                RangeStyle(_ws.Cells[_rigaAttiva, oraAttiva], "Bold:" + (grassetto) + ";Borders:[InsideV:thin," + bordoTop + "," + bordoBottom + (i == oreGiorno - 1 ? ",Right:medium" : "") + "]");
+                            }
+                            colonnaAttiva += oreGiorno;
+                        });
                 }
-                rigaAttiva++;
+                _rigaAttiva++;
             }
+            _rigaAttiva++;
         }
 
-
-        private void InitBarraNavigazione(DataView entita)
-        {
-            object[] descrizioni = new object[entita.Count];
-            int i = -1;
-            foreach (DataRowView e in entita)
-            {
-                descrizioni[++i] = e["DesEntitaBreve"];
-                _ws.Cells[Struttura.ROW_GOTO, Struttura.COL_BLOCK + i].Name = e["siglaEntita"] + Simboli.UNION + "GOTO";
-            }
-
-            Excel.Range rng = _ws.Range[_ws.Cells[Struttura.ROW_GOTO, Struttura.COL_BLOCK],
-                _ws.Cells[Struttura.ROW_GOTO, Struttura.COL_BLOCK + i]];
-            string gotoMenuRangeName = _config["SiglaCategoria"] + Simboli.UNION + "GOTO_MENU";
-
-            AddNamedRange(rng, gotoMenuRangeName, "gotoMenuRange");
-            _ranges["gotoMenuRange"].Value = descrizioni;
-            _ranges["gotoMenuRange"].Style = "navBarStyle";            
-        }
+        #endregion
     }
 }
