@@ -11,6 +11,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Configuration;
 using System.Globalization;
+using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -42,13 +43,10 @@ namespace Iren.FrontOffice.Tools
         {
             //inizializzo parametri da file di configurazione
             config.Add("SiglaCategoria", "IREN_60T");
-            config.Add("IntervalloGiorni", int.Parse(ConfigurationManager.AppSettings["IntervalloGiorni"]));
             config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], 
                 "yyyyMMdd", CultureInfo.InvariantCulture));
 
-
             Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
-            s.Clear();
             s.LoadStructure();
         }
     }

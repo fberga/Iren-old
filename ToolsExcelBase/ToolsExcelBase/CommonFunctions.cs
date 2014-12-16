@@ -7,10 +7,11 @@ using Iren.FrontOffice.Core;
 using Office = Microsoft.Office.Core;
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.Office.Tools.Excel;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.FrontOffice.Base
 {
-    class CommonFunctions
+    public class CommonFunctions
     {
         #region Costanti
 
@@ -39,7 +40,8 @@ namespace Iren.FrontOffice.Tools
                 ENTITAINFORMAZIONEFORMATTAZIONE = "EntitaInformazioneFormattazione",
                 TIPOLOGIACHECK = "TipologiaCheck",
                 TIPOLOGIARAMPA = "TipologiaRampa",
-                APPLICAZIONE = "Applicazione";
+                APPLICAZIONE = "Applicazione",
+                NOMIDEFINITI = "DefinedNames";
         }
 
         public enum AppIDs
@@ -54,6 +56,7 @@ namespace Iren.FrontOffice.Tools
         private static string _namespace;
         private static DataSet _localDB = null;
         private static DataBase _db = null;
+        private static Workbook _wb;
         
         #endregion
 
@@ -78,6 +81,13 @@ namespace Iren.FrontOffice.Tools
             get 
             { 
                 return _namespace;
+            }
+        }
+        public static Workbook ThisWorkBook
+        {
+            get
+            {
+                return _wb;
             }
         }
 
@@ -134,10 +144,11 @@ namespace Iren.FrontOffice.Tools
             return dt;
         }
 
-        public static void Init(string dbName, AppIDs appID, DateTime dataAttiva)
+        public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb)
         {
             _db = new DataBase(dbName);
             _localDB = new DataSet(NAME);
+            _wb = wb;
 
             DataTable dt = CaricaApplicazione(appID);
             if (dt.Rows.Count == 0)
@@ -151,7 +162,7 @@ namespace Iren.FrontOffice.Tools
 
             try
             {
-                Office.CustomXMLPart xmlPart = Globals.ThisWorkbook.CustomXMLParts[_namespace];
+                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[_namespace];
                 StringReader sr = new StringReader(xmlPart.XML);
                 _localDB.ReadXml(sr);
             }
@@ -187,6 +198,7 @@ namespace Iren.FrontOffice.Tools
 
         public static void AggiornaStrutturaDati()
         {
+            CreaTabellaNomi();
             CaricaAzioni();
             CaricaCategorie();
             CaricaAzioneCategoria();
@@ -210,7 +222,32 @@ namespace Iren.FrontOffice.Tools
 
         }
         #region Aggiorna Struttura Dati
-        
+
+        private static bool CreaTabellaNomi()
+        {
+            try
+            {
+                string name = Tab.NOMIDEFINITI;
+                ResetTable(name);
+                DataTable dt = new DataTable()
+                {
+                    Columns =
+                    {
+                        {"Nome", typeof(String)},
+                        {"Cella1", typeof(Tuple<int, int>)},
+                        {"Cella2", typeof(Tuple<int, int>)}
+                    }
+                };
+                dt.TableName = name;
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private static bool CaricaAzioni()
         {
             try
@@ -608,14 +645,12 @@ namespace Iren.FrontOffice.Tools
             string locDBXml = sw.ToString();
             try
             {
-                Globals.ThisWorkbook.CustomXMLParts[_namespace].Delete();
+                _wb.CustomXMLParts[_namespace].Delete();
             }
             catch
             {
             }
-            Globals.ThisWorkbook.CustomXMLParts.Add(locDBXml);
-
-            //Office.CustomXMLPart p =  Globals.ThisWorkbook.CustomXMLParts[NAMESPACE];
+            _wb.CustomXMLParts.Add(locDBXml);
         }
 
         #endregion

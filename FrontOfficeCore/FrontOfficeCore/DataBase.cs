@@ -31,6 +31,7 @@ namespace Iren.FrontOffice.Core
         public struct StoredProcedure
         {
             public const string UTENTE = "spUtente",
+            APPLICAZIONE = "spApplicazioneProprieta",
             GETVERSION = "spGetVersione",
             LOG = "spLog",
             INSERT_LOG = "spInsertLog",

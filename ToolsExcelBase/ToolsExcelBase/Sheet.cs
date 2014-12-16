@@ -10,9 +10,9 @@ using System.Reflection;
 using System.Data;
 using System.Globalization;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.FrontOffice.Base
 {
-    class Sheet<T> : CommonFunctions
+    public class Sheet<T> : CommonFunctions, IDisposable
     {
         #region Variabili
 
@@ -24,8 +24,51 @@ namespace Iren.FrontOffice.Tools
         int _intervalloOre;
         int _rigaAttiva;
         string _nomeFoglio;
+        bool _disposed = false;
+        DataTable _nomiDefiniti;
         
         #endregion
+
+        #region Costruttori
+
+        public Sheet(T categoria)
+        {
+            Type t = categoria.GetType();
+            PropertyInfo p = t.GetProperty("Base");
+            _ws = (Worksheet)p.GetValue(categoria, null);
+
+            FieldInfo f = t.GetField("config");
+            _config = (Dictionary<string, object>)f.GetValue(categoria);
+
+            //dimensionamento celle in base ai parametri del DB
+            DataView paramApplicazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.APPLICAZIONE].DefaultView;
+
+            Cell.Width.empty = double.Parse(paramApplicazione[0]["ColVuotaWidth"].ToString());
+            Cell.Width.dato = double.Parse(paramApplicazione[0]["ColDatoWidth"].ToString());
+            Cell.Width.entita = double.Parse(paramApplicazione[0]["ColEntitaWidth"].ToString());
+            Cell.Width.informazione = double.Parse(paramApplicazione[0]["ColInformazioneWidth"].ToString());
+            Cell.Width.unitaMisura = double.Parse(paramApplicazione[0]["ColUMWidth"].ToString());
+            Cell.Width.parametro = double.Parse(paramApplicazione[0]["ColParametroWidth"].ToString());
+            Cell.Height.normal = double.Parse(paramApplicazione[0]["RowHeight"].ToString());
+            Cell.Height.empty = double.Parse(paramApplicazione[0]["RowVuotaHeight"].ToString());
+            Struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"];
+            Struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
+            Struttura.intervalloGiorni = (int)paramApplicazione[0]["IntervalloGiorni"];
+            Struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
+            Struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
+            Struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (Struttura.visParametro ? 1 : 0);
+
+            Style.StdStyles(CommonFunctions.ThisWorkBook);
+
+            _nomiDefiniti = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI];
+        }
+        ~Sheet()
+        {
+            Dispose();
+        }
+
+        #endregion
+
 
         private delegate void CicloGiorni(int oreGiorno, string suffissoData, DateTime giorno);
         private void EseguiCicloGiorni(CicloGiorni callback)
@@ -44,51 +87,31 @@ namespace Iren.FrontOffice.Tools
             }
         }
 
-        public Sheet(T categoria)
-        {            
-            Type t = categoria.GetType();
-            PropertyInfo p = t.GetProperty("Base");
-            _ws = (Worksheet) p.GetValue(categoria, null);
+        private void DefineNewName(string nome, Tuple<int, int> cella1, Tuple<int, int> cella2 = null)
+        {
+            DataRow r = _nomiDefiniti.NewRow();
+            r["Nome"] = nome;
+            r["Cella1"] = cella1;
+            r["Cella2"] = cella2 ?? cella1;
 
-            FieldInfo f = t.GetField("config");
-            _config = (Dictionary<string,object>)f.GetValue(categoria);
+//TODO controllare se nome esiste già
 
-            //dimensionamento celle in base ai parametri del DB
-            DataView paramApplicazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.APPLICAZIONE].DefaultView;
-            
-            Cell.Width.empty = double.Parse(paramApplicazione[0]["ColVuotaWidth"].ToString());
-            Cell.Width.dato = double.Parse(paramApplicazione[0]["ColDatoWidth"].ToString());
-            Cell.Width.entita = double.Parse(paramApplicazione[0]["ColEntitaWidth"].ToString());
-            Cell.Width.informazione = double.Parse(paramApplicazione[0]["ColInformazioneWidth"].ToString());
-            Cell.Width.unitaMisura = double.Parse(paramApplicazione[0]["ColUMWidth"].ToString());
-            Cell.Width.parametro = double.Parse(paramApplicazione[0]["ColParametroWidth"].ToString());
-            Cell.Height.normal = double.Parse(paramApplicazione[0]["RowHeight"].ToString());
-            Cell.Height.empty = double.Parse(paramApplicazione[0]["RowVuotaHeight"].ToString());
-            Struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"];
-            Struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
-            Struttura.intervalloGiorni = (int)paramApplicazione[0]["IntervalloGiorni"];
-            Struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
-            Struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
-            Struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (Struttura.visParametro ? 1 : 0);
-
-            Style.StdStyles();
+            _nomiDefiniti.Rows.Add(r);
         }
 
         private void Clear()
         {
-            int dataOreTot = GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Struttura.intervalloGiorni)) + (Struttura.visData0H24 ? 1 : 0) + (Struttura.visParametro ? 1 : 0);            
-            
+            int dataOreTot = GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Struttura.intervalloGiorni)) + (Struttura.visData0H24 ? 1 : 0) + (Struttura.visParametro ? 1 : 0);
+
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
-            
-            Excel.Range workingRange = _ws.Range[_ws.Cells[1, 2], _ws.Cells[1, dataOreTot * 3]];
 
-            workingRange.EntireColumn.Delete();
+            _ws.UsedRange.EntireColumn.Delete();
+            _ws.UsedRange.FormatConditions.Delete();
+            _ws.UsedRange.EntireRow.Hidden = false;
+            _ws.UsedRange.Font.Size = 10;
+            _ws.UsedRange.Font.Name = "Verdana";
+            _ws.UsedRange.RowHeight = Cell.Height.normal;
 
-            _ws.Cells.FormatConditions.Delete();
-            _ws.Rows["1:1000"].EntireRow.Hidden = false;
-            _ws.Rows["1:1000"].Font.Size = 10;
-            _ws.Rows["1:1000"].Font.Name = "Verdana";
-            _ws.Rows["1:1000"].RowHeight = Cell.Height.normal;
             _ws.Rows["1:" + (Struttura.rigaBlock - 1)].RowHeight = Cell.Height.empty;
             _ws.Rows[Struttura.rigaGoto].RowHeight = Cell.Height.normal;
 
@@ -158,12 +181,13 @@ namespace Iren.FrontOffice.Tools
             foreach (DataRowView e in entita)
             {
                 descrizioni[++i] = e["DesEntitaBreve"];
-                _ws.Cells[Struttura.rigaGoto, Struttura.colBlock + i].Name = e["siglaEntita"] + Simboli.UNION + "GOTO";
+                //_ws.Cells[Struttura.rigaGoto, Struttura.colBlock + i].Name = e["siglaEntita"] + Simboli.UNION + "GOTO";
+                DefineNewName(e["siglaEntita"] + Simboli.UNION + "GOTO", Tuple.Create(Struttura.rigaGoto, Struttura.colBlock + i));
             }
 
             Excel.Range rng = _ws.Range[_ws.Cells[Struttura.rigaGoto, Struttura.colBlock],
                 _ws.Cells[Struttura.rigaGoto, Struttura.colBlock + i]];
-            string gotoMenuRangeName = _config["SiglaCategoria"] + Simboli.UNION + "GOTO_MENU";
+            //string gotoMenuRangeName = _config["SiglaCategoria"] + Simboli.UNION + "GOTO_MENU";
 
             rng.Value = descrizioni;
             rng.Style = "navBarStyle";
@@ -200,14 +224,16 @@ namespace Iren.FrontOffice.Tools
         
         private void InsertTitoloEntita(DataRowView entita)
         {
-            int colonnaInizio = _colonnaInizio;
-            EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno)
+            int colonnaInizio = _colonnaInizio;            
+
+            EseguiCicloGiorni((oreGiorno, suffissoData, giorno) =>
                {
                    string rangeTitolo = entita["SiglaEntita"] + Simboli.UNION + "T" + Simboli.UNION + suffissoData;
-                   string rangeData = entita["SiglaEntita"] + Simboli.UNION + suffissoData;
 
                    Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio],
                            _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
+
+                   DefineNewName(rangeTitolo, Tuple.Create(_rigaAttiva, colonnaInizio), Tuple.Create(_rigaAttiva, colonnaInizio + oreGiorno - 1));
 
                    rng.Merge();
                    rng.Style = "titleBarStyle";
@@ -235,6 +261,8 @@ namespace Iren.FrontOffice.Tools
 
                 Excel.Range rng = _ws.Range[_ws.Cells[++_rigaAttiva, _colonnaInizio],
                     _ws.Cells[_rigaAttiva, _colonnaInizio + _intervalloOre - 1]];
+
+                DefineNewName(graficoRange, Tuple.Create(++_rigaAttiva, _colonnaInizio), Tuple.Create(_rigaAttiva, _colonnaInizio + _intervalloOre - 1));
 
                 rng.Merge();
                 rng.Style = "chartsBarStyle";
@@ -278,15 +306,17 @@ namespace Iren.FrontOffice.Tools
             int colonnaInizio = _colonnaInizio;
             int rigaAttiva = _rigaAttiva;
 
-            EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno)
-                {
-                    Excel.Range allDati = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva + informazioni.Count - 1, colonnaInizio + oreGiorno - 1]];
-                    allDati.Style = "allDatiStyle";
-                    allDati.Name = siglaEntita + Simboli.UNION + "ALLDATI" + Simboli.UNION + suffissoData;
-                    allDati.EntireColumn.ColumnWidth = Cell.Width.dato;
-                    allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-                    colonnaInizio += oreGiorno;
-                });
+//TODO migliorare allData ranges!!!!! non serve definire nomi per questi
+
+            //EseguiCicloGiorni(delegate(int oreGiorno, string suffissoData, DateTime giorno)
+            //    {
+            //        Excel.Range allDati = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva + informazioni.Count - 1, colonnaInizio + oreGiorno - 1]];
+            //        allDati.Style = "allDatiStyle";
+            //        allDati.Name = siglaEntita + Simboli.UNION + "ALLDATI" + Simboli.UNION + suffissoData;
+            //        allDati.EntireColumn.ColumnWidth = Cell.Width.dato;
+            //        allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+            //        colonnaInizio += oreGiorno;
+            //    });
 
             int colonnaTitoloInfo = _colonnaInizio - (Struttura.visParametro ? 3 : 2);
             foreach (DataRowView info in informazioni)
@@ -335,9 +365,9 @@ namespace Iren.FrontOffice.Tools
                     //scrivo i valori nelle celle
                     rng.Value = valori;
                     //scrivo i nomi dove necessario
-                    _ws.Cells[rigaAttiva, colonnaTitoloInfo].Name = siglaEntitaInfo + Simboli.UNION + info["SiglaInformazione"];
-                    if(nome != "")
-                        _ws.Cells[rigaAttiva, colonnaTitoloInfo + 1].Name = nome;
+                    //_ws.Cells[rigaAttiva, colonnaTitoloInfo].Name = siglaEntitaInfo + Simboli.UNION + info["SiglaInformazione"];
+                    //if(nome != "")
+                    //    _ws.Cells[rigaAttiva, colonnaTitoloInfo + 1].Name = nome;
                     //cambio impostazioni per la seconda cella
                     _ws.Cells[rigaAttiva, colonnaTitoloInfo + 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;   
                 }
@@ -349,6 +379,32 @@ namespace Iren.FrontOffice.Tools
         {
             int rigaAttiva = _rigaAttiva;
 
+            //TODO Rimettere a posto il ciclo formattando e riempiendo i valori a blocchi e non per cella
+            foreach (DataRowView info in informazioni)
+            {
+                string bordoTop = "Top:" + (informazioni[0] == info || info["InizioGruppo"].ToString() == "1" ? "medium" : "thin");
+                string bordoBottom = (informazioni[informazioni.Count - 1] == info ? "Bottom:medium" : "");
+                bool grassetto = info["Grassetto"].ToString() == "1";
+                int backColor = (info["BackColor"] is DBNull ? 0 : (int)info["BackColor"]);
+                backColor = backColor == 0 || backColor == 2 ? (info["Editabile"].ToString() == "1" ? 15 : 48) : backColor;
+
+                string formula = PreparaFormula(info);
+
+                string style = "FontSize=" + info["FontSize"] + ";BackColor=" + backColor + ";"
+                    + "ForeColor=" + info["ForeColor"] + ";Visible=" + info["Visibile"] + ";";
+
+                int colonnaAttiva = _colonnaInizio - 1;
+
+            }
+            
+            
+            
+            
+            
+            
+            
+            
+            
             foreach (DataRowView info in informazioni)
             {
                 string siglaEntitaInfo = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]).ToString();
@@ -404,18 +460,18 @@ namespace Iren.FrontOffice.Tools
                         {
                             if (info["FormulaInCella"].Equals("1"))
                             {
-                                string formulaFinale;
+                                string formulaFinale  = "=";
                                 if (!(info["Formula"] is DBNull))
-                                    formulaFinale = formula.Replace("%DATA%", suffissoData + Simboli.UNION + "H" + i);
+                                    formulaFinale += formula.Replace("%DATA%", suffissoData + Simboli.UNION + "H" + i);
                                 else
                                 {
-                                    formulaFinale = formula.Replace("%DATA%", suffissoData + Simboli.UNION + "H" + i);
+                                    formulaFinale += formula.Replace("%DATA%", suffissoData + Simboli.UNION + "H" + i);
                                     if (siglaEntitaInfo == "UP_BUS")
                                     {
                                         string dataPrec = (i == 1 ? "DATA0" + Simboli.UNION + "H24" : suffissoData + Simboli.UNION + "H" + i);
-                                        formulaFinale = formulaFinale.Replace("%DATA-1%", dataPrec);
+                                        formulaFinale += formulaFinale.Replace("%DATA-1%", dataPrec);
                                     }
-                                    _ws.Cells[rigaAttiva, oraAttiva].FormulaR1C1 = "=" + formulaFinale;
+                                    _ws.Cells[rigaAttiva, oraAttiva].FormulaR1C1 = formulaFinale;
                                 }
                             }
                         }
@@ -445,7 +501,6 @@ namespace Iren.FrontOffice.Tools
                 }
                 return formula;
             }
-
             return "";
         }
 
@@ -499,5 +554,15 @@ namespace Iren.FrontOffice.Tools
         }
 
         #endregion
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _ws.Dispose();
+                GC.SuppressFinalize(this);
+                _disposed = true;
+            }
+        }
     }
 }

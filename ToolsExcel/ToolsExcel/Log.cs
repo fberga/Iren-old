@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
-using ComFunc = Iren.FrontOffice.Tools.CommonFunctions;
+using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -71,8 +71,8 @@ namespace Iren.FrontOffice.Tools
                 logObj = Controls.AddListObject(Range["A1"], "LogList");
             }
             logObj.AutoSetDataBoundColumnHeaders = true;
-            logObj.DataSource = ComFunc.LocalDB;
-            logObj.DataMember = ComFunc.Tab.LOG;
+            logObj.DataSource = CommonFunctions.LocalDB;
+            logObj.DataMember = CommonFunctions.Tab.LOG;
             logObj.Range.EntireColumn.AutoFit();
         }
 

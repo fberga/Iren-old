@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
 // set di attributi. Per modificare le informazioni associate a un assembly
 // occorre quindi modificare i valori di questi attributi.
-[assembly: AssemblyTitle("RiMoSTRibbon")]
+[assembly: AssemblyTitle("ToolsExcelAutomation")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RiMoSTRibbon")]
+[assembly: AssemblyProduct("ToolsExcelAutomation")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Se il progetto viene esposto a COM, il GUID che segue verrà utilizzato per creare l'ID della libreria dei tipi
-[assembly: Guid("e15d5632-6dc1-48de-9d11-69c84349ff62")]
+[assembly: Guid("b1eb74c3-1fcb-4e30-a287-f8c79bcdd7b8")]
 
 // Le informazioni sulla versione di un assembly sono costituite dai seguenti quattro valori:
 //

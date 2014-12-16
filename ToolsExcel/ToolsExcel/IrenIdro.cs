@@ -9,18 +9,16 @@ using Microsoft.Office.Tools.Excel;
 using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
+using System.Configuration;
+using System.Globalization;
+using Iren.FrontOffice.Tools;
+using Iren.FrontOffice.Base;
 
 namespace FrontOffice.Tools
 {
     public partial class IrenIdro
     {
-        private void Foglio4_Startup(object sender, System.EventArgs e)
-        {
-        }
-
-        private void Foglio4_Shutdown(object sender, System.EventArgs e)
-        {
-        }
+        public Dictionary<string, object> config = new Dictionary<string, object>();
 
         #region Codice generato dalla finestra di progettazione di VSTO
 
@@ -30,11 +28,22 @@ namespace FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(Foglio4_Startup);
-            this.Shutdown += new System.EventHandler(Foglio4_Shutdown);
+            this.Startup += new System.EventHandler(this.IrenIdro_Startup);
+
         }
 
         #endregion
+
+        private void IrenIdro_Startup(object sender, EventArgs e)
+        {
+            //inizializzo parametri da file di configurazione
+            config.Add("SiglaCategoria", "IREN_60I");
+            config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"],
+                "yyyyMMdd", CultureInfo.InvariantCulture));
+
+            //Sheet<IrenIdro> s = new Sheet<IrenIdro>(this);
+            //s.LoadStructure();
+        }
 
     }
 }

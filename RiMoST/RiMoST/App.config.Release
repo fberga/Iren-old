@@ -5,7 +5,7 @@
     <add key="DB" value="RiMoST_TEST" />
     <add key="utentiVisto" value="Filippo Release"/>
     <add key="savePath" value="C:\Users\e-bergamin\Desktop\Bubu"/>
-    <add key="saveNameFormat" value="Richiesta-[lbIdRichiesta]"/>
+    <add key="saveNameFormat" value="RELEASE-Richiesta-[lbIdRichiesta]"/>
   </appSettings>
   <connectionStrings>
     <add name="RiMoST_TEST"

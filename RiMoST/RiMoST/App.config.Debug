@@ -4,8 +4,8 @@
     <add key="idStruttura" value="1"/>
     <add key="DB" value="RiMoST_TEST" />
     <add key="utentiVisto" value="Filippo Debug"/>
-    <add key="savePath" value="C:\Users\e-bergamin\Desktop\Bubu"/>
-    <add key="saveNameFormat" value="Richiesta-[lbIdRichiesta]"/>
+    <add key="savePath" value="D:\Users\e-bergamin\Desktop\Bubu"/>
+    <add key="saveNameFormat" value="DEBUG-Richiesta-[lbIdRichiesta]"/>
   </appSettings>
   <connectionStrings>
     <add name="RiMoST_TEST"

@@ -175,7 +175,9 @@
     <None Include="App.config.Debug">
       <SubType>Designer</SubType>
     </None>
-    <None Include="App.config.FrontOffice" />
+    <None Include="App.config.FrontOffice">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="App.config.Portafoglio" />
     <None Include="App.config.Release" />
     <None Include="RiMoST.docx" />

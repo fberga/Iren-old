@@ -10,24 +10,14 @@ using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
-using Iren.FrontOffice.Core;
 using System.Configuration;
 using System.IO;
+using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Tools
 {
     public partial class ThisWorkbook
     {
-        #region Variabili
-
-        public struct Parameters
-        {
-            public const int DATA_ORE_TOT = 24;
-        }
-
-        #endregion
-
-
         #region Codice generato dalla finestra di progettazione di VSTO
 
         /// <summary>
@@ -46,7 +36,9 @@ namespace Iren.FrontOffice.Tools
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
-            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"], CommonFunctions.AppIDs.SISTEMA_COMANDI, DateTime.Now);
+            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"]
+                , (CommonFunctions.AppIDs)Enum.Parse(typeof(CommonFunctions.AppIDs), ConfigurationManager.AppSettings["AppID"])
+                , DateTime.Now, Globals.ThisWorkbook.Base);
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
