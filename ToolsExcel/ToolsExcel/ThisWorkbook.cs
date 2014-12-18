@@ -27,6 +27,7 @@ namespace Iren.FrontOffice.Tools
         private void InternalStartup()
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
+            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(this.ThisWorkbook_SheetSelectionChange);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
             this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
 
@@ -56,7 +57,17 @@ namespace Iren.FrontOffice.Tools
 
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)
         {
-            
+
+        }
+
+        private void ThisWorkbook_SheetSelectionChange(object Sh, Excel.Range Target)
+        {
+            DefinedNames names = new DefinedNames();
+
+            string[] n = names.Get(Target.Row, Target.Column);
+
+            if (n != null)
+                MessageBox.Show(n[0].ToString());
         }
     }
 }

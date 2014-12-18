@@ -22,8 +22,9 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(Main_Startup);
-            this.Shutdown += new System.EventHandler(Main_Shutdown);
+            this.Startup += new System.EventHandler(this.Main_Startup);
+            this.Shutdown += new System.EventHandler(this.Main_Shutdown);
+
         }
 
         #endregion

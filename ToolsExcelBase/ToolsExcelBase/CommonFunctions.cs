@@ -172,7 +172,7 @@ namespace Iren.FrontOffice.Base
 
             int usr = InitUser();
             _db.setParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);
-            initLog();
+            initLog();            
         }
 
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)
@@ -218,8 +218,6 @@ namespace Iren.FrontOffice.Base
             CaricaEntitaInformazioneFormattazione();
             CaricaTipologiaCheck();
             CaricaTipologiaRampa();
-
-
         }
         #region Aggiorna Struttura Dati
 
@@ -234,11 +232,14 @@ namespace Iren.FrontOffice.Base
                     Columns =
                     {
                         {"Nome", typeof(String)},
-                        {"Cella1", typeof(Tuple<int, int>)},
-                        {"Cella2", typeof(Tuple<int, int>)}
+                        {"R1", typeof(int)},
+                        {"C1", typeof(int)},
+                        {"R2", typeof(int)},
+                        {"C2", typeof(int)}
                     }
                 };
                 dt.TableName = name;
+
                 _localDB.Tables.Add(dt);
                 return true;
             }

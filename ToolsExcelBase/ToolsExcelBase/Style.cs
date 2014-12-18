@@ -109,6 +109,9 @@ namespace Iren.FrontOffice.Base
 
                 switch (keyVal[0].ToLowerInvariant())
                 {
+                    case "style":
+                        rng.Style = keyVal[1];
+                        break;
                     case "merge":
                         rng.MergeCells = Regex.IsMatch(keyVal[1], "true|1", RegexOptions.IgnoreCase);
                         break;

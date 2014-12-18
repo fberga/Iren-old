@@ -41,8 +41,8 @@ namespace FrontOffice.Tools
             config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"],
                 "yyyyMMdd", CultureInfo.InvariantCulture));
 
-            //Sheet<IrenIdro> s = new Sheet<IrenIdro>(this);
-            //s.LoadStructure();
+            Sheet<IrenIdro> s = new Sheet<IrenIdro>(this);
+            s.LoadStructure();
         }
 
     }
