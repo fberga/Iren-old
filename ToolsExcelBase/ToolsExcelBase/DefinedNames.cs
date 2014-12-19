@@ -12,13 +12,15 @@ namespace Iren.FrontOffice.Base
 
         DataTable _definedNames;
         DataView _definedNamesView;
+        string _foglio;
 
         #endregion
 
         #region Costruttori
 
-        public DefinedNames()
+        public DefinedNames(string foglio)
         {
+            _foglio = foglio;
             _definedNames = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI];
             _definedNamesView = new DataView(_definedNames);
         }
@@ -57,6 +59,7 @@ namespace Iren.FrontOffice.Base
         {
             DataRow r = _definedNames.NewRow();
             cella2 = cella2 ?? cella1;
+            r["Foglio"] = _foglio;
             r["Nome"] = nome;
             r["R1"] = cella1.Item1;
             r["C1"] = cella1.Item2;
@@ -74,7 +77,7 @@ namespace Iren.FrontOffice.Base
 
         public bool IsRange(string name)
         {
-            _definedNamesView.RowFilter = "Nome='" + name + "'";
+            _definedNamesView.RowFilter = "Foglio='" + _foglio + "' AND Nome='" + name + "'";
             if (_definedNamesView.Count == 0)
                 return false;
             return _definedNamesView[0]["R1"] != _definedNamesView[0]["R2"] || _definedNamesView[0]["C1"] != _definedNamesView[0]["C2"];
@@ -82,7 +85,7 @@ namespace Iren.FrontOffice.Base
 
         public string[] Get(int row, int column)
         {
-            _definedNamesView.RowFilter = "R1=" + row + " AND C1=" + column;
+            _definedNamesView.RowFilter = "Foglio='" + _foglio + "' AND R1=" + row + " AND C1=" + column;
             
             if (_definedNamesView.Count == 0)
                 return null;
@@ -96,7 +99,7 @@ namespace Iren.FrontOffice.Base
         }
         public Tuple<int,int> GetFirstCell(string name)
         {
-            _definedNamesView.RowFilter = "Nome='" + name + "'";
+            _definedNamesView.RowFilter = "Foglio='" + _foglio + "' AND Nome='" + name + "'";
 
             if (_definedNamesView.Count == 0)
                 return null;
@@ -116,6 +119,28 @@ namespace Iren.FrontOffice.Base
                     Tuple.Create(int.Parse(_definedNamesView[0]["R1"].ToString()), int.Parse(_definedNamesView[0]["C1"].ToString())),
                     Tuple.Create(int.Parse(_definedNamesView[0]["R2"].ToString()), int.Parse(_definedNamesView[0]["C2"].ToString()))
                 };
+        }
+
+        #endregion
+
+        #region Metodi Statici
+
+        public static DataTable GetDefaultTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Foglio", typeof(String)},
+                        {"Nome", typeof(String)},
+                        {"R1", typeof(int)},
+                        {"C1", typeof(int)},
+                        {"R2", typeof(int)},
+                        {"C2", typeof(int)}
+                    }
+            };
+            dt.TableName = name;
+            return dt;
         }
 
         #endregion

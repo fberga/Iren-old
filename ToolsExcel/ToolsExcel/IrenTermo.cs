@@ -46,8 +46,8 @@ namespace Iren.FrontOffice.Tools
             config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], 
                 "yyyyMMdd", CultureInfo.InvariantCulture));
 
-            //Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
-            //s.LoadStructure();
+            Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
+            s.LoadStructure();
         }
     }
 }

@@ -227,19 +227,7 @@ namespace Iren.FrontOffice.Base
             {
                 string name = Tab.NOMIDEFINITI;
                 ResetTable(name);
-                DataTable dt = new DataTable()
-                {
-                    Columns =
-                    {
-                        {"Nome", typeof(String)},
-                        {"R1", typeof(int)},
-                        {"C1", typeof(int)},
-                        {"R2", typeof(int)},
-                        {"C2", typeof(int)}
-                    }
-                };
-                dt.TableName = name;
-
+                DataTable dt = DefinedNames.GetDefaultTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }

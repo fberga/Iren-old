@@ -62,7 +62,7 @@ namespace Iren.FrontOffice.Tools
 
         private void ThisWorkbook_SheetSelectionChange(object Sh, Excel.Range Target)
         {
-            DefinedNames names = new DefinedNames();
+            DefinedNames names = new DefinedNames(Target.Worksheet.Name);
 
             string[] n = names.Get(Target.Row, Target.Column);
 

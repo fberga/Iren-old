@@ -77,9 +77,8 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("allDatiStyle");
                 style.Font.Size = 10;
-                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                style.NumberFormat = "#,###.000;-#,###.000;-";
                 style.Interior.ColorIndex = 2;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
 
@@ -135,7 +134,7 @@ namespace Iren.FrontOffice.Base
                         rng.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                         break;
                     case "numberformat":
-                        rng.NumberFormat = keyVal[1];
+                        rng.NumberFormat = keyVal[1].Replace("[", "").Replace("]", "");
                         break;
                     case "forecolor":
                         rng.Font.ColorIndex = int.Parse(keyVal[1]);
