@@ -28,6 +28,7 @@ namespace Iren.FrontOffice.Tools
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
             this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(this.ThisWorkbook_SheetSelectionChange);
+            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(BaseHandler.GotoClick);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
             this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
 
@@ -66,8 +67,9 @@ namespace Iren.FrontOffice.Tools
 
             string[] n = names.Get(Target.Row, Target.Column);
 
-            if (n != null)
-                MessageBox.Show(n[0].ToString());
+            //if (n != null)
+            //    MessageBox.Show(n[0].ToString());
         }
+
     }
 }

@@ -77,7 +77,7 @@ namespace Iren.FrontOffice.Base
 
         public bool IsRange(string name)
         {
-            _definedNamesView.RowFilter = "Foglio='" + _foglio + "' AND Nome='" + name + "'";
+            _definedNamesView.RowFilter = "Nome='" + name + "'";
             if (_definedNamesView.Count == 0)
                 return false;
             return _definedNamesView[0]["R1"] != _definedNamesView[0]["R2"] || _definedNamesView[0]["C1"] != _definedNamesView[0]["C2"];
@@ -99,7 +99,7 @@ namespace Iren.FrontOffice.Base
         }
         public Tuple<int,int> GetFirstCell(string name)
         {
-            _definedNamesView.RowFilter = "Foglio='" + _foglio + "' AND Nome='" + name + "'";
+            _definedNamesView.RowFilter = "Nome='" + name + "'";
 
             if (_definedNamesView.Count == 0)
                 return null;
@@ -119,6 +119,16 @@ namespace Iren.FrontOffice.Base
                     Tuple.Create(int.Parse(_definedNamesView[0]["R1"].ToString()), int.Parse(_definedNamesView[0]["C1"].ToString())),
                     Tuple.Create(int.Parse(_definedNamesView[0]["R2"].ToString()), int.Parse(_definedNamesView[0]["C2"].ToString()))
                 };
+        }
+
+        public string GetSheetName(string name)
+        {
+            _definedNamesView.RowFilter = "Nome='" + name + "'";
+            if (_definedNamesView.Count == 0)
+                return null;
+
+            return _definedNamesView[0]["Foglio"].ToString();
+
         }
 
         #endregion

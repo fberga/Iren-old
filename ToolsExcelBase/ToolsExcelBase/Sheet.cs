@@ -227,31 +227,31 @@ namespace Iren.FrontOffice.Base
             int colonnaInizio = _colonnaInizio;            
 
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
-               {
-                   string rangeTitolo = entita["SiglaEntita"] + Simboli.UNION + "T" + Simboli.UNION + suffissoData;
+            {
+                string rangeTitolo = entita["SiglaEntita"] + Simboli.UNION + "T" + Simboli.UNION + suffissoData;
 
-                   Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio],
-                           _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio],
+                        _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
 
-                   _nomiDefiniti.Add(rangeTitolo, Tuple.Create(_rigaAttiva, colonnaInizio), Tuple.Create(_rigaAttiva, colonnaInizio + oreGiorno - 1));
+                _nomiDefiniti.Add(rangeTitolo, Tuple.Create(_rigaAttiva, colonnaInizio), Tuple.Create(_rigaAttiva, colonnaInizio + oreGiorno - 1));
 
-                   rng.Merge();
-                   rng.Style = "titleBarStyle";
-                   rng.Value = entita["DesEntita"].ToString().ToUpperInvariant();
-                   rng.RowHeight = 25;
+                rng.Merge();
+                rng.Style = "titleBarStyle";
+                rng.Value = entita["DesEntita"].ToString().ToUpperInvariant();
+                rng.RowHeight = 25;
 
-                   rng = _ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaInizio],
-                           _ws.Cells[_rigaAttiva + 1, colonnaInizio + oreGiorno - 1]];
+                rng = _ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaInizio],
+                        _ws.Cells[_rigaAttiva + 1, colonnaInizio + oreGiorno - 1]];
 
-                   rng.Merge();
-                   rng.Style = "dateBarStyle";
-                   rng.Value = giorno.ToString("MM/dd/yyyy");
-                   rng.RowHeight = 20;
+                rng.Merge();
+                rng.Style = "dateBarStyle";
+                rng.Value = giorno.ToString("MM/dd/yyyy");
+                rng.RowHeight = 20;
 
-                   colonnaInizio += oreGiorno;
+                colonnaInizio += oreGiorno;
                    
-                   return true;
-               });
+                return true;
+            });
             _rigaAttiva++;
         }
         private void InsertGraficiEntita(DataView grafici)
@@ -279,19 +279,19 @@ namespace Iren.FrontOffice.Base
             int colonnaInizio = _colonnaInizio;
 
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
+            {
+                Style.RangeStyle(_ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]], style);
+                for (int i = colonnaInizio; i < colonnaInizio + oreGiorno; i++)
                 {
-                    Style.RangeStyle(_ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]], style);
-                    for (int i = colonnaInizio; i < colonnaInizio + oreGiorno; i++)
-                    {
-                        int val = i - colonnaInizio + 1;
-                        if (giorno == _dataInizio && Struttura.visData0H24)
-                            val = i == colonnaInizio ? 24 : i - colonnaInizio;
-                        _ws.Cells[_rigaAttiva, i].Value = val;
-                    }
-                    colonnaInizio += oreGiorno;
+                    int val = i - colonnaInizio + 1;
+                    if (giorno == _dataInizio && Struttura.visData0H24)
+                        val = i == colonnaInizio ? 24 : i - colonnaInizio;
+                    _ws.Cells[_rigaAttiva, i].Value = val;
+                }
+                colonnaInizio += oreGiorno;
 
-                    return true;
-                });
+                return true;
+            });
             _rigaAttiva++;
         }
         private void InsertTitoloVerticale(object siglaEntita, object siglaEntitaBreve, int numInformazioni)
@@ -325,18 +325,18 @@ namespace Iren.FrontOffice.Base
                 {
                     int colonnaInizioAllDati = _colonnaInizio;
                     CicloGiorni((oreGiorno, suffissoData, giorno) =>
-                        {
-                            Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[rigaAttiva - (ultimaRiga ? 0 : 1), colonnaInizioAllDati + oreGiorno - 1]];
-                            Style.RangeStyle(allDati, "Style:allDatiStyle;" + grassetto + ";" + formato);
-                            allDati.Name = info["SiglaEntita"] + Simboli.UNION + suffissoData + Simboli.UNION + "ALLDATI" + allDatiIndice;
-                            allDati.EntireColumn.ColumnWidth = Cell.Width.dato;
-                            allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-                            colonnaInizioAllDati += oreGiorno;
-                            grassetto = "Bold:" + info["Grassetto"];
-                            formato = "NumberFormat:[" + info["Formato"] + "]";
+                    {
+                        Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[rigaAttiva - (ultimaRiga ? 0 : 1), colonnaInizioAllDati + oreGiorno - 1]];
+                        Style.RangeStyle(allDati, "Style:allDatiStyle;" + grassetto + ";" + formato);
+                        allDati.Name = info["SiglaEntita"] + Simboli.UNION + suffissoData + Simboli.UNION + "ALLDATI" + allDatiIndice;
+                        allDati.EntireColumn.ColumnWidth = Cell.Width.dato;
+                        allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+                        colonnaInizioAllDati += oreGiorno;
+                        grassetto = "Bold:" + info["Grassetto"];
+                        formato = "NumberFormat:[" + info["Formato"] + "]";
                                 
-                            return true;
-                        });
+                        return true;
+                    });
                     allDatiIndice++;
                     rigaInizioGruppo = rigaAttiva + (info["SiglaTipologiaInformazione"].ToString() == "TITOLO2" ? 1 : 0);
                 }
@@ -408,18 +408,18 @@ namespace Iren.FrontOffice.Base
             {
                 int oraAttiva = _colonnaInizio;
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    bool isVisibleData0H24 = giorno == _dataInizio && Struttura.visData0H24;
+
+                    for (int i = 0; i < oreGiorno; i++)
                     {
-                        bool isVisibleData0H24 = giorno == _dataInizio && Struttura.visData0H24;
+                        if (i == 0 && isVisibleData0H24) 
+                            _nomiDefiniti.Add(info["SiglaEntita"] + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + "DATA0" + Simboli.UNION + "H24", rigaAttiva, oraAttiva++);
 
-                        for (int i = 0; i < oreGiorno; i++)
-                        {
-                            if (i == 0 && isVisibleData0H24) 
-                                _nomiDefiniti.Add(info["SiglaEntita"] + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + "DATA0" + Simboli.UNION + "H24", rigaAttiva, oraAttiva++);
-
-                            _nomiDefiniti.Add(info["SiglaEntita"] + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + suffissoData + Simboli.UNION + "H" + (i + 1), rigaAttiva, oraAttiva++);
-                        }
-                        return true;
-                    });
+                        _nomiDefiniti.Add(info["SiglaEntita"] + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + suffissoData + Simboli.UNION + "H" + (i + 1), rigaAttiva, oraAttiva++);
+                    }
+                    return true;
+                });
                 rigaAttiva++;
             }
         }
@@ -427,6 +427,7 @@ namespace Iren.FrontOffice.Base
         {
             int colonnaAttiva = _colonnaInizio;
             string suffissoDataPrec = "DATA0";
+            //carico tutti i dati reperibili durante la creazione del foglio
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
                 int rigaAttiva = _rigaAttiva;
@@ -435,23 +436,26 @@ namespace Iren.FrontOffice.Base
 
                 foreach (DataRowView info in informazioni)
                 {
-                    bool isVisibleData0H24 = giorno == _dataInizio && Struttura.visData0H24;
-
-                    int y = 0;
-                    for (int i = 0; i < oreGiorno; i++)
+                    if (!info["SiglaTipologiaInformazione"].Equals("TITOLO2"))
                     {
-                        if (i == 0 && isVisibleData0H24)
+                        bool isVisibleData0H24 = giorno == _dataInizio && Struttura.visData0H24;
+
+                        int y = 0;
+                        for (int i = 0; i < oreGiorno; i++)
                         {
-                            values[x, y++] = "";                            
-                        }
-
-                        if (!(info["ValoreDefault"] is DBNull))
-                            values[x, y] = double.Parse(info["ValoreDefault"].ToString().Replace('.', ','));
-                        else
-                            if (info["FormulaInCella"].Equals("1"))
+                            if (i == 0 && isVisibleData0H24)
+                            {
+                                values[x, y] = "";                            
+                            }
+                            else if (!(info["ValoreDefault"] is DBNull))
+                                values[x, y] = double.Parse(info["ValoreDefault"].ToString().Replace('.', ','));
+                            else if (info["FormulaInCella"].Equals("1"))
                                 values[x, y] = PreparaFormula(info, suffissoDataPrec, suffissoData, i + 1);
-
-                        y++;
+                            //else
+                            //    values[x, y] = "";
+                        
+                            y++;
+                        }
                     }
                     x++;
                 }
@@ -482,6 +486,7 @@ namespace Iren.FrontOffice.Base
                                 nome += Simboli.UNION + (ora == 1 ? suffissoDataPrec + Simboli.UNION + "H24" : suffissoData + Simboli.UNION + "H" + (ora - 1));
                             else
                                 nome += Simboli.UNION + suffissoData + Simboli.UNION + "H" + ora;
+                            nome = nome.Replace("[-1]", "");
 
                             Tuple<int, int> coordinate = _nomiDefiniti[nome];
 
@@ -502,29 +507,67 @@ namespace Iren.FrontOffice.Base
 
                 foreach (DataRowView format in formattazione)
                 {
-                    if (format["NomeCella"] is DBNull)
+                    int colonnaInizio = _colonnaInizio;
+                    CicloGiorni((oreGiorno,suffissoData, giorno) => 
                     {
+                        Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
+                        string[] valore = format["Valore"].ToString().Replace("\"","").Split('|');
+                        if (!(format["NomeCella"] is DBNull)) 
+                        {
+                            Tuple<int, int> coordinate = _nomiDefiniti[siglaEntita + Simboli.UNION + format["NomeCella"] + Simboli.UNION + suffissoData + Simboli.UNION + "H1"];
+                            string address = _ws.Application.ConvertFormula("R" + coordinate.Item1 + "C" + coordinate.Item2, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$","");
 
-                    }
-                    else
-                    {
-                        cellAddress = siglaEntitaInformazione & CARATTERE_UNIONE_NOME & rsEntitaInformazioneFormattazione.Fields("NomeCella").Value & CARATTERE_UNIONE_NOME & suffissoData & CARATTERE_UNIONE_NOME & "H" & CStr(iLoop)).Address
-                    }
-                    
-                    
-                    //string f = Application.ConvertFormula("=R10C1>10", Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1);
+                            string formula = "";
+                            switch((int)format["Operatore"]) {
+                                case 1:
+                                    formula = "=E(" + address + ">=" + valore[0] + ";" + address + "<=" + valore[1] + ")";
+                                    break;
+                                case 3:
+                                    formula = "=" + address + "=" + valore[0];
+                                    break;
+                                case 5:
+                                    formula = "=" + address + ">" + valore[0];
+                                    break;
+                                case 6:
+                                    formula = "=" + address + "<" + valore[0];
+                                    break;
+                            }
+                            Excel.FormatCondition cond = rng.FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: formula);
 
-                    //Excel.FormatConditions fcs = Range[Cells[1, 1], Cells[1, 10]].FormatConditions;
-                    //Excel.FormatCondition fc = (Excel.FormatCondition)fcs.Add(Excel.XlFormatConditionType.xlExpression, Formula1: f.Replace("$", ""));
-                    //fc.Interior.ColorIndex = 5;
+                            cond.Font.Color = format["ForeColor"];
+                            cond.Font.Bold = format["Grassetto"].Equals("1");
+                            if((int)format["BackColor"] != 0)
+                                cond.Interior.Color =  format["BackColor"];
+                            cond.Interior.Pattern = format["Pattern"];
+                        }
+                        else
+                        {
+                            string formula1;
+                            string formula2 = "";
+                            if ((int)format["Operatore"] == 1)
+                            {
+                                formula1 = valore[0];
+                                formula2 = valore[1];
+                            }
+                            else
+                            {
+                                formula1 = valore[0];
+                            }
 
+                            Excel.FormatCondition cond = rng.FormatConditions.Add(Excel.XlFormatConditionType.xlCellValue, format["Operatore"], formula1, formula2);
 
+                            cond.Font.Color = format["ForeColor"];
+                            cond.Font.Bold = format["Grassetto"].Equals("1");
+                            if ((int)format["BackColor"] != 0)
+                                cond.Interior.Color = format["BackColor"];
+                            
+                            cond.Interior.Pattern = format["Pattern"];
+                        }
+                        colonnaInizio += oreGiorno;
 
-
+                        return true;
+                    });
                 }
-
-
-
                 _rigaAttiva++;
             }
             _rigaAttiva++;
@@ -563,11 +606,6 @@ namespace Iren.FrontOffice.Base
                 intervalloGiorni = 0;
             public static bool visData0H24 = false,
                 visParametro = false;
-        }
-
-        internal class Simboli
-        {
-            public const string UNION = ".";
         }
 
         #endregion

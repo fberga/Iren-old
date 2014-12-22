@@ -46,6 +46,7 @@ namespace Iren.FrontOffice.Base
 
         public enum AppIDs
         {
+            PROGRAMMAZIONE_IMPIANTI = 5,
             SISTEMA_COMANDI = 8
         }
 
