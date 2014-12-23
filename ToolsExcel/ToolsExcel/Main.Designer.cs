@@ -137,7 +137,7 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
             // 
-            // Main
+            // Foglio2
             // 
         }
         

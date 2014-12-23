@@ -45,7 +45,10 @@ namespace Iren.FrontOffice.Tools
             config.Add("SiglaCategoria", "IREN_60T");
             config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], 
                 "yyyyMMdd", CultureInfo.InvariantCulture));
+        }
 
+        public void LoadStructure()
+        {
             Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
             s.LoadStructure();
         }

@@ -11,10 +11,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Configuration;
 using System.Globalization;
-using Iren.FrontOffice.Tools;
 using Iren.FrontOffice.Base;
 
-namespace FrontOffice.Tools
+namespace Iren.FrontOffice.Tools
 {
     public partial class IrenIdro
     {
@@ -29,10 +28,15 @@ namespace FrontOffice.Tools
         private void InternalStartup()
         {
             this.Startup += new System.EventHandler(this.IrenIdro_Startup);
-
+            this.Shutdown += new System.EventHandler(this.IrenIdro_Shutdown);
         }
 
         #endregion
+
+        private void IrenIdro_Shutdown(object sender, EventArgs e)
+        {
+
+        }
 
         private void IrenIdro_Startup(object sender, EventArgs e)
         {
@@ -40,7 +44,10 @@ namespace FrontOffice.Tools
             config.Add("SiglaCategoria", "IREN_60I");
             config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"],
                 "yyyyMMdd", CultureInfo.InvariantCulture));
+        }
 
+        public void LoadStructure()
+        {
             Sheet<IrenIdro> s = new Sheet<IrenIdro>(this);
             s.LoadStructure();
         }

@@ -25,12 +25,6 @@ namespace Iren.FrontOffice.Base
             _definedNamesView = new DataView(_definedNames);
         }
 
-        ~DefinedNames()
-        {
-            _definedNames.Dispose();
-            _definedNamesView.Dispose();
-        }
-
         #endregion
 
         #region Overload Operatori
