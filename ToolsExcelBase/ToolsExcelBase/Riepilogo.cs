@@ -23,6 +23,9 @@ namespace Iren.FrontOffice.Base
         DefinedNames _nomiDefiniti;
         Cell _cell;
         Struttura _struttura;
+        int _rigaAttiva;
+        int _colonnaInizio;
+
 
         #endregion
 
@@ -64,6 +67,22 @@ namespace Iren.FrontOffice.Base
 
         #region Metodi
 
+        private void CicloGiorni(Func<int, string, DateTime, bool> callback)
+        {
+            for (DateTime giorno = _dataInizio; giorno <= _dataFine; giorno = giorno.AddDays(1))
+            {
+                int oreGiorno = GetOreGiorno(giorno);
+                string suffissoData = GetSuffissoData(_dataInizio, giorno);
+
+                if (giorno == _dataInizio && _struttura.visData0H24)
+                {
+                    oreGiorno++;
+                }
+
+                callback(oreGiorno, suffissoData, giorno);
+            }
+        }
+
         private void Clear()
         {
             int dataOreTot = GetOreIntervallo(_dataInizio, _dataInizio.AddDays(_struttura.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
@@ -76,10 +95,10 @@ namespace Iren.FrontOffice.Base
             _ws.UsedRange.Font.Size = 8;
             _ws.UsedRange.NumberFormat = "General";
             _ws.UsedRange.Font.Name = "Verdana";
-            _ws.UsedRange.RowHeight = _cell.Height.normal;
 
-            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, 164]].EntireColumn.ColumnWidth = _cell.Width.empty;
+            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = _cell.Width.empty;
             _ws.Rows[_struttura.rigaGoto].RowHeight = _cell.Height.normal;
+            _ws.Rows[1].RowHeight = _cell.Height.empty;
 
             _ws.Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
@@ -92,6 +111,29 @@ namespace Iren.FrontOffice.Base
         public void LoadStructure()
         {
             Clear();
+
+            _colonnaInizio = _struttura.colRecap;
+            _rigaAttiva = _struttura.rowRecap;
+
+            InitBarraTitolo();
+        }
+
+        private void InitBarraTitolo()
+        {
+            DataView azioni = LocalDB.Tables[Tab.AZIONE].DefaultView;
+
+            azioni.RowFilter = "GERARCHIA IS NOT NULL";
+            int count = azioni.Count;
+            azioni.RowFilter = "";
+
+            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            {
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio], _ws.Cells[_rigaAttiva + 2, _colonnaInizio + count - 1]];
+                rng.Style = "recapTitleBarStyle";
+                rng.Rows[1].Merge();
+
+                return true;
+            });
         }
 
         #endregion

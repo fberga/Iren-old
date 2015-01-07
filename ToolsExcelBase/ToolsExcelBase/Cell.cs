@@ -35,8 +35,5 @@ namespace Iren.FrontOffice.Base
             public double normal = 15,
             empty = 5;
         }
-
-
-
     }
 }

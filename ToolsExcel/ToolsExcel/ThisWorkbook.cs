@@ -30,7 +30,6 @@ namespace Iren.FrontOffice.Tools
             this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(BaseHandler.GotoClick);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
             this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
-
         }
 
         #endregion

@@ -89,6 +89,14 @@ namespace Iren.FrontOffice.Base
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
+
+                style = wb.Styles.Add("recapTitleBarStyle");
+                style.Font.Bold = true;
+                style.Font.Size = 10;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                style.Interior.ColorIndex = 37;
+                SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
             }
         }
 
