@@ -114,6 +114,8 @@ namespace Iren.FrontOffice.Base
 
             _colonnaInizio = _struttura.colRecap;
             _rigaAttiva = _struttura.rowRecap;
+            _dataInizio = (DateTime)_config["DataInizio"];
+            _dataFine = _dataInizio.AddDays(_struttura.intervalloGiorni);
 
             InitBarraTitolo();
         }
@@ -121,15 +123,58 @@ namespace Iren.FrontOffice.Base
         private void InitBarraTitolo()
         {
             DataView azioni = LocalDB.Tables[Tab.AZIONE].DefaultView;
+            int nAzioni = 0;
 
-            azioni.RowFilter = "GERARCHIA IS NOT NULL";
-            int count = azioni.Count;
-            azioni.RowFilter = "";
+            Dictionary<object, List<object>> valAzioni = new Dictionary<object, List<object>>();
+            Dictionary<object, object> valAzioniPadre = new Dictionary<object, object>();
+            foreach (DataRowView azione in azioni)
+            {
+                if (azione["Gerarchia"] is DBNull) 
+                {
+                    valAzioni.Add(azione["DesAzioneBreve"], new List<object>());
+                    valAzioniPadre.Add(azione["SiglaAzione"], azione["DesAzioneBreve"]);
+                }
+                else
+                    if (!valAzioniPadre.ContainsKey(azione["Gerarchia"])) 
+                    {
+                        valAzioni.Add(azione["DesAzioneBreve"], new List<object>());
+                        valAzioniPadre.Add(azione["SiglaAzione"], azione["DesAzioneBreve"]);
+                    }
+                    else
+                    {
+                        valAzioni[valAzioniPadre[azione["Gerarchia"]]].Add(azione["DesAzioneBreve"]);
+                        nAzioni++;
+                    }
+            }            
+            int nAzioniPadre = valAzioni.Count;
+
+            //numero totale di celle della barra del titolo
+            object[] values = new object[1 + nAzioniPadre + nAzioni];
+            //la prima libera per mettere la data successivamente
+            int[] azioniPerPadre = new int[valAzioni.Count];
+            int i = 1;
+            int j = 0;
+            foreach (KeyValuePair<object, List<object>> keyVal in valAzioni)
+            {
+                azioniPerPadre[j++] = keyVal.Value.Count;
+                values[i] = keyVal.Key;
+                foreach (object nomeAzione in keyVal.Value)
+                    values[++i] = nomeAzione;
+            }
 
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
-                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio], _ws.Cells[_rigaAttiva + 2, _colonnaInizio + count - 1]];
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio + 1], _ws.Cells[_rigaAttiva + 2, _colonnaInizio + nAzioni]];
                 rng.Style = "recapTitleBarStyle";
+
+                int colonnaInizio = 1;
+                foreach (int numAzioni in azioniPerPadre)
+                {
+                    //_ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaInizio], _ws.Cells[_rigaAttiva + 1, colonnaInizio + numAzioni]].Merge();
+                    //rng[rng.Cells[2, colonnaInizio], rng.Cells[2, colonnaInizio + numAzioni]].Select();
+                    rng.Cells[2, 1].Select();
+                    colonnaInizio += numAzioni + 1;
+                }
                 rng.Rows[1].Merge();
 
                 return true;
