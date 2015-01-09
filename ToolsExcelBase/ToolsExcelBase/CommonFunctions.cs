@@ -156,6 +156,7 @@ namespace Iren.FrontOffice.Base
                 throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
             
             _namespace = "Iren.ToolsExcel." + dt.Rows[0]["SiglaApplicazione"];
+            Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
 
             _localDB.Namespace = _namespace;
             _localDB.Prefix = NAME;
@@ -173,7 +174,8 @@ namespace Iren.FrontOffice.Base
 
             int usr = InitUser();
             _db.setParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);
-            initLog();            
+
+            initLog();
         }
 
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)

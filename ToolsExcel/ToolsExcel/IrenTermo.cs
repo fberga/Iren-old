@@ -47,10 +47,10 @@ namespace Iren.FrontOffice.Tools
                 "yyyyMMdd", CultureInfo.InvariantCulture));
         }
 
-        public void LoadStructure()
-        {
-            Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
-            s.LoadStructure();
-        }
+        //public void LoadStructure()
+        //{
+        //    Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
+        //    s.LoadStructure();
+        //}
     }
 }

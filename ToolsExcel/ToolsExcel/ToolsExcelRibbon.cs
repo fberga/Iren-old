@@ -7,6 +7,7 @@ using Iren.FrontOffice.Base;
 using System.Configuration;
 using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
+using System.Data;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -21,9 +22,37 @@ namespace Iren.FrontOffice.Tools
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
             CommonFunctions.AggiornaStrutturaDati();
 
-            Globals.IrenIdro.LoadStructure();
-            Globals.IrenTermo.LoadStructure();
-            Globals.Main.LoadStructure();
+            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            categorie.RowFilter = "Operativa = 1";
+
+            foreach (DataRowView categoria in categorie)
+            {
+                Excel.Worksheet ws;
+                try 
+                {
+                    ws = Globals.ThisWorkbook.Worksheets[categoria["DesCategoria"].ToString()];
+                }
+                catch
+                {
+                    
+                    ws = (Excel.Worksheet)Globals.ThisWorkbook.Worksheets.Add(Globals.ThisWorkbook.Worksheets["Log"]);
+                    ws.Name = categoria["DesCategoria"].ToString();
+                    ws.Select();
+                    Globals.ThisWorkbook.Application.Windows[1].DisplayGridlines = false;
+                }
+            }
+
+            Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
+            main.LoadStructure();
+            
+            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets) 
+            {
+                if(ws.Name != "Log" && ws.Name != "Main")
+                {
+                    Sheet s = new Sheet(ws);
+                    s.LoadStructure();
+                }
+            }
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;

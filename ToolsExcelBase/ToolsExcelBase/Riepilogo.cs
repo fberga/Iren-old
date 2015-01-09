@@ -9,15 +9,16 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Data;
 using System.Globalization;
+using System.Configuration;
 
 namespace Iren.FrontOffice.Base
 {
-    public class Riepilogo<T>: CommonFunctions
+    public class Riepilogo: CommonFunctions
     {
         #region Variabili
         
-        Worksheet _ws;
-        Dictionary<string, object> _config;
+        Excel.Worksheet _ws;
+        Dictionary<string, object> _config = new Dictionary<string,object>();
         DateTime _dataInizio;
         DateTime _dataFine;
         DefinedNames _nomiDefiniti;
@@ -31,14 +32,11 @@ namespace Iren.FrontOffice.Base
 
         #region Costruttori
 
-        public Riepilogo(T categoria)
+        public Riepilogo(Excel.Worksheet ws)
         {
-            Type t = categoria.GetType();
-            PropertyInfo p = t.GetProperty("Base");
-            _ws = (Worksheet)p.GetValue(categoria, null);
+            _ws = ws;
 
-            FieldInfo f = t.GetField("config");
-            _config = (Dictionary<string, object>)f.GetValue(categoria);
+            _config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture));
 
             //dimensionamento celle in base ai parametri del DB
             DataView paramApplicazione = LocalDB.Tables[Tab.APPLICAZIONE].DefaultView;
@@ -85,6 +83,22 @@ namespace Iren.FrontOffice.Base
 
         private void Clear()
         {
+            //inizializzo i label
+            _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = _dataInizio.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = _dataFine.ToString("ddd d MMM yyyy");
+
+            if (true)//_struttura.intervalloGiorni > 0)
+            {
+                _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
+                _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
+            }
+            else
+            {
+                _ws.Shapes.Item("lbDataInizio").ScaleWidth(1f, Office.MsoTriState.msoFalse);
+                _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
+            }
+
             int dataOreTot = GetOreIntervallo(_dataInizio, _dataInizio.AddDays(_struttura.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
@@ -96,8 +110,7 @@ namespace Iren.FrontOffice.Base
             _ws.UsedRange.NumberFormat = "General";
             _ws.UsedRange.Font.Name = "Verdana";
 
-            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = _cell.Width.empty;
-            _ws.Rows[_struttura.rigaGoto].RowHeight = _cell.Height.normal;
+            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = _cell.Width.empty;            
             _ws.Rows[1].RowHeight = _cell.Height.empty;
 
             _ws.Activate();
@@ -110,14 +123,16 @@ namespace Iren.FrontOffice.Base
 
         public void LoadStructure()
         {
-            Clear();
 
             _colonnaInizio = _struttura.colRecap;
             _rigaAttiva = _struttura.rowRecap;
             _dataInizio = (DateTime)_config["DataInizio"];
             _dataFine = _dataInizio.AddDays(_struttura.intervalloGiorni);
 
+            Clear();
+
             InitBarraTitolo();
+            InitBarraEntita();
         }
 
         private void InitBarraTitolo()
@@ -149,37 +164,67 @@ namespace Iren.FrontOffice.Base
             int nAzioniPadre = valAzioni.Count;
 
             //numero totale di celle della barra del titolo
-            object[] values = new object[1 + nAzioniPadre + nAzioni];
+            object[,] values = new object[3, nAzioni];
             //la prima libera per mettere la data successivamente
             int[] azioniPerPadre = new int[valAzioni.Count];
-            int i = 1;
+            int ipadre = 0;
+            int iazioni = 0;
             int j = 0;
             foreach (KeyValuePair<object, List<object>> keyVal in valAzioni)
             {
                 azioniPerPadre[j++] = keyVal.Value.Count;
-                values[i] = keyVal.Key;
-                foreach (object nomeAzione in keyVal.Value)
-                    values[++i] = nomeAzione;
+                values[1, ipadre] = keyVal.Key.ToString().ToUpperInvariant();
+                ipadre += 2;
+                foreach (object nomeAzione in keyVal.Value) 
+                    values[2, iazioni++] = nomeAzione.ToString().ToUpperInvariant();
             }
 
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
+                values[0, 0] = giorno;
                 Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio + 1], _ws.Cells[_rigaAttiva + 2, _colonnaInizio + nAzioni]];
                 rng.Style = "recapTitleBarStyle";
-
+                rng.Rows[1].Merge();
+                Style.RangeStyle(rng.Rows[1], "FontSize:10;NumberFormat:[ddd d mmm yyyy]");
                 int colonnaInizio = 1;
                 foreach (int numAzioni in azioniPerPadre)
                 {
-                    //_ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaInizio], _ws.Cells[_rigaAttiva + 1, colonnaInizio + numAzioni]].Merge();
-                    //rng[rng.Cells[2, colonnaInizio], rng.Cells[2, colonnaInizio + numAzioni]].Select();
-                    rng.Cells[2, 1].Select();
-                    colonnaInizio += numAzioni + 1;
+                    _ws.Range[rng.Cells[2, colonnaInizio], rng.Cells[2, colonnaInizio + numAzioni - 1]].Merge();
+                    Style.RangeStyle(_ws.Range[rng.Cells[3, colonnaInizio], rng.Cells[3, colonnaInizio + numAzioni - 1]], "FontSize:7;Borders:[left:medium, bottom:medium, right:medium, insidev:thin]");
+                    colonnaInizio += numAzioni;
                 }
-                rng.Rows[1].Merge();
+                rng.Value = values;
 
                 return true;
             });
         }
+        private void InitBarraEntita()
+        {
+            DataView categorie = LocalDB.Tables[Tab.CATEGORIA].DefaultView;
+            DataView entita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            categorie.RowFilter = "Operativa = 1";
+
+            object[,] values = new object[categorie.Count + entita.Count, 1];
+            Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva + 3, _colonnaInizio], _ws.Cells[_rigaAttiva + 3 + values.Length - 1, _colonnaInizio]];
+            rng.Style = "recapEntityBarStyle";
+            Style.RangeStyle(rng, "borders:[top:medium,right:medium,bottom:medium,left:medium,insideh:thin]");
+            int i = 0;
+            foreach (DataRowView categoria in categorie)
+            {
+                values[i++, 0] = categoria["DesCategoria"];
+                entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
+                foreach (DataRowView ent in entita)
+                {
+                    values[i++, 0] = (ent["Gerarchia"] is DBNull ? "" : "     ") + ent["DesEntita"];
+                }
+            }
+            rng.Value = values;
+
+            categorie.RowFilter = "";
+            entita.RowFilter = "";
+            rng.EntireColumn.AutoFit();
+        }
+
 
         #endregion
 

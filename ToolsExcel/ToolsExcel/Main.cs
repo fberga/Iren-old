@@ -35,18 +35,10 @@ namespace Iren.FrontOffice.Tools
 
         private void Main_Startup(object sender, System.EventArgs e)
         {
-            config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"],
-               "yyyyMMdd", CultureInfo.InvariantCulture));
         }
 
         private void Main_Shutdown(object sender, System.EventArgs e)
         {
-        }
-
-        public void LoadStructure()
-        {
-            Riepilogo<Main> r = new Riepilogo<Main>(this);
-            r.LoadStructure();
-        }
+        }        
     }
 }

@@ -157,26 +157,12 @@
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="IrenIdro.cs">
-      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
-    </Compile>
-    <Compile Include="IrenIdro.Designer.cs">
-      <DependentUpon>IrenIdro.Designer.xml</DependentUpon>
-    </Compile>
     <Compile Include="Log.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
     </Compile>
     <Compile Include="Log.Designer.cs">
       <DependentUpon>Log.Designer.xml</DependentUpon>
-    </Compile>
-    <Compile Include="IrenTermo.cs">
-      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
-    </Compile>
-    <Compile Include="IrenTermo.Designer.cs">
-      <DependentUpon>IrenTermo.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsForm.cs">
@@ -244,16 +230,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="IrenTermo.Designer.xml">
-      <DependentUpon>IrenTermo.cs</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="IrenIdro.Designer.xml">
-      <DependentUpon>IrenIdro.cs</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Main.Designer.xml">
       <DependentUpon>Main.cs</DependentUpon>
     </None>
@@ -276,10 +252,8 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
         <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.FrontOffice.Tools">
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="Foglio4" Code="IrenIdro.cs" CanonicalName="Foglio4" DisplayName="Iren Idro" Blueprint="IrenIdro.Designer.xml" GeneratedCode="IrenIdro.Designer.cs" />
-          <HostItem Name="Foglio3" Code="IrenTermo.cs" CanonicalName="Foglio3" DisplayName="Iren Termo" Blueprint="IrenTermo.Designer.xml" GeneratedCode="IrenTermo.Designer.cs" />
           <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>

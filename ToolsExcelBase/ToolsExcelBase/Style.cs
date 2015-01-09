@@ -16,7 +16,7 @@ namespace Iren.FrontOffice.Base
     {
         public static void SetAllBorders(Excel.Style s, int colorIndex, Excel.XlBorderWeight weight)
         {
-            s.Borders.ColorIndex = 1;
+            s.Borders.ColorIndex = colorIndex;
             s.Borders.Weight = weight;
             s.Borders[Excel.XlBordersIndex.xlDiagonalDown].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
             s.Borders[Excel.XlBordersIndex.xlDiagonalUp].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
@@ -33,6 +33,7 @@ namespace Iren.FrontOffice.Base
             {
                 style = wb.Styles.Add("gotoBarStyle");
                 style.Font.Bold = false;
+                style.Font.Name = "Verdana";
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 15;
@@ -40,6 +41,7 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("navBarStyle");
                 style.Font.Bold = true;
+                style.Font.Name = "Verdana";
                 style.Font.Size = 7;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
@@ -49,6 +51,7 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("titleBarStyle");
                 style.Font.Bold = true;
+                style.Font.Name = "Verdana";
                 style.Font.Size = 16;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
@@ -58,6 +61,7 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("dateBarStyle");
                 style.Font.Bold = true;
+                style.Font.Name = "Verdana";
                 style.Font.Size = 10;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
@@ -68,6 +72,7 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("chartsBarStyle");
                 style.Font.Size = 10;
+                style.Font.Name = "Verdana";
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.NumberFormat = "dddd d mmmm yyyy";
@@ -77,6 +82,7 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("allDatiStyle");
                 style.Font.Size = 10;
+                style.Font.Name = "Verdana";
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
@@ -85,6 +91,7 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("titoloVertStyle");
                 style.Font.Bold = true;
+                style.Font.Name = "Verdana";
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
@@ -92,10 +99,19 @@ namespace Iren.FrontOffice.Base
 
                 style = wb.Styles.Add("recapTitleBarStyle");
                 style.Font.Bold = true;
-                style.Font.Size = 10;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 9;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 37;
+                SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
+
+                style = wb.Styles.Add("recapEntityBarStyle");
+                style.Font.Bold = true;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 9;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
             }
         }
@@ -116,6 +132,9 @@ namespace Iren.FrontOffice.Base
 
                 switch (keyVal[0].ToLowerInvariant())
                 {
+                    case "fontname":
+                        rng.Font.Name = keyVal[1];
+                        break;
                     case "style":
                         rng.Style = keyVal[1];
                         break;

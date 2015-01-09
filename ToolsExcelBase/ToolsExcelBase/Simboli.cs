@@ -9,5 +9,7 @@ namespace Iren.FrontOffice.Base
     {
         public const string UNION = ".", 
             ALL = "ALL";
+
+        public static string nomeApplicazione = "";
     }
 }

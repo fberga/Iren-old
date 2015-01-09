@@ -46,11 +46,5 @@ namespace Iren.FrontOffice.Tools
                 "yyyyMMdd", CultureInfo.InvariantCulture));
         }
 
-        public void LoadStructure()
-        {
-            Sheet<IrenIdro> s = new Sheet<IrenIdro>(this);
-            s.LoadStructure();
-        }
-
     }
 }

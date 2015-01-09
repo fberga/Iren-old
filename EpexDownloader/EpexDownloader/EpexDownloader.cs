@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using HtmlAgilityPack;
 using System.Globalization;
@@ -20,6 +19,8 @@ namespace Iren.EpexDownloader
         private HtmlAgilityPack.HtmlDocument _htmlDoc = new HtmlAgilityPack.HtmlDocument();
         private string _baseURL = "http://www.epexspot.com/en/market-data/dayaheadauction/auction-table/";
         private string _basePath = @"D:\Users\e-bergamin\Desktop";
+        private DateTime _dataInizio;
+        private DateTime _dataFine;
 
         #endregion
 
@@ -27,13 +28,11 @@ namespace Iren.EpexDownloader
         {
             EpexDownloader epexDwnloader = new EpexDownloader();
 
-            DateTime dataInizio = new DateTime(2014, 8, 1);
-            DateTime dataFine = DateTime.Now.AddDays(1);
-
-            for (; dataInizio <= dataFine; dataInizio = dataInizio.AddDays(1))
+            for (; epexDwnloader._dataInizio <= epexDwnloader._dataFine; epexDwnloader._dataInizio = epexDwnloader._dataInizio.AddDays(1))
             {
-                Console.WriteLine("Data: " + dataInizio.ToString("dd/MM/yyyy"));
-                epexDwnloader.Run(dataInizio);
+                Console.Write("Data: " + epexDwnloader._dataInizio.ToString("dd/MM/yyyy") + "...");
+                epexDwnloader.Run(epexDwnloader._dataInizio);
+                Console.WriteLine(" Done!");
             }
             Console.WriteLine("Done");
         }
@@ -44,6 +43,15 @@ namespace Iren.EpexDownloader
         {
             _basePath = ConfigurationManager.AppSettings["basePath"] ?? _basePath;
             _baseURL = ConfigurationManager.AppSettings["baseURL"] ?? _baseURL;
+
+            if (!DateTime.TryParseExact(ConfigurationManager.AppSettings["endDate"], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _dataFine))
+            {
+                _dataFine = DateTime.Now.AddDays(1);
+            }
+            if (!DateTime.TryParseExact(ConfigurationManager.AppSettings["startDate"], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _dataInizio))
+            {
+                _dataInizio = _dataFine;
+            }
         }
 
         #endregion
@@ -68,15 +76,15 @@ namespace Iren.EpexDownloader
                     days.Add(d);
             }
 
-            Tuple<string, int>[] tabIDs = new Tuple<string, int>[] 
+            KeyValuePair<string, int>[] tabIDs = new KeyValuePair<string, int>[] 
                 { 
-                    Tuple.Create("tab_fr", 987), 
-                    Tuple.Create("tab_de", 924), 
-                    Tuple.Create("tab_ch", 988)};
+                    new KeyValuePair<string, int>("tab_fr", 987), 
+                    new KeyValuePair<string, int>("tab_de", 924), 
+                    new KeyValuePair<string, int>("tab_ch", 988)};
 
-            foreach (Tuple<string, int> tabID in tabIDs)
+            foreach (KeyValuePair<string, int> tabID in tabIDs)
             {
-                HtmlNodeCollection tab = _htmlDoc.DocumentNode.SelectNodes("//div[@id='" + tabID.Item1 + "']//table[@class='list hours responsive']//tr[@class='no-border']");
+                HtmlNodeCollection tab = _htmlDoc.DocumentNode.SelectNodes("//div[@id='" + tabID.Key + "']//table[@class='list hours responsive']//tr[@class='no-border']");
 
                 //la mia data ha 24 ore ma la tabella contiene anche la riga della 25-esima
                 if (!is25hours && tab.Count() == 25)
@@ -92,7 +100,7 @@ namespace Iren.EpexDownloader
                     HtmlNode mgpVal = row.SelectSingleNode("td[" + (3 + index) + "]");
                     DataRow newRow = dt.NewRow();
 
-                    newRow["Zona"] = tabID.Item2;
+                    newRow["Zona"] = tabID.Value;
                     newRow["Data"] = day.ToString("yyyyMMdd") + (++i < 10 ? "0" : "") + i;
                     newRow["Mgp"] = 0;
                     decimal tmp;
@@ -103,9 +111,8 @@ namespace Iren.EpexDownloader
                 }
 
                 //scrivo la tabella all'interno del caricatore
-                string path = Path.Combine(_basePath, day.ToString("yyyyMMdd") + "_" + tabID.Item2 + ".xml");
+                string path = Path.Combine(_basePath, day.ToString("yyyyMMdd") + "_" + tabID.Value + ".xml");
                 dt.WriteXml(path);
-                dt.WriteXmlSchema(Path.Combine(_basePath, "schema.xml"));
             }
         }
 

@@ -9,15 +9,16 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Data;
 using System.Globalization;
+using System.Configuration;
 
 namespace Iren.FrontOffice.Base
 {
-    public class Sheet<T> : CommonFunctions, IDisposable
+    public class Sheet : CommonFunctions, IDisposable
     {
         #region Variabili
 
-        Worksheet _ws;
-        Dictionary<string, object> _config;
+        Excel.Worksheet _ws;
+        Dictionary<string, object> _config = new Dictionary<string,object>();
         DateTime _dataInizio;
         DateTime _dataFine;
         int _colonnaInizio;
@@ -33,15 +34,16 @@ namespace Iren.FrontOffice.Base
 
         #region Costruttori
 
-        public Sheet(T categoria)
+        public Sheet(Excel.Worksheet ws)
         {
-            Type t = categoria.GetType();
-            PropertyInfo p = t.GetProperty("Base");
-            _ws = (Worksheet)p.GetValue(categoria, null);
+            _ws = ws;
 
-            FieldInfo f = t.GetField("config");
-            _config = (Dictionary<string, object>)f.GetValue(categoria);
+            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
 
+            _config.Add("SiglaCategoria", categorie[0]["SiglaCategoria"]);
+            _config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture));
+            
             //dimensionamento celle in base ai parametri del DB
             DataView paramApplicazione = LocalDB.Tables[Tab.APPLICAZIONE].DefaultView;
 
@@ -167,6 +169,9 @@ namespace Iren.FrontOffice.Base
 
                 InitBloccoEntita(entita);                
             }
+            dvEP.RowFilter = "";
+            dvC.RowFilter = "";
+            dvCE.RowFilter = "";
         }
 
         private void InitBarraNavigazione(DataView entita)
@@ -362,7 +367,7 @@ namespace Iren.FrontOffice.Base
                 titolo2 = false;
                 
                 //proprietà di stile comuni
-                string style = "FontSize:" + info["FontSize"] + ";BackColor:" + backColor + ";"
+                string style = "FontSize:" + info["FontSize"] + ";FontName:Verdana;BackColor:" + backColor + ";"
                     + "ForeColor:" + info["ForeColor"] + ";Visible:" + info["Visibile"] + ";";
 
                 //personalizzazioni a seconda della tipologia di informazione
@@ -580,7 +585,7 @@ namespace Iren.FrontOffice.Base
         {
             if (!_disposed)
             {
-                _ws.Dispose();
+                //_ws.Dispose();
                 GC.SuppressFinalize(this);
                 _disposed = true;
             }
