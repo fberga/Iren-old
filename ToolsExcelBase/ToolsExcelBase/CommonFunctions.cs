@@ -8,6 +8,8 @@ using Office = Microsoft.Office.Core;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Office.Tools.Excel;
+using System.Deployment.Application;
+using System.Reflection;
 
 namespace Iren.FrontOffice.Base
 {
@@ -58,7 +60,8 @@ namespace Iren.FrontOffice.Base
         private static DataSet _localDB = null;
         private static DataBase _db = null;
         private static Workbook _wb;
-        
+        private static System.Version _wbVersion;
+
         #endregion
 
         #region Proprietà
@@ -84,12 +87,25 @@ namespace Iren.FrontOffice.Base
                 return _namespace;
             }
         }
-        public static Workbook ThisWorkBook
+        //public static Workbook ThisWorkBook
+        //{
+        //    get
+        //    {
+        //        return _wb;
+        //    }
+        //}
+        
+        public static System.Version CoreVersion
         {
-            get
-            {
-                return _wb;
-            }
+            get { return _db.GetCurrentV(); }
+        }
+        public static System.Version BaseVersion
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version; }
+        }
+        public static System.Version WorkbookVersion
+        {
+            get { return _wbVersion; }
         }
 
         #endregion
@@ -145,11 +161,12 @@ namespace Iren.FrontOffice.Base
             return dt;
         }
 
-        public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb)
+        public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
         {
             _db = new DataBase(dbName);
             _localDB = new DataSet(NAME);
             _wb = wb;
+            _wbVersion = wbVersion;
 
             DataTable dt = CaricaApplicazione(appID);
             if (dt.Rows.Count == 0)
@@ -643,6 +660,18 @@ namespace Iren.FrontOffice.Base
             {
             }
             _wb.CustomXMLParts.Add(locDBXml);
+        }
+
+        public static string GetName(params object[] parts)
+        {
+            string o = "";
+            bool first = true;
+            foreach (object part in parts)
+            {
+                o += (!first ? Simboli.UNION : "") + part;
+                first = false;
+            }
+            return o;
         }
 
         #endregion

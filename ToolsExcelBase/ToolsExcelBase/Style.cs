@@ -113,6 +113,23 @@ namespace Iren.FrontOffice.Base
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
+
+                style = wb.Styles.Add("recapAllDatiStyle");
+                style.Font.Bold = true;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 9;
+                style.Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
+
+                style = wb.Styles.Add("recapCategoryTitle");
+                style.Font.Bold = true;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 9;
+                style.Interior.ColorIndex = 44;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
             }
         }
 
@@ -129,6 +146,8 @@ namespace Iren.FrontOffice.Base
 
                 if (keyVal.Length != 2)
                     throw new InvalidExpressionException("The provided list of parameters is invalid.");
+
+                keyVal[1] = keyVal[1].Trim();
 
                 switch (keyVal[0].ToLowerInvariant())
                 {

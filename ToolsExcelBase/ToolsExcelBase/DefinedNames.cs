@@ -29,11 +29,11 @@ namespace Iren.FrontOffice.Base
 
         #region Overload Operatori
 
-        public Tuple<int, int> this[string key]
+        public Tuple<int, int>[] this[string key]
         {
             get
             {
-                return GetFirstCell(key);
+                return Get(key);
             }
         }
 
@@ -91,6 +91,22 @@ namespace Iren.FrontOffice.Base
 
             return o.ToArray();
         }
+        public Tuple<int, int>[] Get(string name)
+        {
+            _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
+
+            if (_definedNamesView.Count == 0)
+                return null;
+
+            Tuple<int, int>[] o = new Tuple<int, int>[_definedNamesView.Count];
+            int i = 0;
+            foreach (DataRowView defName in _definedNamesView)
+            {
+                o[i++] = Tuple.Create(int.Parse(defName["R1"].ToString()), int.Parse(defName["C1"].ToString()));
+            }
+
+            return o;
+        }
         public Tuple<int,int> GetFirstCell(string name)
         {
             _definedNamesView.RowFilter = "Nome='" + name + "'";
@@ -100,6 +116,7 @@ namespace Iren.FrontOffice.Base
 
             return Tuple.Create(int.Parse(_definedNamesView[0]["R1"].ToString()), int.Parse(_definedNamesView[0]["C1"].ToString()));
         }
+
         public Tuple<int, int>[] GetRange(string name)
         {
             if (!IsRange(name))
@@ -117,12 +134,11 @@ namespace Iren.FrontOffice.Base
 
         public string GetSheetName(string name)
         {
-            _definedNamesView.RowFilter = "Nome='" + name + "'";
+            _definedNamesView.RowFilter = "Nome LIKE'" + name + "%'";
             if (_definedNamesView.Count == 0)
                 return null;
 
             return _definedNamesView[0]["Foglio"].ToString();
-
         }
 
         #endregion

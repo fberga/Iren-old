@@ -13,11 +13,32 @@ using Microsoft.Office.Core;
 using System.Configuration;
 using System.IO;
 using Iren.FrontOffice.Base;
+using System.Deployment.Application;
+using System.Reflection;
 
 namespace Iren.FrontOffice.Tools
 {
     public partial class ThisWorkbook
     {
+        #region Variabili
+
+        public System.Version Version 
+        { 
+            get 
+            {
+                try
+                {
+                    return ApplicationDeployment.CurrentDeployment.CurrentVersion;
+                }
+                catch (Exception)
+                {
+                    return Assembly.GetExecutingAssembly().GetName().Version;
+                }
+            }
+        }
+
+        #endregion
+
         #region Codice generato dalla finestra di progettazione di VSTO
 
         /// <summary>
@@ -38,7 +59,7 @@ namespace Iren.FrontOffice.Tools
         {
             CommonFunctions.Init(ConfigurationManager.AppSettings["DB"]
                 , (CommonFunctions.AppIDs)Enum.Parse(typeof(CommonFunctions.AppIDs), ConfigurationManager.AppSettings["AppID"])
-                , DateTime.Now, Globals.ThisWorkbook.Base);
+                , DateTime.Now, Globals.ThisWorkbook.Base, Version);
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;

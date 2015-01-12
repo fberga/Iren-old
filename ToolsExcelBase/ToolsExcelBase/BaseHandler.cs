@@ -34,14 +34,15 @@ namespace Iren.FrontOffice.Base
                 if (Target.Worksheet.Name == "Main")
                 {
                     string sheet = definedNames.GetSheetName(entita);
-                    Target.Application.ThisWorkbook.Sheets[sheet].Activate();
+                    Target.Application.Worksheets[sheet].Activate();
 
-                    Tuple<int,int> coordinate = definedNames[entita + Simboli.UNION + "T" + Simboli.UNION + "DATA1"];
-                    Target.Application.ThisWorkbook.Sheets[sheet].Cells[coordinate.Item1, coordinate.Item2].Select();
+                    Tuple<int,int> coordinate = definedNames[entita + Simboli.UNION + "T" + Simboli.UNION + "DATA1"][0];
+                    Target.Application.Worksheets[sheet].Cells[coordinate.Item1, coordinate.Item2].Select();
+                    Target.Application.ActiveWindow.SmallScroll(coordinate.Item1 - Target.Worksheet.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
                 }
                 else
                 {
-                    Tuple<int, int> coordinate = definedNames[entita + Simboli.UNION + "T" + Simboli.UNION + "DATA1"];
+                    Tuple<int, int> coordinate = definedNames[entita + Simboli.UNION + "T" + Simboli.UNION + "DATA1"][0];
                     Excel.Range rng = Target.Worksheet.Cells[coordinate.Item1, coordinate.Item2];
                     rng.Select();
                     Target.Worksheet.Application.ActiveWindow.SmallScroll(rng.Row - Target.Worksheet.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);

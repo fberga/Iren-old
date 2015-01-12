@@ -129,7 +129,7 @@ namespace Iren.FrontOffice.Base
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;
 
-            string gotoBarRangeName = _config["SiglaCategoria"] + Simboli.UNION + "GOTO_BAR";
+            string gotoBarRangeName = GetName(_config["SiglaCategoria"], "GOTO_BAR");
             Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaBlock - 2, _struttura.colBlock + dataOreTot - 1]];
             rng.Style = "gotoBarStyle";
             rng.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
@@ -181,13 +181,11 @@ namespace Iren.FrontOffice.Base
             foreach (DataRowView e in entita)
             {
                 descrizioni[++i] = e["DesEntitaBreve"];
-                //_ws.Cells[_struttura.rigaGoto, _struttura.colBlock + i].Name = e["siglaEntita"] + Simboli.UNION + "GOTO";
-                _nomiDefiniti.Add(e["siglaEntita"] + Simboli.UNION + "GOTO", Tuple.Create(_struttura.rigaGoto, _struttura.colBlock + i));
+                _nomiDefiniti.Add(GetName(e["siglaEntita"], "GOTO"), Tuple.Create(_struttura.rigaGoto, _struttura.colBlock + i));
             }
 
             Excel.Range rng = _ws.Range[_ws.Cells[_struttura.rigaGoto, _struttura.colBlock],
                 _ws.Cells[_struttura.rigaGoto, _struttura.colBlock + i]];
-            //string gotoMenuRangeName = _config["SiglaCategoria"] + Simboli.UNION + "GOTO_MENU";
 
             rng.Value = descrizioni;
             rng.Style = "navBarStyle";
@@ -234,7 +232,7 @@ namespace Iren.FrontOffice.Base
 
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
-                string rangeTitolo = entita["SiglaEntita"] + Simboli.UNION + "T" + Simboli.UNION + suffissoData;
+                string rangeTitolo = GetName(entita["SiglaEntita"], "T", suffissoData);
 
                 Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio],
                         _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
@@ -265,7 +263,7 @@ namespace Iren.FrontOffice.Base
             int i = 1;
             foreach (DataRowView grafico in grafici)
             {
-                string graficoRange = grafico["SiglaEntita"] + Simboli.UNION + "GRAFICO" + (grafici.Count > 1 ? ""+i++ : "");
+                string graficoRange = GetName(grafico["SiglaEntita"], "GRAFICO" + (grafici.Count > 1 ? ""+i++ : ""));
 
                 Excel.Range rng = _ws.Range[_ws.Cells[++_rigaAttiva, _colonnaInizio],
                     _ws.Cells[_rigaAttiva, _colonnaInizio + _intervalloOre - 1]];
@@ -334,7 +332,7 @@ namespace Iren.FrontOffice.Base
                     {
                         Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[rigaAttiva - (ultimaRiga ? 0 : 1), colonnaInizioAllDati + oreGiorno - 1]];
                         Style.RangeStyle(allDati, "Style:allDatiStyle;" + grassetto + ";" + formato);
-                        allDati.Name = info["SiglaEntita"] + Simboli.UNION + suffissoData + Simboli.UNION + "ALLDATI" + allDatiIndice;
+                        allDati.Name = GetName(info["SiglaEntita"], suffissoData, "ALLDATI" + allDatiIndice);
                         allDati.EntireColumn.ColumnWidth = _cell.Width.dato;
                         allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
                         colonnaInizioAllDati += oreGiorno;
@@ -420,9 +418,9 @@ namespace Iren.FrontOffice.Base
                     for (int i = 0; i < oreGiorno; i++)
                     {
                         if (i == 0 && isVisibleData0H24) 
-                            _nomiDefiniti.Add(info["SiglaEntita"] + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + "DATA0" + Simboli.UNION + "H24", rigaAttiva, oraAttiva++);
+                            _nomiDefiniti.Add(GetName(info["SiglaEntita"], info["SiglaInformazione"], "DATA0", "H24"), rigaAttiva, oraAttiva++);
 
-                        _nomiDefiniti.Add(info["SiglaEntita"] + Simboli.UNION + info["SiglaInformazione"] + Simboli.UNION + suffissoData + Simboli.UNION + "H" + (i + 1), rigaAttiva, oraAttiva++);
+                        _nomiDefiniti.Add(GetName(info["SiglaEntita"], info["SiglaInformazione"], suffissoData, "H" + (i + 1)), rigaAttiva, oraAttiva++);
                     }
                     return true;
                 });
@@ -487,14 +485,14 @@ namespace Iren.FrontOffice.Base
                         {
                             int n = int.Parse(Regex.Match(m.Value, @"\d+").Value);
 
-                            string nome = info["SiglaEntita"] + Simboli.UNION + parametri[n - 1];
+                            string nome = GetName(info["SiglaEntita"], parametri[n - 1]);
                             if(nome.EndsWith("[-1]"))
                                 nome += Simboli.UNION + (ora == 1 ? suffissoDataPrec + Simboli.UNION + "H24" : suffissoData + Simboli.UNION + "H" + (ora - 1));
                             else
                                 nome += Simboli.UNION + suffissoData + Simboli.UNION + "H" + ora;
                             nome = nome.Replace("[-1]", "");
 
-                            Tuple<int, int> coordinate = _nomiDefiniti[nome];
+                            Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
 
                             return "R" + coordinate.Item1 + "C" + coordinate.Item2;
                         }, RegexOptions.IgnoreCase);
@@ -520,7 +518,7 @@ namespace Iren.FrontOffice.Base
                         string[] valore = format["Valore"].ToString().Replace("\"","").Split('|');
                         if (!(format["NomeCella"] is DBNull)) 
                         {
-                            Tuple<int, int> coordinate = _nomiDefiniti[siglaEntita + Simboli.UNION + format["NomeCella"] + Simboli.UNION + suffissoData + Simboli.UNION + "H1"];
+                            Tuple<int, int> coordinate = _nomiDefiniti[GetName(siglaEntita, format["NomeCella"], suffissoData, "H1")][0];
                             string address = _ws.Application.ConvertFormula("R" + coordinate.Item1 + "C" + coordinate.Item2, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$","");
 
                             string formula = "";
