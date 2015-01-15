@@ -170,11 +170,13 @@ namespace Iren.FrontOffice.Base
                         rng.Font.Size = size;
                         break;
                     case "align":
-                        string align = "xlHAlign" + Regex.Replace(keyVal[1], @"Center|Across|Selection|Distributed|Fill|General|Justify|Left|Right", delegate(Match m)
-                        {
-                            string v = m.ToString();
-                            return char.ToUpper(v[0]) + v.Substring(1);
-                        }, RegexOptions.IgnoreCase);
+                        string align = keyVal[1];
+                        if(!keyVal[1].StartsWith("xlHAlign"))
+                            align = "xlHAlign" + Regex.Replace(keyVal[1], @"Center|Across|Selection|Distributed|Fill|General|Justify|Left|Right", delegate(Match m)
+                            {
+                                string v = m.ToString();
+                                return char.ToUpper(v[0]) + v.Substring(1);
+                            }, RegexOptions.IgnoreCase);
 
                         rng.HorizontalAlignment = (Excel.XlHAlign)Enum.Parse(typeof(Excel.XlHAlign), align);
                         rng.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;

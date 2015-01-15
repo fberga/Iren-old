@@ -142,6 +142,7 @@ namespace Iren.FrontOffice.Base
             DataView entitaAzioni = LocalDB.Tables[Tab.ENTITAAZIONE].DefaultView;
 
             categorie.RowFilter = "Operativa = 1";
+            azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
 
             InitBarraTitolo(azioni);
             _rigaAttiva += 3;
@@ -156,25 +157,17 @@ namespace Iren.FrontOffice.Base
             _nAzioni = 0;
 
             Dictionary<object, List<object>> valAzioni = new Dictionary<object, List<object>>();
-            Dictionary<object, object> valAzioniPadre = new Dictionary<object, object>();
             foreach (DataRowView azione in azioni)
             {
-                if (azione["Gerarchia"] is DBNull) 
+                if (!valAzioni.ContainsKey(azione["Gerarchia"]))
                 {
-                    valAzioni.Add(azione["DesAzioneBreve"], new List<object>());
-                    valAzioniPadre.Add(azione["SiglaAzione"], azione["DesAzioneBreve"]);
+                    valAzioni.Add(azione["Gerarchia"], new List<object>() { azione["DesAzioneBreve"] });
                 }
                 else
-                    if (!valAzioniPadre.ContainsKey(azione["Gerarchia"])) 
-                    {
-                        valAzioni.Add(azione["DesAzioneBreve"], new List<object>());
-                        valAzioniPadre.Add(azione["SiglaAzione"], azione["DesAzioneBreve"]);
-                    }
-                    else
-                    {
-                        valAzioni[valAzioniPadre[azione["Gerarchia"]]].Add(azione["DesAzioneBreve"]);
-                        _nAzioni++;
-                    }
+                {
+                    valAzioni[azione["Gerarchia"]].Add(azione["DesAzioneBreve"]);
+                }
+                _nAzioni++;
             }            
             int nAzioniPadre = valAzioni.Count;
 
@@ -189,16 +182,16 @@ namespace Iren.FrontOffice.Base
             {
                 azioniPerPadre[j++] = keyVal.Value.Count;
                 values[1, ipadre] = keyVal.Key.ToString().ToUpperInvariant();
-                ipadre += 2;
+                ipadre += keyVal.Value.Count;
                 foreach (object nomeAzione in keyVal.Value) 
                     values[2, iazioni++] = nomeAzione.ToString().ToUpperInvariant();
             }
 
-            int colonnaInizio = _colonnaInizio;
+            int colonnaInizio = _colonnaInizio + 1;
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
                 values[0, 0] = giorno;
-                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio + 1], _ws.Cells[_rigaAttiva + 2, colonnaInizio + _nAzioni]];
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva + 2, colonnaInizio + _nAzioni - 1]];
                 rng.Style = "recapTitleBarStyle";
                 rng.Rows[1].Merge();
                 Style.RangeStyle(rng.Rows[1], "FontSize:10;NumberFormat:[ddd d mmm yyyy]");
@@ -250,7 +243,7 @@ namespace Iren.FrontOffice.Base
                     }
                     j++;
                 }
-                colonnaInizio += azioni.Count;
+                colonnaInizio += _nAzioni;
 
                 return true;
             });

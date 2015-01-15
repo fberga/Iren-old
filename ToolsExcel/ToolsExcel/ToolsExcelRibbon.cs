@@ -8,6 +8,7 @@ using System.Configuration;
 using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Data;
+using Iren.FrontOffice.Core;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -34,7 +35,6 @@ namespace Iren.FrontOffice.Tools
                 }
                 catch
                 {
-                    
                     ws = (Excel.Worksheet)Globals.ThisWorkbook.Worksheets.Add(Globals.ThisWorkbook.Worksheets["Log"]);
                     ws.Name = categoria["DesCategoria"].ToString();
                     ws.Select();
@@ -44,7 +44,7 @@ namespace Iren.FrontOffice.Tools
 
             Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
             main.LoadStructure();
-            
+
             foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets) 
             {
                 if(ws.Name != "Log" && ws.Name != "Main")
@@ -58,7 +58,10 @@ namespace Iren.FrontOffice.Tools
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             //TODO riabilitare log!!
-            //CommonFunctions.DB.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            //Globals.Log.Unprotect();
+            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
+            //Globals.Log.Protect();
+
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
     }

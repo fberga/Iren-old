@@ -5,6 +5,8 @@ using System.Text;
 using System.Data;
 using Iren.FrontOffice.Core;
 using Office = Microsoft.Office.Core;
+using Microsoft.Office.Tools.Excel;
+using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Office.Tools.Excel;
@@ -139,12 +141,22 @@ namespace Iren.FrontOffice.Base
             return int.Parse(""+dtUtente.Rows[0]["IdUtente"]);
         }
 
-        private static void initLog()
+        private static void InitLog()
         {            
             ResetTable(Tab.LOG);
-            DataTable dtLog = _db.Select("spLog");
+            DataTable dtLog = _db.Select("spApplicazioneLog");
             dtLog.TableName = Tab.LOG;
+            dtLog.PrimaryKey = new DataColumn[] 
+            {
+                dtLog.Columns["Utente"],
+                dtLog.Columns["Data"],
+                dtLog.Columns["Testo"]
+
+            };
             _localDB.Tables.Add(dtLog);
+            
+            DataView dv = _localDB.Tables[Tab.LOG].DefaultView;
+            dv.Sort = "Data DESC";
         }
 
         private static DataTable CaricaApplicazione(AppIDs idApplicazione)
@@ -192,7 +204,7 @@ namespace Iren.FrontOffice.Base
             int usr = InitUser();
             _db.setParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);
 
-            initLog();
+            InitLog();
         }
 
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)
@@ -214,6 +226,20 @@ namespace Iren.FrontOffice.Base
             }
             TimeSpan dayDiff = giorno - inizio;
             return "DATA" + (dayDiff.Days + 1);
+        }
+
+        public static string GetSuffissoOra(object dataOra)
+        {
+            string dtO = dataOra.ToString();
+            if (dtO.Length != 10)
+                return "";
+
+            return GetSuffissoOra(int.Parse(dtO.Substring(dtO.Length - 2, 2)));
+        }
+
+        public static string GetSuffissoOra(int ora)
+        {
+            return "H" + ora;
         }
 
         public static void AggiornaStrutturaDati()
@@ -238,6 +264,7 @@ namespace Iren.FrontOffice.Base
             CaricaEntitaInformazioneFormattazione();
             CaricaTipologiaCheck();
             CaricaTipologiaRampa();
+            _localDB.AcceptChanges();
         }
         #region Aggiorna Struttura Dati
 
@@ -644,7 +671,7 @@ namespace Iren.FrontOffice.Base
                 return false;
             }
         }
-        
+
         #endregion
 
         public static void Close()
@@ -672,6 +699,19 @@ namespace Iren.FrontOffice.Base
                 first = false;
             }
             return o;
+        }
+
+        public static void InsertLog(DataBase.TipologiaLOG logType, string message)
+        {
+            _db.InsertLog(logType, message);
+            DataTable dt = _db.Select("spApplicazioneLog");
+            dt.TableName = Tab.LOG;
+            _localDB.Merge(dt);
+        }
+
+        public void AggiornaFormule(Excel.Worksheet ws)
+        {
+            ws.Application.CalculateFull();
         }
 
         #endregion

@@ -185,6 +185,9 @@
     <Compile Include="ToolsExcelRibbon.Designer.cs">
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Log.resx">
+      <DependentUpon>Log.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

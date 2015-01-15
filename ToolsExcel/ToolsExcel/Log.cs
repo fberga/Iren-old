@@ -19,6 +19,8 @@ namespace Iren.FrontOffice.Tools
     {
         #region Variabili
 
+        public ListObject _logObj;
+
         #endregion
 
         #region Codice generato dalla finestra di progettazione di VSTO
@@ -60,20 +62,23 @@ namespace Iren.FrontOffice.Tools
         #region Callbacks
 
         private void Log_Startup(object sender, EventArgs e)
-        {
-            ListObject logObj;
+        {            
             try
             {
-                logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
+                _logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
             }
             catch (Exception)
             {
-                logObj = Controls.AddListObject(Range["A1"], "LogList");
+                _logObj = Controls.AddListObject(Range["A1"], "LogList");
             }
-            logObj.AutoSetDataBoundColumnHeaders = true;
-            logObj.DataSource = CommonFunctions.LocalDB;
-            logObj.DataMember = CommonFunctions.Tab.LOG;
-            logObj.Range.EntireColumn.AutoFit();
+            _logObj.AutoSetDataBoundColumnHeaders = true;
+            _logObj.DataSource = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
+            _logObj.Range.EntireColumn.AutoFit();
+            _logObj.TableStyle = "TableStyleLight16";
+
+            Excel.Range rng = Columns[2];
+            rng.NumberFormat = "dd/MM/yyyy HH:mm:ss";
+            rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
         }
 
         private void Log_Shutdown(object sender, EventArgs e)

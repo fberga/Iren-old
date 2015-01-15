@@ -15,6 +15,8 @@ using System.IO;
 using Iren.FrontOffice.Base;
 using System.Deployment.Application;
 using System.Reflection;
+using System.Globalization;
+using Iren.FrontOffice.Core;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -57,9 +59,10 @@ namespace Iren.FrontOffice.Tools
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
+            DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             CommonFunctions.Init(ConfigurationManager.AppSettings["DB"]
                 , (CommonFunctions.AppIDs)Enum.Parse(typeof(CommonFunctions.AppIDs), ConfigurationManager.AppSettings["AppID"])
-                , DateTime.Now, Globals.ThisWorkbook.Base, Version);
+                , dataAttiva, Globals.ThisWorkbook.Base, Version);
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
@@ -67,7 +70,9 @@ namespace Iren.FrontOffice.Tools
             Style.StdStyles(this.Base);
 
             //TODO riabilitare log!!
-            //CommonFunctions.DB.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            //Globals.Log.Unprotect();
+            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            //Globals.Log.Protect();
         }
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
