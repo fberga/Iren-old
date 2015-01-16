@@ -9,6 +9,7 @@ using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Data;
 using Iren.FrontOffice.Core;
+using Iren.FrontOffice.Forms;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -63,6 +64,19 @@ namespace Iren.FrontOffice.Tools
             //Globals.Log.Protect();
 
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+
+        private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
+        {
+            Forms.frmCALENDAR cal = new frmCALENDAR();
+            cal.ShowDialog();
+
+            if (cal.date != "")
+            {                
+                ConfigurationManager.AppSettings["DataInizio"] = cal.date;
+                
+            }
+            cal.Dispose();
         }
     }
 }

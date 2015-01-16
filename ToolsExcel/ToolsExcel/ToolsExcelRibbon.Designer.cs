@@ -47,6 +47,8 @@
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.FrontOffice = this.Factory.CreateRibbonTab();
             this.groupAggiorna = this.Factory.CreateRibbonGroup();
+            this.group1 = this.Factory.CreateRibbonGroup();
+            this.btnCalendar = this.Factory.CreateRibbonButton();
             this.btnAggiornaStruttura = this.Factory.CreateRibbonButton();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
@@ -61,6 +63,7 @@
             this.TabBackgroundRemoval.SuspendLayout();
             this.FrontOffice.SuspendLayout();
             this.groupAggiorna.SuspendLayout();
+            this.group1.SuspendLayout();
             // 
             // TabHome
             // 
@@ -149,6 +152,7 @@
             // FrontOffice
             // 
             this.FrontOffice.Groups.Add(this.groupAggiorna);
+            this.FrontOffice.Groups.Add(this.group1);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
@@ -157,6 +161,23 @@
             this.groupAggiorna.Items.Add(this.btnAggiornaStruttura);
             this.groupAggiorna.Label = "Aggiorna";
             this.groupAggiorna.Name = "groupAggiorna";
+            // 
+            // group1
+            // 
+            this.group1.Items.Add(this.btnCalendar);
+            this.group1.Label = "group1";
+            this.group1.Name = "group1";
+            // 
+            // btnCalendar
+            // 
+            this.btnCalendar.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnCalendar.Description = "Apre il calendario per cambiare la data";
+            this.btnCalendar.Image = global::ToolsExcel.Properties.Resources.Calendar_icon;
+            this.btnCalendar.Label = "Calendario";
+            this.btnCalendar.Name = "btnCalendar";
+            this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
+            this.btnCalendar.ShowImage = true;
+            this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
             // 
             // btnAggiornaStruttura
             // 
@@ -211,6 +232,8 @@
             this.FrontOffice.PerformLayout();
             this.groupAggiorna.ResumeLayout(false);
             this.groupAggiorna.PerformLayout();
+            this.group1.ResumeLayout(false);
+            this.group1.PerformLayout();
 
         }
 
@@ -230,6 +253,8 @@
         private Microsoft.Office.Tools.Ribbon.RibbonTab FrontOffice;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAggiorna;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAggiornaStruttura;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalendar;
     }
 
     partial class ThisRibbonCollection

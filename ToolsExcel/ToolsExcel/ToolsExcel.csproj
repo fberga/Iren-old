@@ -237,12 +237,17 @@
     <None Include="Main.Designer.xml">
       <DependentUpon>Main.cs</DependentUpon>
     </None>
+    <Content Include="res\Calendar-icon.png" />
     <Content Include="res\Structure-Refresh-icon.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ToolsExcelBase\ToolsExcelBase\ToolsExcelBase.csproj">
       <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
       <Name>ToolsExcelBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ToolsExcelForms\ToolsExcelForms.csproj">
+      <Project>{f4c66fe5-1dc0-447b-b341-ff1960b78045}</Project>
+      <Name>ToolsExcelForms</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
