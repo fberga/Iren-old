@@ -73,6 +73,16 @@ namespace ToolsExcel.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap checklist_icon {
+            get {
+                object obj = ResourceManager.GetObject("checklist_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Structure_Refresh_icon {
             get {
                 object obj = ResourceManager.GetObject("Structure_Refresh_icon", resourceCulture);

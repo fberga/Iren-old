@@ -45,7 +45,9 @@ namespace Iren.FrontOffice.Base
                 TIPOLOGIACHECK = "TipologiaCheck",
                 TIPOLOGIARAMPA = "TipologiaRampa",
                 APPLICAZIONE = "Applicazione",
-                NOMIDEFINITI = "DefinedNames";
+                NOMIDEFINITI = "DefinedNames",
+                ENTITAPARAMETROD = "EntitaParametroD",
+                ENTITAPARAMETROH = "EntitaParametroH";
         }
 
         public enum AppIDs
@@ -173,6 +175,11 @@ namespace Iren.FrontOffice.Base
             return dt;
         }
 
+        public static void RefreshDate(DateTime dataAttiva)
+        {
+            _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
+        }
+
         public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
         {
             _db = new DataBase(dbName);
@@ -264,6 +271,8 @@ namespace Iren.FrontOffice.Base
             CaricaEntitaInformazioneFormattazione();
             CaricaTipologiaCheck();
             CaricaTipologiaRampa();
+            CaricaEntitaParametroD();
+            CaricaEntitaParametroH();
             _localDB.AcceptChanges();
         }
         #region Aggiorna Struttura Dati
@@ -671,6 +680,38 @@ namespace Iren.FrontOffice.Base
                 return false;
             }
         }
+        private static bool CaricaEntitaParametroD()
+        {
+            try
+            {
+                string name = Tab.ENTITAPARAMETROD;
+                ResetTable(name);
+                DataTable dt = _db.Select(DataBase.StoredProcedure.ENTITAPARAMETROD);
+                dt.TableName = name;
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CaricaEntitaParametroH()
+        {
+            try
+            {
+                string name = Tab.ENTITAPARAMETROH;
+                ResetTable(name);
+                DataTable dt = _db.Select(DataBase.StoredProcedure.ENTITAPARAMETROH);
+                dt.TableName = name;
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         #endregion
 
@@ -695,7 +736,7 @@ namespace Iren.FrontOffice.Base
             bool first = true;
             foreach (object part in parts)
             {
-                o += (!first ? Simboli.UNION : "") + part;
+                o += (!first && part != "" ? Simboli.UNION : "") + part;
                 first = false;
             }
             return o;

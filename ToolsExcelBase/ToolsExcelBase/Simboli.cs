@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Iren.FrontOffice.Base
 {
-    class Simboli
+    public class Simboli
     {
         public const string UNION = ".", 
             ALL = "ALL";

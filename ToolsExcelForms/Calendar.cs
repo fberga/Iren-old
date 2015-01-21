@@ -11,7 +11,15 @@ namespace Iren.FrontOffice.Forms
 {
     public partial class frmCALENDAR : Form
     {
-        public string date = "";
+        private DateTime? _date = null;
+
+        public DateTime? Date 
+        { 
+            get 
+            { 
+                return _date; 
+            } 
+        }
 
         public frmCALENDAR()
         {
@@ -21,13 +29,13 @@ namespace Iren.FrontOffice.Forms
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            //_t.SetParametroApplicazione(new Dictionary<string, object>() { { FOConst.PARAMETERS.DATA_SELEZIONATA, calObj.SelectionStart.ToString("yyyyMMdd") } });
-            date = calObj.SelectionStart.ToString("yyyyMMdd");
+            _date = calObj.SelectionStart;
             this.Close();
         }
 
         private void btnANNULLA_Click(object sender, EventArgs e)
         {
+            _date = null;
             this.Close();
         }
 

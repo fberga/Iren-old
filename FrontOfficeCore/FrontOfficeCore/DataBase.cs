@@ -57,7 +57,9 @@ namespace Iren.FrontOffice.Core
             CATEGORIAENTITA = "spCategoriaEntita",
             APP_RIEPILOGO = "spApplicazioneRiepilogo",
             INS_PROG_PARAM = "spInsertProgrammazione_Parametro",
-            CHECK_MOD_STRUCT = "spCheckModificaStruttura";
+            CHECK_MOD_STRUCT = "spCheckModificaStruttura",
+            ENTITAPARAMETROD = "spEntitaParametroD",
+            ENTITAPARAMETROH = "spEntitaParametroH";
         }
 
         #endregion
@@ -99,6 +101,11 @@ namespace Iren.FrontOffice.Core
             _dataAttiva = dataAttiva;
             _idUtenteAttivo = idUtenteAttivo;
             _idApplicazione = idApplicazione;
+        }
+
+        public void ChangeDate(string dataAttiva)
+        {
+            _dataAttiva = dataAttiva;
         }
 
         public void Insert(string storedProcedure, QryParams parameters)

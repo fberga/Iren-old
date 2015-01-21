@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Iren.FrontOffice.Base
 {
@@ -93,6 +94,10 @@ namespace Iren.FrontOffice.Base
         }
         public Tuple<int, int>[] Get(string name)
         {
+            //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
+            if (!Regex.IsMatch(name, @"(RIEPILOGO[\w.]*)?DATA\d+(.H\d+)?"))
+                name += Simboli.UNION;
+
             _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
 
             if (_definedNamesView.Count == 0)

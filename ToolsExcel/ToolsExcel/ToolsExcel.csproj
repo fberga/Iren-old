@@ -238,6 +238,7 @@
       <DependentUpon>Main.cs</DependentUpon>
     </None>
     <Content Include="res\Calendar-icon.png" />
+    <Content Include="res\checklist-icon.png" />
     <Content Include="res\Structure-Refresh-icon.png" />
   </ItemGroup>
   <ItemGroup>

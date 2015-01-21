@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data;
 using System.Windows.Forms;
-using Iren.FrontOffice.Core;
 
 namespace Iren.FrontOffice.Forms
 {
@@ -15,278 +17,249 @@ namespace Iren.FrontOffice.Forms
 
     public partial class frmRAMPE : Form
     {
-        DataBase _db;
-        Workbook _wb;
-        int _numOre = 24;
-        DataView _dvRampe;
-        DataView _dvCE;
-        DataView _dvModRampe;
+        int _oreGiorno = 24;
+        DataView _entitaRampa;
+        double _pRif;
+        double?[] _pMin;
+        string _desEntita;
+        List<object> _sigleRampa;
+        int _childWidth;
+        int _oreFermata;
 
-        public DataSet _out = new DataSet();
+        object[] _valoriPQNR;
 
-        public frmRAMPE(Workbook wb, ref DataBase db)
+        public DataTable _out = new DataTable();
+
+        public frmRAMPE(string desEntita, double pRif, double?[] pMin, int oreGiorno, DataView entitaRampa, object[] valoriPQNR, int oreFermata)
         {
             InitializeComponent();
 
-            _wb = wb;
-            _db = db;
+            _entitaRampa = entitaRampa;
+            _sigleRampa = entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
+            _oreGiorno = oreGiorno;
+            _pRif = pRif;
+            _pMin = pMin;
+            _desEntita = desEntita;
+            _valoriPQNR = valoriPQNR;
+            _oreFermata = oreFermata;
+
+            _childWidth = panelValoriRampa.Width / _oreGiorno;
+            this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         }
 
         private void frmRAMPE_Load(object sender, EventArgs e)
         {
-            /*DataBase._livelloLOG++;
-            DataBase._Log("frmRAMPE_Load");
-            
-            Function f = new Function(_wb, ref _db);
-            Repository r = new Repository(_wb, ref _db);
-            _numOre = f.GetOreData(Tools.GetParametroApplicazione<string>(FOConst.PARAMETERS.DATA_ATTIVA, _wb));
+            lbDesEntita.Text = _desEntita + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + _oreFermata;
 
-            _dvCE = r.GetCategoriaEntita("IREN_60T", FOConst.PARAMETERS.SP_ALL).DefaultView;
-            cmbEntita.DataSource = _dvCE;
-            cmbEntita.DisplayMember = "DesEntita";
+            tableLayoutDesRampa.Controls.Clear();
+            tableLayoutDesRampa.ColumnStyles.Clear();
+            tableLayoutDesRampa.RowStyles.Clear();
 
-            _dvRampe = r.GetEntitaRampa(FOConst.PARAMETERS.SP_ALL).DefaultView;
+            tableLayoutRampe.Controls.Clear();
+            tableLayoutRampe.ColumnStyles.Clear();
+            tableLayoutRampe.RowStyles.Clear();
 
-            //personalizzazione datagridview con riassunto rampe per entità
-            initDGVisualizzaRampe();
-            //creazione datagridview di modifica delle rampe
-            initDGModificaRampa();
+            tableLayoutRampe.CellPaint += tb_CellPaint;
 
-            //lancia l'evento di selezione sulla combobox
-            cmbEntita_SelectedIndexChanged(cmbEntita, new EventArgs());*/
-        }
+            tableLayoutDesRampa.RowCount = _entitaRampa.Count + 1;
+            tableLayoutRampe.RowCount = _entitaRampa.Count;
+            float rowHeightPercentage = 100f / (_entitaRampa.Count + 1) / 100;
+            tableLayoutDesRampa.ColumnCount = 2;
+            tableLayoutRampe.ColumnCount = _entitaRampa.Table.Columns.Count - 2;
 
-        private void initDGModificaRampa()
-        {
-            DataTable dt = new DataTable() 
+            //scrivo gli header della griglia di visualizzazione delle rampe
+            tableLayoutRampe.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
+            for (int i = 0; i < _entitaRampa.Table.Columns.Count - 2; i++)
             {
-                Columns = 
+                switch (i)
                 {
-                    {"SiglaEntita", typeof(string)},
-                    {"SiglaRampa", typeof(string)},
-                    {"DesRampa", typeof(string)},
-                    {"Tutti", typeof(bool)}
+                    case 0:
+                        tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105f));
+                        tableLayoutRampe.Controls.Add(new Label() { Text = "Rampa", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, Font = new Font(this.Font, FontStyle.Bold), BackColor = System.Drawing.Color.Transparent }, i, 0);
+                        break;
+                    case 1:
+                        tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
+                        tableLayoutRampe.Controls.Add(new Label() { Text = "Fermo da", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font(this.Font, FontStyle.Bold), BackColor = System.Drawing.Color.Transparent }, i, 0);
+                        break;
+                    case 2:
+                        tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
+                        tableLayoutRampe.Controls.Add(new Label() { Text = "Fermo a", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font(this.Font, FontStyle.Bold), BackColor = System.Drawing.Color.Transparent }, i, 0);
+                        break;
+                    default:
+                        tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
+                        tableLayoutRampe.Controls.Add(new Label() { Text = _entitaRampa.Table.Columns[i + 2].ColumnName, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font(this.Font, FontStyle.Bold), BackColor = System.Drawing.Color.Transparent }, i, 0);
+                        break;
                 }
-            };
-
-            for (int i = 1; i <= _numOre; i++)
-            {
-                dt.Columns.Add("H" + i, typeof(bool));
             }
-            foreach (DataRowView rv in _dvRampe)
+
+            int y = 1;
+            tableLayoutDesRampa.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
+            tableLayoutDesRampa.Controls.Add(new Label() { Text = "Tutte", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font(this.Font, FontStyle.Bold), BackColor = System.Drawing.Color.Transparent}, 3, 0);
+
+            tableLayoutDesRampa.CellPaint += tb_CellPaint;
+
+            foreach (DataRowView rampa in _entitaRampa)
             {
-                DataRow row = dt.NewRow();
-                row["SiglaEntita"] = rv["SiglaEntita"];
-                row["SiglaRampa"] = rv["SiglaRampa"];
-                row["DesRampa"] = rv["DesRampa"];
-                row["Tutti"] = false;
-                for (int i = 1; i <= _numOre; i++)
+                tableLayoutDesRampa.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 0.65f));
+                tableLayoutDesRampa.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 0.25f));
+
+                tableLayoutDesRampa.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
+
+                tableLayoutDesRampa.Controls.Add(new Label() { Text = rampa["DesRampa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, BackColor = System.Drawing.Color.Transparent, Font = new Font(this.Font, FontStyle.Bold) }, 0, y);
+
+                RadioButton rb = new RadioButton() { Name = rampa["SiglaRampa"].ToString(), Dock = DockStyle.Fill, CheckAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent };
+                rb.CheckedChanged += rbTutti_CheckedChanged;
+
+                tableLayoutDesRampa.Controls.Add(rb, 1, y);
+
+                tableLayoutRampe.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
+                for (int i = 0; i < _entitaRampa.Table.Columns.Count - 2; i++)
                 {
-                    row["H" + i] = false;
+                    switch (i)
+                    {
+                        case 0:
+                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105f));
+                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["DesRampa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, BackColor = System.Drawing.Color.Transparent}, i, y);
+                            break;
+                        case 1:
+                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
+                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoDa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
+                            break;
+                        case 2:
+                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
+                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoA"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
+                            break;
+                        default:
+                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
+                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["Q" + (i - 2)].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
+                            break;
+                    }
                 }
-                dt.Rows.Add(row);
+                y++;
+
             }
-            _dvModRampe = dt.DefaultView;
 
-            dgModificaRampa.DataSource = _dvModRampe;
-            dgModificaRampa.MultiSelect = false;
-            dgModificaRampa.RowHeadersVisible = false;
-            dgModificaRampa.AllowUserToAddRows = false;
-            dgModificaRampa.AllowUserToDeleteRows = false;
-            dgModificaRampa.AllowUserToResizeColumns = false;
-            dgModificaRampa.AllowUserToResizeRows = false;
-            dgModificaRampa.AllowUserToOrderColumns = false;
+            int left = 2;            
 
-            dgModificaRampa.Columns[0].Visible = false;
-            dgModificaRampa.Columns[1].Visible = false;
-
-            dgModificaRampa.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgModificaRampa.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgModificaRampa.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dgModificaRampa.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dgModificaRampa.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-        }
-
-        private void initDGVisualizzaRampe()
-        {
-            dgVisualizzaRampe.DataSource = _dvRampe;
-            dgVisualizzaRampe.AllowUserToAddRows = false;
-            dgVisualizzaRampe.AllowUserToDeleteRows = false;
-            dgVisualizzaRampe.AllowUserToResizeColumns = false;
-            dgVisualizzaRampe.AllowUserToResizeRows = false;
-            dgVisualizzaRampe.AllowUserToOrderColumns = false;
-            dgVisualizzaRampe.ReadOnly = true;
-            dgVisualizzaRampe.MultiSelect = false;
-            dgVisualizzaRampe.RowHeadersVisible = false;
-
-            dgVisualizzaRampe.Columns[0].Visible = false;
-            dgVisualizzaRampe.Columns[1].Visible = false;
-
-
-            dgVisualizzaRampe.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgVisualizzaRampe.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgVisualizzaRampe.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dgVisualizzaRampe.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dgVisualizzaRampe.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dgVisualizzaRampe.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        }
-
-        private void cmbEntita_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            DataRowView vrow = (DataRowView)cmbEntita.SelectedItem;
-            _dvRampe.RowFilter = "SiglaEntita = '" + vrow.Row["SiglaEntita"] + "'";
-            _dvModRampe.RowFilter = "SiglaEntita = '" + vrow.Row["SiglaEntita"] + "'";
-            int count = 0;
-            foreach(DataRowView rv in _dvModRampe) 
+            for (int i = 1; i <= _oreGiorno; i++)
             {
-                if((bool)rv["Tutti"])
-                    count++;
+                TableLayoutPanel tb = new TableLayoutPanel()
+                {
+                    Name = "H" + i,
+                    ColumnCount = 1,
+                    RowCount = _entitaRampa.Count + 1,
+                    Height = panelValoriRampa.Height,
+                    Width = _childWidth,
+                    Left = left - 1,
+                    CellBorderStyle = TableLayoutPanelCellBorderStyle.Single,
+                };
+                tb.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, _childWidth));
+                tb.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
+                tb.Controls.Add(new Label() { Text = "H" + i, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font(this.Font, FontStyle.Bold), BackColor = System.Drawing.Color.Transparent }, 0, 0);
+                
+                tb.CellPaint += tb_CellPaint;
+
+                y = 1;
+                foreach (DataRowView rampa in _entitaRampa)
+                {
+                    tb.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
+
+                    RadioButton rb = new RadioButton() { Dock = DockStyle.Fill, CheckAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent};
+                    rb.CheckedChanged += rbOre_CheckedChanged;
+
+                    tb.Controls.Add(rb, 0, y++);
+                }
+                left = tb.Right;
+                panelValoriRampa.Controls.Add(tb);
             }
-            if (count == 0)
-                dgModificaRampa["Tutti", dgModificaRampa.FirstDisplayedCell.RowIndex].Value = true;
+
+            //carico valori PQNR
+            for (int i = 0; i < _valoriPQNR.Length; i++)
+            {
+                ((RadioButton)Controls.Find("H" + (i + 1), true)[0].Controls[_sigleRampa.IndexOf(_valoriPQNR[i]) + 1]).Checked = true;
+            }
         }
 
-        private void dgModificaRampa_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        void tb_CellPaint(object sender, TableLayoutCellPaintEventArgs e)
         {
-            Brush b = new SolidBrush(dgVisualizzaRampe.DefaultCellStyle.BackColor);
-            if (e.RowIndex == -1)
+            if (((TableLayoutPanel)sender).Name == "tableLayoutRampe")
             {
-                b = new SolidBrush(dgVisualizzaRampe.ColumnHeadersDefaultCellStyle.BackColor);
+                if (e.Row == 0)
+                {
+                    e.Graphics.FillRectangle(Brushes.Gray, e.CellBounds);
+                }
+                else
+                {
+                    e.Graphics.FillRectangle(Brushes.Gray, e.CellBounds);
+                }
             }
             else
             {
-                if (e.ColumnIndex <= 3)
+                if (((TableLayoutPanel)sender).Name == "tableLayoutDesRampa")
                 {
-                    b = new SolidBrush(System.Drawing.Color.Gainsboro);
+                    if (e.Column > 0 & e.Row >= 0)
+                    {
+                        e.Graphics.FillRectangle(Brushes.LightGreen, e.CellBounds);
+                    }
+                    else
+                    {
+                        if (e.Column == 0 & e.Row != 0)
+                        {
+                            e.Graphics.FillRectangle(Brushes.LightGreen, e.CellBounds);
+                        }
+                    }
+                }
+                else
+                {
+                    if (e.Row == 0)
+                    {
+                        e.Graphics.FillRectangle(Brushes.LightGreen, e.CellBounds);
+                    }
+                    else
+                    {
+                        e.Graphics.FillRectangle(Brushes.LightGray, e.CellBounds);
+                    }
                 }
             }
-            e.Graphics.FillRectangle(b, e.CellBounds);
-
-            Pen col = new Pen(Brushes.Black, 2f);
-            Pen allCol = new Pen(Brushes.DarkGray, 0.1f);
-            switch (e.ColumnIndex)
-            {
-                case 2:
-                    e.Graphics.DrawLine(col,
-                        new Point(e.CellBounds.Right, e.CellBounds.Top),
-                        new Point(e.CellBounds.Right, e.CellBounds.Bottom));
-                    break;
-                case 3:
-                    e.Graphics.DrawLine(col,
-                        new Point(e.CellBounds.Right, e.CellBounds.Top),
-                        new Point(e.CellBounds.Right, e.CellBounds.Bottom));
-                    break;
-                default:
-                    e.Graphics.DrawLine(allCol,
-                        new Point(e.CellBounds.Right - 1, e.CellBounds.Top - 1),
-                        new Point(e.CellBounds.Right - 1, e.CellBounds.Bottom - 1));
-                    break;
-            }
-            e.Graphics.DrawLine(allCol,
-                        new Point(0, e.CellBounds.Bottom - 1),
-                        new Point(e.CellBounds.Right, e.CellBounds.Bottom - 1));
-            e.PaintContent(e.ClipBounds);
-            e.Handled = true;
         }
 
-        private void dgVisualizzaRampe_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        void rbOre_CheckedChanged(object sender, EventArgs e)
         {
-            Brush b = new SolidBrush(dgVisualizzaRampe.DefaultCellStyle.BackColor);
-            if (e.RowIndex == -1)
+            RadioButton rb = (RadioButton)sender;
+            int pos = rb.Parent.Controls.GetChildIndex(rb);
+            bool allChecked = true;
+            for (int i = 1; i <= _oreGiorno; i++)
             {
-                b = new SolidBrush(dgVisualizzaRampe.ColumnHeadersDefaultCellStyle.BackColor);
+                RadioButton rb1 = (RadioButton)Controls.Find("H" + i, true)[0].Controls[pos];
+                allChecked = allChecked & rb1.Checked;
             }
-            else
+
+            ((RadioButton)Controls.Find(_sigleRampa[pos - 1].ToString(), true)[0]).Checked = allChecked;
+        }
+        void rbTutti_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
             {
-                if (e.ColumnIndex <= 4)
+                int pos = _sigleRampa.IndexOf(rb.Name);
+                for (int i = 1; i <= _oreGiorno; i++)
                 {
-                    b = new SolidBrush(System.Drawing.Color.Gainsboro);
+                    RadioButton rb1 = (RadioButton)Controls.Find("H" + i, true)[0].Controls[pos + 1];
+                    rb1.Checked = true;
                 }
             }
-            e.Graphics.FillRectangle(b, e.CellBounds);
-
-            Pen col4 = new Pen(Brushes.Black, 2f);
-            Pen allCol = new Pen(Brushes.DarkGray, 0.1f);
-            switch (e.ColumnIndex)
-            {
-                case 4:
-                    e.Graphics.DrawLine(col4,
-                        new Point(e.CellBounds.Right, e.CellBounds.Top),
-                        new Point(e.CellBounds.Right, e.CellBounds.Bottom));
-                    break;
-                default:
-                    e.Graphics.DrawLine(allCol,
-                        new Point(e.CellBounds.Right - 1, e.CellBounds.Top - 1),
-                        new Point(e.CellBounds.Right - 1, e.CellBounds.Bottom - 1));
-                    break;
-            }
-            e.Graphics.DrawLine(allCol,
-                        new Point(0, e.CellBounds.Bottom-1),
-                        new Point(e.CellBounds.Right, e.CellBounds.Bottom-1));
-            e.PaintContent(e.ClipBounds);
-            e.Handled = true;
         }
 
-        private void dgModificaRampa_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
+        
+        private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            e.Column.SortMode = DataGridViewColumnSortMode.NotSortable;
+            this.Close();
         }
 
-        private void dgVisualizzaRampe_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
+        private DataTable initOutTable()
         {
-            e.Column.SortMode = DataGridViewColumnSortMode.NotSortable;
-        }
-
-        private void dgModificaRampa_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            //se sto lavorando sulle celle da Tutti in su (quindi sulle ore)
-            if (e.ColumnIndex >= dgModificaRampa.Columns["Tutti"].Index)
-            {
-                //controllo se nella colonna ci sono più valori a true
-                int count = 0;
-                foreach (DataRowView rv in _dvModRampe)
-                    count += (bool)rv[e.ColumnIndex] ? 1 : 0;
-
-                //se ci sono più celle selezionate su una colonna le disabilito
-                //utilizzando il DataView non scateno l'evento on change delle celle
-                if (count > 1)
-                    for(int i = 0; i < _dvModRampe.Count; i++)
-                        _dvModRampe[i][e.ColumnIndex] = i == e.RowIndex;
-
-
-                //controllo se ho selezionato la colonna tutti
-                if (e.ColumnIndex == dgModificaRampa.Columns["Tutti"].Index)
-                {
-                    for (int i = 1; i <= _numOre; i++)
-                        dgModificaRampa[e.ColumnIndex + i, e.RowIndex].Value = dgModificaRampa[e.ColumnIndex, e.RowIndex].Value;
-                }
-            }
-
-            //applico le modifice e setto a conclusa l'operazione sulla cella
-            dgModificaRampa.Invalidate();
-            dgModificaRampa.EndEdit();
-        }
-
-        private void dgModificaRampa_CurrentCellDirtyStateChanged(object sender, EventArgs e)
-        {
-            //se faccio una modifica al checkbox, forzo il commit così viene richiamato CellValueChanged
-            if (dgModificaRampa.IsCurrentCellDirty)
-            {
-                dgModificaRampa.CommitEdit(DataGridViewDataErrorContexts.Commit);
-            }
-        }
-
-        private void dgModificaRampa_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
-        {
-            //se sto lavorando su una cella già true, fermo l'operazione
-            if ((bool)dgModificaRampa[e.ColumnIndex, e.RowIndex].Value)
-                e.Cancel = true;
-        }
-
-        private DataTable initOutTable(string name) 
-        {
-            DataTable dt = new DataTable(name)
+            DataTable dt = new DataTable()
             {
                 Columns =
                 {
@@ -322,45 +295,31 @@ namespace Iren.FrontOffice.Forms
 
         private void btnApplica_Click(object sender, EventArgs e)
         {
-            DataRowView vrow = (DataRowView)cmbEntita.SelectedItem;
-            DataTable dt;
-            if (_out.Tables.Contains(vrow["SiglaEntita"].ToString()))
+            _out = initOutTable();
+            for (int i = 1; i <= _oreGiorno; i++)
             {
-                if (MessageBox.Show("Esiste già una configurazione per " + vrow["SiglaEntita"] + ".\nLa configurazione verrà sovrascritta. Continuare?", "Attenzione", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
-                    _out.Tables.Remove(vrow["SiglaEntita"].ToString());
-                else
-                    return;
-            }
-            //la tabella contiene sigla rampa + valori rampa per ogni ora del giorno (record 0 -> _numOre - 1)
-            dt = initOutTable(vrow["SiglaEntita"].ToString());
-            
-            for (int i = 1; i <= _numOre; i++)
-            {
-                DataRow r = dt.NewRow();
-                foreach (DataRowView rv in _dvModRampe)
+                DataRow riga = _out.NewRow();
+
+                var oraX = panelValoriRampa.Controls.OfType<TableLayoutPanel>().FirstOrDefault(r => r.Name == "H" + i);
+                var check = oraX.Controls.OfType<RadioButton>().FirstOrDefault(r => r.Checked);
+                int pos = oraX.Controls.IndexOf(check) - 1;
+
+                riga["SiglaRampa"] = _sigleRampa[pos];
+                _entitaRampa.RowFilter += " AND SiglaRampa = '" + _sigleRampa[pos] + "'";
+
+                for (int j = 1; j <= 24; j++)
                 {
-                    if ((bool)rv["H" + i])
+                    if (_entitaRampa[0]["Q" + j] != DBNull.Value)
                     {
-                        r["SiglaRampa"] = rv["SiglaRampa"];
-
-                        DataRow[] rows = _dvRampe.Table.Select("SiglaEntita = '" + vrow["SiglaEntita"] + "' AND SiglaRampa = '" + rv["SiglaRampa"] + "'");
-
-                        if (rows.Length > 0)
-                            for (int j = 1; j <= 24; j++)
-                                r["Q" + j] = rows[0]["Q" + j];
-
-                        break;
+                        _pMin[i - 1] = _pMin[i - 1] < _pRif ? _pRif : _pMin[i - 1];
+                        riga["Q" + j] = ((int)_entitaRampa[0]["Q" + j]) * _pRif / _pMin[i - 1];
                     }
                 }
-                dt.Rows.Add(r);
+
+                _entitaRampa.RowFilter = _entitaRampa.RowFilter.Replace(" AND SiglaRampa = '" + _sigleRampa[pos] + "'", "");
+
+                _out.Rows.Add(riga);
             }
-
-            _out.Tables.Add(dt);
-        }
-
-        private void btnAnnulla_Click(object sender, EventArgs e)
-        {
-            this.Close();
         }
     }
 }
