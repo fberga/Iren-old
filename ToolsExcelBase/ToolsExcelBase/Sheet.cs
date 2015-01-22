@@ -11,6 +11,7 @@ using System.Data;
 using System.Globalization;
 using System.Configuration;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Iren.FrontOffice.Base
 {
@@ -176,6 +177,7 @@ namespace Iren.FrontOffice.Base
             CaricaInformazioni();
             AggiornaFormule(_ws);
             CalcolaFormule();
+            InsertGrafici();
             watch.Stop();
         }
 
@@ -202,6 +204,9 @@ namespace Iren.FrontOffice.Base
             DataView grafici = LocalDB.Tables[Tab.ENTITAGRAFICO].DefaultView;
             grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
 
+            DataView graficiInfo = LocalDB.Tables[Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+
             DataView informazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
             informazioni.Sort = "Ordine";
@@ -215,49 +220,49 @@ namespace Iren.FrontOffice.Base
             _intervalloOre = GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             //titolo + data
-            Stopwatch watch = Stopwatch.StartNew();
+            //Stopwatch watch = Stopwatch.StartNew();
             InsertTitoloEntita(entita);
-            watch.Stop();
-            //grafici
-            watch = Stopwatch.StartNew();
-            InsertGraficiEntita(grafici);
-            watch.Stop();
+            //watch.Stop();
+            //creazione range grafici
+            //watch = Stopwatch.StartNew();
+            InsertRangeGrafici(grafici);
+            //watch.Stop();
             //ore
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             InsertOre(entita["SiglaEntita"]);
-            watch.Stop();
+            //watch.Stop();
             //titolo verticale
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             InsertTitoloVerticale(entita["SiglaEntita"], entita["DesEntitaBreve"], informazioni.Count);
-            watch.Stop();
+            //watch.Stop();
             //formatta AllDati
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             FormattaAllDati(informazioni);
-            watch.Stop();
+            //watch.Stop();
             //informazioni
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             InsertInformazioniEntita(entita["SiglaEntita"], informazioni);
-            watch.Stop();
+            //watch.Stop();
             //nomi
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             CreaNomiCelle(informazioni);
-            watch.Stop();
+            //watch.Stop();
             //valori e formule
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             informazioni.RowFilter += " AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1)";
             InsertValoriCelle(informazioni);
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            watch.Stop();
+            //watch.Stop();
             //parametri giornalieri/orari
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             informazioni.RowFilter += " AND SiglaTipologiaParametro IS NOT NULL";
             InsertParametri(informazioni, parametriD, parametriH);
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            watch.Stop();
+            //watch.Stop();
             //formattazione condizionale
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             CreaFormattazioneCondizionale(informazioni, formattazione);
-            watch.Stop();
+            //watch.Stop();
 
             //due righe vuote tra un'entità e la successiva
             _rigaAttiva += informazioni.Count + 1;
@@ -302,18 +307,17 @@ namespace Iren.FrontOffice.Base
             });
             _rigaAttiva++;
         }
-        private void InsertGraficiEntita(DataView grafici)
+        private void InsertRangeGrafici(DataView grafici)
         {            
             int i = 1;
             foreach (DataRowView grafico in grafici)
             {
-                string graficoRange = GetName(grafico["SiglaEntita"], "GRAFICO" + (grafici.Count > 1 ? ""+i++ : ""));
+                string graficoRange = GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
 
                 Excel.Range rng = _ws.Range[_ws.Cells[++_rigaAttiva, _colonnaInizio],
                     _ws.Cells[_rigaAttiva, _colonnaInizio + _intervalloOre - 1]];
 
                 _nomiDefiniti.Add(graficoRange, Tuple.Create(_rigaAttiva, _colonnaInizio), Tuple.Create(_rigaAttiva, _colonnaInizio + _intervalloOre - 1));
-
                 rng.Merge();
                 rng.Style = "chartsBarStyle";
                 rng.RowHeight = 200;
@@ -660,6 +664,82 @@ namespace Iren.FrontOffice.Base
 
         #endregion
 
+
+        private void InsertGrafici()
+        {
+            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            DataView grafici = LocalDB.Tables[Tab.ENTITAGRAFICO].DefaultView;
+            DataView graficiInfo = LocalDB.Tables[Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            
+            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "'";
+
+            foreach (DataRowView entita in dvCE)
+            {
+                grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                
+                int i = 1;
+                foreach (DataRowView grafico in grafici)
+                {
+                    Tuple<int, int>[] rangeGrafico = _nomiDefiniti.GetRange(GetName(grafico["SiglaEntita"], "GRAFICO" + i++));
+
+                    var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
+
+                    var rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
+                    var chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
+
+                    chart.Parent.Name = GetName("GRAFICO", grafico["SiglaEntita"]);
+
+                    chart.Axes(Excel.XlAxisType.xlCategory).TickLabelPosition = Excel.XlTickLabelPosition.xlTickLabelPositionNone;
+                    chart.Axes(Excel.XlAxisType.xlValue).HasMajorGridlines = false;
+                    chart.Axes(Excel.XlAxisType.xlValue).HasMinorGridlines = false;
+                    chart.Axes(Excel.XlAxisType.xlValue).MinorTickMark = Excel.XlTickMark.xlTickMarkOutside;
+                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name = "Verdana";
+                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size = 11;
+                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "general";
+
+                    chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionTop;
+                    chart.HasDataTable = false;
+                    chart.DisplayBlanksAs = Excel.XlDisplayBlanksAs.xlNotPlotted;
+                    chart.ChartGroups(1).GapWidth = 0;
+                    chart.ChartGroups(1).Overlap = 100;
+                    chart.ChartArea.Border.ColorIndex = 1;
+                    chart.ChartArea.Border.Weight = 3;
+                    chart.ChartArea.Border.LineStyle = 0;
+
+                    chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+                    
+                    foreach (DataRowView info in graficiInfo)
+                    {
+                        Tuple<int, int>[] rangeDati = _nomiDefiniti[GetName(grafico["SiglaEntita"], info["SiglaInformazione"])];
+                        var datiGrafico = _ws.Range[_ws.Cells[rangeDati[0].Item1, rangeDati[0].Item2], _ws.Cells[rangeDati[0].Item1, rangeDati[rangeDati.Length - 1].Item2]];
+                        var serie = chart.SeriesCollection().Add(datiGrafico);
+                        serie.Name = info["DesInformazione"].ToString();
+                        serie.ChartType = (Excel.XlChartType)info["ChartType"];
+                        serie.Interior.ColorIndex = info["InteriorColor"];
+                        serie.Border.ColorIndex = info["BorderColor"];
+                        serie.Border.Weight = info["BorderWeight"];
+                        serie.Border.LineStyle = info["BorderLineStyle"];
+                    }
+
+                    //resize dell'area del grafico per adattarla alle ore
+                    string max = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale.ToString();
+                    string min = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale.ToString();
+
+                    max = max.Length > min.Length ? max : min;
+
+                    Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
+                    grfx.PageUnit = GraphicsUnit.Point;
+                    SizeF sizeMax = grfx.MeasureString(max, new Font("Verdana", 11));
+
+                    chart.ChartArea.Left = rigaGrafico.Left - sizeMax.Width - 7;
+                    chart.ChartArea.Width = chart.chartArea.Width + sizeMax.Width + 8;
+                    chart.PlotArea.InsideLeft = 0;
+                    chart.PlotArea.Width = chart.ChartArea.Width + 3;
+                }
+            }
+        }
+
         public void CaricaInformazioni()
         {
             DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
@@ -684,21 +764,22 @@ namespace Iren.FrontOffice.Base
                 i++;
             }
 
-            Stopwatch watch = Stopwatch.StartNew();
+            //Stopwatch watch = Stopwatch.StartNew();
             DataView datiApplicazione = DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=1").DefaultView;
 
             DataView insertManuali = DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
-            watch.Stop();
+            //watch.Stop();
 
             i = 0;
-            watch = Stopwatch.StartNew();
+            
             //dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
             foreach (DataRowView entita in dvCE)
             {
+                //watch = Stopwatch.StartNew();
                 datiApplicazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
                 _dataFine = dateFineUP[entita["SiglaEntita"]];
                 CaricaInformazioniEntita(datiApplicazione);
-                
+                //watch.Stop();
                 //watch = Stopwatch.StartNew();
                 insertManuali.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(SUBSTRING(Data, 1, 8), System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
                 CaricaCommentiEntita(insertManuali);
@@ -706,7 +787,7 @@ namespace Iren.FrontOffice.Base
 
                 i++;
             }
-            watch.Stop();
+           
         }
         private void CaricaInformazioniEntita(DataView datiApplicazione)
         {

@@ -95,7 +95,7 @@ namespace Iren.FrontOffice.Base
         public Tuple<int, int>[] Get(string name)
         {
             //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
-            if (!Regex.IsMatch(name, @"(RIEPILOGO[\w.]*)?DATA\d+(.H\d+)?"))
+            if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+(.H\d+)?"))
                 name += Simboli.UNION;
 
             _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
