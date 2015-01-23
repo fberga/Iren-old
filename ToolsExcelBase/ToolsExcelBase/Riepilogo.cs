@@ -66,7 +66,7 @@ namespace Iren.FrontOffice.Base
 
         #region Metodi
 
-        private void CicloGiorni(Func<int, string, DateTime, bool> callback)
+        private void CicloGiorni(Action<int, string, DateTime> callback)
         {
             for (DateTime giorno = _dataInizio; giorno <= _dataFine; giorno = giorno.AddDays(1))
             {
@@ -143,6 +143,8 @@ namespace Iren.FrontOffice.Base
 
             categorie.RowFilter = "Operativa = 1";
             azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+            entita.RowFilter = "";
+            entitaAzioni.RowFilter = "";
 
             InitBarraTitolo(azioni);
             _rigaAttiva += 3;
@@ -205,7 +207,6 @@ namespace Iren.FrontOffice.Base
                 rng.Value = values;
 
                 colonnaInizio += _nAzioni;
-                return true;
             });
         }
         private void FormattaAllDati(DataView azioni, DataView categorie, DataView entita)
@@ -244,8 +245,6 @@ namespace Iren.FrontOffice.Base
                     j++;
                 }
                 colonnaInizio += _nAzioni;
-
-                return true;
             });
 
             azioni.RowFilter = "";
@@ -296,8 +295,6 @@ namespace Iren.FrontOffice.Base
                         Style.RangeStyle(_ws.Cells[cella.Item1, cella.Item2], "BackPattern: none");
                     }
                 }
-
-                return true;
             });
         }
         private void CaricaDatiRiepilogo()
@@ -322,8 +319,6 @@ namespace Iren.FrontOffice.Base
                         Style.RangeStyle(rng, "BackColor:4;Align:Center");
                     }
                 }
-
-                return true;
             });
         }
 

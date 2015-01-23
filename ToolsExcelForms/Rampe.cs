@@ -175,9 +175,16 @@ namespace Iren.FrontOffice.Forms
             }
 
             //carico valori PQNR
-            for (int i = 0; i < _valoriPQNR.Length; i++)
+            if (_valoriPQNR[0] != null)
             {
-                ((RadioButton)Controls.Find("H" + (i + 1), true)[0].Controls[_sigleRampa.IndexOf(_valoriPQNR[i]) + 1]).Checked = true;
+                for (int i = 0; i < _valoriPQNR.Length; i++)
+                {
+                    ((RadioButton)Controls.Find("H" + (i + 1), true)[0].Controls[_sigleRampa.IndexOf(_valoriPQNR[i]) + 1]).Checked = true;
+                }
+            }
+            else
+            {
+                tableLayoutDesRampa.Controls.OfType<RadioButton>().First().Checked = true;
             }
         }
 

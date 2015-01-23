@@ -143,7 +143,7 @@ namespace Iren.FrontOffice.Base
             return int.Parse(""+dtUtente.Rows[0]["IdUtente"]);
         }
 
-        private static void InitLog()
+        public static void InitLog()
         {            
             ResetTable(Tab.LOG);
             DataTable dtLog = _db.Select("spApplicazioneLog");
@@ -247,6 +247,11 @@ namespace Iren.FrontOffice.Base
         public static string GetSuffissoOra(int ora)
         {
             return "H" + ora;
+        }
+
+        public static void ConvertiParametriInformazioni()
+        {
+            _db.Select("spApplicazioneInit");
         }
 
         public static void AggiornaStrutturaDati()

@@ -49,9 +49,12 @@
             this.groupAggiorna = this.Factory.CreateRibbonGroup();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.group2 = this.Factory.CreateRibbonGroup();
-            this.btnRampe = this.Factory.CreateRibbonButton();
             this.btnAggiornaStruttura = this.Factory.CreateRibbonButton();
             this.btnCalendar = this.Factory.CreateRibbonButton();
+            this.btnRampe = this.Factory.CreateRibbonButton();
+            this.btnAggiornaDati = this.Factory.CreateRibbonButton();
+            this.group3 = this.Factory.CreateRibbonGroup();
+            this.btnChiudi = this.Factory.CreateRibbonButton();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -67,6 +70,7 @@
             this.groupAggiorna.SuspendLayout();
             this.group1.SuspendLayout();
             this.group2.SuspendLayout();
+            this.group3.SuspendLayout();
             // 
             // TabHome
             // 
@@ -154,6 +158,7 @@
             // 
             // FrontOffice
             // 
+            this.FrontOffice.Groups.Add(this.group3);
             this.FrontOffice.Groups.Add(this.groupAggiorna);
             this.FrontOffice.Groups.Add(this.group1);
             this.FrontOffice.Groups.Add(this.group2);
@@ -162,6 +167,7 @@
             // 
             // groupAggiorna
             // 
+            this.groupAggiorna.Items.Add(this.btnAggiornaDati);
             this.groupAggiorna.Items.Add(this.btnAggiornaStruttura);
             this.groupAggiorna.Label = "Aggiorna";
             this.groupAggiorna.Name = "groupAggiorna";
@@ -177,15 +183,6 @@
             this.group2.Items.Add(this.btnRampe);
             this.group2.Label = "group2";
             this.group2.Name = "group2";
-            // 
-            // btnRampe
-            // 
-            this.btnRampe.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnRampe.Image = global::ToolsExcel.Properties.Resources.checklist_icon;
-            this.btnRampe.Label = "Seleziona Rampa";
-            this.btnRampe.Name = "btnRampe";
-            this.btnRampe.ShowImage = true;
-            this.btnRampe.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnRampe_Click);
             // 
             // btnAggiornaStruttura
             // 
@@ -206,6 +203,38 @@
             this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
             this.btnCalendar.ShowImage = true;
             this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
+            // 
+            // btnRampe
+            // 
+            this.btnRampe.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnRampe.Image = global::ToolsExcel.Properties.Resources.checklist_icon;
+            this.btnRampe.Label = "Seleziona Rampa";
+            this.btnRampe.Name = "btnRampe";
+            this.btnRampe.ShowImage = true;
+            this.btnRampe.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnRampe_Click);
+            // 
+            // btnAggiornaDati
+            // 
+            this.btnAggiornaDati.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnAggiornaDati.Image = global::ToolsExcel.Properties.Resources.Generate_tables_icon;
+            this.btnAggiornaDati.Label = "Aggiorna Dati";
+            this.btnAggiornaDati.Name = "btnAggiornaDati";
+            this.btnAggiornaDati.ShowImage = true;
+            this.btnAggiornaDati.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnAggiornaDati_Click);
+            // 
+            // group3
+            // 
+            this.group3.Items.Add(this.btnChiudi);
+            this.group3.Label = "group3";
+            this.group3.Name = "group3";
+            // 
+            // btnChiudi
+            // 
+            this.btnChiudi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnChiudi.Image = global::ToolsExcel.Properties.Resources.Save_icon;
+            this.btnChiudi.Label = "Chiudi";
+            this.btnChiudi.Name = "btnChiudi";
+            this.btnChiudi.ShowImage = true;
             // 
             // ToolsExcelRibbon
             // 
@@ -255,6 +284,8 @@
             this.group1.PerformLayout();
             this.group2.ResumeLayout(false);
             this.group2.PerformLayout();
+            this.group3.ResumeLayout(false);
+            this.group3.PerformLayout();
 
         }
 
@@ -278,6 +309,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalendar;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRampe;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChiudi;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAggiornaDati;
     }
 
     partial class ThisRibbonCollection

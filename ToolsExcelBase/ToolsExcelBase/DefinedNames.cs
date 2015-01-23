@@ -69,6 +69,10 @@ namespace Iren.FrontOffice.Base
         {
             Add(name, Tuple.Create(row, column));
         }
+        public void Add(string name, int row1, int column1, int row2, int column2)
+        {
+            Add(name, Tuple.Create(row1, column1), Tuple.Create(row2, column2));
+        }
 
         public bool IsRange(string name)
         {

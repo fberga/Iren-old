@@ -23,9 +23,9 @@ namespace Iren.FrontOffice.Tools
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
         }
 
-        private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
+
+        private void AggiornaStruttura()
         {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
             CommonFunctions.AggiornaStrutturaDati();
 
             DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
@@ -34,7 +34,7 @@ namespace Iren.FrontOffice.Tools
             foreach (DataRowView categoria in categorie)
             {
                 Excel.Worksheet ws;
-                try 
+                try
                 {
                     ws = Globals.ThisWorkbook.Worksheets[categoria["DesCategoria"].ToString()];
                 }
@@ -50,9 +50,9 @@ namespace Iren.FrontOffice.Tools
             Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
             main.LoadStructure();
 
-            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets) 
+            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
             {
-                if(ws.Name != "Log" && ws.Name != "Main")
+                if (ws.Name != "Log" && ws.Name != "Main")
                 {
                     Sheet s = new Sheet(ws);
                     s.LoadStructure();
@@ -61,7 +61,13 @@ namespace Iren.FrontOffice.Tools
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+        }
 
+        private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+
+            AggiornaStruttura();
             //TODO riabilitare log!!
             //Globals.Log.Unprotect();
             //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
@@ -79,15 +85,40 @@ namespace Iren.FrontOffice.Tools
 
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
+            DateTime dataOld = DateTime.ParseExact(config.AppSettings.Settings["DataInizio"].Value, "yyyyMMdd", CultureInfo.InvariantCulture);
+
             if (cal.Date != null)
             {
-                config.AppSettings.Settings["DataInizio"].Value = cal.Date.Value.ToString("yyyyMMdd");
-                config.Save(ConfigurationSaveMode.Minimal);
-                ConfigurationManager.RefreshSection("appSettings");
+                if (dataOld != cal.Date.Value)
+                {
+                    config.AppSettings.Settings["DataInizio"].Value = cal.Date.Value.ToString("yyyyMMdd");
+                    config.Save(ConfigurationSaveMode.Minimal);
+                    ConfigurationManager.RefreshSection("appSettings");
 
-                btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
+                    btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
+
+                    //TODO riabilitare log!!
+                    //Globals.Log.Unprotect();
+                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
+                    //Globals.Log.Protect();
+
+                    CommonFunctions.RefreshDate(cal.Date.Value);
+                    CommonFunctions.ConvertiParametriInformazioni();
+
+                    DataView stato = CommonFunctions.DB.Select("spCheckModificaStruttura", "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                    if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
+                    {
+                        CommonFunctions.AggiornaStrutturaDati();
+                        AggiornaStruttura();
+                    }
+                    else
+                    {                        
+                        AggiornaDati();
+                    }
+                }
             }
             cal.Dispose();
+
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
 
@@ -137,10 +168,10 @@ namespace Iren.FrontOffice.Tools
                     {
                         Tuple<int,int>[] cellePmin = nomiDefiniti[CommonFunctions.GetName(up, "PMIN_TERNA_ASSETTO" + numAssetto, suffissoData)];
                         object[,] pMinAssetto = ws.Range[ws.Cells[cellePmin[0].Item1, cellePmin[0].Item2], ws.Cells[cellePmin[0].Item1, cellePmin[cellePmin.Length - 1].Item2]].Value;
-                        double[] pMinOraria = pMinAssetto.Cast<double>().ToArray();
+                        double?[] pMinOraria = pMinAssetto.Cast<double?>().ToArray();
                         for (int i = 0; i < pMinOraria.Length; i++)
                         {
-                            pMin[i] = Math.Min(pMin[i] ?? pMinOraria[i], pMinOraria[i]);
+                            pMin[i] = Math.Min(pMin[i] ?? pMinOraria[i] ?? 0, pMinOraria[i] ?? 0);
                         }
                         numAssetto++;
                     }
@@ -164,6 +195,36 @@ namespace Iren.FrontOffice.Tools
                     }
                 }
             }
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+
+        private void AggiornaDati()
+        {
+            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
+            {
+                if (ws.Name != "Log" && ws.Name != "Main")
+                {
+                    Sheet s = new Sheet(ws);
+                    s.UpdateData();
+                }
+            }
+            Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
+            main.LoadStructure();
+
+            //Log
+            CommonFunctions.InitLog();
+        }
+
+        private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+
+            AggiornaDati();
+
+            //TODO riabilitare log!!
+            //Globals.Log.Unprotect();
+            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
+            //Globals.Log.Protect();
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
     }
