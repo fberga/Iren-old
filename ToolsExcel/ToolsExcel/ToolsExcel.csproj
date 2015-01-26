@@ -100,10 +100,6 @@
     <ManifestCertificateThumbprint>2A77029A78A06BEA7549E868004812D29898CC43</ManifestCertificateThumbprint>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FrontOfficeCore, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>\\PC1009235\Applicazioni\FrontOfficeCore\FrontOfficeCore.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -244,6 +240,10 @@
     <Content Include="res\Structure-Refresh-icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\FrontOfficeCore\FrontOfficeCore\FrontOfficeCore.csproj">
+      <Project>{40a0918e-793b-41f0-8235-5a9e601b2e2b}</Project>
+      <Name>FrontOfficeCore</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ToolsExcelBase\ToolsExcelBase\ToolsExcelBase.csproj">
       <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
       <Name>ToolsExcelBase</Name>

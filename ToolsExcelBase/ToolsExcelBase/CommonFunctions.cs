@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Office.Tools.Excel;
 using System.Deployment.Application;
 using System.Reflection;
+using System.Configuration;
 
 namespace Iren.FrontOffice.Base
 {
@@ -91,14 +92,6 @@ namespace Iren.FrontOffice.Base
                 return _namespace;
             }
         }
-        //public static Workbook ThisWorkBook
-        //{
-        //    get
-        //    {
-        //        return _wb;
-        //    }
-        //}
-        
         public static System.Version CoreVersion
         {
             get { return _db.GetCurrentV(); }
@@ -190,23 +183,24 @@ namespace Iren.FrontOffice.Base
             DataTable dt = CaricaApplicazione(appID);
             if (dt.Rows.Count == 0)
                 throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
-            
+
             _namespace = "Iren.ToolsExcel." + dt.Rows[0]["SiglaApplicazione"];
             Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-
-            _localDB.Namespace = _namespace;
-            _localDB.Prefix = NAME;
-            _localDB.Tables.Add(dt);
 
             try
             {
                 Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[_namespace];
                 StringReader sr = new StringReader(xmlPart.XML);
                 _localDB.ReadXml(sr);
+                ResetTable(Tab.APPLICAZIONE);                
             }
             catch
             {
+                _localDB.Namespace = _namespace;
+                _localDB.Prefix = NAME;
             }
+
+            _localDB.Tables.Add(dt);
 
             int usr = InitUser();
             _db.setParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);

@@ -16,7 +16,8 @@ namespace Iren.FrontOffice.Core
 
         private static Connection _conn;
         private static string _connStr;
-        private static SqlConnection _sqlConn;        
+        private static SqlConnection _sqlConn;
+        private ConnectionState _state = ConnectionState.Closed;
 
         #endregion
 
@@ -29,6 +30,7 @@ namespace Iren.FrontOffice.Core
                 if (_conn == null)
                 {
                     _conn = new Connection();
+                    _conn.OpenConnection();
                 }
                 return _conn;
             }
@@ -89,30 +91,11 @@ namespace Iren.FrontOffice.Core
                 }
             }
         }
-        //public static void CryptSection(System.Reflection.Assembly executingAssembly)
-        //{
-        //    //var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-        //    var location = executingAssembly.Location;
-        //    //var location = Path.Combine(Environment.SpecialFolder.LocalApplicationData, "";
-        //    var config = ConfigurationManager.OpenExeConfiguration(location);
 
-        //    string provider = "RsaProtectedConfigurationProvider";
-        //    ConfigurationSection connStrings = config.ConnectionStrings;
-
-        //    if (connStrings != null)
-        //    {
-        //        if (!connStrings.SectionInformation.IsProtected)
-        //        {
-        //            if (!connStrings.ElementInformation.IsLocked)
-        //            {
-        //                connStrings.SectionInformation.ProtectSection(provider);
-
-        //                connStrings.SectionInformation.ForceSave = true;
-        //                config.Save(ConfigurationSaveMode.Full);
-        //            }
-        //        }
-        //    }
-        //}
+        public ConnectionState GetConnectionState()
+        {
+            return _state;
+        }
 
         public SqlConnection OpenConnection()
         {
@@ -134,6 +117,7 @@ namespace Iren.FrontOffice.Core
                 {
                     _connStr = connectionString;
                     _sqlConn = new SqlConnection(_connStr);
+                    _sqlConn.StateChange += ConnectionStateChange;
                     _sqlConn.Open();
                 }
                 catch (Exception)
@@ -157,6 +141,15 @@ namespace Iren.FrontOffice.Core
         void IDisposable.Dispose()
         {
             CloseConnection();
+        }
+
+        #endregion
+
+        #region Metodi Privati
+
+        private void ConnectionStateChange(object sender, StateChangeEventArgs e)
+        {
+            _state = _sqlConn.State;
         }
 
         #endregion

@@ -26,6 +26,13 @@ namespace Iren.FrontOffice.Core
             LogAccesso = 6
         }
 
+        public enum NomiDB
+        {
+            SQLSERVER = 1,
+            IMP = 2,
+            ELSAG = 3
+        }
+
         public const string ALL = "ALL";
 
         public struct StoredProcedure
@@ -71,6 +78,11 @@ namespace Iren.FrontOffice.Core
         private static string _dataAttiva = "";
         private static int _idUtenteAttivo = -1;
         private static int _idApplicazione = -1;
+        private static Dictionary<NomiDB, ConnectionState> _statoDB = new Dictionary<NomiDB, ConnectionState>() { 
+            {NomiDB.SQLSERVER, ConnectionState.Closed},
+            {NomiDB.IMP, ConnectionState.Closed},
+            {NomiDB.ELSAG, ConnectionState.Closed}
+        };
 
         #endregion
 
@@ -95,6 +107,27 @@ namespace Iren.FrontOffice.Core
         #endregion
 
         #region Metodi
+
+        public Dictionary<NomiDB, ConnectionState> StatoDB()
+        {
+            _statoDB[NomiDB.SQLSERVER] = Connection.Instance.GetConnectionState();
+
+            if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
+            {
+                DataView imp = Select("spCheckDB", "@Nome=IMP").DefaultView;
+                DataView elsag = Select("spCheckDB", "@Nome=ELSAG").DefaultView;
+
+                if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
+                {
+                    _statoDB[NomiDB.IMP] = ConnectionState.Open;
+                }
+                if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
+                {
+                    _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+                }
+            }
+            return _statoDB;
+        }
 
         public void setParameters(string dataAttiva, int idUtenteAttivo, int idApplicazione)
         {

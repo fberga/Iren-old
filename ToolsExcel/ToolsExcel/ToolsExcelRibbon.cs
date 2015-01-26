@@ -23,7 +23,6 @@ namespace Iren.FrontOffice.Tools
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
         }
 
-
         private void AggiornaStruttura()
         {
             CommonFunctions.AggiornaStrutturaDati();
@@ -225,6 +224,22 @@ namespace Iren.FrontOffice.Tools
             //Globals.Log.Unprotect();
             //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
             //Globals.Log.Protect();
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+
+        private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            var categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            categorie.RowFilter = "";
+            var entita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            entita.RowFilter = "";
+            var azioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONE].DefaultView;
+            azioni.RowFilter = "";
+
+            frmAZIONI frmAz = new frmAZIONI(categorie, entita, azioni, CommonFunctions.DB);
+            frmAz.ShowDialog();
+
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
     }
