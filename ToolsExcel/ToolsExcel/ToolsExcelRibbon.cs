@@ -236,8 +236,10 @@ namespace Iren.FrontOffice.Tools
             entita.RowFilter = "";
             var azioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONE].DefaultView;
             azioni.RowFilter = "";
+            var azionicategorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONECATEGORIA].DefaultView;
+            azionicategorie.RowFilter = "";
 
-            frmAZIONI frmAz = new frmAZIONI(categorie, entita, azioni, CommonFunctions.DB);
+            frmAZIONI frmAz = new frmAZIONI(categorie, entita, azioni, azionicategorie, CommonFunctions.DB);
             frmAz.ShowDialog();
 
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
