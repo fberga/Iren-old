@@ -16,16 +16,18 @@ namespace Iren.FrontOffice.Forms
         DataView _categorie;
         DataView _entita;
         DataView _azioniCategorie;
+        DataView _entitaAzioni;
         DataBase _db;
 
 
-        public frmAZIONI(DataView categorie, DataView entita, DataView azioni, DataView azioniCategorie, DataBase db)
+        public frmAZIONI(DataView categorie, DataView entita, DataView azioni, DataView azioniCategorie, DataView entitaAzioni, DataBase db)
         {
             InitializeComponent();
             _categorie = categorie;
             _entita = entita;
             _azioni = azioni;
             _azioniCategorie = azioniCategorie;
+            _entitaAzioni = entitaAzioni;
             _db = db;
         }
 
@@ -56,7 +58,7 @@ namespace Iren.FrontOffice.Forms
 
         private void CaricaCategorie()
         {
-            var stato = _db.StatoDB();
+            //var stato = _db.StatoDB();
 
             foreach (DataRowView categoria in _categorie)
             {
@@ -83,82 +85,215 @@ namespace Iren.FrontOffice.Forms
             e.Cancel = true;
         }
 
-        private void ThroughAllNode(TreeNodeCollection root, Action<TreeNode> callback)
+        private void ThroughAllNodes(TreeNodeCollection root, Action<TreeNode> callback)
         {
             if (root.Count > 0)
             {
                 foreach (TreeNode node in root.OfType<TreeNode>())
                 {
                     callback(node);
-                    ThroughAllNode(node.Nodes, callback);
+                    ThroughAllNodes(node.Nodes, callback);
                 }
             }
         }
 
-        private void treeView_AfterCheck(object sender, TreeViewEventArgs e)
+        private void CaricaEntita()
         {
-            TreeView sourceTreeView = (TreeView)sender;
-            TreeView destTreeView = sourceTreeView;
-            bool check = e.Node.Checked;
-            if (e.Node.Nodes.Count == 0)
-            {
-                string filter = "";
-                string key = "";
-                switch (sourceTreeView.Name)
-                {
-                    case "treeViewAzioni":
-                        filter = "SiglaAzione";
-                        key = "SiglaCategoria";
-                        destTreeView = (TreeView)Controls.Find("treeViewCategorie", true)[0];
-                        break;
-                    case "treeViewCategorie":
-                        filter = "SiglaCategoria";
-                        key = "SiglaAzione";
-                        destTreeView = (TreeView)Controls.Find("treeViewAzioni", true)[0];
-                        break;
-                }
-                //disabilito la callback in caso di evento check per evitare loop
-                destTreeView.AfterCheck -= treeView_AfterCheck;
+            Dictionary<string, bool> notSel = new Dictionary<string, bool>();
 
-                //modifico stato del padre
-                sourceTreeView.AfterCheck -= treeView_AfterCheck;
-                if (e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0) 
+            foreach (TreeNode node in treeViewUP.Nodes)
+            {
+                if(!node.Checked)
+                notSel.Add(node.Name, false);
+            }
+
+            treeViewUP.Nodes.Clear();
+            ThroughAllNodes(treeViewCategorie.Nodes, n =>
+            {
+                if (n.Checked)
                 {
-                    e.Node.Parent.Checked = false;
-                    e.Node.Parent.BackColor = sourceTreeView.BackColor;
+                    _entita.RowFilter = "SiglaCategoria = '" + n.Name + "'";
+                    foreach (DataRowView entita in _entita)
+                    {
+                        ThroughAllNodes(treeViewAzioni.Nodes, n1 =>
+                        {
+                            if (n1.Checked)
+                            {
+                                _entitaAzioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaAzione = '" + n1.Name + "'";
+                                if (_entitaAzioni.Count > 0 && treeViewUP.Nodes.Find(entita["SiglaEntita"].ToString(), true).Length == 0)
+                                {
+                                    treeViewUP.Nodes.Add(entita["SiglaEntita"].ToString(), entita["DesEntita"].ToString());
+                                    if (notSel.ContainsKey(entita["SiglaEntita"].ToString()))
+                                        treeViewUP.Nodes[entita["SiglaEntita"].ToString()].Checked = false;
+                                    else
+                                        treeViewUP.Nodes[entita["SiglaEntita"].ToString()].Checked = true;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        private void CheckParents()
+        {
+            foreach (TreeNode node in treeViewAzioni.Nodes)
+            {
+                if (node.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length > 0)
+                    if(!node.Checked)
+                        node.Checked = true;
+            }
+            foreach (TreeNode node in treeViewCategorie.Nodes)
+            {
+                if (node.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length > 0)
+                    if (!node.Checked)
+                        node.Checked = true;
+            }
+        }
+
+        bool fromAzioni = false;
+        private void treeViewAzioni_AfterCheck1(object sender, TreeViewEventArgs e)
+        {
+            fromAzioni = true;
+
+            if (e.Node.Checked)
+            {
+                if (e.Node.Nodes.Count == 0)
+                {
+                    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck1;
+                    if (e.Node.Parent != null && !e.Node.Parent.Checked)
+                        e.Node.Parent.Checked = true;
+                    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck1;
+
+                    _azioniCategorie.RowFilter = "SiglaAzione = '" + e.Node.Name + "'";
+                    
+                    foreach (DataRowView azioneCategoria in _azioniCategorie)
+                        if (!treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked)
+                            treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked = true;
                 }
                 else
                 {
-                    e.Node.Parent.Checked = true;
-                    e.Node.Parent.BackColor = Color.Coral;
-                }       
-                sourceTreeView.AfterCheck += treeView_AfterCheck;
-                
-                //elimino tutti i check
-                ThroughAllNode(destTreeView.Nodes, n => n.Checked = false);
-                
-                //ripristino quelli necessari
-                ThroughAllNode(sourceTreeView.Nodes, n => 
-                {
-                    if (n.Checked)
-                    {
-                        _azioniCategorie.RowFilter = filter + " = '" + n.Name + "'";
-                        foreach (DataRowView azioneCategoria in _azioniCategorie)
-                        {
-                            destTreeView.Nodes.Find(azioneCategoria[key].ToString(), true)[0].Checked = true;
-                            destTreeView.Nodes.Find(azioneCategoria[key].ToString(), true)[0].Parent.Checked = true;
-                        }
-                    }
-                });
-                destTreeView.AfterCheck += treeView_AfterCheck;
+                    foreach (TreeNode node in e.Node.Nodes)
+                        if(!node.Checked)
+                            node.Checked = true;
+                }
             }
             else
             {
-                foreach (TreeNode node in e.Node.Nodes)
+                if (e.Node.Nodes.Count > 0)
                 {
-                    node.Checked = check;
+                    foreach (TreeNode node in e.Node.Nodes)
+                        if (node.Checked)
+                            node.Checked = false;
+                }
+                else
+                {
+                    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck1;
+                    if(e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
+                        e.Node.Parent.Checked = false;
+                    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck1;
+                }
+
+                Dictionary<string, bool> cateogorie = new Dictionary<string, bool>();
+                ThroughAllNodes(treeViewCategorie.Nodes, n => 
+                {
+                    if (n.Nodes.Count == 0)
+                    {
+                        cateogorie.Add(n.Name, false);
+                    }
+                });
+
+                ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                {
+                    if (n.Nodes.Count == 0 && n.Checked)
+                    {
+                        _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                        foreach (DataRowView azioneCategoria in _azioniCategorie)
+                        {
+                            cateogorie[azioneCategoria["SiglaCategoria"].ToString()] = true;
+                        }
+                    }
+                });
+                
+                treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck1;
+                foreach (KeyValuePair<string, bool> cat in cateogorie)
+                {
+                    if (!cat.Value && treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked)
+                        treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked = false;
+                }
+                treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck1;
+            }
+
+            //CheckParents();
+            CaricaEntita();
+            fromAzioni = false;
+        }
+
+        private void treeViewCategorie_AfterCheck1(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Checked)
+            {
+                if (e.Node.Nodes.Count > 0)
+                {
+                    foreach (TreeNode node in e.Node.Nodes)
+                        if (!node.Checked)
+                            node.Checked = true;
+                }
+                else
+                {
+                    treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck1;
+                    if (e.Node.Parent != null && !e.Node.Parent.Checked)
+                        e.Node.Parent.Checked = true;
+                    treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck1;
+                }
+
+                if (!fromAzioni)
+                {
+                    _azioniCategorie.RowFilter = "SiglaCategoria = '" + e.Node.Name + "'";
+                    foreach (DataRowView azioneCategoria in _azioniCategorie)
+                        if (!treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked)
+                            treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked = true;
                 }
             }
-        }        
+            else
+            {
+
+                if (e.Node.Nodes.Count > 0)
+                {
+                    foreach (TreeNode node in e.Node.Nodes)
+                        if (node.Checked)
+                            node.Checked = false;
+                }
+                else
+                {
+                    treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck1;
+                    if (e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
+                        e.Node.Parent.Checked = false;
+                    treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck1;
+                }
+                List<string> azioni = new List<string>();
+                bool trovato = false;
+
+                treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck1;
+
+                ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                {
+                    if (n.Nodes.Count == 0)
+                    {
+                        _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                        foreach (DataRowView azioneCategoria in _azioniCategorie)
+                            trovato = trovato || treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked;
+
+                        if (!trovato && !n.Checked)
+                            n.Checked = false;
+                    }
+                });
+
+                treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck1;
+            }
+
+            //CheckParents();
+            CaricaEntita();
+        }
     }
 }

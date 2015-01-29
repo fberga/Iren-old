@@ -168,7 +168,8 @@
             this.treeViewCategorie.ShowRootLines = false;
             this.treeViewCategorie.Size = new System.Drawing.Size(350, 372);
             this.treeViewCategorie.TabIndex = 1;
-            this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
+            //this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewCategorie_AfterCheck);
+            this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewCategorie_AfterCheck1);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
             // panelAzioni
@@ -191,7 +192,8 @@
             this.treeViewAzioni.ShowRootLines = false;
             this.treeViewAzioni.Size = new System.Drawing.Size(350, 372);
             this.treeViewAzioni.TabIndex = 0;
-            this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
+            //this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck);
+            this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck1);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
             // frmAZIONI
