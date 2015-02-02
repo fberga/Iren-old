@@ -34,17 +34,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.TabHome = this.Factory.CreateRibbonTab();
-            this.TabInsert = this.Factory.CreateRibbonTab();
-            this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
-            this.TabFormulas = this.Factory.CreateRibbonTab();
-            this.TabData = this.Factory.CreateRibbonTab();
-            this.TabReview = this.Factory.CreateRibbonTab();
-            this.TabView = this.Factory.CreateRibbonTab();
-            this.TabDeveloper = this.Factory.CreateRibbonTab();
-            this.TabAddIns = this.Factory.CreateRibbonTab();
-            this.TabPrintPreview = this.Factory.CreateRibbonTab();
-            this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.FrontOffice = this.Factory.CreateRibbonTab();
             this.group3 = this.Factory.CreateRibbonGroup();
             this.btnChiudi = this.Factory.CreateRibbonButton();
@@ -57,6 +46,31 @@
             this.btnRampe = this.Factory.CreateRibbonButton();
             this.group4 = this.Factory.CreateRibbonGroup();
             this.btnAzioni = this.Factory.CreateRibbonButton();
+            this.groupModifica = this.Factory.CreateRibbonGroup();
+            this.btnModifica = this.Factory.CreateRibbonToggleButton();
+            this.groupAmbienti = this.Factory.CreateRibbonGroup();
+            this.Produzione = this.Factory.CreateRibbonToggleButton();
+            this.Test = this.Factory.CreateRibbonToggleButton();
+            this.Dev = this.Factory.CreateRibbonToggleButton();
+            this.TabHome = this.Factory.CreateRibbonTab();
+            this.TabInsert = this.Factory.CreateRibbonTab();
+            this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
+            this.TabFormulas = this.Factory.CreateRibbonTab();
+            this.TabData = this.Factory.CreateRibbonTab();
+            this.TabReview = this.Factory.CreateRibbonTab();
+            this.TabView = this.Factory.CreateRibbonTab();
+            this.TabDeveloper = this.Factory.CreateRibbonTab();
+            this.TabAddIns = this.Factory.CreateRibbonTab();
+            this.TabPrintPreview = this.Factory.CreateRibbonTab();
+            this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
+            this.FrontOffice.SuspendLayout();
+            this.group3.SuspendLayout();
+            this.groupAggiorna.SuspendLayout();
+            this.group1.SuspendLayout();
+            this.group2.SuspendLayout();
+            this.group4.SuspendLayout();
+            this.groupModifica.SuspendLayout();
+            this.groupAmbienti.SuspendLayout();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -68,96 +82,6 @@
             this.TabAddIns.SuspendLayout();
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
-            this.FrontOffice.SuspendLayout();
-            this.group3.SuspendLayout();
-            this.groupAggiorna.SuspendLayout();
-            this.group1.SuspendLayout();
-            this.group2.SuspendLayout();
-            this.group4.SuspendLayout();
-            // 
-            // TabHome
-            // 
-            this.TabHome.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabHome.ControlId.OfficeId = "TabHome";
-            this.TabHome.Label = "TabHome";
-            this.TabHome.Name = "TabHome";
-            this.TabHome.Visible = false;
-            // 
-            // TabInsert
-            // 
-            this.TabInsert.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabInsert.ControlId.OfficeId = "TabInsert";
-            this.TabInsert.Label = "TabInsert";
-            this.TabInsert.Name = "TabInsert";
-            this.TabInsert.Visible = false;
-            // 
-            // TabPageLayoutExcel
-            // 
-            this.TabPageLayoutExcel.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabPageLayoutExcel.ControlId.OfficeId = "TabPageLayoutExcel";
-            this.TabPageLayoutExcel.Label = "TabPageLayoutExcel";
-            this.TabPageLayoutExcel.Name = "TabPageLayoutExcel";
-            this.TabPageLayoutExcel.Visible = false;
-            // 
-            // TabFormulas
-            // 
-            this.TabFormulas.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabFormulas.ControlId.OfficeId = "TabFormulas";
-            this.TabFormulas.Label = "TabFormulas";
-            this.TabFormulas.Name = "TabFormulas";
-            // 
-            // TabData
-            // 
-            this.TabData.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabData.ControlId.OfficeId = "TabData";
-            this.TabData.Label = "TabData";
-            this.TabData.Name = "TabData";
-            this.TabData.Visible = false;
-            // 
-            // TabReview
-            // 
-            this.TabReview.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabReview.ControlId.OfficeId = "TabReview";
-            this.TabReview.Label = "TabReview";
-            this.TabReview.Name = "TabReview";
-            // 
-            // TabView
-            // 
-            this.TabView.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabView.ControlId.OfficeId = "TabView";
-            this.TabView.Label = "TabView";
-            this.TabView.Name = "TabView";
-            this.TabView.Visible = false;
-            // 
-            // TabDeveloper
-            // 
-            this.TabDeveloper.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabDeveloper.ControlId.OfficeId = "TabDeveloper";
-            this.TabDeveloper.Label = "TabDeveloper";
-            this.TabDeveloper.Name = "TabDeveloper";
-            // 
-            // TabAddIns
-            // 
-            this.TabAddIns.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabAddIns.Label = "TabAddIns";
-            this.TabAddIns.Name = "TabAddIns";
-            this.TabAddIns.Visible = false;
-            // 
-            // TabPrintPreview
-            // 
-            this.TabPrintPreview.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabPrintPreview.ControlId.OfficeId = "TabPrintPreview";
-            this.TabPrintPreview.Label = "TabPrintPreview";
-            this.TabPrintPreview.Name = "TabPrintPreview";
-            this.TabPrintPreview.Visible = false;
-            // 
-            // TabBackgroundRemoval
-            // 
-            this.TabBackgroundRemoval.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabBackgroundRemoval.ControlId.OfficeId = "TabBackgroundRemoval";
-            this.TabBackgroundRemoval.Label = "TabBackgroundRemoval";
-            this.TabBackgroundRemoval.Name = "TabBackgroundRemoval";
-            this.TabBackgroundRemoval.Visible = false;
             // 
             // FrontOffice
             // 
@@ -166,6 +90,8 @@
             this.FrontOffice.Groups.Add(this.group1);
             this.FrontOffice.Groups.Add(this.group2);
             this.FrontOffice.Groups.Add(this.group4);
+            this.FrontOffice.Groups.Add(this.groupModifica);
+            this.FrontOffice.Groups.Add(this.groupAmbienti);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
@@ -254,6 +180,139 @@
             this.btnAzioni.ShowImage = true;
             this.btnAzioni.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnAzioni_Click);
             // 
+            // groupModifica
+            // 
+            this.groupModifica.Items.Add(this.btnModifica);
+            this.groupModifica.Label = "Modifica";
+            this.groupModifica.Name = "groupModifica";
+            // 
+            // btnModifica
+            // 
+            this.btnModifica.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnModifica.Label = "Modifica NO";
+            this.btnModifica.Name = "btnModifica";
+            this.btnModifica.ShowImage = true;
+            this.btnModifica.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnModifica_Click);
+            // 
+            // groupAmbienti
+            // 
+            this.groupAmbienti.Items.Add(this.Produzione);
+            this.groupAmbienti.Items.Add(this.Test);
+            this.groupAmbienti.Items.Add(this.Dev);
+            this.groupAmbienti.Label = "Ambienti";
+            this.groupAmbienti.Name = "groupAmbienti";
+            // 
+            // Produzione
+            // 
+            this.Produzione.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.Produzione.Label = "Produzione";
+            this.Produzione.Name = "Produzione";
+            this.Produzione.ShowImage = true;
+            this.Produzione.Visible = false;
+            this.Produzione.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSelezionaAmbiente_Click);
+            // 
+            // Test
+            // 
+            this.Test.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.Test.Label = "Test";
+            this.Test.Name = "Test";
+            this.Test.ShowImage = true;
+            this.Test.Visible = false;
+            this.Test.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSelezionaAmbiente_Click);
+            // 
+            // Dev
+            // 
+            this.Dev.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.Dev.Label = "Dev";
+            this.Dev.Name = "Dev";
+            this.Dev.ShowImage = true;
+            this.Dev.Visible = false;
+            this.Dev.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSelezionaAmbiente_Click);
+            // 
+            // TabHome
+            // 
+            this.TabHome.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabHome.ControlId.OfficeId = "TabHome";
+            this.TabHome.Label = "TabHome";
+            this.TabHome.Name = "TabHome";
+            this.TabHome.Visible = false;
+            // 
+            // TabInsert
+            // 
+            this.TabInsert.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabInsert.ControlId.OfficeId = "TabInsert";
+            this.TabInsert.Label = "TabInsert";
+            this.TabInsert.Name = "TabInsert";
+            this.TabInsert.Visible = false;
+            // 
+            // TabPageLayoutExcel
+            // 
+            this.TabPageLayoutExcel.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabPageLayoutExcel.ControlId.OfficeId = "TabPageLayoutExcel";
+            this.TabPageLayoutExcel.Label = "TabPageLayoutExcel";
+            this.TabPageLayoutExcel.Name = "TabPageLayoutExcel";
+            this.TabPageLayoutExcel.Visible = false;
+            // 
+            // TabFormulas
+            // 
+            this.TabFormulas.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabFormulas.ControlId.OfficeId = "TabFormulas";
+            this.TabFormulas.Label = "TabFormulas";
+            this.TabFormulas.Name = "TabFormulas";
+            // 
+            // TabData
+            // 
+            this.TabData.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabData.ControlId.OfficeId = "TabData";
+            this.TabData.Label = "TabData";
+            this.TabData.Name = "TabData";
+            this.TabData.Visible = false;
+            // 
+            // TabReview
+            // 
+            this.TabReview.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabReview.ControlId.OfficeId = "TabReview";
+            this.TabReview.Label = "TabReview";
+            this.TabReview.Name = "TabReview";
+            // 
+            // TabView
+            // 
+            this.TabView.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabView.ControlId.OfficeId = "TabView";
+            this.TabView.Label = "TabView";
+            this.TabView.Name = "TabView";
+            this.TabView.Visible = false;
+            // 
+            // TabDeveloper
+            // 
+            this.TabDeveloper.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabDeveloper.ControlId.OfficeId = "TabDeveloper";
+            this.TabDeveloper.Label = "TabDeveloper";
+            this.TabDeveloper.Name = "TabDeveloper";
+            // 
+            // TabAddIns
+            // 
+            this.TabAddIns.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabAddIns.Label = "TabAddIns";
+            this.TabAddIns.Name = "TabAddIns";
+            this.TabAddIns.Visible = false;
+            // 
+            // TabPrintPreview
+            // 
+            this.TabPrintPreview.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabPrintPreview.ControlId.OfficeId = "TabPrintPreview";
+            this.TabPrintPreview.Label = "TabPrintPreview";
+            this.TabPrintPreview.Name = "TabPrintPreview";
+            this.TabPrintPreview.Visible = false;
+            // 
+            // TabBackgroundRemoval
+            // 
+            this.TabBackgroundRemoval.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabBackgroundRemoval.ControlId.OfficeId = "TabBackgroundRemoval";
+            this.TabBackgroundRemoval.Label = "TabBackgroundRemoval";
+            this.TabBackgroundRemoval.Name = "TabBackgroundRemoval";
+            this.TabBackgroundRemoval.Visible = false;
+            // 
             // ToolsExcelRibbon
             // 
             this.Name = "ToolsExcelRibbon";
@@ -272,6 +331,22 @@
             this.Tabs.Add(this.TabPrintPreview);
             this.Tabs.Add(this.TabBackgroundRemoval);
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.ToolsExcelRibbon_Load);
+            this.FrontOffice.ResumeLayout(false);
+            this.FrontOffice.PerformLayout();
+            this.group3.ResumeLayout(false);
+            this.group3.PerformLayout();
+            this.groupAggiorna.ResumeLayout(false);
+            this.groupAggiorna.PerformLayout();
+            this.group1.ResumeLayout(false);
+            this.group1.PerformLayout();
+            this.group2.ResumeLayout(false);
+            this.group2.PerformLayout();
+            this.group4.ResumeLayout(false);
+            this.group4.PerformLayout();
+            this.groupModifica.ResumeLayout(false);
+            this.groupModifica.PerformLayout();
+            this.groupAmbienti.ResumeLayout(false);
+            this.groupAmbienti.PerformLayout();
             this.TabHome.ResumeLayout(false);
             this.TabHome.PerformLayout();
             this.TabInsert.ResumeLayout(false);
@@ -294,18 +369,6 @@
             this.TabPrintPreview.PerformLayout();
             this.TabBackgroundRemoval.ResumeLayout(false);
             this.TabBackgroundRemoval.PerformLayout();
-            this.FrontOffice.ResumeLayout(false);
-            this.FrontOffice.PerformLayout();
-            this.group3.ResumeLayout(false);
-            this.group3.PerformLayout();
-            this.groupAggiorna.ResumeLayout(false);
-            this.groupAggiorna.PerformLayout();
-            this.group1.ResumeLayout(false);
-            this.group1.PerformLayout();
-            this.group2.ResumeLayout(false);
-            this.group2.PerformLayout();
-            this.group4.ResumeLayout(false);
-            this.group4.PerformLayout();
 
         }
 
@@ -334,6 +397,12 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAggiornaDati;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group4;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAzioni;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupModifica;
+        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnModifica;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAmbienti;
+        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton Produzione;
+        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton Test;
+        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton Dev;
     }
 
     partial class ThisRibbonCollection

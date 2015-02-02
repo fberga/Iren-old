@@ -173,6 +173,19 @@ namespace Iren.FrontOffice.Base
             _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
         }
 
+        public static void ChangeModificaDati(bool modifica)
+        {
+            Excel.Worksheet ws = _wb.Sheets["Main"];
+
+            ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: " + (modifica ? "SI" : "NO");
+        }
+
+        public static void SwitchEnvironment(string ambiente)
+        {
+            RefreshAppSettings("DB", ambiente);
+            _db = new DataBase(ambiente);
+        }
+
         public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
         {
             _db = new DataBase(dbName);
@@ -186,6 +199,7 @@ namespace Iren.FrontOffice.Base
 
             _namespace = "Iren.ToolsExcel." + dt.Rows[0]["SiglaApplicazione"];
             Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
+            Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
 
             try
             {
@@ -754,6 +768,14 @@ namespace Iren.FrontOffice.Base
             ws.Application.CalculateFull();
         }
 
+
+        public static void RefreshAppSettings(string key, string value)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings[key].Value = value;
+            config.Save(ConfigurationSaveMode.Minimal);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
         #endregion
     }
 }

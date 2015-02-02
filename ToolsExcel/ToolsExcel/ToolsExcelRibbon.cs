@@ -21,6 +21,44 @@ namespace Iren.FrontOffice.Tools
         {
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
+
+            btnModifica.Checked = false;
+
+            string[] ambienti = ConfigurationManager.AppSettings["AmbientiVisibili"].Split('|');
+
+            foreach (string ambiente in ambienti)
+            {
+                groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ambiente).ToArray()[0].Visible = true;
+            }
+
+            groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ConfigurationManager.AppSettings["DB"]).ToArray()[0].Checked = true;
+        }
+
+        void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
+        {
+            RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
+
+            int count = 0;
+            foreach (RibbonToggleButton button in FrontOffice.Groups.Last().Items)
+            {
+                if (button.Checked)
+                {
+                    button.Checked = false;
+                    count++;
+                }
+            }
+            //se maggiore di 1 allora c'è un cambio ambiente altrimenti doppio click sullo stesso e non faccio nulla
+            if (count > 1)
+            {
+                //TODO riabilitare log!!
+                Globals.Log.Unprotect();
+                CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
+                Globals.Log.Protect();
+                CommonFunctions.SwitchEnvironment(ambienteScelto.Name);
+                btnAggiornaStruttura_Click(null, null);
+            }
+
+            ambienteScelto.Checked = true;
         }
 
         private void AggiornaStruttura()
@@ -42,7 +80,7 @@ namespace Iren.FrontOffice.Tools
                     ws = (Excel.Worksheet)Globals.ThisWorkbook.Worksheets.Add(Globals.ThisWorkbook.Worksheets["Log"]);
                     ws.Name = categoria["DesCategoria"].ToString();
                     ws.Select();
-                    Globals.ThisWorkbook.Application.Windows[1].DisplayGridlines = false;
+                    Globals.ThisWorkbook.Application.Windows[1].DisplayGridlines = false;                    
                 }
             }
 
@@ -65,6 +103,7 @@ namespace Iren.FrontOffice.Tools
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
             AggiornaStruttura();
             //TODO riabilitare log!!
@@ -72,6 +111,7 @@ namespace Iren.FrontOffice.Tools
             //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
             //Globals.Log.Protect();
 
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
 
@@ -82,17 +122,14 @@ namespace Iren.FrontOffice.Tools
             cal.Text = Simboli.nomeApplicazione;
             cal.ShowDialog();
 
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-            DateTime dataOld = DateTime.ParseExact(config.AppSettings.Settings["DataInizio"].Value, "yyyyMMdd", CultureInfo.InvariantCulture);
+            DateTime dataOld = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
 
             if (cal.Date != null)
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    config.AppSettings.Settings["DataInizio"].Value = cal.Date.Value.ToString("yyyyMMdd");
-                    config.Save(ConfigurationSaveMode.Minimal);
-                    ConfigurationManager.RefreshSection("appSettings");
+                    CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
 
                     btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
 
@@ -180,6 +217,7 @@ namespace Iren.FrontOffice.Tools
                     int oreFermata = int.Parse(CommonFunctions.DB.Select("spGetOreFermata", "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
 
                     Forms.frmRAMPE rampe = new frmRAMPE(desEntita, pRif, pMin, oreGiorno, entitaRampa, valoriPQNR, oreFermata);
+                    rampe.Text = Simboli.nomeApplicazione;
                     rampe.ShowDialog();
 
                     if (rampe._out != null)
@@ -240,11 +278,23 @@ namespace Iren.FrontOffice.Tools
             azionicategorie.RowFilter = "";
             var entitaAzioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;
             entitaAzioni.RowFilter = "";
+            var entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+            entitaProprieta.RowFilter = "";
 
-            frmAZIONI frmAz = new frmAZIONI(categorie, entita, azioni, azionicategorie, entitaAzioni, CommonFunctions.DB);
+            frmAZIONI frmAz = new frmAZIONI(categorie, entita, azioni, azionicategorie, entitaAzioni, entitaProprieta, Simboli.intervalloGiorni, CommonFunctions.DB);
+            frmAz.Text = Simboli.nomeApplicazione;
             frmAz.ShowDialog();
 
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+
+        private void btnModifica_Click(object sender, RibbonControlEventArgs e)
+        {
+            Simboli.ModificaDati = btnModifica.Checked;
+            if (btnModifica.Checked)
+                btnModifica.Label = "Modifica SI";
+            else
+                btnModifica.Label = "Modifica NO";
         }
     }
 }

@@ -129,9 +129,9 @@ namespace Iren.FrontOffice.Core
             return _sqlConn;
         }
 
-        public void CloseConnection()
+        public static void CloseConnection()
         {
-            if (_sqlConn.State == ConnectionState.Open)
+            if (_sqlConn != null && _sqlConn.State == ConnectionState.Open)
             {
                 _sqlConn.Close();
                 _sqlConn = null;

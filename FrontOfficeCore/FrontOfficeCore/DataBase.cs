@@ -9,6 +9,7 @@ using DataTable = System.Data.DataTable;
 using System.Data;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace Iren.FrontOffice.Core
 {
@@ -89,6 +90,7 @@ namespace Iren.FrontOffice.Core
         #region Proprietà
 
         public static string DataAttiva { get { return _dataAttiva; } set { _dataAttiva = value; } }
+        public static DateTime Data { get { return DateTime.ParseExact(_dataAttiva, "yyyyMMdd", CultureInfo.InvariantCulture); } }
         public static int IdUtenteAttivo { get { return _idUtenteAttivo; } }
         public static int IdApplicazione { get { return _idApplicazione; } }
 
@@ -99,7 +101,8 @@ namespace Iren.FrontOffice.Core
         public DataBase(string dbName)
         {
             _cmd = new Command();
-            Connection.SetConnStr(dbName);
+            Connection.CloseConnection();
+            Connection.SetConnStr(dbName);            
         }
 
         //public DataBase() {}

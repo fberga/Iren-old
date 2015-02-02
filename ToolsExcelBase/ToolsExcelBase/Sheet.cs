@@ -518,8 +518,10 @@ namespace Iren.FrontOffice.Base
                 else if (info["FormulaInCella"].Equals("1"))
                 {
                     string formula = "=" + PreparaFormula(info, "DATA0", "DATA1", 1);
-                    formula = _ws.Application.ConvertFormula(formula, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$", "");
-                    rng.Formula = formula;
+                    //if (!formula.StartsWith("=WB"))
+                    //{
+                        rng.Formula = formula;
+                    //}
                     _ws.Application.ScreenUpdating = false;
                 }
             }
@@ -548,7 +550,7 @@ namespace Iren.FrontOffice.Base
                     {
                         parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, SystemInt32) >= " + giorno.ToString("yyyyMMdd");
 
-                        object[] values = parametriH.ToTable(false, "Value").AsEnumerable().Select(r => r["Value"]).ToArray();
+                        object[] values = parametriH.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
                         rng.Value = values;
                     }
 
@@ -591,7 +593,9 @@ namespace Iren.FrontOffice.Base
 
                         Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
 
-                        return "R" + coordinate.Item1 + "C" + coordinate.Item2;
+                        string output = _ws.Application.ConvertFormula("=R" + coordinate.Item1 + "C" + coordinate.Item2, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1);
+
+                        return output.Substring(1).Replace("$","");
                     }, RegexOptions.IgnoreCase);
                 return formula;
             }
@@ -707,7 +711,7 @@ namespace Iren.FrontOffice.Base
             DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
             DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "'";
+            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND Gerarchia IS NULL";
 
             foreach (DataRowView entita in dvCE)
             {
@@ -983,7 +987,7 @@ namespace Iren.FrontOffice.Base
                         Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
 
                         string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, 1);
-                        formula = _ws.Application.ConvertFormula(formula, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$", "");
+                        //formula = _ws.Application.ConvertFormula(formula, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$", "");
                         rng.Formula = formula;
                         _ws.Application.ScreenUpdating = false;
 

@@ -11,5 +11,23 @@ namespace Iren.FrontOffice.Base
             ALL = "ALL";
 
         public static string nomeApplicazione = "";
+        public static int intervalloGiorni = 0;
+
+        private static bool modificaDati = false;
+
+        public static bool ModificaDati 
+        { 
+            get 
+            { 
+                return modificaDati; 
+            } 
+            
+            set 
+            {
+                modificaDati = value;
+                CommonFunctions.ChangeModificaDati(modificaDati);
+            }
+        }
+
     }
 }

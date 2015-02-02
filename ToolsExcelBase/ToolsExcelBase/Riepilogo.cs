@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Data;
 using System.Globalization;
 using System.Configuration;
+using System.Windows.Forms;
 
 namespace Iren.FrontOffice.Base
 {
@@ -84,13 +85,34 @@ namespace Iren.FrontOffice.Base
 
         private void Clear()
         {
+            var stato = DB.StatoDB();
+
+            
+
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = _dataInizio.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = _dataFine.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"];
-            //TODO controllo DB e stati modifica/ambiente
+
+            _ws.Shapes.Item("lbSQLServer").TextFrame.Characters().Text = "Database SQL Server: " + (stato[FrontOffice.Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
+            _ws.Shapes.Item("lbImpianti").TextFrame.Characters().Text = "Database Impianti: " + (stato[FrontOffice.Core.DataBase.NomiDB.IMP] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
+            _ws.Shapes.Item("lbElsag").TextFrame.Characters().Text = "Database Elsag: " + (stato[FrontOffice.Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
+
+            _ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: NO";
+
+            switch(ConfigurationManager.AppSettings["DB"]) {
+                case "Dev":
+                    _ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: DEVELOPMENT";
+                    break;
+                case "Test":
+                    _ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: TEST";
+                    break;
+                case "Produzione":
+                    _ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: PRODUZIONE";
+                    break;
+            }
 
 
             if (_struttura.intervalloGiorni > 0)
@@ -152,6 +174,12 @@ namespace Iren.FrontOffice.Base
             InitBarraEntita(categorie, entita);
             AbilitaAzioni(entitaAzioni);
             CaricaDatiRiepilogo();
+
+            //Se sono in multiscreen lascio il riepilogo alla fine, altrimenti lo riporto all'inizio
+            if (Screen.AllScreens.Length == 1)
+            {
+                _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
+            }
         }
 
         private void InitBarraTitolo(DataView azioni)
