@@ -35,6 +35,7 @@
             this.panelTop = new System.Windows.Forms.Panel();
             this.groupMercati = new System.Windows.Forms.GroupBox();
             this.groupDate = new System.Windows.Forms.GroupBox();
+            this.comboGiorni = new System.Windows.Forms.ComboBox();
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
             this.treeViewUP = new System.Windows.Forms.TreeView();
@@ -42,7 +43,6 @@
             this.treeViewCategorie = new System.Windows.Forms.TreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
             this.treeViewAzioni = new System.Windows.Forms.TreeView();
-            this.comboGiorni = new System.Windows.Forms.ComboBox();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.groupDate.SuspendLayout();
@@ -137,6 +137,15 @@
             this.groupDate.TabStop = false;
             this.groupDate.Text = "Giorni";
             // 
+            // comboGiorni
+            // 
+            this.comboGiorni.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboGiorni.FormattingEnabled = true;
+            this.comboGiorni.Location = new System.Drawing.Point(6, 19);
+            this.comboGiorni.Name = "comboGiorni";
+            this.comboGiorni.Size = new System.Drawing.Size(338, 28);
+            this.comboGiorni.TabIndex = 0;
+            // 
             // panelCentrale
             // 
             this.panelCentrale.Controls.Add(this.panelUP);
@@ -223,15 +232,6 @@
             this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
-            // comboGiorni
-            // 
-            this.comboGiorni.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboGiorni.FormattingEnabled = true;
-            this.comboGiorni.Location = new System.Drawing.Point(6, 19);
-            this.comboGiorni.Name = "comboGiorni";
-            this.comboGiorni.Size = new System.Drawing.Size(338, 28);
-            this.comboGiorni.TabIndex = 0;
-            // 
             // frmAZIONI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -242,6 +242,8 @@
             this.Controls.Add(this.panelButtons);
             this.Name = "frmAZIONI";
             this.Padding = new System.Windows.Forms.Padding(5);
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Azioni";
             this.Load += new System.EventHandler(this.frmAZIONI_Load);
             this.panelButtons.ResumeLayout(false);

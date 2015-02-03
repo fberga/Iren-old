@@ -411,8 +411,7 @@ namespace Iren.FrontOffice.Forms
         private void btnMeteo_Click(object sender, EventArgs e)
         {
             frmMETEO meteo = new frmMETEO(_entita, _entitaProprieta, ((DataRowView)comboGiorni.SelectedItem)["Data"], _db);
-
-            meteo.ShowDialog();
+            meteo.Show();            
         }
 
         #endregion

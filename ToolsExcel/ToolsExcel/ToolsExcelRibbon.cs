@@ -17,6 +17,9 @@ namespace Iren.FrontOffice.Tools
 {
     public partial class ToolsExcelRibbon
     {
+        LoaderScreen loader = new LoaderScreen();
+
+
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -63,7 +66,9 @@ namespace Iren.FrontOffice.Tools
 
         private void AggiornaStruttura()
         {
+            //loader.Show();
             CommonFunctions.AggiornaStrutturaDati();
+
 
             DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = 1";
@@ -98,12 +103,14 @@ namespace Iren.FrontOffice.Tools
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+
+            //loader.Hide();
         }
 
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
+            Globals.ThisWorkbook.ThisApplication.Calculation = Excel.XlCalculation.xlCalculationManual;
 
             AggiornaStruttura();
             //TODO riabilitare log!!
@@ -111,8 +118,8 @@ namespace Iren.FrontOffice.Tools
             //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
             //Globals.Log.Protect();
 
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            Globals.ThisWorkbook.ThisApplication.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
         }
 
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
@@ -273,7 +280,7 @@ namespace Iren.FrontOffice.Tools
             var entita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
             entita.RowFilter = "";
             var azioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONE].DefaultView;
-            azioni.RowFilter = "";
+            azioni.RowFilter = "Visibile = 1";
             var azionicategorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONECATEGORIA].DefaultView;
             azionicategorie.RowFilter = "";
             var entitaAzioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;

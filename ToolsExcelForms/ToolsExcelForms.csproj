@@ -59,6 +59,12 @@
     <Compile Include="Calendar.Designer.cs">
       <DependentUpon>Calendar.cs</DependentUpon>
     </Compile>
+    <Compile Include="LoaderScreen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoaderScreen.Designer.cs">
+      <DependentUpon>LoaderScreen.cs</DependentUpon>
+    </Compile>
     <Compile Include="Meteo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -78,6 +84,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Calendar.resx">
       <DependentUpon>Calendar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoaderScreen.resx">
+      <DependentUpon>LoaderScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Meteo.resx">
       <DependentUpon>Meteo.cs</DependentUpon>
@@ -138,6 +147,10 @@
     <ProjectReference Include="..\FrontOfficeCore\FrontOfficeCore\FrontOfficeCore.csproj">
       <Project>{40a0918e-793b-41f0-8235-5a9e601b2e2b}</Project>
       <Name>FrontOfficeCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase\ToolsExcelBase.csproj">
+      <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
+      <Name>ToolsExcelBase</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

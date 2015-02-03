@@ -27,8 +27,8 @@ namespace Iren.FrontOffice.Base
         Struttura _struttura;
         int _rigaAttiva;
         int _colonnaInizio;
-        int _nAzioni;        
-
+        int _nAzioni;
+        static bool _resizeFatto = false;
 
         #endregion
 
@@ -87,8 +87,6 @@ namespace Iren.FrontOffice.Base
         {
             var stato = DB.StatoDB();
 
-            
-
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = _dataInizio.ToString("ddd d MMM yyyy");
@@ -115,10 +113,11 @@ namespace Iren.FrontOffice.Base
             }
 
 
-            if (_struttura.intervalloGiorni > 0)
+            if (_struttura.intervalloGiorni > 0 && !_resizeFatto)
             {
                 _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
+                _resizeFatto = true;
             }
             else
             {

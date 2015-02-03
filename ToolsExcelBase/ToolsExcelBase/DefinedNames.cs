@@ -141,7 +141,7 @@ namespace Iren.FrontOffice.Base
                 };
         }
 
-        public string GetSheetName(string name)
+        public string GetSheetName(object name)
         {
             _definedNamesView.RowFilter = "Nome LIKE'" + name + "%'";
             if (_definedNamesView.Count == 0)

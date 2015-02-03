@@ -506,7 +506,6 @@ namespace Iren.FrontOffice.Base
 
             foreach (DataRowView info in informazioni)
             {
-                _ws.Application.ScreenUpdating = false;
                 object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 int rigaAttiva = _nomiDefiniti[GetName(siglaEntita, info["SiglaInformazione"])][0].Item1;
                 Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
@@ -522,7 +521,6 @@ namespace Iren.FrontOffice.Base
                     //{
                         rng.Formula = formula;
                     //}
-                    _ws.Application.ScreenUpdating = false;
                 }
             }
         }
@@ -989,7 +987,6 @@ namespace Iren.FrontOffice.Base
                         string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, 1);
                         //formula = _ws.Application.ConvertFormula(formula, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$", "");
                         rng.Formula = formula;
-                        _ws.Application.ScreenUpdating = false;
 
                         rigaAttiva++;
                     }

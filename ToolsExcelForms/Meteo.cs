@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Iren.FrontOffice.Core;
 using System.Globalization;
+using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Forms
 {
@@ -35,6 +36,18 @@ namespace Iren.FrontOffice.Forms
         {
             _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA'";
 
+            string filtro = "";
+            foreach (DataRowView prop in _entitaProprieta)
+            {
+                filtro += "'" + prop["SiglaEntita"] + "',";
+            }
+
+            if (filtro.Length > 0)
+            {
+                filtro = "SiglaEntita IN (" + filtro.Remove(filtro.Length - 1) + ")";
+                _entita.RowFilter = filtro;
+            }
+
 
             comboUP.DataSource = _entita;
             comboUP.DisplayMember = "DesEntita";
@@ -45,72 +58,104 @@ namespace Iren.FrontOffice.Forms
         {
             if (_db.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                comboARPA.Items.Clear();
-                comboEPSON.Items.Clear();
-                comboNIMBUS.Items.Clear();
+                Array comboArray = groupDati.Controls.OfType<ComboBox>().ToArray();
+                foreach (ComboBox cmb in comboArray)
+                    groupDati.Controls.Remove(cmb);
+
+                Array radioArray = groupDati.Controls.OfType<RadioButton>().ToArray();
+                foreach (RadioButton rdb in radioArray)
+                    groupDati.Controls.Remove(rdb);
 
                 DataView fonti = _db.Select("spCheckFonteMeteo", "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
 
+                int fonteOrdine = 0;
                 foreach (DataRowView fonte in fonti)
                 {
                     DateTime dataEmissione = DateTime.ParseExact(fonte["DataEmissione"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
-                    switch (fonte["CodiceFonte"].ToString())
+                    if (!groupDati.Controls.ContainsKey("combo" + fonte["CodiceFonte"]))
                     {
-                        case "ARPA":
-                            comboARPA.Items.Add(dataEmissione);
-                            break;
-                        case "EPSON":
-                            comboEPSON.Items.Add(dataEmissione);
-                            break;
-                        case "NIMBUS":
-                            comboNIMBUS.Items.Add(dataEmissione);
-                            break;
-                    }
-                }
+                        ComboBox cmb = new ComboBox() 
+                        { 
+                            Name = "combo" + fonte["CodiceFonte"],
+                            Font = groupDati.Font,
+                            Location = new System.Drawing.Point(146, 50 + (28 * fonteOrdine) + 8),
+                            Size = new System.Drawing.Size(190, 28),
+                            FormattingEnabled = true
+                        };
+                        RadioButton rdb = new RadioButton()
+                        {
+                            Name = fonte["CodiceFonte"].ToString(),
+                            Text = fonte["CodiceFonte"].ToString(),
+                            Font = groupDati.Font,
+                            Location = new System.Drawing.Point(5, 52 + (28 * fonteOrdine) + 8),
+                            Size = new System.Drawing.Size(82, 24),
+                            Checked = fonteOrdine == 0
+                        };
 
-                foreach (ComboBox cmb in groupDati.Controls.OfType<ComboBox>())
-                {
-                    string name = cmb.Name.Replace("combo", "radio");
-                    RadioButton rd = (RadioButton)groupDati.Controls[name];
-                    rd.Checked = false;
-                    
-                    if (cmb.Items.Count > 0) 
-                    {
-                        cmb.SelectedIndex = 0;
-                        cmb.Visible = true;
-                        rd.Visible = true;
-                    }  
-                    else
-                    {
-                        cmb.Visible = false;
-                        rd.Visible = false;
+                        rdb.CheckedChanged += rdb_CheckedChanged;
+
+                        groupDati.Controls.Add(rdb);
+                        groupDati.Controls.Add(cmb);
+                        fonteOrdine++;
                     }
-                }
-                if (groupDati.Controls.OfType<ComboBox>().Where(cmb => cmb.Visible).ToArray().Length == 0)
-                {
-                    labelDataEmissione.Visible = false;
-                }
-                else
-                {
-                    labelDataEmissione.Visible = true;
+                    ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).Items.Add(dataEmissione);
+                    ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).SelectedIndex = 0;
                 }
             }
         }
 
-        private void comboDataEmissione_DataSourceChanged(object sender, EventArgs e)
+        void rdb_CheckedChanged(object sender, EventArgs e)
         {
-            ComboBox cmb = (ComboBox)sender;
-            cmb.Visible = cmb.Items.Count != 0;
-            
-            string name = cmb.Name.Replace("combo", "radio");
+            DataRowView entita = (DataRowView)comboUP.SelectedItem;
+            RadioButton rbt = (RadioButton)sender;
 
-            RadioButton rd = (RadioButton)Controls[name];
-            if (rd.Checked)
-                rd.Checked = false;
-            
-            rd.Visible = false;
+            if (rbt.Checked)
+            {
+                //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
+                _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "'";
+
+                _db.Insert("spUpdateFonteMeteo", new QryParams() 
+                    {
+                        {"@SiglaEntita", entita["SiglaEntita"]},
+                        {"@Valore", _entitaProprieta[0]["Ordine"]}
+                    });
+            }
         }
 
+        private void btnAnnulla_Click(object sender, EventArgs e)
+        {
+            //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
+            foreach (DataRowView entita in _entita)
+            {
+                _db.Insert("spUpdateFonteMeteo", new QryParams() 
+                    {
+                        {"@SiglaEntita", entita["SiglaEntita"]},
+                        {"@Valore", "1"}
+                    });
+            }
 
+            _entita.RowFilter = "";
+            _entitaProprieta.RowFilter = "";
+            this.Close();
+        }
+
+        private void btnCarica_Click(object sender, EventArgs e)
+        {
+            btnCarica.Enabled = false;
+            btnAnnulla.Enabled = false;
+
+            object siglaEntita = ((DataRowView)comboUP.SelectedItem)["SiglaEntita"];
+
+            string nomeCombo = "combo" + groupDati.Controls.OfType<RadioButton>().FirstOrDefault(btn => btn.Checked).Name;
+            ComboBox cmb = groupDati.Controls.OfType<ComboBox>().FirstOrDefault(c => c.Name == nomeCombo);
+
+            string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
+
+            CommonFunctions.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, dataEmissione);
+
+
+            btnCarica.Enabled = true;
+            btnAnnulla.Enabled = true;
+        }
     }
 }

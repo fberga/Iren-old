@@ -9,7 +9,6 @@ using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.Office.Tools.Excel;
 using System.Deployment.Application;
 using System.Reflection;
 using System.Configuration;
@@ -65,7 +64,7 @@ namespace Iren.FrontOffice.Base
         private static DataSet _localDB = null;
         private static DataBase _db = null;
         private static Workbook _wb;
-        private static System.Version _wbVersion;
+        private static System.Version _wbVersion;        
 
         #endregion
 
@@ -768,7 +767,6 @@ namespace Iren.FrontOffice.Base
             ws.Application.CalculateFull();
         }
 
-
         public static void RefreshAppSettings(string key, string value)
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -776,6 +774,80 @@ namespace Iren.FrontOffice.Base
             config.Save(ConfigurationSaveMode.Minimal);
             ConfigurationManager.RefreshSection("appSettings");
         }
+
+        public static void CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime? dataRif = null, object parametro = null)
+        {
+            DataView azioni = _localDB.Tables[Tab.AZIONE].DefaultView;
+            azioni.RowFilter = "SiglaAzione = '" + siglaAzione + "'";
+
+            bool procedi = true;
+            if (azioni[0]["Visibile"].Equals("1"))
+            {
+                procedi = false;
+                DataView entitaAzioni = _localDB.Tables[Tab.ENTITAAZIONE].DefaultView;
+                entitaAzioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+                if (entitaAzioni.Count > 0)
+                {
+                    procedi = true;
+                }
+            }
+
+            if (procedi)
+            {
+                AzzeraInformazione(siglaEntita, siglaAzione);
+
+                if (_db.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+                {
+                    if (azionePadre.Equals("GENERA"))
+                    {
+
+                    }
+                }
+
+            }
+        }
+
+        public static void AzzeraInformazione(object siglaEntita, object siglaAzione, DateTime? dataRif = null, object valore = null)
+        {
+            DefinedNames nomiDefiniti = new DefinedNames("");
+            string foglio = nomiDefiniti.GetSheetName(siglaEntita);
+            
+            nomiDefiniti = new DefinedNames(foglio);
+            Worksheet ws = _wb.Sheets[foglio];
+
+            if (dataRif == null)
+                dataRif = DataBase.Data;
+
+            string suffissoData = GetSuffissoData(DataBase.Data, dataRif.Value);
+
+            DataView entitaAzioniInformazioni = _localDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
+
+            //TODO controllare perché Domenico passa un entitaRif a true/false in questo filtro
+            entitaAzioniInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+
+            foreach (DataRowView entitaAzioneInformazione in entitaAzioniInformazioni)
+            {
+                if (entitaAzioneInformazione["FormulaInCella"].Equals("0"))
+                {
+                    object entita = entitaAzioneInformazione["SiglaEntitaRif"] is DBNull ? entitaAzioneInformazione["SiglaEntita"] : entitaAzioneInformazione["SiglaEntitaRif"];
+                    Tuple<int, int>[] riga = new Tuple<int, int>[0];
+
+                    if (entitaAzioneInformazione["Selezione"].Equals("0"))
+                        riga = nomiDefiniti[GetName(entita, entitaAzioneInformazione["SiglaInformazione"])];
+                    else
+                        riga = nomiDefiniti[GetName(entita, "SEL", entitaAzioneInformazione["Selezione"])];
+
+                    Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
+                    rng.Value = valore;
+                    rng.Interior.ColorIndex = entitaAzioneInformazione["BackColor"];
+                    rng.Font.ColorIndex = entitaAzioneInformazione["ForeColor"];
+                    rng.ClearComments();
+                }
+            }
+        }
+
+
+
         #endregion
     }
 }
