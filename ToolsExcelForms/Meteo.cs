@@ -124,7 +124,7 @@ namespace Iren.FrontOffice.Forms
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
+            //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
             foreach (DataRowView entita in _entita)
             {
                 _db.Insert("spUpdateFonteMeteo", new QryParams() 

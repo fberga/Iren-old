@@ -33,7 +33,7 @@ namespace Iren.FrontOffice.Base
 
                 if (Target.Worksheet.Name == "Main")
                 {
-                    string sheet = definedNames.GetSheetName(entita);
+                    string sheet = DefinedNames.GetSheetName(entita);
                     Target.Application.Worksheets[sheet].Activate();
 
                     Tuple<int,int> coordinate = definedNames[entita + Simboli.UNION + "T" + Simboli.UNION + "DATA1"][0];

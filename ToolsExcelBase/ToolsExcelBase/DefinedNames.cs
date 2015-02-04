@@ -141,15 +141,6 @@ namespace Iren.FrontOffice.Base
                 };
         }
 
-        public string GetSheetName(object name)
-        {
-            _definedNamesView.RowFilter = "Nome LIKE'" + name + "%'";
-            if (_definedNamesView.Count == 0)
-                return null;
-
-            return _definedNamesView[0]["Foglio"].ToString();
-        }
-
         #endregion
 
         #region Metodi Statici
@@ -170,6 +161,24 @@ namespace Iren.FrontOffice.Base
             };
             dt.TableName = name;
             return dt;
+        }
+
+        public static string GetSheetName(object name)
+        {
+            DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
+            definedNamesView.RowFilter = "Nome LIKE'" + name + "%'";
+            if (definedNamesView.Count == 0)
+                return null;
+
+            return definedNamesView[0]["Foglio"].ToString();
+        }
+
+        public static bool IsDefined(string sheetName, string cellName)
+        {
+            DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
+            definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND Nome = '" + cellName + "'";
+
+            return definedNamesView.Count > 0;
         }
 
         #endregion

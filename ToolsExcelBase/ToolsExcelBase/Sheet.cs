@@ -590,10 +590,8 @@ namespace Iren.FrontOffice.Base
                         nome = nome.Replace("[-1]", "");
 
                         Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
-
-                        string output = _ws.Application.ConvertFormula("=R" + coordinate.Item1 + "C" + coordinate.Item2, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1);
-
-                        return output.Substring(1).Replace("$","");
+                        
+                        return R1C1toA1(coordinate.Item1, coordinate.Item2);
                     }, RegexOptions.IgnoreCase);
                 return formula;
             }
@@ -618,7 +616,7 @@ namespace Iren.FrontOffice.Base
                     if (format["NomeCella"] != DBNull.Value)
                     {
                         Tuple<int, int> coordinate = _nomiDefiniti[GetName(siglaEntita, format["NomeCella"], "DATA1", "H1")][0];
-                        string address = _ws.Application.ConvertFormula("R" + coordinate.Item1 + "C" + coordinate.Item2, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$", "");
+                        string address = R1C1toA1(coordinate.Item1, coordinate.Item2);
 
                         string formula = "";
                         switch ((int)format["Operatore"])
@@ -985,7 +983,6 @@ namespace Iren.FrontOffice.Base
                         Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
 
                         string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, 1);
-                        //formula = _ws.Application.ConvertFormula(formula, Excel.XlReferenceStyle.xlR1C1, Excel.XlReferenceStyle.xlA1).Replace("$", "");
                         rng.Formula = formula;
 
                         rigaAttiva++;

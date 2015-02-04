@@ -809,11 +809,10 @@ namespace Iren.FrontOffice.Base
 
         public static void AzzeraInformazione(object siglaEntita, object siglaAzione, DateTime? dataRif = null, object valore = null)
         {
-            DefinedNames nomiDefiniti = new DefinedNames("");
-            string foglio = nomiDefiniti.GetSheetName(siglaEntita);
-            
-            nomiDefiniti = new DefinedNames(foglio);
-            Worksheet ws = _wb.Sheets[foglio];
+            string foglio = DefinedNames.GetSheetName(siglaEntita);
+
+            DefinedNames nomiDefiniti = new DefinedNames(foglio);
+            Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == foglio);
 
             if (dataRif == null)
                 dataRif = DataBase.Data;
@@ -832,7 +831,7 @@ namespace Iren.FrontOffice.Base
                     object entita = entitaAzioneInformazione["SiglaEntitaRif"] is DBNull ? entitaAzioneInformazione["SiglaEntita"] : entitaAzioneInformazione["SiglaEntitaRif"];
                     Tuple<int, int>[] riga = new Tuple<int, int>[0];
 
-                    if (entitaAzioneInformazione["Selezione"].Equals("0"))
+                    if (entitaAzioneInformazione["Selezione"].Equals(0))
                         riga = nomiDefiniti[GetName(entita, entitaAzioneInformazione["SiglaInformazione"])];
                     else
                         riga = nomiDefiniti[GetName(entita, "SEL", entitaAzioneInformazione["Selezione"])];
@@ -846,7 +845,190 @@ namespace Iren.FrontOffice.Base
             }
         }
 
+        public static string R1C1toA1(int riga, int colonna)
+        {
+            string output = "";
+            while (colonna > 0)
+            {
+                int lettera = colonna % 26;
+                output = char.ConvertFromUtf32(lettera + 64) + output;
+                colonna = colonna / 26;
+            }
+            output += riga;
+            return output;
+        }
 
+        private static void ElaborazioneInformazione(string siglaEntita, DateTime data, int tipologiaCalcolo, int oraInizio = 0, int oraFine = 0)
+        {
+            Dictionary<object, object> entitaRiferimento = new Dictionary<object, object>();
+            List<int> oreDaCalcolare = new List<int>();
+            
+
+            string suffissoData = GetSuffissoData(DataBase.Data, data);
+            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+            Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == nomeFoglio);
+            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
+
+            if (oraInizio == 0)
+            {
+                oraInizio++;
+                oraFine = GetOreGiorno(data);
+            }
+            DataView categoriaEntita = _localDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "'";
+            foreach (DataRowView entita in categoriaEntita)
+                entitaRiferimento.Add(entita["SiglaEntita"].ToString(), entita["Riferimento"]);
+
+            if (entitaRiferimento.Count == 0)
+                entitaRiferimento.Add(siglaEntita, 1);
+
+
+            if (tipologiaCalcolo == 1 || tipologiaCalcolo == 5 && DefinedNames.IsDefined(nomeFoglio, GetName(siglaEntita, "UNIT_COMM")))
+            {
+                DataView entitaCommitment = _localDB.Tables[Tab.ENTITACOMMITMENT].DefaultView;
+
+                Tuple<int, int> primaCella = nomiDefiniti[GetName(siglaEntita, "UNIT_COMM", suffissoData, "H" + oraInizio)][0];
+                Tuple<int, int> ultimaCella = nomiDefiniti[GetName(siglaEntita, "UNIT_COMM", suffissoData, "H" + oraFine)][0];
+                object[,] values = ws.Range[ws.Cells[primaCella.Item1, primaCella.Item2], ws.Cells[ultimaCella.Item1, ultimaCella.Item2]].Value;
+
+                for (int i = oraInizio; i < oraFine; i++)
+                {
+                    entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaCommitment = '" + values[0, i - oraInizio] + "' AND AbilitaOfferta = '1'";
+                    if (entitaCommitment.Count > 0)
+                        oreDaCalcolare.Add(i);
+                }
+            }
+            else
+            {
+                for (int i = oraInizio; i < oraFine; i++)
+                    oreDaCalcolare.Add(i);
+            }
+
+            if (oreDaCalcolare.Count > 0)
+            {
+                if (tipologiaCalcolo == 3)
+                {
+                    foreach (int ora in oreDaCalcolare)
+                    {
+                        Tuple<int,int> cella = nomiDefiniti[GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
+                        ws.Range[cella.Item1, cella.Item2].Value = null;
+                    }
+                }
+
+                DataView entitaCalcoli = _localDB.Tables[Tab.ENTITACALCOLO].DefaultView;
+                entitaCalcoli.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdTipologiaCalcolo = " + tipologiaCalcolo;
+
+                DataView calcoloInformazioni = _localDB.Tables[Tab.CALCOLOINFORMAZIONE].DefaultView;
+
+
+                foreach (DataRowView entitaCalcolo in entitaCalcoli)
+                {
+                    calcoloInformazioni.RowFilter = "SiglaCalcolo = '" + entitaCalcolo["SiglaCalcolo"] + "'";
+
+                    foreach (int ora in oreDaCalcolare)
+                    {
+                        foreach (DataRowView calcoloInfo in calcoloInformazioni)
+                        {
+                            if (!entitaCalcolo["SiglaInformazione"].Equals("CHECKINFO"))
+                            {
+                                object siglaEntita2 = entitaCalcolo["SiglaEntitaRif"] is DBNull ? siglaEntita : entitaCalcolo["SiglaEntitaRif"];
+                                Tuple<int, int> cella = nomiDefiniti[GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
+                                ws.Cells[cella.Item1, cella.Item2].Value = null;
+                            }
+                        }
+
+                        foreach (DataRowView calcoloInfo in calcoloInformazioni)
+                        {
+                            if (calcoloInfo["OraInizio"] != DBNull.Value)
+                                if (ora < oraInizio && ora > oraFine)
+                                    continue;
+
+                            if (calcoloInfo["OraFine"].Equals("0"))
+                            {
+                                if (ora != GetOreGiorno(data))
+                                    break;
+                                continue;
+                            }
+
+                            //get risultato calcolo...
+
+
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void GetRisultatoCalcolo(object siglaEntita, DateTime data, int ora, DataRowView calcolo, Dictionary<object, object> entitaRiferimento)
+        {
+            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
+            Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == nomeFoglio);
+
+            string suffissoData = GetSuffissoData(DataBase.Data, data);
+
+            int ora1 = calcolo["OraInformazione1"] is DBNull ? ora : ora + (int)calcolo["OraInformazione1"];
+            int ora2 = calcolo["OraInformazione2"] is DBNull ? ora : ora + (int)calcolo["OraInformazione2"];
+
+            object siglaEntitaRif1 = calcolo["Riferimento1"] is DBNull ? (calcolo["SiglaEntita1"] is DBNull ? siglaEntita : calcolo["SiglaEntita1"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == calcolo["Riferimento1"]);
+            object siglaEntitaRif2 = calcolo["Riferimento2"] is DBNull ? (calcolo["SiglaEntita2"] is DBNull ? siglaEntita : calcolo["SiglaEntita2"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == calcolo["Riferimento2"]);
+
+            object valore1 = null;
+            object valore2;
+
+            if (calcolo["SiglaInformazione1"] != DBNull.Value)
+            {
+                Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)];
+                Tuple<int,int> cella = null;
+                if(riga != null)
+                    cella = riga[0];
+
+                switch (calcolo["SiglaInformazione1"].ToString())
+                {
+                    case "UNIT_COMM":
+                        DataView entitaCommitment = _localDB.Tables[Tab.ENTITACOMMITMENT].DefaultView;
+                        entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Cells[cella.Item1, cella.Item2].Value + "'";
+                        valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
+                        
+                        break;
+                    case "DISPONIBILITA":
+                        if (ws.Cells[cella.Item1, cella.Item2].Value == "OFF")
+                            valore1 = 0;
+                        else
+                            valore1 = 1;
+
+                        break;
+                    case "CHECKINFO":
+                        if (ws.Cells[cella.Item1, cella.Item2].Value == "OK")
+                            valore1 = 1;
+                        else
+                            valore1 = 2;
+                        break;
+                    default:
+                        if (cella != null)
+                            valore1 = ws.Cells[cella.Item1, cella.Item2].Value;
+                        break;
+                }
+            }
+            else if (calcolo["IdProprieta"] != DBNull.Value)
+            {
+                DataView entitaProprieta = _localDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdProprieta = " + calcolo["IdProprieta"];
+
+                if (entitaProprieta.Count > 0)
+                    valore1 = entitaProprieta[0]["Valore"];
+            }
+            else if (calcolo["IdParametroD"] != DBNull.Value)
+            {
+                DataView entitaParametro = _localDB.Tables[Tab.ENTITAPARAMETROD].DefaultView;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdParametroD = " + calcolo["IdParametroD"];
+
+                if (entitaParametro.Count > 0)
+                    valore1 = entitaParametro[0]["Valore"];
+            }
+
+
+        }
 
         #endregion
     }
