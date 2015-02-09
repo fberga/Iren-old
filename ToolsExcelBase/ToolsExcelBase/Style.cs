@@ -22,8 +22,9 @@ namespace Iren.FrontOffice.Base
             s.Borders[Excel.XlBordersIndex.xlDiagonalUp].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
         }
 
-        public static void StdStyles(Workbook wb)
+        public static void StdStyles()
         {
+            Workbook wb = CommonFunctions.WB;
             Excel.Style style;
             try
             {

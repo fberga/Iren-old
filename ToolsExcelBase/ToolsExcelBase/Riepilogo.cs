@@ -11,6 +11,7 @@ using System.Data;
 using System.Globalization;
 using System.Configuration;
 using System.Windows.Forms;
+using Iren.FrontOffice.Core;
 
 namespace Iren.FrontOffice.Base
 {
@@ -113,15 +114,18 @@ namespace Iren.FrontOffice.Base
             }
 
 
-            if (_struttura.intervalloGiorni > 0 && !_resizeFatto)
+            if (_struttura.intervalloGiorni > 0)
             {
-                _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
-                _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
-                _resizeFatto = true;
+                if (!_resizeFatto)
+                {
+                    _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
+                    _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
+                    _resizeFatto = true;
+                }
             }
             else
             {
-                _ws.Shapes.Item("lbDataInizio").ScaleWidth(1f, Office.MsoTriState.msoFalse);
+                _ws.Shapes.Item("lbDataInizio").Width = 485.8582677165f;
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
             }
 
@@ -347,6 +351,29 @@ namespace Iren.FrontOffice.Base
                     }
                 }
             });
+        }
+
+        public void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
+        {
+            if(dataRif == null)
+                dataRif = DataBase.DataAttiva;
+
+            Tuple<int, int> cella = _nomiDefiniti[GetName("RIEPILOGO", entita, azione, GetSuffissoData(DataBase.DataAttiva, dataRif.Value))][0];
+            Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
+
+            if (presente)
+            {
+                string commento = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                rng.AddComment(commento);
+                rng.Value = "OK";
+                Style.RangeStyle(rng, "FontSize:9;ForeColor:1;BackColor:4;Align:Center;Bold:true");
+            }
+            else
+            {
+                rng.Value = "Non presente";
+                Style.RangeStyle(rng, "FontSize:7;ForeColor:3;BackColor:2;Align:Center;Bold:false");
+            }
+
         }
 
         #endregion

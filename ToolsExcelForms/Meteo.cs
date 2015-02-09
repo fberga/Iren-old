@@ -14,19 +14,17 @@ namespace Iren.FrontOffice.Forms
 {
     public partial class frmMETEO : Form
     {
-        DataBase _db;
         DataView _entita;
         DataView _entitaProprieta;
         DateTime _dataRif;
 
 
-        public frmMETEO(DataView entita, DataView entitaProprieta, object dataRif, DataBase db)
+        public frmMETEO(object dataRif)
         {
             InitializeComponent();
 
-            _db = db;
-            _entita = entita;
-            _entitaProprieta = entitaProprieta;
+            _entita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            _entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
 
             labelData.Text = "Data Riferimento: " + _dataRif.ToString("dd/MM/yyyy");
@@ -55,8 +53,8 @@ namespace Iren.FrontOffice.Forms
         }
 
         private void comboUP_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (_db.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+        {            
+            if (CommonFunctions.DB.OpenConnection())
             {
                 Array comboArray = groupDati.Controls.OfType<ComboBox>().ToArray();
                 foreach (ComboBox cmb in comboArray)
@@ -66,7 +64,7 @@ namespace Iren.FrontOffice.Forms
                 foreach (RadioButton rdb in radioArray)
                     groupDati.Controls.Remove(rdb);
 
-                DataView fonti = _db.Select("spCheckFonteMeteo", "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
+                DataView fonti = CommonFunctions.DB.Select("spCheckFonteMeteo", "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
 
                 int fonteOrdine = 0;
                 foreach (DataRowView fonte in fonti)
@@ -101,42 +99,53 @@ namespace Iren.FrontOffice.Forms
                     ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).Items.Add(dataEmissione);
                     ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).SelectedIndex = 0;
                 }
+                CommonFunctions.DB.CloseConnection();
             }
         }
 
         void rdb_CheckedChanged(object sender, EventArgs e)
         {
-            DataRowView entita = (DataRowView)comboUP.SelectedItem;
-            RadioButton rbt = (RadioButton)sender;
-
-            if (rbt.Checked)
+            if (CommonFunctions.DB.OpenConnection())
             {
-                //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
-                _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "'";
+                DataRowView entita = (DataRowView)comboUP.SelectedItem;
+                RadioButton rbt = (RadioButton)sender;
 
-                _db.Insert("spUpdateFonteMeteo", new QryParams() 
+                if (rbt.Checked)
+                {
+                    //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
+                    _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "'";
+
+                    CommonFunctions.DB.Insert("spUpdateFonteMeteo", new QryParams() 
                     {
                         {"@SiglaEntita", entita["SiglaEntita"]},
                         {"@Valore", _entitaProprieta[0]["Ordine"]}
                     });
+                }
+
+                CommonFunctions.DB.CloseConnection();
             }
+            
         }
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
-            foreach (DataRowView entita in _entita)
+            if (CommonFunctions.DB.OpenConnection())
             {
-                _db.Insert("spUpdateFonteMeteo", new QryParams() 
-                    {
-                        {"@SiglaEntita", entita["SiglaEntita"]},
-                        {"@Valore", "1"}
-                    });
-            }
+                //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
+                foreach (DataRowView entita in _entita)
+                {
+                    CommonFunctions.DB.Insert("spUpdateFonteMeteo", new QryParams() 
+                        {
+                            {"@SiglaEntita", entita["SiglaEntita"]},
+                            {"@Valore", "1"}
+                        });
+                }
 
-            _entita.RowFilter = "";
-            _entitaProprieta.RowFilter = "";
-            this.Close();
+                _entita.RowFilter = "";
+                _entitaProprieta.RowFilter = "";
+                CommonFunctions.DB.CloseConnection();
+                this.Close();
+            }
         }
 
         private void btnCarica_Click(object sender, EventArgs e)
@@ -151,8 +160,14 @@ namespace Iren.FrontOffice.Forms
 
             string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
 
-            CommonFunctions.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, dataEmissione);
+            bool gone = CommonFunctions.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, dataEmissione);
 
+            CommonFunctions.DB.OpenConnection();
+            //TODO CommonFunctions.AggiornaRiepilogo(siglaEntita, METEO, gone)
+            //TODO riabilitare log
+            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
+            //refresh true
+            CommonFunctions.DB.CloseConnection();
 
             btnCarica.Enabled = true;
             btnAnnulla.Enabled = true;

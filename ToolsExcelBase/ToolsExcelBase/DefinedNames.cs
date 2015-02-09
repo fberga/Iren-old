@@ -98,9 +98,7 @@ namespace Iren.FrontOffice.Base
         }
         public Tuple<int, int>[] Get(string name)
         {
-            //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
-            if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+(.H\d+)?"))
-                name += Simboli.UNION;
+            name = PrepareName(name);
 
             _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
 
@@ -145,6 +143,14 @@ namespace Iren.FrontOffice.Base
 
         #region Metodi Statici
 
+        private static string PrepareName(string name)
+        {
+            //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
+            if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+.H\d+"))
+                name += Simboli.UNION;
+            return name;
+        }
+
         public static DataTable GetDefaultTable(string name)
         {
             DataTable dt = new DataTable()
@@ -175,8 +181,9 @@ namespace Iren.FrontOffice.Base
 
         public static bool IsDefined(string sheetName, string cellName)
         {
+            cellName = PrepareName(cellName);
             DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
-            definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND Nome = '" + cellName + "'";
+            definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
 
             return definedNamesView.Count > 0;
         }

@@ -19,7 +19,6 @@ namespace Iren.FrontOffice.Tools
     {
         LoaderScreen loader = new LoaderScreen();
 
-
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -54,9 +53,7 @@ namespace Iren.FrontOffice.Tools
             if (count > 1)
             {
                 //TODO riabilitare log!!
-                Globals.Log.Unprotect();
-                CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
-                Globals.Log.Protect();
+                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
                 CommonFunctions.SwitchEnvironment(ambienteScelto.Name);
                 btnAggiornaStruttura_Click(null, null);
             }
@@ -66,9 +63,7 @@ namespace Iren.FrontOffice.Tools
 
         private void AggiornaStruttura()
         {
-            //loader.Show();
             CommonFunctions.AggiornaStrutturaDati();
-
 
             DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = 1";
@@ -102,23 +97,22 @@ namespace Iren.FrontOffice.Tools
             }
 
             Globals.Main.Select();
-            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
-
-            //loader.Hide();
+            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;            
         }
 
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
-            Globals.ThisWorkbook.ThisApplication.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            AggiornaStruttura();
-            //TODO riabilitare log!!
-            //Globals.Log.Unprotect();
-            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
-            //Globals.Log.Protect();
+            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            {
+                AggiornaStruttura();
+                //TODO riabilitare log!!
+                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
-            Globals.ThisWorkbook.ThisApplication.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+                CommonFunctions.DB.CloseConnection();
+            }
+
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
         }
 
@@ -136,27 +130,30 @@ namespace Iren.FrontOffice.Tools
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
-
-                    btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
-
-                    //TODO riabilitare log!!
-                    //Globals.Log.Unprotect();
-                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
-                    //Globals.Log.Protect();
-
-                    CommonFunctions.RefreshDate(cal.Date.Value);
-                    CommonFunctions.ConvertiParametriInformazioni();
-
-                    DataView stato = CommonFunctions.DB.Select("spCheckModificaStruttura", "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
-                    if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
+                    if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
                     {
-                        CommonFunctions.AggiornaStrutturaDati();
-                        AggiornaStruttura();
-                    }
-                    else
-                    {                        
-                        AggiornaDati();
+
+                        CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
+
+                        btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
+
+                        //TODO riabilitare log!!
+                        //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
+
+                        CommonFunctions.RefreshDate(cal.Date.Value);
+                        CommonFunctions.ConvertiParametriInformazioni();
+
+                        DataView stato = CommonFunctions.DB.Select("spCheckModificaStruttura", "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                        if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
+                        {
+                            CommonFunctions.AggiornaStrutturaDati();
+                            AggiornaStruttura();
+                        }
+                        else
+                        {
+                            AggiornaDati();
+                        }
+                        CommonFunctions.DB.CloseConnection();
                     }
                 }
             }
@@ -263,32 +260,23 @@ namespace Iren.FrontOffice.Tools
         {
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
 
-            AggiornaDati();
+            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            {
+                AggiornaDati();
 
-            //TODO riabilitare log!!
-            //Globals.Log.Unprotect();
-            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
-            //Globals.Log.Protect();
+                //TODO riabilitare log!!
+                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
+
+                CommonFunctions.DB.CloseConnection();
+            }
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
 
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
-            var categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "";
-            var entita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            entita.RowFilter = "";
-            var azioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONE].DefaultView;
-            azioni.RowFilter = "Visibile = 1";
-            var azionicategorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONECATEGORIA].DefaultView;
-            azionicategorie.RowFilter = "";
-            var entitaAzioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;
-            entitaAzioni.RowFilter = "";
-            var entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-            entitaProprieta.RowFilter = "";
-
-            frmAZIONI frmAz = new frmAZIONI(categorie, entita, azioni, azionicategorie, entitaAzioni, entitaProprieta, Simboli.intervalloGiorni, CommonFunctions.DB);
+            
+            frmAZIONI frmAz = new frmAZIONI();
             frmAz.Text = Simboli.nomeApplicazione;
             frmAz.ShowDialog();
 

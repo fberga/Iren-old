@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace FrontOfficeCOMTools
@@ -13,9 +14,10 @@ namespace FrontOfficeCOMTools
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new frmCALENDAR());
+            Match func = Regex.Match("ROUND1", @"abs|floor|round\d*|power|max(_H)?|min(_H)?|sum|avg", RegexOptions.IgnoreCase);
+
+            
+
         }
     }
 }

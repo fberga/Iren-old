@@ -10,148 +10,147 @@ using System.IO;
 namespace Iren.FrontOffice.Core
 {
     //singleton
-    public class Connection : IDisposable
+    public class Connection
     {
-        #region Variabili
+        //#region Variabili
 
-        private static Connection _conn;
-        private static string _connStr;
-        private static SqlConnection _sqlConn;
-        private ConnectionState _state = ConnectionState.Closed;
+        //private static Connection _conn;
+        //private static string _connStr;
+        //private static SqlConnection _sqlConn;
+        //private static ConnectionState _state = ConnectionState.Closed;
 
-        #endregion
+        //#endregion
 
-        #region Proprietà
+        //#region Proprietà
 
-        public static Connection Instance
-        {
-            get
-            {
-                if (_conn == null)
-                {
-                    _conn = new Connection();
-                    _conn.OpenConnection();
-                }
-                return _conn;
-            }
-        }
+        //public static Connection Instance 
+        //{
+        //    get
+        //    {
+        //        if (_conn == null)
+        //        {
+        //            _conn = new Connection();
+        //            //_conn.OpenConnection();
+        //        }
+        //        return _conn;
+        //    }
+        //}
 
-        #endregion
+        //#endregion
 
-        #region Costruttori
+        //#region Costruttori
 
-        private Connection() {
-            //la prima volta che viene lanciata la dll controlla che i parametri siano protetti
-            //e nell'eventualità li protegge
-            //CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
-        }
+        //private Connection() {
+        //    //la prima volta che viene lanciata la dll controlla che i parametri siano protetti
+        //    //e nell'eventualità li protegge
+        //    //CryptSection(System.Reflection.Assembly.GetExecutingAssembly());
+        //}
 
-        #endregion
+        //#endregion
 
-        #region Metodi Statici
+        //#region Metodi Statici
 
-        public static string GetConnStr()
-        {
-            return _connStr;
-        }
+        //public static string GetConnStr() 
+        //{
+        //    return _connStr;
+        //}
 
-        public static void SetConnStr(string name)
-        {
-            try
-            {
-                _connStr = ConfigurationManager.ConnectionStrings[name].ConnectionString;
-            }
-            catch { }
-        }
+        //public static void SetConnStr(string name) 
+        //{
+        //    try
+        //    {
+        //        _connStr = ConfigurationManager.ConnectionStrings[name].ConnectionString;
+        //    }
+        //    catch { }
+        //}
 
-        #endregion
+        //#endregion
 
-        #region Metodi Pubblici
+        //#region Metodi Pubblici
 
-        //cripta i dati di connessione se sono in chiaro
-        public static void CryptSection(string location)
-        {
-            ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
-            fileMap.ExeConfigFilename = location;
-            var config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
+        ////cripta i dati di connessione se sono in chiaro
+        //public static void CryptSection(string location) 
+        //{
+        //    ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
+        //    fileMap.ExeConfigFilename = location;
+        //    var config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
 
-            string provider = "RsaProtectedConfigurationProvider";
-            ConfigurationSection connStrings = config.ConnectionStrings;
-            if (connStrings != null)
-            {
-                if (!connStrings.SectionInformation.IsProtected)
-                {
-                    if (!connStrings.ElementInformation.IsLocked)
-                    {
-                        connStrings.SectionInformation.ProtectSection(provider);
+        //    string provider = "RsaProtectedConfigurationProvider";
+        //    ConfigurationSection connStrings = config.ConnectionStrings;
+        //    if (connStrings != null)
+        //    {
+        //        if (!connStrings.SectionInformation.IsProtected)
+        //        {
+        //            if (!connStrings.ElementInformation.IsLocked)
+        //            {
+        //                connStrings.SectionInformation.ProtectSection(provider);
 
-                        connStrings.SectionInformation.ForceSave = true;
-                        config.Save(ConfigurationSaveMode.Modified);
-                    }
-                }
-            }
-        }
+        //                connStrings.SectionInformation.ForceSave = true;
+        //                config.Save(ConfigurationSaveMode.Modified);
+        //            }
+        //        }
+        //    }
+        //}
 
-        public ConnectionState GetConnectionState()
-        {
-            return _state;
-        }
+        //public static ConnectionState GetConnectionState() 
+        //{
+        //    return _state;
+        //}
 
-        public SqlConnection OpenConnection()
-        {
-            if (_connStr != null)
-            {
-                return OpenConnection(_connStr); ;
-            }
-            else
-            {
-                return null;
-            }
-        }
+        //public static SqlConnection OpenConnection() 
+        //{
+        //    if (_connStr != null)
+        //    {
+        //        return OpenConnection(_connStr); ;
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+        //}
 
-        public SqlConnection OpenConnection(string connectionString)
-        {
-            if (_sqlConn == null || _sqlConn.State == ConnectionState.Closed)
-            {
-                try
-                {
-                    _connStr = connectionString;
-                    _sqlConn = new SqlConnection(_connStr);
-                    _sqlConn.StateChange += ConnectionStateChange;
-                    _sqlConn.Open();
-                }
-                catch (Exception)
-                {
-                    _connStr = null;
-                    return null;
-                }
-            }
-            return _sqlConn;
-        }
+        //public static SqlConnection OpenConnection(string connectionString) 
+        //{
+        //    if (_sqlConn == null || _sqlConn.State == ConnectionState.Closed)
+        //    {
+        //        try
+        //        {
+        //            if (_sqlConn == null)
+        //            {
+        //                _connStr = connectionString;
+        //                _sqlConn = new SqlConnection(_connStr);
+        //                _sqlConn.StateChange += ConnectionStateChange;
+        //            }
 
-        public static void CloseConnection()
-        {
-            if (_sqlConn != null && _sqlConn.State == ConnectionState.Open)
-            {
-                _sqlConn.Close();
-                _sqlConn = null;
-            }
-        }
+        //            _sqlConn.Open();
+        //        }
+        //        catch (Exception)
+        //        {
+        //            _connStr = null;
+        //            return null;
+        //        }
+        //    }
+        //    return _sqlConn;
+        //}
 
-        void IDisposable.Dispose()
-        {
-            CloseConnection();
-        }
+        //public static void CloseConnection() 
+        //{
+        //    if (_sqlConn != null && _sqlConn.State == ConnectionState.Open)
+        //    {
+        //        _sqlConn.Close();
+        //        _sqlConn = null;
+        //    }
+        //}
 
-        #endregion
+        //#endregion
 
-        #region Metodi Privati
+        //#region Metodi Privati
 
-        private void ConnectionStateChange(object sender, StateChangeEventArgs e)
-        {
-            _state = _sqlConn.State;
-        }
+        //private static void ConnectionStateChange(object sender, StateChangeEventArgs e) 
+        //{
+        //    _state = _sqlConn.State;
+        //}
 
-        #endregion
+        //#endregion
     }
 }

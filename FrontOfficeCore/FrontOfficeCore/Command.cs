@@ -9,9 +9,18 @@ namespace Iren.FrontOffice.Core
 {
     class Command
     {
+        #region Variabili
+
+        private SqlConnection _sqlConn;
+
+        #endregion
+
         #region Costruttori
 
-        public Command() {}
+        public Command(SqlConnection sqlConn) 
+        {
+            _sqlConn = sqlConn;
+        }
 
         #endregion
 
@@ -20,7 +29,7 @@ namespace Iren.FrontOffice.Core
         public SqlCommand SqlCmd(string commandText, CommandType commandType, int timeout = 300)
         {
             SqlCommand cmd = new SqlCommand();
-            cmd.Connection = Connection.Instance.OpenConnection();
+            cmd.Connection = _sqlConn;
             cmd.CommandText = commandText;
             cmd.CommandType = commandType;
             cmd.CommandTimeout = timeout;
@@ -30,7 +39,6 @@ namespace Iren.FrontOffice.Core
         {
             return SqlCmd(commandText, CommandType.StoredProcedure);
         }
-
         public SqlCommand SqlCmd(string commandText, CommandType commandType, QryParams parameters, int timeout = 300)
         {
             SqlCommand cmd = SqlCmd(commandText, commandType, timeout);

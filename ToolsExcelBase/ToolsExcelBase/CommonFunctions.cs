@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Data;
 using Iren.FrontOffice.Core;
@@ -12,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Deployment.Application;
 using System.Reflection;
 using System.Configuration;
+using System.Globalization;
 
 namespace Iren.FrontOffice.Base
 {
@@ -103,6 +105,7 @@ namespace Iren.FrontOffice.Base
         {
             get { return _wbVersion; }
         }
+        public static Workbook WB { get { return _wb; } }
 
         #endregion
 
@@ -192,33 +195,38 @@ namespace Iren.FrontOffice.Base
             _wb = wb;
             _wbVersion = wbVersion;
 
-            DataTable dt = CaricaApplicazione(appID);
-            if (dt.Rows.Count == 0)
-                throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
-
-            _namespace = "Iren.ToolsExcel." + dt.Rows[0]["SiglaApplicazione"];
-            Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-            Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
-
-            try
+            if (_db.OpenConnection() && _db.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[_namespace];
-                StringReader sr = new StringReader(xmlPart.XML);
-                _localDB.ReadXml(sr);
-                ResetTable(Tab.APPLICAZIONE);                
+                DataTable dt = CaricaApplicazione(appID);
+                if (dt.Rows.Count == 0)
+                    throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
+
+                _namespace = "Iren.ToolsExcel." + dt.Rows[0]["SiglaApplicazione"];
+                Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
+                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
+
+                try
+                {
+                    Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[_namespace];
+                    StringReader sr = new StringReader(xmlPart.XML);
+                    _localDB.ReadXml(sr);
+                    ResetTable(Tab.APPLICAZIONE);
+                }
+                catch
+                {
+                    _localDB.Namespace = _namespace;
+                    _localDB.Prefix = NAME;
+                }
+
+                _localDB.Tables.Add(dt);
+
+                int usr = InitUser();
+                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);
+
+                InitLog();
+
+                _db.CloseConnection();
             }
-            catch
-            {
-                _localDB.Namespace = _namespace;
-                _localDB.Prefix = NAME;
-            }
-
-            _localDB.Tables.Add(dt);
-
-            int usr = InitUser();
-            _db.setParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);
-
-            InitLog();
         }
 
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)
@@ -242,6 +250,12 @@ namespace Iren.FrontOffice.Base
             return "DATA" + (dayDiff.Days + 1);
         }
 
+        public static string GetSuffissoData(DateTime inizio, object giorno)
+        {
+            DateTime day = DateTime.ParseExact(giorno.ToString().Substring(0, 8), "yyyyMMdd", CultureInfo.InvariantCulture);
+            return GetSuffissoData(inizio, day);
+        }
+        
         public static string GetSuffissoOra(object dataOra)
         {
             string dtO = dataOra.ToString();
@@ -756,10 +770,14 @@ namespace Iren.FrontOffice.Base
 
         public static void InsertLog(DataBase.TipologiaLOG logType, string message)
         {
+            _wb.Sheets["Log"].Unprotect();
+            _db.OpenConnection();
             _db.InsertLog(logType, message);
+            //_db.CloseConnection();
             DataTable dt = _db.Select("spApplicazioneLog");
             dt.TableName = Tab.LOG;
             _localDB.Merge(dt);
+            _wb.Sheets["Log"].Protect();
         }
 
         public void AggiornaFormule(Excel.Worksheet ws)
@@ -775,35 +793,80 @@ namespace Iren.FrontOffice.Base
             ConfigurationManager.RefreshSection("appSettings");
         }
 
-        public static void CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime? dataRif = null, object parametro = null)
+        public static bool CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime? dataRif = null, object parametro = null)
         {
-            DataView azioni = _localDB.Tables[Tab.AZIONE].DefaultView;
-            azioni.RowFilter = "SiglaAzione = '" + siglaAzione + "'";
-
-            bool procedi = true;
-            if (azioni[0]["Visibile"].Equals("1"))
+            try
             {
-                procedi = false;
-                DataView entitaAzioni = _localDB.Tables[Tab.ENTITAAZIONE].DefaultView;
-                entitaAzioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
-                if (entitaAzioni.Count > 0)
-                {
-                    procedi = true;
-                }
-            }
+                DataView azioni = _localDB.Tables[Tab.AZIONE].DefaultView;
+                azioni.RowFilter = "SiglaAzione = '" + siglaAzione + "'";
 
-            if (procedi)
-            {
-                AzzeraInformazione(siglaEntita, siglaAzione);
+                if (dataRif == null)
+                    dataRif = DataBase.DataAttiva;
 
-                if (_db.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+                bool procedi = true;
+                if (azioni[0]["Visibile"].Equals("1"))
                 {
-                    if (azionePadre.Equals("GENERA"))
+                    procedi = false;
+                    DataView entitaAzioni = _localDB.Tables[Tab.ENTITAAZIONE].DefaultView;
+                    entitaAzioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+                    if (entitaAzioni.Count > 0)
                     {
-
+                        procedi = true;
                     }
                 }
 
+                if (procedi)
+                {
+                    AzzeraInformazione(siglaEntita, siglaAzione, dataRif);
+
+                    if (_db.OpenConnection())
+                    {
+                        if (azionePadre.Equals("GENERA"))
+                        {
+                            ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
+                            if (azioni[0]["Visibile"].Equals("1"))
+                            {
+                                //TODO INSERT APPLICAZIONE RIEPILOGO pEntita, pAzione
+                                
+                            }
+                        }
+                        else
+                        {
+                            DataView azioneInformazione = _db.Select("spCaricaAzioneInformazione", "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + dataRif.Value.ToString("yyyyMMdd")).DefaultView;
+                            if (azioneInformazione.Count == 0)
+                            {
+                                if (azioni[0]["Visibile"].Equals("1"))
+                                {
+                                    //TODO INSERT APPLICAZIONE RIEPILOGO pEntita, pAzione, False
+                                }
+                            }
+                            else
+                            {
+                                ScriviInformazione(siglaEntita, azioneInformazione);
+
+                                if (azioni[0]["Visibile"].Equals("1"))
+                                {
+                                    //TODO INSERT APPLICAZIONE RIEPILOGO pEntita, pAzione
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (azionePadre.Equals("GENERA"))
+                            ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
+                    }
+
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                //TODO riabilitare log!!
+                //InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram CaricaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                return false;
             }
         }
 
@@ -815,9 +878,9 @@ namespace Iren.FrontOffice.Base
             Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == foglio);
 
             if (dataRif == null)
-                dataRif = DataBase.Data;
+                dataRif = DataBase.DataAttiva;
 
-            string suffissoData = GetSuffissoData(DataBase.Data, dataRif.Value);
+            string suffissoData = GetSuffissoData(DataBase.DataAttiva, dataRif.Value);
 
             DataView entitaAzioniInformazioni = _localDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
 
@@ -832,15 +895,48 @@ namespace Iren.FrontOffice.Base
                     Tuple<int, int>[] riga = new Tuple<int, int>[0];
 
                     if (entitaAzioneInformazione["Selezione"].Equals(0))
-                        riga = nomiDefiniti[GetName(entita, entitaAzioneInformazione["SiglaInformazione"])];
+                        riga = nomiDefiniti[GetName(entita, entitaAzioneInformazione["SiglaInformazione"], suffissoData)];
                     else
-                        riga = nomiDefiniti[GetName(entita, "SEL", entitaAzioneInformazione["Selezione"])];
+                        riga = nomiDefiniti[GetName(entita, "SEL", entitaAzioneInformazione["Selezione"], suffissoData)];
 
                     Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                     rng.Value = valore;
                     rng.Interior.ColorIndex = entitaAzioneInformazione["BackColor"];
                     rng.Font.ColorIndex = entitaAzioneInformazione["ForeColor"];
                     rng.ClearComments();
+                }
+            }
+        }
+
+        public static void ScriviInformazione(object siglaEntita, DataView azioneInformazione)
+        {
+            string foglio = DefinedNames.GetSheetName(siglaEntita);
+
+            DefinedNames nomiDefiniti = new DefinedNames(foglio);
+            Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == foglio);
+
+            foreach (DataRowView azione in azioneInformazione)
+            {
+                string suffissoData;
+                if (azione["SiglaEntita"].Equals("UP_BUS") && azione["SiglaInformazione"].Equals("VOL_INVASO"))
+                    suffissoData = GetName("DATA0", "H24");
+                else 
+                    suffissoData = GetName(GetSuffissoData(DataBase.DataAttiva, azione["Data"]), GetSuffissoOra(azione["Data"]));
+
+                Tuple<int, int>[] celle = nomiDefiniti[GetName(azione["SiglaEntita"], azione["SiglaInformazione"], suffissoData)];
+                if (celle != null)
+                {
+                    Excel.Range rng = ws.Cells[celle[0].Item1, celle[0].Item2];
+                    rng.Value = azione["Valore"];
+                    if (azione["BackColor"] != DBNull.Value)
+                        rng.Interior.ColorIndex = azione["BackColor"];
+                    if (azione["BackColor"] != DBNull.Value)
+                        rng.Font.ColorIndex = azione["ForeColor"];
+                    
+                    rng.ClearComments();
+                    
+                    if (azione["Commento"] != DBNull.Value)
+                        rng.AddComment(azione["Commento"]).Visible = false;
                 }
             }
         }
@@ -858,13 +954,13 @@ namespace Iren.FrontOffice.Base
             return output;
         }
 
-        private static void ElaborazioneInformazione(string siglaEntita, DateTime data, int tipologiaCalcolo, int oraInizio = 0, int oraFine = 0)
+        private static void ElaborazioneInformazione(object siglaEntita, DateTime data, int tipologiaCalcolo, int oraInizio = 0, int oraFine = 0)
         {
             Dictionary<object, object> entitaRiferimento = new Dictionary<object, object>();
             List<int> oreDaCalcolare = new List<int>();
             
 
-            string suffissoData = GetSuffissoData(DataBase.Data, data);
+            string suffissoData = GetSuffissoData(DataBase.DataAttiva, data);
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == nomeFoglio);
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
@@ -875,6 +971,7 @@ namespace Iren.FrontOffice.Base
                 oraFine = GetOreGiorno(data);
             }
             DataView categoriaEntita = _localDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            DataView entitaInformazioni = _localDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
             categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "'";
             foreach (DataRowView entita in categoriaEntita)
                 entitaRiferimento.Add(entita["SiglaEntita"].ToString(), entita["Riferimento"]);
@@ -937,35 +1034,78 @@ namespace Iren.FrontOffice.Base
                             }
                         }
 
-                        foreach (DataRowView calcoloInfo in calcoloInformazioni)
+                        IEnumerator<DataRowView> calcoloRows = calcoloInformazioni.Cast<DataRowView>().GetEnumerator();
+
+
+                        while (calcoloRows.MoveNext())
                         {
-                            if (calcoloInfo["OraInizio"] != DBNull.Value)
+                            DataRowView calcolo = calcoloRows.Current;
+
+                            if (calcolo["OraInizio"] != DBNull.Value)
                                 if (ora < oraInizio && ora > oraFine)
                                     continue;
 
-                            if (calcoloInfo["OraFine"].Equals("0"))
+                            if (calcolo["OraFine"].Equals("0"))
                             {
                                 if (ora != GetOreGiorno(data))
                                     break;
                                 continue;
                             }
 
-                            //get risultato calcolo...
+                            int step;
+                            object risultato = GetRisultatoCalcolo(siglaEntita, data, ora, calcolo, entitaRiferimento, out step);
 
+                            if (step == 0)
+                            {
+                                Tuple<int, int>[] celle = nomiDefiniti[GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)];
+                                if (celle != null)
+                                {
+                                    Excel.Range rng = ws.Cells[celle[0].Item1, celle[0].Item2];
+                                    rng.Formula = calcolo["SiglaInformazione"].Equals("CHECKINFO") ? GetMessaggioCheck(risultato) : risultato;
 
+                                    if (calcolo["BackColor"] != DBNull.Value)
+                                        rng.Interior.ColorIndex = calcolo["BackColor"];
+                                    if (calcolo["ForeColor"] != DBNull.Value)
+                                        rng.Font.ColorIndex = calcolo["ForeColor"];
+                                    
+                                    rng.ClearComments();
+                                    
+                                    if (calcolo["Commento"] != DBNull.Value)
+                                        rng.AddComment(calcolo["Commento"]).Visible = false;
+                                }
+
+                                entitaInformazioni.RowFilter = "SiglaInformazione = '" + calcolo["SiglaInformazione"] + "'";
+                                if (entitaInformazioni.Count > 0 && entitaInformazioni[0]["SalvaDB"].Equals("1"))
+                                {
+                                    //TODO Annotamodifica!!!!!!!!!!!!!!!!!
+                                }
+                            }
+
+                            if (calcolo["FineCalcolo"].Equals("1") || step == -1)
+                                break;
+
+                            if (calcolo["GoStep"] != DBNull.Value)
+                                step = (int)calcolo["GoStep"];
+
+                            if (step != 0) 
+                            {
+                                calcoloRows.Reset();
+                                calcoloInformazioni.RowFilter = "Step < " + step;
+                                while (calcoloRows.MoveNext() && (int)calcoloRows.Current["Step"] < (int)calcoloInformazioni[calcoloInformazioni.Count - 1]["Step"]) ;
+                            }
                         }
                     }
                 }
             }
         }
 
-        private static void GetRisultatoCalcolo(object siglaEntita, DateTime data, int ora, DataRowView calcolo, Dictionary<object, object> entitaRiferimento)
+        private static object GetRisultatoCalcolo(object siglaEntita, DateTime data, int ora, DataRowView calcolo, Dictionary<object, object> entitaRiferimento, out int step)
         {
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
             Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == nomeFoglio);
 
-            string suffissoData = GetSuffissoData(DataBase.Data, data);
+            string suffissoData = GetSuffissoData(DataBase.DataAttiva, data);
 
             int ora1 = calcolo["OraInformazione1"] is DBNull ? ora : ora + (int)calcolo["OraInformazione1"];
             int ora2 = calcolo["OraInformazione2"] is DBNull ? ora : ora + (int)calcolo["OraInformazione2"];
@@ -974,7 +1114,7 @@ namespace Iren.FrontOffice.Base
             object siglaEntitaRif2 = calcolo["Riferimento2"] is DBNull ? (calcolo["SiglaEntita2"] is DBNull ? siglaEntita : calcolo["SiglaEntita2"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == calcolo["Riferimento2"]);
 
             object valore1 = null;
-            object valore2;
+            object valore2 = null;
 
             if (calcolo["SiglaInformazione1"] != DBNull.Value)
             {
@@ -1021,15 +1161,225 @@ namespace Iren.FrontOffice.Base
             else if (calcolo["IdParametroD"] != DBNull.Value)
             {
                 DataView entitaParametro = _localDB.Tables[Tab.ENTITAPARAMETROD].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdParametroD = " + calcolo["IdParametroD"];
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdParametro = " + calcolo["IdParametroD"];
 
                 if (entitaParametro.Count > 0)
-                    valore1 = entitaParametro[0]["Valore"];
+                    valore1 = entitaParametro[0]["Valore"].ToString().Replace('.', ',');
+            }
+            else if (calcolo["IdParametroH"] != DBNull.Value)
+            {
+                DataView entitaParametro = _localDB.Tables[Tab.ENTITAPARAMETROH].DefaultView;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdParametro = " + calcolo["IdParametroH"];
+
+                if (entitaParametro.Count > 0)
+                    valore1 = entitaParametro[0]["Valore"].ToString().Replace('.', ',');
+            }
+            else if(calcolo["Valore"] != DBNull.Value)
+            {
+                valore1 = calcolo["Valore"];
             }
 
+            if (calcolo["SiglaInformazione2"] != DBNull.Value)
+            {
+                Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, "H" + ora1)];
+                Tuple<int, int> cella = null;
+                if (riga != null)
+                    cella = riga[0];
 
+                switch (calcolo["SiglaInformazione2"].ToString())
+                {
+                    case "UNIT_COMM":
+                        DataView entitaCommitment = _localDB.Tables[Tab.ENTITACOMMITMENT].DefaultView;
+                        entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Cells[cella.Item1, cella.Item2].Value + "'";
+                        valore2 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
+
+                        break;
+                    case "DISPONIBILITA":
+                        if (ws.Cells[cella.Item1, cella.Item2].Value == "OFF")
+                            valore2 = 0;
+                        else
+                            valore2 = 1;
+
+                        break;
+                    case "CHECKINFO":
+                        if (ws.Cells[cella.Item1, cella.Item2].Value == "OK")
+                            valore2 = 1;
+                        else
+                            valore2 = 2;
+                        break;
+                    default:
+                        if (cella != null)
+                            valore2 = ws.Cells[cella.Item1, cella.Item2].Value;
+                        break;
+                }
+            }
+
+            double retVal = 0d;
+
+            if (calcolo["Funzione"] is DBNull && calcolo["Operazione"] is DBNull && calcolo["Condizione"] is DBNull)
+            {
+                step = 0;
+                return valore1 ?? valore2;
+            }
+            else if (calcolo["Funzione"] != DBNull.Value)
+            {
+                string func = calcolo["Funzione"].ToString().ToLowerInvariant();
+                if (calcolo["SiglaInformazione2"] is DBNull)
+                {
+                    if(func.Contains("abs")) 
+                    {
+                        retVal = Math.Abs((double)valore1);
+                    }
+                    else if (func.Contains("floor"))
+                    {
+                        retVal = Math.Floor((double)valore1);
+                    }
+                    else if (func.Contains("round"))
+                    {
+                        int decimals = int.Parse(Regex.Match(func, @"\d*").Value);
+                        retVal = Math.Round((double)valore1, decimals);
+                    }
+                    else if (func.Contains("power"))
+                    {
+                        int exp = int.Parse(Regex.Match(func, @"\d*").Value);
+                        retVal = Math.Pow((double)valore1, exp);
+                    }
+                    else if (func.Contains("sum"))
+                    {
+                        foreach (var kvp in entitaRiferimento)
+                        {
+                            Tuple<int,int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            retVal += ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
+                        }
+                    }
+                    else if (func.Contains("avg"))
+                    {
+                        foreach (var kvp in entitaRiferimento)
+                        {
+                            Tuple<int, int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            retVal += ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
+                        }
+                        retVal /= entitaRiferimento.Count;
+                    }
+                    else if (func.Contains("max_h"))
+                    {
+                        retVal = double.MinValue;
+                        Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
+                        object[,] values = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
+                        for (int i = 0; i < GetOreGiorno(data); i++)
+                        {
+                            double val = (double)(values[0, i] ?? 0);
+                            retVal = Math.Max(val, retVal);
+                        }
+                    }
+                    else if (func.Contains("min_h"))
+                    {
+                        retVal = double.MaxValue;
+                        Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
+                        object[,] values = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
+                        for (int i = 0; i < GetOreGiorno(data); i++)
+                        {
+                            double val = (double)(values[0, i] ?? 0);
+                            retVal = Math.Min(val, retVal);
+                        }
+                    }
+                    else if (func.Contains("max"))
+                    {
+                        retVal = double.MinValue;
+                        foreach (var kvp in entitaRiferimento)
+                        {
+                            Tuple<int, int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            retVal = Math.Max(ws.Cells[cella.Item1, cella.Item2].Value ?? 0, retVal);
+                        }
+                    }
+                    else if (func.Contains("min"))
+                    {
+                        retVal = double.MaxValue;
+                        foreach (var kvp in entitaRiferimento)
+                        {
+                            Tuple<int, int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            retVal = Math.Min(ws.Cells[cella.Item1, cella.Item2].Value ?? 0, retVal);
+                        }
+                    }
+                }
+                //caso in cui ci sia anche SiglaInformazione2
+                else
+                {
+                    if (func.Contains("max"))
+                    {
+                        retVal = Math.Max((double)valore1, (double)valore2);
+                    }
+                    else if (func.Contains("min"))
+                    {
+                        retVal = Math.Min((double)valore1, (double)valore2);
+                    }
+                }
+            }
+            else if (calcolo["Operazione"] != DBNull.Value)
+            {
+                switch (calcolo["Operazione"].ToString())
+                {
+                    case "+":
+                        retVal = (double)valore1 + (double)valore2;
+                        break;
+                    case "-":
+                        retVal = (double)valore1 - (double)valore2;
+                        break;
+                    case "*":
+                        retVal = (double)valore1 * (double)valore2;
+                        break;
+                    case "/":
+                        retVal = (double)valore1 / (double)valore2;
+                        break;
+                }
+            }
+            else if (calcolo["Condizione"] != DBNull.Value)
+            {
+                bool res = false;
+                switch (calcolo["Condizione"].ToString())
+                {
+                    case ">":
+                        res = (double)valore1 > (double)valore2;
+                        break;
+                    case "<":
+                        res = (double)valore1 < (double)valore2;
+                        break;
+                    case ">=":
+                        res = (double)valore1 >= (double)valore2;
+                        break;
+                    case "<=":
+                        res = (double)valore1 <= (double)valore2;
+                        break;
+                    case "=":
+                        res = (double)valore1 == (double)valore2;
+                        break;
+                    case "<>":
+                        res = (double)valore1 != (double)valore2;
+                        break;
+                }
+                if (res)
+                    step = (int)calcolo["StepCondizioneVera"];
+                else
+                    step = (int)calcolo["StepCondizioneFalsa"];
+
+                return res;
+            }
+
+            step = 0;
+            return retVal;
         }
 
+        private static object GetMessaggioCheck(object id) 
+        {
+            DataView tipologiaCheck = _localDB.Tables[Tab.TIPOLOGIACHECK].DefaultView;
+            tipologiaCheck.RowFilter = "IdTipologiaCheck = " + id;
+
+            if(tipologiaCheck.Count > 0)
+                return tipologiaCheck[0]["Messaggio"];
+
+            return null;
+        }
+        
         #endregion
     }
 }

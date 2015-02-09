@@ -67,12 +67,10 @@ namespace Iren.FrontOffice.Tools
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
-            Style.StdStyles(this.Base);
+            Style.StdStyles();
 
             //TODO riabilitare log!!
-            //Globals.Log.Unprotect();
             //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
-            //Globals.Log.Protect();
         }
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
