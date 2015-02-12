@@ -281,7 +281,6 @@ namespace Iren.FrontOffice.Forms
         private void treeViewAzioni_AfterCheck(object sender, TreeViewEventArgs e)
         {
             fromAzioni = true;
-            Evidenzia(e.Node, e.Node.Checked);
 
             if (e.Node.Checked)
             {
@@ -358,8 +357,6 @@ namespace Iren.FrontOffice.Forms
 
         private void treeViewCategorie_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            Evidenzia(e.Node, e.Node.Checked);
-
             if (e.Node.Checked)
             {
                 if (e.Node.Nodes.Count > 0)
@@ -378,10 +375,13 @@ namespace Iren.FrontOffice.Forms
 
                 if (!fromAzioni)
                 {
+                    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
                     _azioniCategorie.RowFilter = "SiglaCategoria = '" + e.Node.Name + "'";
                     foreach (DataRowView azioneCategoria in _azioniCategorie)
                         if (!treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked)
                             treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked = true;
+                    CheckParents(treeViewAzioni);
+                    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
                 }
             }
             else
@@ -441,6 +441,7 @@ namespace Iren.FrontOffice.Forms
         {
             btnApplica.Enabled = false;
             btnAnnulla.Enabled = false;
+            btnMeteo.Enabled = false;
 
             if (comboGiorni.SelectedIndex == -1)
                 MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -481,104 +482,106 @@ namespace Iren.FrontOffice.Forms
 
                 bool[] statoAzione = new bool[4] { false, false, false, false };
 
-                //Sistemare... prende solo i nodi radice e a me servono i figli!!!!
-                TreeNode[] nodiAzioni = treeViewAzioni.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                foreach(TreeNode n in nodiAzioni)
+                ThroughAllNodes(treeViewAzioni.Nodes, n =>
                 {
-                    TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                    if (statoAzione[0] && !statoAzione[3] && n.Parent.Name == "GENERA")
+                    if (n.Checked && n.Nodes.Count == 0)
                     {
-                        statoAzione[3] = true;
-                        foreach(TreeNode n1 in nodiEntita)
+                        TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
+                        if (statoAzione[0] && !statoAzione[3] && n.Parent.Name == "GENERA")
                         {
-                            if (n1.Checked)
+                            statoAzione[3] = true;
+                            ThroughAllNodes(treeViewUP.Nodes, n1 =>
+                            {
+                                if (n1.Checked && n1.Nodes.Count == 0)
+                                {
+                                    string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
+                                    Sheet s = new Sheet(CommonFunctions.WB.Sheets[nomeFoglio]);
+                                    s.CalcolaFormule(n1.Name, dataRif);
+
+                                    _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
+                                    if (_categoriaEntita.Count > 0)
+                                        s.CalcolaFormule(_categoriaEntita[0]["Gerarchia"].ToString(), dataRif);
+                                }
+                            });
+
+                            //TODO SALVA MODIFICA
+                        }
+                        _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
+
+                        ThroughAllNodes(treeViewUP.Nodes, n1 =>
+                        {
+                            if (n1.Checked && n1.Nodes.Count == 0)
                             {
                                 string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                Sheet s = new Sheet(CommonFunctions.WB.Sheets[nomeFoglio]);
-                                s.CalcolaFormule(n1.Name, dataRif);
-
-                                _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
-                                if (_categoriaEntita.Count > 0)
-                                    s.CalcolaFormule(_categoriaEntita[0]["Gerarchia"].ToString(), dataRif);
-                            }
-                        }
-
-                        //TODO SALVA MODIFICA
-                    }
-                    _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
-
-                    foreach(TreeNode n1 in nodiEntita)
-                    {
-                        if (n1.Checked)
-                        {
-                            string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                            Riepilogo r = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
-                            bool presente;
-                            switch (n.Name)
-                            {
-                                case "CARICA":
-                                    presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                    r.AggiornaRiepilogo(n1.Name, n.Name, presente);
-                                    statoAzione[0] = true;
-                                    break;
-                                case "GENERA":
-                                    presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                    r.AggiornaRiepilogo(n1.Name, n.Name, presente);
-                                    statoAzione[1] = true;
-                                    break;
-                                case "ESPORTA":
-                                    IEsporta esporta = new Esporta();
-                                    esporta.EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
-                                    statoAzione[2] = true;
-                                    break;
-                            }
-
-                            if (_azioni[0]["Relazione"] != DBNull.Value)
-                            {
-                                string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
-                                foreach (string relazione in azioneRelazione)
+                                Riepilogo r = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+                                bool presente;
+                                switch (n.Parent.Name)
                                 {
-                                    _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
+                                    case "CARICA":
+                                        presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                        r.AggiornaRiepilogo(n1.Name, n.Name, presente);
+                                        statoAzione[0] = true;
+                                        break;
+                                    case "GENERA":
+                                        presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                        r.AggiornaRiepilogo(n1.Name, n.Name, presente);
+                                        statoAzione[1] = true;
+                                        break;
+                                    case "ESPORTA":
+                                        IEsporta esporta = new Esporta();
+                                        esporta.EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                        statoAzione[2] = true;
+                                        break;
+                                }
 
-                                    if (DefinedNames.IsDefined("Main", CommonFunctions.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
+                                if (_azioni[0]["Relazione"] != DBNull.Value)
+                                {
+                                    string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
+                                    foreach (string relazione in azioneRelazione)
                                     {
-                                        DefinedNames nomiDefiniti = new DefinedNames("Main");
-                                        Tuple<int, int> cella = nomiDefiniti[CommonFunctions.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
+                                        _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
 
-                                        Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
-                                        if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
+                                        if (DefinedNames.IsDefined("Main", DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
                                         {
-                                            ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
-                                            Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
+                                            DefinedNames nomiDefiniti = new DefinedNames("Main");
+                                            Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
+
+                                            Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+                                            if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
+                                            {
+                                                ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
+                                            }
                                         }
                                     }
+                                    _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
                                 }
-                                _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
                             }
+                        });
+                        switch (n.Parent.Name)
+                        {
+                            case "CARICA":
+                                //TODO riabilitare log!!
+                                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                break;
+                            case "GENERA":
+                                //TODO riabilitare log!!
+                                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                break;
+                            case "ESPORTA":
+                                //TODO riabilitare log!!
+                                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                break;
                         }
                     }
-                    switch (n.Name)
-                    {
-                        case "CARICA":
-                            //TODO riabilitare log!!
-                            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
-                            break;
-                        case "GENERA":
-                            //TODO riabilitare log!!
-                            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
-                            break;
-                        case "ESPORTA":
-                            //TODO riabilitare log!!
-                            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
-                            break;
-                    }
-                }
+                });
 
             }
 
             CommonFunctions.DB.CloseConnection();
             btnApplica.Enabled = true;
             btnAnnulla.Enabled = true;
+            btnMeteo.Enabled = true;
         }
 
         #endregion

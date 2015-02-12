@@ -249,6 +249,47 @@ namespace Iren.FrontOffice.Core
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
+        //cripta i dati di connessione se sono in chiaro
+        //public static void CryptSection(string location)
+        public static void CryptSection()
+        {
+            //ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
+            //fileMap.ExeConfigFilename = location;
+            //var config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            string provider = "RsaProtectedConfigurationProvider";
+            ConfigurationSection connStrings = config.ConnectionStrings;
+            if (connStrings != null)
+            {
+                if (!connStrings.SectionInformation.IsProtected)
+                {
+                    if (!connStrings.ElementInformation.IsLocked)
+                    {
+                        connStrings.SectionInformation.ProtectSection(provider);
+
+                        connStrings.SectionInformation.ForceSave = true;
+                        config.Save(ConfigurationSaveMode.Modified);
+                    }
+                }
+            }
+
+            ConfigurationSection appSettings = config.AppSettings;
+            if (appSettings != null)
+            {
+                if(!appSettings.SectionInformation.IsProtected)
+                {
+                    if (!appSettings.ElementInformation.IsLocked)
+                    {
+                        appSettings.SectionInformation.ProtectSection(provider);
+
+                        appSettings.SectionInformation.ForceSave = true;
+                        config.Save(ConfigurationSaveMode.Modified);
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Metodi Privati

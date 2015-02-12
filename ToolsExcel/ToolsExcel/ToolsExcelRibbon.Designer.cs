@@ -205,7 +205,7 @@
             // Produzione
             // 
             this.Produzione.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.Produzione.Label = "Produzione";
+            this.Produzione.Label = "Prod";
             this.Produzione.Name = "Produzione";
             this.Produzione.ShowImage = true;
             this.Produzione.Visible = false;

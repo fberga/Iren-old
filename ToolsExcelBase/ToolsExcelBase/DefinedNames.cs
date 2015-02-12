@@ -146,7 +146,7 @@ namespace Iren.FrontOffice.Base
         private static string PrepareName(string name)
         {
             //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
-            if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+.H\d+"))
+            if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
                 name += Simboli.UNION;
             return name;
         }
@@ -186,6 +186,21 @@ namespace Iren.FrontOffice.Base
             definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
 
             return definedNamesView.Count > 0;
+        }
+
+        public static string GetName(params object[] parts)
+        {
+            string o = "";
+            bool first = true;
+            foreach (object part in parts)
+            {
+                if (part != null)
+                {
+                    o += (!first && part != "" ? Simboli.UNION : "") + part;
+                    first = false;
+                }
+            }
+            return o;
         }
 
         #endregion

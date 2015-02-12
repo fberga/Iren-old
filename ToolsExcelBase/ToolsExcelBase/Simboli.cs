@@ -14,7 +14,7 @@ namespace Iren.FrontOffice.Base
         public static int intervalloGiorni = 0;
 
         private static bool modificaDati = false;
-
+        public static string pwd = "";
         public static bool ModificaDati 
         { 
             get 

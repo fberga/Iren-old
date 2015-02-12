@@ -270,7 +270,7 @@ namespace Iren.FrontOffice.Base
                         entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
                         foreach (DataRowView e in entita)
                         {
-                            _nomiDefiniti.Add(GetName("RIEPILOGO", e["siglaEntita"], azione["SiglaAzione"], suffissoData), Tuple.Create(_rigaAttiva + i++, colonnaInizio + j));
+                            _nomiDefiniti.Add(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"], azione["SiglaAzione"], suffissoData), Tuple.Create(_rigaAttiva + i++, colonnaInizio + j));
                         }
                     }
                     j++;
@@ -302,7 +302,7 @@ namespace Iren.FrontOffice.Base
 
                 foreach (DataRowView e in entita)
                 {
-                    _nomiDefiniti.Add(GetName("RIEPILOGO", e["siglaEntita"], "GOTO"), Tuple.Create(_rigaAttiva + i, _colonnaInizio));
+                    _nomiDefiniti.Add(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"], "GOTO"), Tuple.Create(_rigaAttiva + i, _colonnaInizio));
                     values[i++, 0] = (e["Gerarchia"] is DBNull ? "" : "     ") + e["DesEntita"];
                 }
             }
@@ -318,7 +318,7 @@ namespace Iren.FrontOffice.Base
             {
                 foreach (DataRowView entitaAzione in entitaAzioni)
                 {
-                    string nome = GetName("RIEPILOGO", entitaAzione["SiglaEntita"], entitaAzione["SiglaAzione"]);
+                    string nome = DefinedNames.GetName("RIEPILOGO", entitaAzione["SiglaEntita"], entitaAzione["SiglaAzione"]);
                     Tuple<int, int>[] celleAzione = _nomiDefiniti[nome];
 
                     foreach (Tuple<int, int> cella in celleAzione)
@@ -335,7 +335,7 @@ namespace Iren.FrontOffice.Base
                 DataView datiRiepilogo = DB.Select("spApplicazioneRiepilogo", "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;                
                 foreach (DataRowView valore in datiRiepilogo)
                 {
-                    string nome = GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
+                    string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
                     Tuple<int, int> cella = _nomiDefiniti[nome][0];
                     string commento = "";
 
@@ -358,13 +358,14 @@ namespace Iren.FrontOffice.Base
             if(dataRif == null)
                 dataRif = DataBase.DataAttiva;
 
-            Tuple<int, int> cella = _nomiDefiniti[GetName("RIEPILOGO", entita, azione, GetSuffissoData(DataBase.DataAttiva, dataRif.Value))][0];
+            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, GetSuffissoData(DataBase.DataAttiva, dataRif.Value))][0];
             Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
 
             if (presente)
             {
                 string commento = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
-                rng.AddComment(commento);
+                rng.ClearComments();
+                rng.AddComment(commento).Visible = false;
                 rng.Value = "OK";
                 Style.RangeStyle(rng, "FontSize:9;ForeColor:1;BackColor:4;Align:Center;Bold:true");
             }

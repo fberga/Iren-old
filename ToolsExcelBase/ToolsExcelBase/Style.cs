@@ -192,7 +192,7 @@ namespace Iren.FrontOffice.Base
                         rng.Interior.ColorIndex = int.Parse(keyVal[1]);
                         break;
                     case "backpattern":
-                        string backPattern = "xlPattern" + Regex.Replace(keyVal[1], "Vertical|Up|None|Horizontal|Gray|Down|Automatic|Solid|Checker|Semi|Light|Grid|Criss|Cross|Linear|Gradient|Rectangular", delegate(Match m)
+                        string backPattern = "xlPattern" + Regex.Replace(keyVal[1], "Vertical|Up|None|Horizontal|Gray|Down|Automatic|Solid|Checker|Semi|Light|Grid|CrissCross|Linear|Gradient|Rectangular", delegate(Match m)
                         {
                             string v = m.ToString();
                             return char.ToUpper(v[0]) + v.Substring(1);

@@ -17,10 +17,21 @@ namespace Iren.FrontOffice.Tools
 {
     public partial class ToolsExcelRibbon
     {
+        #region Variabili
+
         LoaderScreen loader = new LoaderScreen();
+        
+        #endregion
+
+        #region Eventi
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
+            if (Globals.ThisWorkbook.Sheets.Count <= 2)
+            {//disabilito tutti i tasti
+                AbilitaTasti(false);
+            }
+
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
 
@@ -36,7 +47,7 @@ namespace Iren.FrontOffice.Tools
             groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ConfigurationManager.AppSettings["DB"]).ToArray()[0].Checked = true;
         }
 
-        void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
+        private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
 
@@ -60,51 +71,13 @@ namespace Iren.FrontOffice.Tools
 
             ambienteScelto.Checked = true;
         }
-
-        private void AggiornaStruttura()
-        {
-            CommonFunctions.AggiornaStrutturaDati();
-
-            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "Operativa = 1";
-
-            foreach (DataRowView categoria in categorie)
-            {
-                Excel.Worksheet ws;
-                try
-                {
-                    ws = Globals.ThisWorkbook.Worksheets[categoria["DesCategoria"].ToString()];
-                }
-                catch
-                {
-                    ws = (Excel.Worksheet)Globals.ThisWorkbook.Worksheets.Add(Globals.ThisWorkbook.Worksheets["Log"]);
-                    ws.Name = categoria["DesCategoria"].ToString();
-                    ws.Select();
-                    Globals.ThisWorkbook.Application.Windows[1].DisplayGridlines = false;                    
-                }
-            }
-
-            Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
-            main.LoadStructure();
-
-            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
-            {
-                if (ws.Name != "Log" && ws.Name != "Main")
-                {
-                    Sheet s = new Sheet(ws);
-                    s.LoadStructure();
-                }
-            }
-
-            Globals.Main.Select();
-            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;            
-        }
-
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            if (CommonFunctions.DB.OpenConnection())
             {
                 AggiornaStruttura();
                 //TODO riabilitare log!!
@@ -113,12 +86,18 @@ namespace Iren.FrontOffice.Tools
                 CommonFunctions.DB.CloseConnection();
             }
 
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Sheet.Proteggi(true);
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
-        }
 
+            AbilitaTasti(true);
+        }
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+
             Forms.frmCALENDAR cal = new frmCALENDAR();
             cal.Text = Simboli.nomeApplicazione;
             cal.ShowDialog();
@@ -159,12 +138,16 @@ namespace Iren.FrontOffice.Tools
             }
             cal.Dispose();
 
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Sheet.Proteggi(true);
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
-
         private void btnRampe_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+
             Excel.Worksheet ws = (Excel.Worksheet)Globals.ThisWorkbook.ActiveSheet;
 
             if (ws.Name == "Iren Termo")
@@ -195,18 +178,18 @@ namespace Iren.FrontOffice.Tools
                     entitaRampa.RowFilter = "SiglaEntita = '" + up + "'";
                     object[] sigleRampa = entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToArray();
 
-                    Tuple<int, int>[] profiloPQNR = nomiDefiniti[CommonFunctions.GetName(up, "PQNR_PROFILO", suffissoData)];
+                    Tuple<int, int>[] profiloPQNR = nomiDefiniti[DefinedNames.GetName(up, "PQNR_PROFILO", suffissoData)];
                     object[,] values = ws.Range[ws.Cells[profiloPQNR[0].Item1, profiloPQNR[0].Item2], ws.Cells[profiloPQNR[0].Item1, profiloPQNR[profiloPQNR.Length - 1].Item2]].Value;
                     object[] valoriPQNR = values.Cast<object>().ToArray();
 
                     DataView assetti = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAASSETTO].DefaultView;
                     assetti.RowFilter = "SiglaEntita = '" + up + "'";
-                    
+
                     double?[] pMin = new double?[valoriPQNR.Length];
                     int numAssetto = 1;
                     foreach (DataRowView assetto in assetti)
                     {
-                        Tuple<int,int>[] cellePmin = nomiDefiniti[CommonFunctions.GetName(up, "PMIN_TERNA_ASSETTO" + numAssetto, suffissoData)];
+                        Tuple<int, int>[] cellePmin = nomiDefiniti[DefinedNames.GetName(up, "PMIN_TERNA_ASSETTO" + numAssetto, suffissoData)];
                         object[,] pMinAssetto = ws.Range[ws.Cells[cellePmin[0].Item1, cellePmin[0].Item2], ws.Cells[cellePmin[0].Item1, cellePmin[cellePmin.Length - 1].Item2]].Value;
                         double?[] pMinOraria = pMinAssetto.Cast<double?>().ToArray();
                         for (int i = 0; i < pMinOraria.Length; i++)
@@ -230,15 +213,110 @@ namespace Iren.FrontOffice.Tools
 
                         for (int i = 1; i < rampe._out.Columns.Count; i++)
                         {
-                            Tuple<int, int>[] pqnrX = nomiDefiniti[CommonFunctions.GetName(up, "PQNR" + i, suffissoData)];
+                            Tuple<int, int>[] pqnrX = nomiDefiniti[DefinedNames.GetName(up, "PQNR" + i, suffissoData)];
                             ws.Range[ws.Cells[pqnrX[0].Item1, pqnrX[0].Item2], ws.Cells[pqnrX[0].Item1, pqnrX[pqnrX.Length - 1].Item2]].Value = rampe._out.AsEnumerable().Select(r => r["Q" + i]).ToArray();
-                        }                         
+                        }
                     }
                 }
             }
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Sheet.Proteggi(true);
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
+        private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
+        {            
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
+            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            {
+                AggiornaDati();
+
+                //TODO riabilitare log!!
+                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
+
+                CommonFunctions.DB.CloseConnection();
+            }
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Sheet.Proteggi(true);
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+        private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+
+            frmAZIONI frmAz = new frmAZIONI();
+            frmAz.Text = Simboli.nomeApplicazione;
+            frmAz.ShowDialog();
+
+            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Sheet.Proteggi(true);
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+        private void btnModifica_Click(object sender, RibbonControlEventArgs e)
+        {
+            Simboli.ModificaDati = btnModifica.Checked;
+
+            Sheet.AbilitaModifica(btnModifica.Checked);
+            if (btnModifica.Checked)
+                btnModifica.Label = "Modifica SI";
+            else
+                btnModifica.Label = "Modifica NO";
+        }
+
+        #endregion
+
+        #region Metodi
+
+        private void AbilitaTasti(bool abilita)
+        {
+            btnCalendar.Enabled = abilita;
+            btnAzioni.Enabled = abilita;
+            btnRampe.Enabled = abilita;
+            btnAggiornaDati.Enabled = abilita;
+        }
+        
+        private void AggiornaStruttura()
+        {
+            CommonFunctions.AggiornaStrutturaDati();
+
+            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            categorie.RowFilter = "Operativa = 1";
+
+            foreach (DataRowView categoria in categorie)
+            {
+                Excel.Worksheet ws;
+                try
+                {
+                    ws = Globals.ThisWorkbook.Worksheets[categoria["DesCategoria"].ToString()];
+                }
+                catch
+                {
+                    ws = (Excel.Worksheet)Globals.ThisWorkbook.Worksheets.Add(Globals.ThisWorkbook.Worksheets["Log"]);
+                    ws.Name = categoria["DesCategoria"].ToString();
+                    ws.Select();
+                    Globals.ThisWorkbook.Application.Windows[1].DisplayGridlines = false;                    
+                }
+            }
+
+            Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
+            main.LoadStructure();
+
+            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
+            {
+                if (ws.Name != "Log" && ws.Name != "Main")
+                {
+                    Sheet s = new Sheet(ws);
+                    s.LoadStructure();
+                }
+            }
+
+            Globals.Main.Select();
+            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+        }
         private void AggiornaDati()
         {
             foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
@@ -256,40 +334,7 @@ namespace Iren.FrontOffice.Tools
             CommonFunctions.InitLog();
         }
 
-        private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
-        {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+        #endregion
 
-            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
-            {
-                AggiornaDati();
-
-                //TODO riabilitare log!!
-                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
-
-                CommonFunctions.DB.CloseConnection();
-            }
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
-        }
-
-        private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
-        {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
-            
-            frmAZIONI frmAz = new frmAZIONI();
-            frmAz.Text = Simboli.nomeApplicazione;
-            frmAz.ShowDialog();
-
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
-        }
-
-        private void btnModifica_Click(object sender, RibbonControlEventArgs e)
-        {
-            Simboli.ModificaDati = btnModifica.Checked;
-            if (btnModifica.Checked)
-                btnModifica.Label = "Modifica SI";
-            else
-                btnModifica.Label = "Modifica NO";
-        }
     }
 }

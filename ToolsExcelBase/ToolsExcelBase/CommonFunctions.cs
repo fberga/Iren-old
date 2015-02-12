@@ -14,6 +14,7 @@ using System.Deployment.Application;
 using System.Reflection;
 using System.Configuration;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace Iren.FrontOffice.Base
 {
@@ -178,8 +179,9 @@ namespace Iren.FrontOffice.Base
         public static void ChangeModificaDati(bool modifica)
         {
             Excel.Worksheet ws = _wb.Sheets["Main"];
-
+            ws.Unprotect(Simboli.pwd);
             ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: " + (modifica ? "SI" : "NO");
+            ws.Protect(Simboli.pwd);
         }
 
         public static void SwitchEnvironment(string ambiente)
@@ -190,12 +192,13 @@ namespace Iren.FrontOffice.Base
 
         public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
         {
+            DataBase.CryptSection();
             _db = new DataBase(dbName);
             _localDB = new DataSet(NAME);
             _wb = wb;
             _wbVersion = wbVersion;
 
-            if (_db.OpenConnection() && _db.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            if (_db.OpenConnection())
             {
                 DataTable dt = CaricaApplicazione(appID);
                 if (dt.Rows.Count == 0)
@@ -204,6 +207,7 @@ namespace Iren.FrontOffice.Base
                 _namespace = "Iren.ToolsExcel." + dt.Rows[0]["SiglaApplicazione"];
                 Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
                 Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
+                Simboli.pwd = ConfigurationManager.AppSettings["pwd"];
 
                 try
                 {
@@ -756,18 +760,6 @@ namespace Iren.FrontOffice.Base
             _wb.CustomXMLParts.Add(locDBXml);
         }
 
-        public static string GetName(params object[] parts)
-        {
-            string o = "";
-            bool first = true;
-            foreach (object part in parts)
-            {
-                o += (!first && part != "" ? Simboli.UNION : "") + part;
-                first = false;
-            }
-            return o;
-        }
-
         public static void InsertLog(DataBase.TipologiaLOG logType, string message)
         {
             _wb.Sheets["Log"].Unprotect();
@@ -778,6 +770,28 @@ namespace Iren.FrontOffice.Base
             dt.TableName = Tab.LOG;
             _localDB.Merge(dt);
             _wb.Sheets["Log"].Protect();
+        }
+
+        public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true)
+        {
+            dataRif = dataRif ?? DataBase.DataAttiva;
+            try
+            {
+                _db.OpenConnection();
+                QryParams parameters = new QryParams() {
+                    {"@SiglaEntita", siglaEntita},
+                    {"@SiglaAzione", siglaAzione},
+                    {"@Data", dataRif.Value.ToString("yyyyMMdd")},
+                    {"@Presente", presente ? "1" : "0"}
+                };
+                _db.Insert("spInsertApplicazioneRiepilogo", parameters);
+            }
+            catch (Exception e)
+            {
+                //TODO riabilitare log
+                //InsertLog(DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo ["+ dataRif ?? DataBase.DataAttiva +", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
 
         public void AggiornaFormule(Excel.Worksheet ws)
@@ -825,10 +839,7 @@ namespace Iren.FrontOffice.Base
                         {
                             ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
                             if (azioni[0]["Visibile"].Equals("1"))
-                            {
-                                //TODO INSERT APPLICAZIONE RIEPILOGO pEntita, pAzione
-                                
-                            }
+                                InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
                         }
                         else
                         {
@@ -836,18 +847,14 @@ namespace Iren.FrontOffice.Base
                             if (azioneInformazione.Count == 0)
                             {
                                 if (azioni[0]["Visibile"].Equals("1"))
-                                {
-                                    //TODO INSERT APPLICAZIONE RIEPILOGO pEntita, pAzione, False
-                                }
+                                    InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif, false);
                             }
                             else
                             {
                                 ScriviInformazione(siglaEntita, azioneInformazione);
 
                                 if (azioni[0]["Visibile"].Equals("1"))
-                                {
-                                    //TODO INSERT APPLICAZIONE RIEPILOGO pEntita, pAzione
-                                }
+                                    InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
                             }
                         }
                     }
@@ -895,9 +902,9 @@ namespace Iren.FrontOffice.Base
                     Tuple<int, int>[] riga = new Tuple<int, int>[0];
 
                     if (entitaAzioneInformazione["Selezione"].Equals(0))
-                        riga = nomiDefiniti[GetName(entita, entitaAzioneInformazione["SiglaInformazione"], suffissoData)];
+                        riga = nomiDefiniti[DefinedNames.GetName(entita, entitaAzioneInformazione["SiglaInformazione"], suffissoData)];
                     else
-                        riga = nomiDefiniti[GetName(entita, "SEL", entitaAzioneInformazione["Selezione"], suffissoData)];
+                        riga = nomiDefiniti[DefinedNames.GetName(entita, "SEL", entitaAzioneInformazione["Selezione"], suffissoData)];
 
                     Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                     rng.Value = valore;
@@ -919,11 +926,11 @@ namespace Iren.FrontOffice.Base
             {
                 string suffissoData;
                 if (azione["SiglaEntita"].Equals("UP_BUS") && azione["SiglaInformazione"].Equals("VOL_INVASO"))
-                    suffissoData = GetName("DATA0", "H24");
+                    suffissoData = DefinedNames.GetName("DATA0", "H24");
                 else 
-                    suffissoData = GetName(GetSuffissoData(DataBase.DataAttiva, azione["Data"]), GetSuffissoOra(azione["Data"]));
+                    suffissoData = DefinedNames.GetName(GetSuffissoData(DataBase.DataAttiva, azione["Data"]), GetSuffissoOra(azione["Data"]));
 
-                Tuple<int, int>[] celle = nomiDefiniti[GetName(azione["SiglaEntita"], azione["SiglaInformazione"], suffissoData)];
+                Tuple<int, int>[] celle = nomiDefiniti[DefinedNames.GetName(azione["SiglaEntita"], azione["SiglaInformazione"], suffissoData)];
                 if (celle != null)
                 {
                     Excel.Range rng = ws.Cells[celle[0].Item1, celle[0].Item2];
@@ -980,17 +987,17 @@ namespace Iren.FrontOffice.Base
                 entitaRiferimento.Add(siglaEntita, 1);
 
 
-            if (tipologiaCalcolo == 1 || tipologiaCalcolo == 5 && DefinedNames.IsDefined(nomeFoglio, GetName(siglaEntita, "UNIT_COMM")))
+            if (tipologiaCalcolo == 1 || tipologiaCalcolo == 5 && DefinedNames.IsDefined(nomeFoglio, DefinedNames.GetName(siglaEntita, "UNIT_COMM")))
             {
                 DataView entitaCommitment = _localDB.Tables[Tab.ENTITACOMMITMENT].DefaultView;
 
-                Tuple<int, int> primaCella = nomiDefiniti[GetName(siglaEntita, "UNIT_COMM", suffissoData, "H" + oraInizio)][0];
-                Tuple<int, int> ultimaCella = nomiDefiniti[GetName(siglaEntita, "UNIT_COMM", suffissoData, "H" + oraFine)][0];
-                object[,] values = ws.Range[ws.Cells[primaCella.Item1, primaCella.Item2], ws.Cells[ultimaCella.Item1, ultimaCella.Item2]].Value;
-
+                Tuple<int, int> primaCella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "UNIT_COMM", suffissoData, "H" + oraInizio)][0];
+                Tuple<int, int> ultimaCella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "UNIT_COMM", suffissoData, "H" + oraFine)][0];
+                object[,] tmpVal = ws.Range[ws.Cells[primaCella.Item1, primaCella.Item2], ws.Cells[ultimaCella.Item1, ultimaCella.Item2]].Value;
+                object[] values = tmpVal.Cast<object>().ToArray();
                 for (int i = oraInizio; i < oraFine; i++)
                 {
-                    entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaCommitment = '" + values[0, i - oraInizio] + "' AND AbilitaOfferta = '1'";
+                    entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaCommitment = '" + values[i - oraInizio] + "' AND AbilitaOfferta = '1'";
                     if (entitaCommitment.Count > 0)
                         oreDaCalcolare.Add(i);
                 }
@@ -1007,7 +1014,7 @@ namespace Iren.FrontOffice.Base
                 {
                     foreach (int ora in oreDaCalcolare)
                     {
-                        Tuple<int,int> cella = nomiDefiniti[GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
+                        Tuple<int,int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
                         ws.Range[cella.Item1, cella.Item2].Value = null;
                     }
                 }
@@ -1017,47 +1024,57 @@ namespace Iren.FrontOffice.Base
 
                 DataView calcoloInformazioni = _localDB.Tables[Tab.CALCOLOINFORMAZIONE].DefaultView;
 
-
                 foreach (DataRowView entitaCalcolo in entitaCalcoli)
                 {
                     calcoloInformazioni.RowFilter = "SiglaCalcolo = '" + entitaCalcolo["SiglaCalcolo"] + "'";
+                    DataView tmp = calcoloInformazioni.ToTable(true, "SiglaEntitaRif", "SiglaInformazione").DefaultView;
 
                     foreach (int ora in oreDaCalcolare)
                     {
-                        foreach (DataRowView calcoloInfo in calcoloInformazioni)
+                        //foreach (DataRowView calcoloInfo in tmp)
+                        //{
+                        //    if (!calcoloInfo["SiglaInformazione"].Equals("CHECKINFO"))
+                        //    {
+                        //        object siglaEntita2 = calcoloInfo["SiglaEntitaRif"] is DBNull ? siglaEntita : calcoloInfo["SiglaEntitaRif"];
+                        //        if (DefinedNames.IsDefined(nomeFoglio, GetName(siglaEntita2, calcoloInfo["SiglaInformazione"], suffissoData, "H" + ora)))
+                        //        {
+                        //            Tuple<int, int> cella = nomiDefiniti[GetName(siglaEntita2, calcoloInfo["SiglaInformazione"], suffissoData, "H" + ora)][0];
+                        //            ws.Cells[cella.Item1, cella.Item2].Value = null;
+                        //        }
+                        //    }
+                        //}
+
+                        List<DataRowView> calcoloRows = calcoloInformazioni.Cast<DataRowView>().ToList();
+                        int i = 0;
+
+                        while (i < calcoloRows.Count)
                         {
-                            if (!entitaCalcolo["SiglaInformazione"].Equals("CHECKINFO"))
-                            {
-                                object siglaEntita2 = entitaCalcolo["SiglaEntitaRif"] is DBNull ? siglaEntita : entitaCalcolo["SiglaEntitaRif"];
-                                Tuple<int, int> cella = nomiDefiniti[GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
-                                ws.Cells[cella.Item1, cella.Item2].Value = null;
-                            }
-                        }
-
-                        IEnumerator<DataRowView> calcoloRows = calcoloInformazioni.Cast<DataRowView>().GetEnumerator();
-
-
-                        while (calcoloRows.MoveNext())
-                        {
-                            DataRowView calcolo = calcoloRows.Current;
+                            DataRowView calcolo = calcoloRows[i];
 
                             if (calcolo["OraInizio"] != DBNull.Value)
                                 if (ora < oraInizio && ora > oraFine)
+                                {
+                                    i++;
                                     continue;
+                                }
+                                    
 
                             if (calcolo["OraFine"].Equals("0"))
                             {
                                 if (ora != GetOreGiorno(data))
                                     break;
+                                i++;
                                 continue;
                             }
 
                             int step;
+                            Stopwatch watch = Stopwatch.StartNew();
                             object risultato = GetRisultatoCalcolo(siglaEntita, data, ora, calcolo, entitaRiferimento, out step);
-
+                            watch.Stop();
+                            watch = Stopwatch.StartNew();
                             if (step == 0)
                             {
-                                Tuple<int, int>[] celle = nomiDefiniti[GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)];
+                                Tuple<int, int>[] celle = nomiDefiniti[DefinedNames.GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)];
                                 if (celle != null)
                                 {
                                     Excel.Range rng = ws.Cells[celle[0].Item1, celle[0].Item2];
@@ -1067,9 +1084,9 @@ namespace Iren.FrontOffice.Base
                                         rng.Interior.ColorIndex = calcolo["BackColor"];
                                     if (calcolo["ForeColor"] != DBNull.Value)
                                         rng.Font.ColorIndex = calcolo["ForeColor"];
-                                    
+
                                     rng.ClearComments();
-                                    
+
                                     if (calcolo["Commento"] != DBNull.Value)
                                         rng.AddComment(calcolo["Commento"]).Visible = false;
                                 }
@@ -1080,6 +1097,7 @@ namespace Iren.FrontOffice.Base
                                     //TODO Annotamodifica!!!!!!!!!!!!!!!!!
                                 }
                             }
+                            watch.Stop();
 
                             if (calcolo["FineCalcolo"].Equals("1") || step == -1)
                                 break;
@@ -1088,11 +1106,9 @@ namespace Iren.FrontOffice.Base
                                 step = (int)calcolo["GoStep"];
 
                             if (step != 0) 
-                            {
-                                calcoloRows.Reset();
-                                calcoloInformazioni.RowFilter = "Step < " + step;
-                                while (calcoloRows.MoveNext() && (int)calcoloRows.Current["Step"] < (int)calcoloInformazioni[calcoloInformazioni.Count - 1]["Step"]) ;
-                            }
+                                i = calcoloRows.FindIndex(row => row["Step"].Equals(step));
+                            else
+                                i++;
                         }
                     }
                 }
@@ -1113,12 +1129,12 @@ namespace Iren.FrontOffice.Base
             object siglaEntitaRif1 = calcolo["Riferimento1"] is DBNull ? (calcolo["SiglaEntita1"] is DBNull ? siglaEntita : calcolo["SiglaEntita1"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == calcolo["Riferimento1"]);
             object siglaEntitaRif2 = calcolo["Riferimento2"] is DBNull ? (calcolo["SiglaEntita2"] is DBNull ? siglaEntita : calcolo["SiglaEntita2"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == calcolo["Riferimento2"]);
 
-            object valore1 = null;
-            object valore2 = null;
+            object valore1 = 0d;
+            object valore2 = 0d;
 
             if (calcolo["SiglaInformazione1"] != DBNull.Value)
             {
-                Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)];
+                Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)];
                 Tuple<int,int> cella = null;
                 if(riga != null)
                     cella = riga[0];
@@ -1128,25 +1144,25 @@ namespace Iren.FrontOffice.Base
                     case "UNIT_COMM":
                         DataView entitaCommitment = _localDB.Tables[Tab.ENTITACOMMITMENT].DefaultView;
                         entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Cells[cella.Item1, cella.Item2].Value + "'";
-                        valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
+                        valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0]["IdEntitaCommitment"] : null;
                         
                         break;
                     case "DISPONIBILITA":
                         if (ws.Cells[cella.Item1, cella.Item2].Value == "OFF")
-                            valore1 = 0;
+                            valore1 = 0d;
                         else
-                            valore1 = 1;
+                            valore1 = 1d;
 
                         break;
                     case "CHECKINFO":
                         if (ws.Cells[cella.Item1, cella.Item2].Value == "OK")
-                            valore1 = 1;
+                            valore1 = 1d;
                         else
-                            valore1 = 2;
+                            valore1 = 2d;
                         break;
                     default:
                         if (cella != null)
-                            valore1 = ws.Cells[cella.Item1, cella.Item2].Value;
+                            valore1 = ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
                         break;
                 }
             }
@@ -1176,12 +1192,12 @@ namespace Iren.FrontOffice.Base
             }
             else if(calcolo["Valore"] != DBNull.Value)
             {
-                valore1 = calcolo["Valore"];
+                valore1 = Convert.ToDouble(calcolo["Valore"]);
             }
 
             if (calcolo["SiglaInformazione2"] != DBNull.Value)
             {
-                Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, "H" + ora1)];
+                Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, "H" + ora1)];
                 Tuple<int, int> cella = null;
                 if (riga != null)
                     cella = riga[0];
@@ -1196,30 +1212,38 @@ namespace Iren.FrontOffice.Base
                         break;
                     case "DISPONIBILITA":
                         if (ws.Cells[cella.Item1, cella.Item2].Value == "OFF")
-                            valore2 = 0;
+                            valore2 = 0d;
                         else
-                            valore2 = 1;
+                            valore2 = 1d;
 
                         break;
                     case "CHECKINFO":
                         if (ws.Cells[cella.Item1, cella.Item2].Value == "OK")
-                            valore2 = 1;
+                            valore2 = 1d;
                         else
-                            valore2 = 2;
+                            valore2 = 2d;
                         break;
                     default:
                         if (cella != null)
-                            valore2 = ws.Cells[cella.Item1, cella.Item2].Value;
+                            valore2 = ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
+                        else
+                            valore2 = 0d;
                         break;
                 }
             }
 
             double retVal = 0d;
 
+            valore1 = valore1 ?? 0d;
+            valore2 = valore2 ?? 0d;
+
             if (calcolo["Funzione"] is DBNull && calcolo["Operazione"] is DBNull && calcolo["Condizione"] is DBNull)
             {
                 step = 0;
-                return valore1 ?? valore2;
+                if (Convert.ToDouble(valore1) == 0d)
+                    return valore2;
+                
+                return valore1;
             }
             else if (calcolo["Funzione"] != DBNull.Value)
             {
@@ -1228,27 +1252,27 @@ namespace Iren.FrontOffice.Base
                 {
                     if(func.Contains("abs")) 
                     {
-                        retVal = Math.Abs((double)valore1);
+                        retVal = Math.Abs(Convert.ToDouble(valore1));
                     }
                     else if (func.Contains("floor"))
                     {
-                        retVal = Math.Floor((double)valore1);
+                        retVal = Math.Floor(Convert.ToDouble(valore1));
                     }
                     else if (func.Contains("round"))
                     {
-                        int decimals = int.Parse(Regex.Match(func, @"\d*").Value);
-                        retVal = Math.Round((double)valore1, decimals);
+                        int decimals = int.Parse(func.Replace("round",""));
+                        retVal = Math.Round(Convert.ToDouble(valore1), decimals);
                     }
                     else if (func.Contains("power"))
                     {
                         int exp = int.Parse(Regex.Match(func, @"\d*").Value);
-                        retVal = Math.Pow((double)valore1, exp);
+                        retVal = Math.Pow(Convert.ToDouble(valore1), exp);
                     }
                     else if (func.Contains("sum"))
                     {
                         foreach (var kvp in entitaRiferimento)
                         {
-                            Tuple<int,int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            Tuple<int,int> cella = nomiDefiniti[DefinedNames.GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
                             retVal += ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
                         }
                     }
@@ -1256,7 +1280,7 @@ namespace Iren.FrontOffice.Base
                     {
                         foreach (var kvp in entitaRiferimento)
                         {
-                            Tuple<int, int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
                             retVal += ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
                         }
                         retVal /= entitaRiferimento.Count;
@@ -1264,22 +1288,24 @@ namespace Iren.FrontOffice.Base
                     else if (func.Contains("max_h"))
                     {
                         retVal = double.MinValue;
-                        Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
-                        object[,] values = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
+                        Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
+                        object[,] tmpVal = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
+                        object[] values = tmpVal.Cast<object>().ToArray();
                         for (int i = 0; i < GetOreGiorno(data); i++)
                         {
-                            double val = (double)(values[0, i] ?? 0);
+                            double val = (double)(values[i] ?? 0);
                             retVal = Math.Max(val, retVal);
                         }
                     }
                     else if (func.Contains("min_h"))
                     {
                         retVal = double.MaxValue;
-                        Tuple<int, int>[] riga = nomiDefiniti[GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
-                        object[,] values = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
+                        Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
+                        object[,] tmpVal = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
+                        object[] values = tmpVal.Cast<object>().ToArray();
                         for (int i = 0; i < GetOreGiorno(data); i++)
                         {
-                            double val = (double)(values[0, i] ?? 0);
+                            double val = (double)(values[i] ?? 0);
                             retVal = Math.Min(val, retVal);
                         }
                     }
@@ -1288,7 +1314,7 @@ namespace Iren.FrontOffice.Base
                         retVal = double.MinValue;
                         foreach (var kvp in entitaRiferimento)
                         {
-                            Tuple<int, int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
                             retVal = Math.Max(ws.Cells[cella.Item1, cella.Item2].Value ?? 0, retVal);
                         }
                     }
@@ -1297,7 +1323,7 @@ namespace Iren.FrontOffice.Base
                         retVal = double.MaxValue;
                         foreach (var kvp in entitaRiferimento)
                         {
-                            Tuple<int, int> cella = nomiDefiniti[GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
                             retVal = Math.Min(ws.Cells[cella.Item1, cella.Item2].Value ?? 0, retVal);
                         }
                     }
@@ -1307,11 +1333,11 @@ namespace Iren.FrontOffice.Base
                 {
                     if (func.Contains("max"))
                     {
-                        retVal = Math.Max((double)valore1, (double)valore2);
+                        retVal = Math.Max(Convert.ToDouble(valore1), Convert.ToDouble(valore2));
                     }
                     else if (func.Contains("min"))
                     {
-                        retVal = Math.Min((double)valore1, (double)valore2);
+                        retVal = Math.Min(Convert.ToDouble(valore1), Convert.ToDouble(valore2));
                     }
                 }
             }
@@ -1320,16 +1346,16 @@ namespace Iren.FrontOffice.Base
                 switch (calcolo["Operazione"].ToString())
                 {
                     case "+":
-                        retVal = (double)valore1 + (double)valore2;
+                        retVal = Convert.ToDouble(valore1) + Convert.ToDouble(valore2);
                         break;
                     case "-":
-                        retVal = (double)valore1 - (double)valore2;
+                        retVal = Convert.ToDouble(valore1) - Convert.ToDouble(valore2);
                         break;
                     case "*":
-                        retVal = (double)valore1 * (double)valore2;
+                        retVal = Convert.ToDouble(valore1) * Convert.ToDouble(valore2);
                         break;
                     case "/":
-                        retVal = (double)valore1 / (double)valore2;
+                        retVal = Convert.ToDouble(valore1) / Convert.ToDouble(valore2);
                         break;
                 }
             }
@@ -1339,22 +1365,22 @@ namespace Iren.FrontOffice.Base
                 switch (calcolo["Condizione"].ToString())
                 {
                     case ">":
-                        res = (double)valore1 > (double)valore2;
+                        res = Convert.ToDouble(valore1) > Convert.ToDouble(valore2);
                         break;
                     case "<":
-                        res = (double)valore1 < (double)valore2;
+                        res = Convert.ToDouble(valore1) < Convert.ToDouble(valore2);
                         break;
                     case ">=":
-                        res = (double)valore1 >= (double)valore2;
+                        res = Convert.ToDouble(valore1) >= Convert.ToDouble(valore2);
                         break;
                     case "<=":
-                        res = (double)valore1 <= (double)valore2;
+                        res = Convert.ToDouble(valore1) <= Convert.ToDouble(valore2);
                         break;
                     case "=":
-                        res = (double)valore1 == (double)valore2;
+                        res = Convert.ToDouble(valore1) == Convert.ToDouble(valore2);
                         break;
                     case "<>":
-                        res = (double)valore1 != (double)valore2;
+                        res = Convert.ToDouble(valore1) != Convert.ToDouble(valore2);
                         break;
                 }
                 if (res)

@@ -34,7 +34,7 @@ namespace Iren.FrontOffice.Base
 
                 DataView entitaProprieta = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'IMP_COD_IF'";
-                object codiceIF = categoriaEntita[0]["Valore"];
+                object codiceIF = entitaProprieta[0]["Valore"];
 
                 DataView entitaAzioneInformazione = LocalDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
@@ -65,28 +65,27 @@ namespace Iren.FrontOffice.Base
                         {
                             object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
 
-                            Tuple<int, int>[] riga = nomiDefiniti[GetName(entita, siglaAzione, suffissoData)];
+                            Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(entita, entAzInfo["SiglaInformazione"], suffissoData)];
                             Excel.Worksheet ws = CommonFunctions.WB.Sheets[nomeFoglio];
                             Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
-                            object[,] values = rng.Value;
-                            for (int i = 0, length = riga.Length; i < length; i++)
-                            {
-                                if (values[0, i] == null)
-                                    values[0, i] = 0;
+                            object[,] tmpVal = rng.Value;
+                            object[] values = tmpVal.Cast<object>().ToArray();
 
+                            for (int i = 0, length = values.Length; i < length; i++)
+                            {
                                 DataRow row = dt.NewRow();
 
                                 row["Campo1"] = nomeFoglio == "Iren Termo" ? "AHRP": "AIHRP";
                                 row["Campo2"] = "Prod";
                                 row["UP"] = codiceIF;
-                                if (DefinedNames.IsDefined(nomeFoglio, GetName(entita, "UNIT_COMM")))
+                                if (DefinedNames.IsDefined(nomeFoglio, DefinedNames.GetName(entita, "UNIT_COMM")))
                                     row["Campo3"] = "17";
                                 else
                                     row["Campo3"] = "na";
                                 row["Data"] = dataRif.Value.ToString("yyyy/MM/dd");
                                 row["Ora"] = i + 1;
                                 row["Informazione"] = entAzInfo["SiglaInformazione"].Equals("PMAX") ? "Pmax" : "Pmin";
-                                row["Valore"] = values[0, i];
+                                row["Valore"] = values[i] ?? 0;
 
                                 dt.Rows.Add(row);
                             }
@@ -107,8 +106,8 @@ namespace Iren.FrontOffice.Base
 
                         break;
                 }
-
-                //TODO insert applicazione riepilogo
+                CommonFunctions.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                CommonFunctions.DB.CloseConnection();
                 return true;
             }
             catch (Exception e)
@@ -117,6 +116,7 @@ namespace Iren.FrontOffice.Base
                 //InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram EsportaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                CommonFunctions.DB.CloseConnection();
                 return false;
             }
         }
