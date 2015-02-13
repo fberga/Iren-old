@@ -6,12 +6,14 @@ using Microsoft.Office.Tools.Ribbon;
 using System.Configuration;
 using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
+using Office = Microsoft.Office.Core;
 using System.Data;
 using Iren.FrontOffice.Core;
 using Iren.FrontOffice.Forms;
 using Iren.FrontOffice.Base;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using ToolsExcel.Properties;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -258,13 +260,23 @@ namespace Iren.FrontOffice.Tools
         }
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            
             Simboli.ModificaDati = btnModifica.Checked;
 
             Sheet.AbilitaModifica(btnModifica.Checked);
-            if (btnModifica.Checked)
+            if (btnModifica.Checked) 
+            {
                 btnModifica.Label = "Modifica SI";
+                btnModifica.Image = Resources.edit_validated_icon;
+            }
             else
+            {
                 btnModifica.Label = "Modifica NO";
+                btnModifica.Image = Resources.edit_not_validated_icon;
+            }
+
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
 
         #endregion
@@ -335,6 +347,181 @@ namespace Iren.FrontOffice.Tools
         }
 
         #endregion
+        static int kkk = 1;
+        private void button1_Click(object sender, RibbonControlEventArgs e)
+        {
+            if (kkk == 43)
+                kkk = 1;
+
+            if (kkk == 1)
+                //Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset1;
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset1;            
+            else if (kkk == 2)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset2;
+            
+
+            else if (kkk == 3)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset3;
+            
+            else if (kkk == 4)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset4;
+           
+            else if (kkk == 5)
+                 Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset5;
+            
+            else if (kkk == 6)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset6;
+            
+            else if (kkk == 7)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset7;
+            
+            else if (kkk == 8)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset8;
+            
+            else if (kkk == 9)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset9;
+            
+            else if (kkk == 10)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset10;
+            
+            else if (kkk == 11)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset11;
+            
+            else if (kkk == 12)
+               Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset12;
+           
+            else if (kkk == 13)
+                 Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset13;
+            
+            else if (kkk == 14)
+               Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset14;
+            
+            else if (kkk == 15)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset15;
+           
+            else if (kkk == 16)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset16;
+            else if (kkk == 17)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset17;
+            else if (kkk == 18)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset18;
+            else if (kkk == 19)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset19;
+            else if (kkk == 20)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset20;
+            else if (kkk == 21)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset21;
+            else if (kkk == 22)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset22;
+            else if (kkk == 23)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset23;
+            else if (kkk == 24)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset24;
+            else if (kkk == 25)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset25;
+            else if (kkk == 26)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset26;
+            else if (kkk == 27)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset27;
+            else if (kkk == 28)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset28;
+            else if (kkk == 29)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset29;
+            else if (kkk == 30)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset30;
+            else if (kkk == 31)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset31;
+            else if (kkk == 32)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset32;
+            else if (kkk == 33)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset33;
+            else if (kkk == 34)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset34;
+            else if (kkk == 35)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset35;
+            else if (kkk == 36)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset36;
+            else if (kkk == 37)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset37;
+            else if (kkk == 38)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset38;
+            else if (kkk == 39)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset39;
+            else if (kkk == 40)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset40;
+            else if (kkk == 41)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset41;
+            else if (kkk == 42)
+                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset42;
+
+            kkk++;
+        }
+
+        private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+
+            if(DefinedNames.IsDefined(CommonFunctions.WB.Application.ActiveSheet.Name, CommonFunctions.WB.Application.ActiveCell.Row, CommonFunctions.WB.Application.ActiveCell.Column)) 
+            {
+                DefinedNames nomiDefiniti = new DefinedNames(CommonFunctions.WB.Application.ActiveSheet.Name);
+
+                string siglaEntita = nomiDefiniti[CommonFunctions.WB.Application.ActiveCell.Row, CommonFunctions.WB.Application.ActiveCell.Column][0].Split(char.Parse(Simboli.UNION))[0];
+                
+                DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
+
+                if (entitaInformazioni.Count == 0)
+                {
+                    if (System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        frmSELUP selUP = new frmSELUP();
+
+                        selUP.ShowDialog();
+
+                        if (selUP._isDeleted)
+                        {
+                            selUP.Dispose();
+                            return;
+                        }
+
+                        if (selUP._hasSelection)
+                        {
+                            CommonFunctions.EseguiOttimizzazione(selUP._siglaEntita);
+                            selUP.Dispose();
+                        }
+                    }
+                }
+                else
+                {
+                    CommonFunctions.EseguiOttimizzazione(siglaEntita);
+                }
+            }
+            else
+            {
+                if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                {
+                    frmSELUP selUP = new frmSELUP();
+
+                    selUP.ShowDialog();
+
+                    if (selUP._isDeleted)
+                    {
+                        selUP.Dispose();
+                        return;
+                    }
+
+                    if (selUP._hasSelection)
+                    {
+                        CommonFunctions.EseguiOttimizzazione(selUP._siglaEntita);
+                        selUP.Dispose();
+                    }
+                }
+            }
+
+            Sheet.Proteggi(true);
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
 
     }
 }

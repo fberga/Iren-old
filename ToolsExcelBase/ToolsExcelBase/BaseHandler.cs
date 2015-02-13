@@ -52,5 +52,26 @@ namespace Iren.FrontOffice.Base
 
             }
         }
+
+        public static void ChangeModificaDati(bool modifica)
+        {
+            Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+            ws.Unprotect(Simboli.pwd);
+            ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: " + (modifica ? "SI" : "NO");
+            if (modifica) 
+                ws.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset13;
+            else
+            {
+                ws.Shapes.Item("lbModifica").BackgroundStyle = Office.MsoBackgroundStyleIndex.msoBackgroundStylePreset1;
+                ws.Shapes.Item("lbModifica").TextFrame.Characters().Font.ColorIndex = 1;
+                ws.Shapes.Item("lbModifica").Line.Weight = 0.75f;
+                ws.Shapes.Item("lbModifica").Line.ForeColor.ObjectThemeColor = Office.MsoThemeColorIndex.msoThemeColorBackground1;
+                ws.Shapes.Item("lbModifica").Line.ForeColor.TintAndShade = 0;
+                ws.Shapes.Item("lbModifica").Line.ForeColor.Brightness = -0.25f;
+                ws.Shapes.Item("lbModifica").Shadow.Visible = Office.MsoTriState.msoFalse;
+            }
+
+            ws.Protect(Simboli.pwd);
+        }
     }
 }

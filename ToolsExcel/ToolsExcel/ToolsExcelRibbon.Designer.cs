@@ -47,11 +47,14 @@
             this.group4 = this.Factory.CreateRibbonGroup();
             this.btnAzioni = this.Factory.CreateRibbonButton();
             this.groupModifica = this.Factory.CreateRibbonGroup();
+            this.button1 = this.Factory.CreateRibbonButton();
             this.btnModifica = this.Factory.CreateRibbonToggleButton();
             this.groupAmbienti = this.Factory.CreateRibbonGroup();
             this.Produzione = this.Factory.CreateRibbonToggleButton();
             this.Test = this.Factory.CreateRibbonToggleButton();
             this.Dev = this.Factory.CreateRibbonToggleButton();
+            this.groupOttimizza = this.Factory.CreateRibbonGroup();
+            this.btnOttimizza = this.Factory.CreateRibbonButton();
             this.TabHome = this.Factory.CreateRibbonTab();
             this.TabInsert = this.Factory.CreateRibbonTab();
             this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
@@ -71,6 +74,7 @@
             this.group4.SuspendLayout();
             this.groupModifica.SuspendLayout();
             this.groupAmbienti.SuspendLayout();
+            this.groupOttimizza.SuspendLayout();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -92,6 +96,7 @@
             this.FrontOffice.Groups.Add(this.group4);
             this.FrontOffice.Groups.Add(this.groupModifica);
             this.FrontOffice.Groups.Add(this.groupAmbienti);
+            this.FrontOffice.Groups.Add(this.groupOttimizza);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
@@ -175,6 +180,7 @@
             // btnAzioni
             // 
             this.btnAzioni.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnAzioni.Image = global::ToolsExcel.Properties.Resources.Actions_icon;
             this.btnAzioni.Label = "Start";
             this.btnAzioni.Name = "btnAzioni";
             this.btnAzioni.ShowImage = true;
@@ -182,13 +188,22 @@
             // 
             // groupModifica
             // 
+            this.groupModifica.Items.Add(this.button1);
             this.groupModifica.Items.Add(this.btnModifica);
             this.groupModifica.Label = "Modifica";
             this.groupModifica.Name = "groupModifica";
             // 
+            // button1
+            // 
+            this.button1.Label = "button1";
+            this.button1.Name = "button1";
+            this.button1.Visible = false;
+            this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button1_Click);
+            // 
             // btnModifica
             // 
             this.btnModifica.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnModifica.Image = global::ToolsExcel.Properties.Resources.edit_not_validated_icon;
             this.btnModifica.Label = "Modifica NO";
             this.btnModifica.Name = "btnModifica";
             this.btnModifica.ShowImage = true;
@@ -205,6 +220,7 @@
             // Produzione
             // 
             this.Produzione.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.Produzione.Image = global::ToolsExcel.Properties.Resources.Letter_P_icon;
             this.Produzione.Label = "Prod";
             this.Produzione.Name = "Produzione";
             this.Produzione.ShowImage = true;
@@ -214,6 +230,7 @@
             // Test
             // 
             this.Test.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.Test.Image = global::ToolsExcel.Properties.Resources.Letter_T_icon;
             this.Test.Label = "Test";
             this.Test.Name = "Test";
             this.Test.ShowImage = true;
@@ -223,11 +240,27 @@
             // Dev
             // 
             this.Dev.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.Dev.Image = global::ToolsExcel.Properties.Resources.Letter_D_icon;
             this.Dev.Label = "Dev";
             this.Dev.Name = "Dev";
             this.Dev.ShowImage = true;
             this.Dev.Visible = false;
             this.Dev.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSelezionaAmbiente_Click);
+            // 
+            // groupOttimizza
+            // 
+            this.groupOttimizza.Items.Add(this.btnOttimizza);
+            this.groupOttimizza.Label = "Ottimizzatore";
+            this.groupOttimizza.Name = "groupOttimizza";
+            // 
+            // btnOttimizza
+            // 
+            this.btnOttimizza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnOttimizza.Image = global::ToolsExcel.Properties.Resources.Calculator_icon;
+            this.btnOttimizza.Label = "Esegui Ottimizzazione";
+            this.btnOttimizza.Name = "btnOttimizza";
+            this.btnOttimizza.ShowImage = true;
+            this.btnOttimizza.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnOttimizza_Click);
             // 
             // TabHome
             // 
@@ -319,6 +352,7 @@
             this.RibbonType = "Microsoft.Excel.Workbook";
             this.StartFromScratch = true;
             this.Tabs.Add(this.FrontOffice);
+            this.Tabs.Add(this.TabAddIns);
             this.Tabs.Add(this.TabHome);
             this.Tabs.Add(this.TabInsert);
             this.Tabs.Add(this.TabPageLayoutExcel);
@@ -327,7 +361,6 @@
             this.Tabs.Add(this.TabReview);
             this.Tabs.Add(this.TabView);
             this.Tabs.Add(this.TabDeveloper);
-            this.Tabs.Add(this.TabAddIns);
             this.Tabs.Add(this.TabPrintPreview);
             this.Tabs.Add(this.TabBackgroundRemoval);
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.ToolsExcelRibbon_Load);
@@ -347,6 +380,8 @@
             this.groupModifica.PerformLayout();
             this.groupAmbienti.ResumeLayout(false);
             this.groupAmbienti.PerformLayout();
+            this.groupOttimizza.ResumeLayout(false);
+            this.groupOttimizza.PerformLayout();
             this.TabHome.ResumeLayout(false);
             this.TabHome.PerformLayout();
             this.TabInsert.ResumeLayout(false);
@@ -403,6 +438,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton Produzione;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton Test;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton Dev;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupOttimizza;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnOttimizza;
     }
 
     partial class ThisRibbonCollection

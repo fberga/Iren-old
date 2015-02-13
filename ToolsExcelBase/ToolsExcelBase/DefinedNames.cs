@@ -96,11 +96,14 @@ namespace Iren.FrontOffice.Base
 
             return o.ToArray();
         }
-        public Tuple<int, int>[] Get(string name)
+        public Tuple<int, int>[] Get(string name, bool excludeDATA0H24 = false)
         {
             name = PrepareName(name);
 
-            _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
+            if (!excludeDATA0H24)
+                _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
+            else
+                _definedNamesView.RowFilter = "Nome LIKE '" + name + "%' AND Nome NOT LIKE '%DATA0.H24%'";
 
             if (_definedNamesView.Count == 0)
                 return null;
@@ -184,6 +187,14 @@ namespace Iren.FrontOffice.Base
             cellName = PrepareName(cellName);
             DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
             definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
+
+            return definedNamesView.Count > 0;
+        }
+
+        public static bool IsDefined(string sheetName, int row, int column)
+        {
+            DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
+            definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND R1 = " + row + " AND C1 = " + column;
 
             return definedNamesView.Count > 0;
         }

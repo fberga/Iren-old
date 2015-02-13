@@ -62,6 +62,12 @@
     <Compile Include="Calendar.Designer.cs">
       <DependentUpon>Calendar.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmSELUP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmSELUP.Designer.cs">
+      <DependentUpon>frmSELUP.cs</DependentUpon>
+    </Compile>
     <Compile Include="LoaderScreen.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -87,6 +93,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Calendar.resx">
       <DependentUpon>Calendar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSELUP.resx">
+      <DependentUpon>frmSELUP.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LoaderScreen.resx">
       <DependentUpon>LoaderScreen.cs</DependentUpon>

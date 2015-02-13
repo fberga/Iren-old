@@ -63,6 +63,26 @@ namespace ToolsExcel.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Actions_icon {
+            get {
+                object obj = ResourceManager.GetObject("Actions_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Calculator_icon {
+            get {
+                object obj = ResourceManager.GetObject("Calculator_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Calendar_icon {
             get {
                 object obj = ResourceManager.GetObject("Calendar_icon", resourceCulture);
@@ -83,9 +103,59 @@ namespace ToolsExcel.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap edit_not_validated_icon {
+            get {
+                object obj = ResourceManager.GetObject("edit_not_validated_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap edit_validated_icon {
+            get {
+                object obj = ResourceManager.GetObject("edit_validated_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Generate_tables_icon {
             get {
                 object obj = ResourceManager.GetObject("Generate_tables_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Letter_D_icon {
+            get {
+                object obj = ResourceManager.GetObject("Letter_D_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Letter_P_icon {
+            get {
+                object obj = ResourceManager.GetObject("Letter_P_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Letter_T_icon {
+            get {
+                object obj = ResourceManager.GetObject("Letter_T_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

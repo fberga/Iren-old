@@ -73,12 +73,20 @@ namespace Iren.FrontOffice.Tools
             }
             _logObj.AutoSetDataBoundColumnHeaders = true;
             _logObj.DataSource = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
-            _logObj.Range.EntireColumn.AutoFit();
-            _logObj.TableStyle = "TableStyleLight16";
+            try
+            {
+                //TODO controllare perché alla riapertura va in errore tutto............
+                _logObj.Range.EntireColumn.AutoFit();
+                _logObj.TableStyle = "TableStyleLight16";
 
-            Excel.Range rng = Columns[2];
-            rng.NumberFormat = "dd/MM/yyyy HH:mm:ss";
-            rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                Excel.Range rng = Columns[2];
+                rng.NumberFormat = "dd/MM/yyyy HH:mm:ss";
+                rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         private void Log_Shutdown(object sender, EventArgs e)

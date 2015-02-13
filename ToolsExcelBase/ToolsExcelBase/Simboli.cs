@@ -25,7 +25,7 @@ namespace Iren.FrontOffice.Base
             set 
             {
                 modificaDati = value;
-                CommonFunctions.ChangeModificaDati(modificaDati);
+                BaseHandler.ChangeModificaDati(modificaDati);
             }
         }
 

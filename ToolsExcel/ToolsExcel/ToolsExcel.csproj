@@ -233,9 +233,16 @@
     <None Include="Main.Designer.xml">
       <DependentUpon>Main.cs</DependentUpon>
     </None>
+    <Content Include="res\Actions-icon.png" />
+    <Content Include="res\Calculator-icon.png" />
     <Content Include="res\Calendar-icon.png" />
     <Content Include="res\checklist-icon.png" />
+    <Content Include="res\edit-not-validated-icon.png" />
+    <Content Include="res\edit-validated-icon.png" />
     <Content Include="res\Generate-tables-icon.png" />
+    <Content Include="res\Letter-D-icon.png" />
+    <Content Include="res\Letter-P-icon.png" />
+    <Content Include="res\Letter-T-icon.png" />
     <Content Include="res\Save-icon.png" />
     <Content Include="res\Structure-Refresh-icon.png" />
   </ItemGroup>
