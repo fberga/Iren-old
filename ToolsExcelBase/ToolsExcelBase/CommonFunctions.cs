@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Data;
-using Iren.FrontOffice.Core;
-using Office = Microsoft.Office.Core;
+﻿using Iren.FrontOffice.Core;
 using Microsoft.Office.Tools.Excel;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Deployment.Application;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Globalization;
+using System.Data;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Excel = Microsoft.Office.Interop.Excel;
+using Office = Microsoft.Office.Core;
 
 namespace Iren.FrontOffice.Base
 {
@@ -940,19 +937,6 @@ namespace Iren.FrontOffice.Base
             }
         }
 
-        public static string R1C1toA1(int riga, int colonna)
-        {
-            string output = "";
-            while (colonna > 0)
-            {
-                int lettera = colonna % 26;
-                output = char.ConvertFromUtf32(lettera + 64) + output;
-                colonna = colonna / 26;
-            }
-            output += riga;
-            return output;
-        }
-
         private static void ElaborazioneInformazione(object siglaEntita, DateTime data, int tipologiaCalcolo, int oraInizio = 0, int oraFine = 0)
         {
             Dictionary<object, object> entitaRiferimento = new Dictionary<object, object>();
@@ -1396,97 +1380,6 @@ namespace Iren.FrontOffice.Base
                 return tipologiaCheck[0]["Messaggio"];
 
             return null;
-        }
-
-        public static void EseguiOttimizzazione(object siglaEntita)
-        {
-            CommonFunctions.WB.Application.Run("wbSetGeneralOptions", Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, 1);
-
-            DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
-
-            DataView categoria = _localDB.Tables[Tab.CATEGORIA].DefaultView;
-            DataView categoriaEntita = _localDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-
-            entitaInformazioni.RowFilter = "WB_Adjust <> '0'";
-            List<string> strRange = new List<string>();
-            strRange.Add("");
-            foreach (DataRowView info in entitaInformazioni)
-            {
-                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string tmp = strRange.Last() + "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",";
-                if (tmp.Length > 250)
-                    strRange.Add("'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",");
-                else
-                    strRange[strRange.Count - 1] = tmp;
-            }
-            foreach(string rng in strRange)
-                CommonFunctions.WB.Application.Run("wbAdjust", rng.Substring(0, rng.Length - 1), "Reset");
-
-
-            entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO'";
-            strRange = new List<string>();
-            strRange.Add("");
-            foreach (DataRowView info in entitaInformazioni)
-            {
-                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                
-                string tmp = strRange.Last() + "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",";
-                if (tmp.Length > 250)
-                    strRange.Add("'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",");
-                else
-                    strRange[strRange.Count - 1] = tmp;
-            }
-            foreach (string rng in strRange)
-                CommonFunctions.WB.Application.Run("WBOMIT", rng.Substring(0, rng.Length - 1));
-
-
-            entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB_Adjust <> '0'";
-            List<string> adjRange = new List<string>();
-            adjRange.Add("");
-            List<string> freeRange = new List<string>();
-            freeRange.Add("");
-            foreach (DataRowView info in entitaInformazioni)
-            {
-                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-
-                string tmp = strRange.Last() + "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",";
-                if (tmp.Length > 250)
-                    adjRange.Add("'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",");
-                else
-                    adjRange[adjRange.Count - 1] = tmp;
-
-                if (info["WB_Adjust"].Equals("2"))
-                {
-                    tmp = freeRange.Last() + "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",";
-                    if (tmp.Length > 250)
-                        freeRange.Add("'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ",");
-                    else
-                        freeRange[freeRange.Count - 1] = tmp;
-                }
-            }
-            foreach (string rng in adjRange)
-                CommonFunctions.WB.Application.Run("wbAdjust", rng.Substring(0, rng.Length - 1));
-
-            foreach (string rng in freeRange)
-                CommonFunctions.WB.Application.Run("WBFREE", rng.Substring(0, rng.Length - 1));
-
-
-            Excel.Style style = CommonFunctions.WB.Styles["Adjustable"];
-            style.Font.Bold = true;
-            style.Interior.ColorIndex = 44;
         }
         
         #endregion

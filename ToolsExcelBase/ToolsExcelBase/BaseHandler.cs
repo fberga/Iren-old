@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
-using Iren.FrontOffice.Core;
-using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 

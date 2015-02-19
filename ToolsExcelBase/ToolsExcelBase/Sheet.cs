@@ -505,16 +505,15 @@ namespace Iren.FrontOffice.Base
         {
             //carico tutti i dati reperibili durante la creazione del foglio
             int intervalloOre = GetOreIntervallo(_dataInizio, _dataFine);
-            int colonnaInizio = !_struttura.visData0H24 ? _colonnaInizio : _colonnaInizio + 1;
 
             foreach (DataRowView info in informazioni)
             {
                 object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                int rigaAttiva = _nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])][0].Item1;
-                Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
+                Tuple<int, int>[] riga = _nomiDefiniti.Get(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
 
                 if (info["ValoreDefault"] != DBNull.Value)
                 {
+                    Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                     rng.Value = info["ValoreDefault"];
                 }
                 else if (info["FormulaInCella"].Equals("1"))
@@ -523,11 +522,21 @@ namespace Iren.FrontOffice.Base
                     int deltaPos;
                     string formula = "=" + PreparaFormula(info, "DATA0", "DATA1", 24, out deltaNeg, out deltaPos);
 
-                    deltaNeg -= (deltaNeg > 0 && info["Data0H24"].Equals("1") ? 1 : 0);
-                    
-                    rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio + deltaNeg], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - deltaPos - 1]];
+                    if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
+                    {
+                        Tuple<int, int> cella = riga[0];
 
-                    rng.Formula = formula;                    
+                        Excel.Range cellRng = _ws.Cells[cella.Item1, cella.Item2];
+                        cellRng.Formula = "=SUM(" + Sheet.R1C1toA1(riga[1].Item1, riga[1].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ")";
+
+                        Excel.Range rng = _ws.Range[_ws.Cells[riga[1].Item1, riga[1].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
+                        rng.Formula = formula;
+                    }
+                    else
+                    {
+                        Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2 + deltaNeg], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2 - deltaPos]];
+                        rng.Formula = formula;
+                    }
                 }
             }
         }
@@ -958,12 +967,22 @@ namespace Iren.FrontOffice.Base
         {
             foreach (DataRowView dato in datiApplicazione)
             {
-                Tuple<int, int>[] riga = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], GetSuffissoData(_dataInizio, DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture)))];
+                DateTime dataDato = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                //sono nel caso DATA0H24
+                if(dataDato < _dataInizio) 
+                {
+                    Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], "DATA0", "H24")][0];
+                    _ws.Cells[cella.Item1, cella.Item2].Value = dato["H24"];
+                } 
+                else 
+                {
+                    Tuple<int, int>[] riga = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], GetSuffissoData(_dataInizio, dataDato))];
 
-                List<object> o = new List<object>(dato.Row.ItemArray);
-                o.RemoveRange(0, 3);
+                    List<object> o = new List<object>(dato.Row.ItemArray);
+                    o.RemoveRange(0, 3);
 
-                _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = o.ToArray();
+                    _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = o.ToArray();
+                }
             }
         }
         private void CaricaCommentiEntita(DataView insertManuali)
@@ -1088,6 +1107,19 @@ namespace Iren.FrontOffice.Base
                 }
                 ws.Protect(Simboli.pwd);
             }
+        }
+
+        public static string R1C1toA1(int riga, int colonna)
+        {
+            string output = "";
+            while (colonna > 0)
+            {
+                int lettera = (colonna % 26 == 0 ? 26 : colonna % 26);
+                output = char.ConvertFromUtf32(lettera + 64) + output;
+                colonna = colonna / 26;
+            }
+            output += riga;
+            return output;
         }
 
         #endregion

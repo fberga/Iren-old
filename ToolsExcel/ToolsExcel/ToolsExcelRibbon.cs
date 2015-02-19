@@ -487,14 +487,14 @@ namespace Iren.FrontOffice.Tools
 
                         if (selUP._hasSelection)
                         {
-                            CommonFunctions.EseguiOttimizzazione(selUP._siglaEntita);
+                            Optimizer.EseguiOttimizzazione(selUP._siglaEntita);
                             selUP.Dispose();
                         }
                     }
                 }
                 else
                 {
-                    CommonFunctions.EseguiOttimizzazione(siglaEntita);
+                    Optimizer.EseguiOttimizzazione(siglaEntita);
                 }
             }
             else
@@ -513,7 +513,7 @@ namespace Iren.FrontOffice.Tools
 
                     if (selUP._hasSelection)
                     {
-                        CommonFunctions.EseguiOttimizzazione(selUP._siglaEntita);
+                        Optimizer.EseguiOttimizzazione(selUP._siglaEntita);
                         selUP.Dispose();
                     }
                 }
