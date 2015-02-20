@@ -123,6 +123,16 @@ namespace ToolsExcel.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Folder_Settings_Tools_icon {
+            get {
+                object obj = ResourceManager.GetObject("Folder_Settings_Tools_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Generate_tables_icon {
             get {
                 object obj = ResourceManager.GetObject("Generate_tables_icon", resourceCulture);

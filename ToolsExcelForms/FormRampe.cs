@@ -3,19 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data;
 using System.Windows.Forms;
+using System.Drawing;
+using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Forms
 {
-    using DataTable = System.Data.DataTable;
-    using DataView = System.Data.DataView;
-    using DataRow = System.Data.DataRow;
-    using DataColumn = System.Data.DataColumn;
-    using DataSet = System.Data.DataSet;
-    using DataRowView = System.Data.DataRowView;
-    using Workbook = Microsoft.Office.Interop.Excel.Workbook;
-    using System.Drawing;
-
-    public partial class frmRAMPE : Form
+    public partial class FormRampe : Form
     {
         int _oreGiorno = 24;
         DataView _entitaRampa;
@@ -30,7 +23,7 @@ namespace Iren.FrontOffice.Forms
 
         public DataTable _out = new DataTable();
 
-        public frmRAMPE(string desEntita, double pRif, double?[] pMin, int oreGiorno, DataView entitaRampa, object[] valoriPQNR, int oreFermata)
+        public FormRampe(string desEntita, double pRif, double?[] pMin, int oreGiorno, DataView entitaRampa, object[] valoriPQNR, int oreFermata)
         {
             InitializeComponent();
 
@@ -46,6 +39,8 @@ namespace Iren.FrontOffice.Forms
             _childWidth = panelValoriRampa.Width / _oreGiorno;
             this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+
+            this.Text = Simboli.nomeApplicazione + " - Rampe";
         }
 
         private void frmRAMPE_Load(object sender, EventArgs e)

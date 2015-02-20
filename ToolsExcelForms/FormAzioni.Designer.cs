@@ -1,6 +1,6 @@
 ﻿namespace Iren.FrontOffice.Forms
 {
-    partial class frmAZIONI
+    partial class FormAzioni
     {
         /// <summary>
         /// Required designer variable.

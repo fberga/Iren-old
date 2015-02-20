@@ -1,6 +1,6 @@
 ﻿namespace Iren.FrontOffice.Forms
 {
-    partial class frmCALENDAR
+    partial class FormCalendar
     {
         /// <summary>
         /// Variabile di progettazione necessaria.
@@ -68,7 +68,7 @@
             this.btnANNULLA.UseVisualStyleBackColor = true;
             this.btnANNULLA.Click += new System.EventHandler(this.btnANNULLA_Click);
             // 
-            // frmCALENDAR
+            // FormCalendar
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
@@ -84,7 +84,7 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "frmCALENDAR";
+            this.Name = "FormCalendar";
             this.Padding = new System.Windows.Forms.Padding(6);
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;

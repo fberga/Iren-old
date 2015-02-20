@@ -489,13 +489,13 @@ namespace Iren.FrontOffice.Base
 
                     if (isVisibleData0H24)
                     {
-                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], "DATA0", "H24"), rigaAttiva, oraAttiva++);
+                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], "DATA0", "H24"), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"));
                         oreGiorno--;
                     }
 
                     for (int i = 0; i < oreGiorno; i++)
                     {
-                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], suffissoData, "H" + (i + 1)), rigaAttiva, oraAttiva++);
+                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], suffissoData, "H" + (i + 1)), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"));
                     }
                 });
                 rigaAttiva++;

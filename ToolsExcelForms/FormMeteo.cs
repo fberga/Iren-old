@@ -12,14 +12,14 @@ using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Forms
 {
-    public partial class frmMETEO : Form
+    public partial class FormMeteo : Form
     {
         DataView _entita;
         DataView _entitaProprieta;
         DateTime _dataRif;
 
 
-        public frmMETEO(object dataRif)
+        public FormMeteo(object dataRif)
         {
             InitializeComponent();
 
@@ -28,6 +28,7 @@ namespace Iren.FrontOffice.Forms
             _dataRif = (DateTime)dataRif;
 
             labelData.Text = "Data Riferimento: " + _dataRif.ToString("dd/MM/yyyy");
+            this.Text = Simboli.nomeApplicazione + " - Meteo";
         }
 
         private void frmMETEO_Load(object sender, EventArgs e)

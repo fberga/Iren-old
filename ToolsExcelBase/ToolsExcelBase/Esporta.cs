@@ -1,4 +1,5 @@
 ﻿using Iren.FrontOffice.Core;
+using Iren.FrontOffice.UserConfig;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -91,11 +92,12 @@ namespace Iren.FrontOffice.Base
                             }
                         }
 
-                        string path = ConfigurationManager.AppSettings["pathExportMP_MGP"];
+                        var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+                        var path = (UserConfigElement)settings.Items["pathExportMP_MGP"];
 
-                        if (Directory.Exists(path))
+                        if (Directory.Exists(path.Value))
                         {
-                            if (!ExportToCSV(Path.Combine(path, "AEM_" + (nomeFoglio == "Iren Termo" ? "AHRP_" : "AIHRP_") + codiceIF + "_" + dataRif.Value.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
+                            if (!ExportToCSV(System.IO.Path.Combine(path.Value, "AEM_" + (nomeFoglio == "Iren Termo" ? "AHRP_" : "AIHRP_") + codiceIF + "_" + dataRif.Value.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
                                 return false;
                         }
                         else

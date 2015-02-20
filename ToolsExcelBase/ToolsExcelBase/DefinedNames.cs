@@ -50,7 +50,7 @@ namespace Iren.FrontOffice.Base
 
         #region Metodi
 
-        public void Add(string nome, Tuple<int, int> cella1, Tuple<int, int> cella2 = null)
+        public void Add(string nome, Tuple<int, int> cella1, Tuple<int, int> cella2 = null, bool editabile = false)
         {
             DataRow r = _definedNames.NewRow();
             cella2 = cella2 ?? cella1;
@@ -60,18 +60,19 @@ namespace Iren.FrontOffice.Base
             r["C1"] = cella1.Item2;
             r["R2"] = cella2.Item1;
             r["C2"] = cella2.Item2;
+            r["Editabile"] = editabile;
 
             //TODO controllare se nome esiste già
 
             _definedNames.Rows.Add(r);
         }
-        public void Add(string name, int row, int column)
+        public void Add(string name, int row, int column, bool editabile = false)
         {
-            Add(name, Tuple.Create(row, column));
+            Add(name, Tuple.Create(row, column), editabile: editabile);
         }
-        public void Add(string name, int row1, int column1, int row2, int column2)
+        public void Add(string name, int row1, int column1, int row2, int column2, bool editabile = false)
         {
-            Add(name, Tuple.Create(row1, column1), Tuple.Create(row2, column2));
+            Add(name, Tuple.Create(row1, column1), Tuple.Create(row2, column2), editabile);
         }
 
         public bool IsRange(string name)
@@ -142,6 +143,24 @@ namespace Iren.FrontOffice.Base
                 };
         }
 
+        public bool Editabile(string name)
+        {
+            name = PrepareName(name);
+            _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+            if (_definedNamesView.Count == 0)
+                return false;
+
+            return (bool)_definedNamesView[0]["Editabile"];
+        }
+        public bool Editabile(int row, int column)
+        {
+            _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+            if (_definedNamesView.Count == 0)
+                return false;
+
+            return (bool)_definedNamesView[0]["Editabile"];
+        }
+
         #endregion
 
         #region Metodi Statici
@@ -165,7 +184,8 @@ namespace Iren.FrontOffice.Base
                         {"R1", typeof(int)},
                         {"C1", typeof(int)},
                         {"R2", typeof(int)},
-                        {"C2", typeof(int)}
+                        {"C2", typeof(int)},
+                        {"Editabile", typeof(bool)}
                     }
             };
             dt.TableName = name;

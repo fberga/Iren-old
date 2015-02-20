@@ -1,6 +1,6 @@
 ﻿namespace Iren.FrontOffice.Forms
 {
-    partial class frmSELUP
+    partial class FormSelezioneUP
     {
         /// <summary>
         /// Required designer variable.

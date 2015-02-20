@@ -39,19 +39,25 @@ namespace Iren.FrontOffice.Tools
 
             btnModifica.Checked = false;
 
+            
+            //configuro gli ambienti selezionabili
             string[] ambienti = ConfigurationManager.AppSettings["AmbientiVisibili"].Split('|');
-
             foreach (string ambiente in ambienti)
-            {
                 groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ambiente).ToArray()[0].Visible = true;
-            }
 
+            //seleziono l'ambiente attivo
             groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ConfigurationManager.AppSettings["DB"]).ToArray()[0].Checked = true;
+
+            //configuro i tasti visibili
+            if (ConfigurationManager.AppSettings["RampeVisible"] != null && ConfigurationManager.AppSettings["RampeVisible"].ToLowerInvariant() == "false")
+                btnRampe.Visible = false;
+
         }
 
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
+            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
 
             int count = 0;
             foreach (RibbonToggleButton button in FrontOffice.Groups.Last().Items)
@@ -71,10 +77,12 @@ namespace Iren.FrontOffice.Tools
                 btnAggiornaStruttura_Click(null, null);
             }
 
+            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
             ambienteScelto.Checked = true;
         }
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
+            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
             Sheet.Proteggi(false);
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
@@ -91,17 +99,18 @@ namespace Iren.FrontOffice.Tools
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
+            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
 
             AbilitaTasti(true);
         }
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
+            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            Forms.frmCALENDAR cal = new frmCALENDAR();
-            cal.Text = Simboli.nomeApplicazione;
+            Forms.FormCalendar cal = new FormCalendar();
             cal.ShowDialog();
 
 
@@ -143,9 +152,11 @@ namespace Iren.FrontOffice.Tools
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
         }
         private void btnRampe_Click(object sender, RibbonControlEventArgs e)
         {
+            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
@@ -205,8 +216,7 @@ namespace Iren.FrontOffice.Tools
 
                     int oreFermata = int.Parse(CommonFunctions.DB.Select("spGetOreFermata", "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
 
-                    Forms.frmRAMPE rampe = new frmRAMPE(desEntita, pRif, pMin, oreGiorno, entitaRampa, valoriPQNR, oreFermata);
-                    rampe.Text = Simboli.nomeApplicazione;
+                    Forms.FormRampe rampe = new FormRampe(desEntita, pRif, pMin, oreGiorno, entitaRampa, valoriPQNR, oreFermata);
                     rampe.ShowDialog();
 
                     if (rampe._out != null)
@@ -224,9 +234,11 @@ namespace Iren.FrontOffice.Tools
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
         }
         private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
-        {            
+        {
+            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
             Globals.ThisWorkbook.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
@@ -243,6 +255,7 @@ namespace Iren.FrontOffice.Tools
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
         }
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
@@ -250,8 +263,7 @@ namespace Iren.FrontOffice.Tools
             Sheet.Proteggi(false);
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            frmAZIONI frmAz = new frmAZIONI();
-            frmAz.Text = Simboli.nomeApplicazione;
+            FormAzioni frmAz = new FormAzioni();
             frmAz.ShowDialog();
 
             Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
@@ -277,6 +289,76 @@ namespace Iren.FrontOffice.Tools
             }
 
             Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+        private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+
+            if (DefinedNames.IsDefined(CommonFunctions.WB.Application.ActiveSheet.Name, CommonFunctions.WB.Application.ActiveCell.Row, CommonFunctions.WB.Application.ActiveCell.Column))
+            {
+                DefinedNames nomiDefiniti = new DefinedNames(CommonFunctions.WB.Application.ActiveSheet.Name);
+
+                string siglaEntita = nomiDefiniti[CommonFunctions.WB.Application.ActiveCell.Row, CommonFunctions.WB.Application.ActiveCell.Column][0].Split(char.Parse(Simboli.UNION))[0];
+
+                DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
+
+                if (entitaInformazioni.Count == 0)
+                {
+                    if (System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        FormSelezioneUP selUP = new FormSelezioneUP();
+
+                        selUP.ShowDialog();
+
+                        if (selUP._isDeleted)
+                        {
+                            selUP.Dispose();
+                            return;
+                        }
+
+                        if (selUP._hasSelection)
+                        {
+                            Optimizer.EseguiOttimizzazione(selUP._siglaEntita);
+                            selUP.Dispose();
+                        }
+                    }
+                }
+                else
+                {
+                    Optimizer.EseguiOttimizzazione(siglaEntita);
+                }
+            }
+            else
+            {
+                if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                {
+                    FormSelezioneUP selUP = new FormSelezioneUP();
+
+                    selUP.ShowDialog();
+
+                    if (selUP._isDeleted)
+                    {
+                        selUP.Dispose();
+                        return;
+                    }
+
+                    if (selUP._hasSelection)
+                    {
+                        Optimizer.EseguiOttimizzazione(selUP._siglaEntita);
+                        selUP.Dispose();
+                    }
+                }
+            }
+
+            Sheet.Proteggi(true);
+            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+        }
+        private void btnConfigura_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormConfig conf = new FormConfig();
+            conf.ShowDialog();
         }
 
         #endregion
@@ -325,7 +407,6 @@ namespace Iren.FrontOffice.Tools
                     s.LoadStructure();
                 }
             }
-
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
         }
@@ -455,72 +536,6 @@ namespace Iren.FrontOffice.Tools
                 Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset42;
 
             kkk++;
-        }
-
-        private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
-        {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
-            Sheet.Proteggi(false);
-
-            if(DefinedNames.IsDefined(CommonFunctions.WB.Application.ActiveSheet.Name, CommonFunctions.WB.Application.ActiveCell.Row, CommonFunctions.WB.Application.ActiveCell.Column)) 
-            {
-                DefinedNames nomiDefiniti = new DefinedNames(CommonFunctions.WB.Application.ActiveSheet.Name);
-
-                string siglaEntita = nomiDefiniti[CommonFunctions.WB.Application.ActiveCell.Row, CommonFunctions.WB.Application.ActiveCell.Column][0].Split(char.Parse(Simboli.UNION))[0];
-                
-                DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
-
-                if (entitaInformazioni.Count == 0)
-                {
-                    if (System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
-                    {
-                        frmSELUP selUP = new frmSELUP();
-
-                        selUP.ShowDialog();
-
-                        if (selUP._isDeleted)
-                        {
-                            selUP.Dispose();
-                            return;
-                        }
-
-                        if (selUP._hasSelection)
-                        {
-                            Optimizer.EseguiOttimizzazione(selUP._siglaEntita);
-                            selUP.Dispose();
-                        }
-                    }
-                }
-                else
-                {
-                    Optimizer.EseguiOttimizzazione(siglaEntita);
-                }
-            }
-            else
-            {
-                if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
-                {
-                    frmSELUP selUP = new frmSELUP();
-
-                    selUP.ShowDialog();
-
-                    if (selUP._isDeleted)
-                    {
-                        selUP.Dispose();
-                        return;
-                    }
-
-                    if (selUP._hasSelection)
-                    {
-                        Optimizer.EseguiOttimizzazione(selUP._siglaEntita);
-                        selUP.Dispose();
-                    }
-                }
-            }
-
-            Sheet.Proteggi(true);
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
         }
 
     }

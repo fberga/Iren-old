@@ -6,10 +6,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Iren.FrontOffice.Base;
 
 namespace Iren.FrontOffice.Forms
 {
-    public partial class frmCALENDAR : Form
+    public partial class FormCalendar : Form
     {
         private DateTime? _date = null;
 
@@ -21,10 +22,12 @@ namespace Iren.FrontOffice.Forms
             } 
         }
 
-        public frmCALENDAR()
+        public FormCalendar()
         {
             InitializeComponent();
             Application.EnableVisualStyles();
+
+            this.Text = Simboli.nomeApplicazione + " - Calendar";
         }
 
         private void btnOK_Click(object sender, EventArgs e)

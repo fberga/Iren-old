@@ -15,7 +15,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.FrontOffice.Forms
 {
-    public partial class frmAZIONI : Form
+    public partial class FormAzioni : Form
     {
         #region Variabili
 
@@ -30,7 +30,7 @@ namespace Iren.FrontOffice.Forms
 
         #region Costruttori
 
-        public frmAZIONI()
+        public FormAzioni()
         {
             InitializeComponent();
 
@@ -268,6 +268,8 @@ namespace Iren.FrontOffice.Forms
 
         private void frmAZIONI_Load(object sender, EventArgs e)
         {
+            this.Text = Simboli.nomeApplicazione + " - Azioni";
+
             CaricaAzioni();
             CaricaCategorie();
         }
@@ -430,7 +432,7 @@ namespace Iren.FrontOffice.Forms
         {
             if (comboGiorni.SelectedIndex != -1)
             {
-                frmMETEO meteo = new frmMETEO(((DataRowView)comboGiorni.SelectedItem)["Data"]);
+                FormMeteo meteo = new FormMeteo(((DataRowView)comboGiorni.SelectedItem)["Data"]);
                 meteo.ShowDialog();
             }
             else

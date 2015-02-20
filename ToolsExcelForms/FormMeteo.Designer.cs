@@ -1,6 +1,6 @@
 ﻿namespace Iren.FrontOffice.Forms
 {
-    partial class frmMETEO
+    partial class FormMeteo
     {
         /// <summary>
         /// Required designer variable.
@@ -134,7 +134,7 @@
             this.labelData.TabIndex = 1;
             this.labelData.Text = "Data Riferimento: ";
             // 
-            // frmMETEO
+            // FormMeteo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -143,7 +143,7 @@
             this.Controls.Add(this.groupDati);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelButtons);
-            this.Name = "frmMETEO";
+            this.Name = "FormMeteo";
             this.Padding = new System.Windows.Forms.Padding(5);
             this.Text = "Meteo";
             this.Load += new System.EventHandler(this.frmMETEO_Load);

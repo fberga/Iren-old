@@ -239,6 +239,7 @@
     <Content Include="res\checklist-icon.png" />
     <Content Include="res\edit-not-validated-icon.png" />
     <Content Include="res\edit-validated-icon.png" />
+    <Content Include="res\Folder-Settings-Tools-icon.png" />
     <Content Include="res\Generate-tables-icon.png" />
     <Content Include="res\Letter-D-icon.png" />
     <Content Include="res\Letter-P-icon.png" />
@@ -258,6 +259,10 @@
     <ProjectReference Include="..\..\ToolsExcelForms\ToolsExcelForms.csproj">
       <Project>{f4c66fe5-1dc0-447b-b341-ff1960b78045}</Project>
       <Name>ToolsExcelForms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelUserConfig\ToolsExcelUserConfig.csproj">
+      <Project>{3e119690-1387-4fe3-89c1-756220fedeee}</Project>
+      <Name>ToolsExcelUserConfig</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -35,16 +35,17 @@
         private void InitializeComponent()
         {
             this.FrontOffice = this.Factory.CreateRibbonTab();
-            this.group3 = this.Factory.CreateRibbonGroup();
+            this.groupChiudi = this.Factory.CreateRibbonGroup();
             this.btnChiudi = this.Factory.CreateRibbonButton();
+            this.separator3 = this.Factory.CreateRibbonSeparator();
+            this.btnConfigura = this.Factory.CreateRibbonButton();
+            this.groupCalendario = this.Factory.CreateRibbonGroup();
+            this.btnCalendar = this.Factory.CreateRibbonButton();
             this.groupAggiorna = this.Factory.CreateRibbonGroup();
             this.btnAggiornaDati = this.Factory.CreateRibbonButton();
             this.btnAggiornaStruttura = this.Factory.CreateRibbonButton();
-            this.group1 = this.Factory.CreateRibbonGroup();
-            this.btnCalendar = this.Factory.CreateRibbonButton();
-            this.group2 = this.Factory.CreateRibbonGroup();
+            this.groupAzioni = this.Factory.CreateRibbonGroup();
             this.btnRampe = this.Factory.CreateRibbonButton();
-            this.group4 = this.Factory.CreateRibbonGroup();
             this.btnAzioni = this.Factory.CreateRibbonButton();
             this.groupModifica = this.Factory.CreateRibbonGroup();
             this.button1 = this.Factory.CreateRibbonButton();
@@ -55,6 +56,7 @@
             this.Dev = this.Factory.CreateRibbonToggleButton();
             this.groupOttimizza = this.Factory.CreateRibbonGroup();
             this.btnOttimizza = this.Factory.CreateRibbonButton();
+            this.TabAddIns = this.Factory.CreateRibbonTab();
             this.TabHome = this.Factory.CreateRibbonTab();
             this.TabInsert = this.Factory.CreateRibbonTab();
             this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
@@ -63,18 +65,17 @@
             this.TabReview = this.Factory.CreateRibbonTab();
             this.TabView = this.Factory.CreateRibbonTab();
             this.TabDeveloper = this.Factory.CreateRibbonTab();
-            this.TabAddIns = this.Factory.CreateRibbonTab();
             this.TabPrintPreview = this.Factory.CreateRibbonTab();
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.FrontOffice.SuspendLayout();
-            this.group3.SuspendLayout();
+            this.groupChiudi.SuspendLayout();
+            this.groupCalendario.SuspendLayout();
             this.groupAggiorna.SuspendLayout();
-            this.group1.SuspendLayout();
-            this.group2.SuspendLayout();
-            this.group4.SuspendLayout();
+            this.groupAzioni.SuspendLayout();
             this.groupModifica.SuspendLayout();
             this.groupAmbienti.SuspendLayout();
             this.groupOttimizza.SuspendLayout();
+            this.TabAddIns.SuspendLayout();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -83,28 +84,28 @@
             this.TabReview.SuspendLayout();
             this.TabView.SuspendLayout();
             this.TabDeveloper.SuspendLayout();
-            this.TabAddIns.SuspendLayout();
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
             // 
             // FrontOffice
             // 
-            this.FrontOffice.Groups.Add(this.group3);
+            this.FrontOffice.Groups.Add(this.groupChiudi);
+            this.FrontOffice.Groups.Add(this.groupCalendario);
             this.FrontOffice.Groups.Add(this.groupAggiorna);
-            this.FrontOffice.Groups.Add(this.group1);
-            this.FrontOffice.Groups.Add(this.group2);
-            this.FrontOffice.Groups.Add(this.group4);
+            this.FrontOffice.Groups.Add(this.groupAzioni);
             this.FrontOffice.Groups.Add(this.groupModifica);
             this.FrontOffice.Groups.Add(this.groupAmbienti);
             this.FrontOffice.Groups.Add(this.groupOttimizza);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
-            // group3
+            // groupChiudi
             // 
-            this.group3.Items.Add(this.btnChiudi);
-            this.group3.Label = "group3";
-            this.group3.Name = "group3";
+            this.groupChiudi.Items.Add(this.btnChiudi);
+            this.groupChiudi.Items.Add(this.separator3);
+            this.groupChiudi.Items.Add(this.btnConfigura);
+            this.groupChiudi.Label = " ";
+            this.groupChiudi.Name = "groupChiudi";
             // 
             // btnChiudi
             // 
@@ -113,6 +114,36 @@
             this.btnChiudi.Label = "Chiudi";
             this.btnChiudi.Name = "btnChiudi";
             this.btnChiudi.ShowImage = true;
+            // 
+            // separator3
+            // 
+            this.separator3.Name = "separator3";
+            // 
+            // btnConfigura
+            // 
+            this.btnConfigura.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnConfigura.Image = global::ToolsExcel.Properties.Resources.Folder_Settings_Tools_icon;
+            this.btnConfigura.Label = "Configura";
+            this.btnConfigura.Name = "btnConfigura";
+            this.btnConfigura.ShowImage = true;
+            this.btnConfigura.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnConfigura_Click);
+            // 
+            // groupCalendario
+            // 
+            this.groupCalendario.Items.Add(this.btnCalendar);
+            this.groupCalendario.Label = "Calendario";
+            this.groupCalendario.Name = "groupCalendario";
+            // 
+            // btnCalendar
+            // 
+            this.btnCalendar.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnCalendar.Description = "Apre il calendario per cambiare la data";
+            this.btnCalendar.Image = global::ToolsExcel.Properties.Resources.Calendar_icon;
+            this.btnCalendar.Label = "Calendario";
+            this.btnCalendar.Name = "btnCalendar";
+            this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
+            this.btnCalendar.ShowImage = true;
+            this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
             // 
             // groupAggiorna
             // 
@@ -139,28 +170,12 @@
             this.btnAggiornaStruttura.ShowImage = true;
             this.btnAggiornaStruttura.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnAggiornaStruttura_Click);
             // 
-            // group1
+            // groupAzioni
             // 
-            this.group1.Items.Add(this.btnCalendar);
-            this.group1.Label = "group1";
-            this.group1.Name = "group1";
-            // 
-            // btnCalendar
-            // 
-            this.btnCalendar.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnCalendar.Description = "Apre il calendario per cambiare la data";
-            this.btnCalendar.Image = global::ToolsExcel.Properties.Resources.Calendar_icon;
-            this.btnCalendar.Label = "Calendario";
-            this.btnCalendar.Name = "btnCalendar";
-            this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
-            this.btnCalendar.ShowImage = true;
-            this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
-            // 
-            // group2
-            // 
-            this.group2.Items.Add(this.btnRampe);
-            this.group2.Label = "group2";
-            this.group2.Name = "group2";
+            this.groupAzioni.Items.Add(this.btnRampe);
+            this.groupAzioni.Items.Add(this.btnAzioni);
+            this.groupAzioni.Label = "Azioni";
+            this.groupAzioni.Name = "groupAzioni";
             // 
             // btnRampe
             // 
@@ -170,12 +185,6 @@
             this.btnRampe.Name = "btnRampe";
             this.btnRampe.ShowImage = true;
             this.btnRampe.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnRampe_Click);
-            // 
-            // group4
-            // 
-            this.group4.Items.Add(this.btnAzioni);
-            this.group4.Label = "group4";
-            this.group4.Name = "group4";
             // 
             // btnAzioni
             // 
@@ -262,6 +271,13 @@
             this.btnOttimizza.ShowImage = true;
             this.btnOttimizza.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnOttimizza_Click);
             // 
+            // TabAddIns
+            // 
+            this.TabAddIns.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabAddIns.Label = "TabAddIns";
+            this.TabAddIns.Name = "TabAddIns";
+            this.TabAddIns.Visible = false;
+            // 
             // TabHome
             // 
             this.TabHome.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
@@ -323,13 +339,6 @@
             this.TabDeveloper.Label = "TabDeveloper";
             this.TabDeveloper.Name = "TabDeveloper";
             // 
-            // TabAddIns
-            // 
-            this.TabAddIns.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabAddIns.Label = "TabAddIns";
-            this.TabAddIns.Name = "TabAddIns";
-            this.TabAddIns.Visible = false;
-            // 
             // TabPrintPreview
             // 
             this.TabPrintPreview.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
@@ -366,22 +375,22 @@
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.ToolsExcelRibbon_Load);
             this.FrontOffice.ResumeLayout(false);
             this.FrontOffice.PerformLayout();
-            this.group3.ResumeLayout(false);
-            this.group3.PerformLayout();
+            this.groupChiudi.ResumeLayout(false);
+            this.groupChiudi.PerformLayout();
+            this.groupCalendario.ResumeLayout(false);
+            this.groupCalendario.PerformLayout();
             this.groupAggiorna.ResumeLayout(false);
             this.groupAggiorna.PerformLayout();
-            this.group1.ResumeLayout(false);
-            this.group1.PerformLayout();
-            this.group2.ResumeLayout(false);
-            this.group2.PerformLayout();
-            this.group4.ResumeLayout(false);
-            this.group4.PerformLayout();
+            this.groupAzioni.ResumeLayout(false);
+            this.groupAzioni.PerformLayout();
             this.groupModifica.ResumeLayout(false);
             this.groupModifica.PerformLayout();
             this.groupAmbienti.ResumeLayout(false);
             this.groupAmbienti.PerformLayout();
             this.groupOttimizza.ResumeLayout(false);
             this.groupOttimizza.PerformLayout();
+            this.TabAddIns.ResumeLayout(false);
+            this.TabAddIns.PerformLayout();
             this.TabHome.ResumeLayout(false);
             this.TabHome.PerformLayout();
             this.TabInsert.ResumeLayout(false);
@@ -398,8 +407,6 @@
             this.TabView.PerformLayout();
             this.TabDeveloper.ResumeLayout(false);
             this.TabDeveloper.PerformLayout();
-            this.TabAddIns.ResumeLayout(false);
-            this.TabAddIns.PerformLayout();
             this.TabPrintPreview.ResumeLayout(false);
             this.TabPrintPreview.PerformLayout();
             this.TabBackgroundRemoval.ResumeLayout(false);
@@ -423,14 +430,12 @@
         private Microsoft.Office.Tools.Ribbon.RibbonTab FrontOffice;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAggiorna;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAggiornaStruttura;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalendar;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRampe;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupChiudi;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChiudi;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAggiornaDati;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group4;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAzioni;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnAzioni;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupModifica;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnModifica;
@@ -441,6 +446,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupOttimizza;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnOttimizza;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnConfigura;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupCalendario;
     }
 
     partial class ThisRibbonCollection

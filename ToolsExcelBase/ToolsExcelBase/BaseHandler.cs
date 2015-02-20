@@ -46,6 +46,16 @@ namespace Iren.FrontOffice.Base
             }
         }
 
+        public static void StoreEdit(object Sh, Excel.Range Target)
+        {
+            DefinedNames nomiDefiniti = new DefinedNames(Target.Worksheet.Name);
+
+            if (nomiDefiniti.Editabile(Target.Row, Target.Column))
+            {
+
+            }
+        }
+
         public static void ChangeModificaDati(bool modifica)
         {
             Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];

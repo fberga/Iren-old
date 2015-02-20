@@ -10,15 +10,17 @@ using System.Windows.Forms;
 
 namespace Iren.FrontOffice.Forms
 {
-    public partial class frmSELUP : Form
+    public partial class FormSelezioneUP : Form
     {
         public bool _isDeleted = false;
         public bool _hasSelection = false;
         public string _siglaEntita;
 
-        public frmSELUP()
+        public FormSelezioneUP()
         {
             InitializeComponent();
+
+            this.Text = Simboli.nomeApplicazione + " - Selezione UP";
         }
 
         private void frmSELUP_Load(object sender, EventArgs e)

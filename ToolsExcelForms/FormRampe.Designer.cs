@@ -1,6 +1,6 @@
 ﻿namespace Iren.FrontOffice.Forms
 {
-    partial class frmRAMPE
+    partial class FormRampe
     {
         /// <summary>
         /// Variabile di progettazione necessaria.
