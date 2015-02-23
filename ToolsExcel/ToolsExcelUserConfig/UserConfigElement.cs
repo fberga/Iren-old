@@ -15,7 +15,7 @@ namespace Iren.FrontOffice.UserConfig
             set { base["key"] = value; }
         }
 
-        [ConfigurationProperty("desc", IsRequired = true)]
+        [ConfigurationProperty("desc", IsRequired = false, DefaultValue="")]
         public string Desc
         {
             get { return (string)base["desc"]; }
@@ -29,11 +29,32 @@ namespace Iren.FrontOffice.UserConfig
             set { base["value"] = value; }
         }
 
-        [ConfigurationProperty("default", IsRequired = true)]
+        [ConfigurationProperty("default", IsRequired = false, DefaultValue="")]
         public string Default
         {
             get { return (string)base["default"]; }
             set { base["default"] = value; }
+        }
+
+        [ConfigurationProperty("emergenza", IsRequired = false, DefaultValue="")]
+        public string Emergenza
+        {
+            get { return (string)base["emergenza"]; }
+            set { base["emergenza"] = value; }
+        }
+
+        [ConfigurationProperty("archivio", IsRequired = false, DefaultValue = "")]
+        public string Archivio
+        {
+            get { return (string)base["archivio"]; }
+            set { base["archivio"] = value; }
+        }
+
+        [ConfigurationProperty("visibile", IsRequired = false, DefaultValue="true")]
+        public string Visibile
+        {
+            get { return (string)base["visibile"]; }
+            set { base["visibile"] = value; }
         }
 
     }

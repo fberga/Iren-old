@@ -1,4 +1,5 @@
 ﻿using Iren.FrontOffice.Core;
+using Iren.FrontOffice.UserConfig;
 using Microsoft.Office.Tools.Excel;
 using System;
 using System.Collections.Generic;
@@ -23,37 +24,32 @@ namespace Iren.FrontOffice.Base
 
         public struct Tab
         {
-            public const string UTENTE = "Utente",
-                LOG = "Log",
+            public const string APPLICAZIONE = "Applicazione",
                 AZIONE = "Azione",
-                CATEGORIA = "Categoria",
                 AZIONECATEGORIA = "AzioneCategoria",
-                CATEGORIAENTITA = "CategoriaEntita",
-                ENTITAAZIONE = "EntitaAzione",
-                ENTITAINFORMAZIONE = "EntitaInformazione",
-                ENTITAAZIONEINFORMAZIONE = "EntitaAzioneInformazione",
                 CALCOLO = "Calcolo",
                 CALCOLOINFORMAZIONE = "CalcoloInformazione",
+                CATEGORIA = "Categoria",
+                CATEGORIAENTITA = "CategoriaEntita",
+                ENTITAASSETTO = "EntitaAssetto",
+                ENTITAAZIONE = "EntitaAzione",
+                ENTITAAZIONEINFORMAZIONE = "EntitaAzioneInformazione",
                 ENTITACALCOLO = "EntitaCalcolo",
+                ENTITACOMMITMENT = "EntitaCommitment",
                 ENTITAGRAFICO = "EntitaGrafico",
                 ENTITAGRAFICOINFORMAZIONE = "EntitaGraficoInformazione",
-                ENTITACOMMITMENT = "EntitaCommitment",
-                ENTITARAMPA = "EntitaRampa",
-                ENTITAASSETTO = "EntitaAssetto",
-                ENTITAPROPRIETA = "EntitaProprieta",
+                ENTITAINFORMAZIONE = "EntitaInformazione",
                 ENTITAINFORMAZIONEFORMATTAZIONE = "EntitaInformazioneFormattazione",
+                ENTITAPARAMETROD = "EntitaParametroD",
+                ENTITAPARAMETROH = "EntitaParametroH",
+                ENTITAPROPRIETA = "EntitaProprieta",
+                ENTITARAMPA = "EntitaRampa",
+                LOG = "Log",
+                MODIFICA = "Modifica",
+                NOMIDEFINITI = "DefinedNames",
                 TIPOLOGIACHECK = "TipologiaCheck",
                 TIPOLOGIARAMPA = "TipologiaRampa",
-                APPLICAZIONE = "Applicazione",
-                NOMIDEFINITI = "DefinedNames",
-                ENTITAPARAMETROD = "EntitaParametroD",
-                ENTITAPARAMETROH = "EntitaParametroH";
-        }
-
-        public enum AppIDs
-        {
-            PROGRAMMAZIONE_IMPIANTI = 5,
-            SISTEMA_COMANDI = 8
+                UTENTE = "Utente";
         }
 
         #endregion
@@ -154,7 +150,7 @@ namespace Iren.FrontOffice.Base
             dv.Sort = "Data DESC";
         }
 
-        private static DataTable CaricaApplicazione(AppIDs idApplicazione)
+        private static DataTable CaricaApplicazione(object idApplicazione)
         {
             string name = Tab.APPLICAZIONE;
             ResetTable(name);
@@ -179,7 +175,7 @@ namespace Iren.FrontOffice.Base
             _db = new DataBase(ambiente);
         }
 
-        public static void Init(string dbName, AppIDs appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
+        public static void Init(string dbName, object appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
         {
             DataBase.CryptSection();
             _db = new DataBase(dbName);
@@ -214,7 +210,7 @@ namespace Iren.FrontOffice.Base
                 _localDB.Tables.Add(dt);
 
                 int usr = InitUser();
-                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, (int)appID);
+                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
 
                 InitLog();
 
@@ -258,6 +254,18 @@ namespace Iren.FrontOffice.Base
             return GetSuffissoOra(int.Parse(dtO.Substring(dtO.Length - 2, 2)));
         }
 
+        public static string GetDataFromSuffisso(object data, object ora = null)
+        {
+            int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
+            DateTime outDate = DataBase.DataAttiva.AddDays(giorno - 1);
+
+            ora = ora ?? "0";
+            int outOra = int.Parse(Regex.Match(ora.ToString(), @"\d+").Value);
+
+            return outDate.ToString("yyyyMMdd") + (outOra != 0 ? outOra.ToString("D2") : "");
+
+        }
+
         public static string GetSuffissoOra(int ora)
         {
             return "H" + ora;
@@ -271,6 +279,7 @@ namespace Iren.FrontOffice.Base
         public static void AggiornaStrutturaDati()
         {
             CreaTabellaNomi();
+            CreaTabellaModifica();
             CaricaAzioni();
             CaricaCategorie();
             CaricaAzioneCategoria();
@@ -303,6 +312,37 @@ namespace Iren.FrontOffice.Base
                 string name = Tab.NOMIDEFINITI;
                 ResetTable(name);
                 DataTable dt = DefinedNames.GetDefaultTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static bool CreaTabellaModifica()
+        {
+            try
+            {
+                string name = Tab.MODIFICA;
+                ResetTable(name);
+                DataTable dt = new DataTable(name) 
+                {
+                    Columns =
+                    {
+                        {"SiglaEntita", typeof(string)},
+                        {"SiglaInformazione", typeof(string)},
+                        {"Data", typeof(string)},
+                        {"Valore", typeof(object)},
+                        {"AnnotaModifica", typeof(string)},
+                        {"IdApplicazione", typeof(string)},
+                        {"IdUtente", typeof(string)}
+                    }
+                };
+
+                dt.PrimaryKey = new DataColumn[] { dt.Columns["Entita"], dt.Columns["Informazione"], dt.Columns["Data"] };
+
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -1380,6 +1420,52 @@ namespace Iren.FrontOffice.Base
                 return tipologiaCheck[0]["Messaggio"];
 
             return null;
+        }
+
+        public static void SalvaModificheDB()
+        {
+            bool onLine = DB.OpenConnection();
+
+            DataTable modifiche = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.MODIFICA];
+            var path = Esporta.GetPath("pathExportModifiche");
+
+            string cartellaRemota = Esporta.PreparePath(path.Value);
+
+            string fileName = "";
+            string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
+
+            if (onLine && Directory.Exists(cartellaRemota)) 
+            {
+                string[] files = Directory.GetFiles(cartellaEmergenza);
+
+                if (files.Length > 0)
+                {
+                    Array.Sort<string>(files);
+                    
+                    //, (s1, s2) =>
+                    //{
+                    //    int n1 = int.Parse(s1.Replace(".xml", "").Split('_')[1]);
+                    //    int n2 = int.Parse(s2.Replace(".xml", "").Split('_')[1]);
+
+                    //    return n1.CompareTo(n2);
+                    //});
+                }
+
+                foreach (string oldFileName in files)
+                {
+                    File.Copy(oldFileName, Path.Combine(cartellaRemota, oldFileName.Split('/')[oldFileName.Length - 1]));
+                }
+
+                fileName = Path.Combine(Esporta.PreparePath(path.Value), Simboli.nomeApplicazione + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".xml");
+            } 
+            else 
+            {
+                fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".xml");
+            }
+
+            //StreamWriter sw = new StreamWriter()
+            
+
         }
         
         #endregion

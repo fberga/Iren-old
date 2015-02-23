@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Iren.FrontOffice.Core;
+using System;
+using System.Data;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
@@ -42,17 +44,58 @@ namespace Iren.FrontOffice.Base
                     rng.Select();
                     Target.Worksheet.Application.ActiveWindow.SmallScroll(rng.Row - Target.Worksheet.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
                 }
-
             }
         }
 
         public static void StoreEdit(object Sh, Excel.Range Target)
         {
             DefinedNames nomiDefiniti = new DefinedNames(Target.Worksheet.Name);
+            Sheet s = new Sheet(Target.Worksheet);
+            s.AggiornaGrafici();
 
-            if (nomiDefiniti.Editabile(Target.Row, Target.Column))
+            object[,] values;
+            if (Target.Value == null)   //caso in cui cancello il valore di una cella
             {
+                values = new object[1, 1];
+                values[0, 0] = null;
+            }
+            else if (Target.Value.GetType() != typeof(object[,]))   //caso in cui modifico il valore di una cella
+            {
+                values = new object[1,1];
+                values[0,0] = Target.Value;
+            }
+            else    //caso in cui modifico un range di celle
+            {
+                values = new object[Target.Value.GetLength(0), Target.Value.GetLength(1)];
+                Array.Copy(Target.Value, 1, values, 0, values.Length);
+            }
 
+            DataView modifiche = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.MODIFICA].DefaultView;
+
+            for (int i = 0, rowLen = values.GetLength(0); i < rowLen; i++)
+            {
+                for (int j = 0, colLen = values.GetLength(1); j < colLen; j++)
+                {
+                    if (nomiDefiniti.SalvaDB(i + Target.Row, j + Target.Column))
+                    {
+                        string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
+
+                        string[] info = nomi[0].Split(Simboli.UNION[0]);
+                        string data = CommonFunctions.GetDataFromSuffisso(info[2], info[3]);
+
+                        modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
+                        if (modifiche.Count == 0)
+                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j], nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.IdApplicazione, DataBase.IdUtenteAttivo);
+                        else
+                            modifiche[0]["Valore"] = values[i, j];
+                    }
+                    if (nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column))
+                    {
+                        Excel.Range rng = Target.Worksheet.Cells[i + Target.Row, j + Target.Column];
+                        rng.ClearComments();
+                        rng.AddComment("Valore inserito manualmente").Visible = false;
+                    }
+                }
             }
         }
 

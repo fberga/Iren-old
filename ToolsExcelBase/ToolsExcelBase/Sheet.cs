@@ -174,7 +174,7 @@ namespace Iren.FrontOffice.Base
             watch.Stop();
 
             watch = Stopwatch.StartNew();
-            CaricaInformazioni();
+            CaricaInformazioni(true);
             watch.Stop();
             watch = Stopwatch.StartNew();
             CalcolaFormule();
@@ -187,12 +187,15 @@ namespace Iren.FrontOffice.Base
             watch.Stop();
         }
 
-        public void UpdateData()
+        public void UpdateData(bool all = true)
         {
-            CancellaDati();
-            AggiornaDateTitoli();
-            CaricaParametri();
-            CaricaInformazioni();
+            if(all)
+            {
+                CancellaDati();
+                AggiornaDateTitoli();
+                CaricaParametri();
+            }
+            CaricaInformazioni(all);
             AggiornaGrafici();
         }
 
@@ -469,7 +472,7 @@ namespace Iren.FrontOffice.Base
                     rng.Value = valori;
                     _ws.Cells[rigaAttiva, colonnaTitoloInfo + 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                     
-                    if (info["Data0H24"].Equals("0"))
+                    if (info["Data0H24"].Equals("0") && _struttura.visData0H24)
                         Style.RangeStyle(_ws.Cells[rigaAttiva, _colonnaInizio], "BackPattern:CrissCross");
                 }
                 rigaAttiva++;
@@ -489,13 +492,13 @@ namespace Iren.FrontOffice.Base
 
                     if (isVisibleData0H24)
                     {
-                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], "DATA0", "H24"), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"));
+                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], "DATA0", "H24"), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"), info["SalvaDB"].Equals("1"), info["AnnotaModifica"].Equals("1"));
                         oreGiorno--;
                     }
 
                     for (int i = 0; i < oreGiorno; i++)
                     {
-                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], suffissoData, "H" + (i + 1)), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"));
+                        _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], suffissoData, "H" + (i + 1)), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"), info["SalvaDB"].Equals("1"), info["AnnotaModifica"].Equals("1"));
                     }
                 });
                 rigaAttiva++;
@@ -830,7 +833,7 @@ namespace Iren.FrontOffice.Base
                     var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
 
                     var rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
-                    var chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
+                    Excel.Chart chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
 
                     chart.Parent.Name = nome;
 
@@ -889,7 +892,7 @@ namespace Iren.FrontOffice.Base
             chart.PlotArea.Width = chart.ChartArea.Width + 3;
         }
 
-        private void AggiornaGrafici()
+        public void AggiornaGrafici()
         {
             DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
             DataView grafici = LocalDB.Tables[Tab.ENTITAGRAFICO].DefaultView;
@@ -914,11 +917,12 @@ namespace Iren.FrontOffice.Base
                     var chart = _ws.ChartObjects(nome).Chart;
 
                     AggiornaGrafici(chart, rigaGrafico);
+                    chart.Refresh();
                 }
             }
         }
 
-        public void CaricaInformazioni()
+        public void CaricaInformazioni(bool all)
         {
             DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
             DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
@@ -941,9 +945,12 @@ namespace Iren.FrontOffice.Base
             }
 
             //Stopwatch watch = Stopwatch.StartNew();
-            DataView datiApplicazione = DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=1").DefaultView;
+            DataView datiApplicazione = DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=" + (all ? "1" : "0")).DefaultView;
 
-            DataView insertManuali = DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
+            DataView insertManuali = new DataView();
+            if(all)
+                insertManuali = DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
+            
             //watch.Stop();
 
             //dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
@@ -955,8 +962,11 @@ namespace Iren.FrontOffice.Base
                 CaricaInformazioniEntita(datiApplicazione);
                 //watch.Stop();
                 //watch = Stopwatch.StartNew();
-                insertManuali.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(SUBSTRING(Data, 1, 8), System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
-                CaricaCommentiEntita(insertManuali);
+                if (all)
+                {
+                    insertManuali.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(SUBSTRING(Data, 1, 8), System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
+                    CaricaCommentiEntita(insertManuali);
+                }
                 //watch.Stop();
             }
 

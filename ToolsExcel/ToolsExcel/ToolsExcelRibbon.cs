@@ -141,7 +141,7 @@ namespace Iren.FrontOffice.Tools
                         }
                         else
                         {
-                            AggiornaDati();
+                            AggiornaDati(all: true);
                         }
                         CommonFunctions.DB.CloseConnection();
                     }
@@ -245,7 +245,7 @@ namespace Iren.FrontOffice.Tools
 
             if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                AggiornaDati();
+                AggiornaDati(all: false);
 
                 //TODO riabilitare log!!
                 //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
@@ -284,6 +284,8 @@ namespace Iren.FrontOffice.Tools
             }
             else
             {
+                //Salva modifiche su db
+
                 btnModifica.Label = "Modifica NO";
                 btnModifica.Image = Resources.edit_not_validated_icon;
             }
@@ -410,21 +412,24 @@ namespace Iren.FrontOffice.Tools
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
         }
-        private void AggiornaDati()
+        private void AggiornaDati(bool all)
         {
             foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
                     Sheet s = new Sheet(ws);
-                    s.UpdateData();
+                    s.UpdateData(all);
                 }
             }
-            Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
-            main.LoadStructure();
+            if (all)
+            {
+                Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
+                main.LoadStructure();
+            }
 
             //Log
-            CommonFunctions.InitLog();
+            //CommonFunctions.InitLog();
         }
 
         #endregion

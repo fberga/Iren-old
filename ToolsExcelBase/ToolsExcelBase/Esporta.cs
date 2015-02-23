@@ -7,11 +7,12 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.FrontOffice.Base
 {
-    public class Esporta : CommonFunctions, IEsporta
+    public class Esporta : IEsporta
     {
         public Esporta()
         {
@@ -24,20 +25,20 @@ namespace Iren.FrontOffice.Base
 
             try
             {
-                DataView entitaAzione = LocalDB.Tables[Tab.ENTITAAZIONE].DefaultView;
+                DataView entitaAzione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;
                 entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
                 if (entitaAzione.Count == 0)
                     return false;
 
-                DataView categoriaEntita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
-                DataView entitaProprieta = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
+                DataView entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'IMP_COD_IF'";
                 object codiceIF = entitaProprieta[0]["Valore"];
 
-                DataView entitaAzioneInformazione = LocalDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
+                DataView entitaAzioneInformazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
@@ -61,7 +62,7 @@ namespace Iren.FrontOffice.Base
                             }
                         };
                         
-                        string suffissoData = GetSuffissoData(DataBase.DataAttiva, dataRif.Value);
+                        string suffissoData = CommonFunctions.GetSuffissoData(DataBase.DataAttiva, dataRif.Value);
                         foreach (DataRowView entAzInfo in entitaAzioneInformazione)
                         {
                             object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
@@ -92,17 +93,18 @@ namespace Iren.FrontOffice.Base
                             }
                         }
 
-                        var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
-                        var path = (UserConfigElement)settings.Items["pathExportMP_MGP"];
+                        var path = GetPath("pathExportMP_MGP");
 
-                        if (Directory.Exists(path.Value))
+                        string pathStr = PreparePath(path.Value);
+
+                        if (Directory.Exists(pathStr))
                         {
-                            if (!ExportToCSV(System.IO.Path.Combine(path.Value, "AEM_" + (nomeFoglio == "Iren Termo" ? "AHRP_" : "AIHRP_") + codiceIF + "_" + dataRif.Value.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
+                            if (!ExportToCSV(System.IO.Path.Combine(pathStr, "AEM_" + (nomeFoglio == "Iren Termo" ? "AHRP_" : "AIHRP_") + codiceIF + "_" + dataRif.Value.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
                                 return false;
                         }
                         else
                         {
-                            System.Windows.Forms.MessageBox.Show("Il percorso '" + path + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                            System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                             return false;   
                         }
 
@@ -142,6 +144,33 @@ namespace Iren.FrontOffice.Base
             {
                 return false;
             }
+        }
+
+        public static string PreparePath(string path)
+        {
+            Regex options = new Regex(@"\[\w+\]");
+            options.Replace(path, match =>
+            {
+                string opt = match.Value.Replace("[", "").Replace("]", "");
+                string o = "";
+                switch (opt.ToLowerInvariant())
+                {
+                    case "appname":
+                        o = Simboli.nomeApplicazione.Replace(" ", "");
+                        break;
+                }
+
+                return o;
+            });
+            
+            return path;
+        }
+
+        public static UserConfigElement GetPath(string configKey)
+        {
+            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+            
+            return (UserConfigElement)settings.Items[configKey];
         }
     }
 }

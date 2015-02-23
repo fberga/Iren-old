@@ -58,7 +58,10 @@ namespace Iren.FrontOffice.Forms
             var config = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
 
             foreach (UserConfigElement item in config.Items)
-                _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Default);
+            {
+                if(item.Visibile == "true")
+                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Default);
+            }
 
         }
 

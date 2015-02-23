@@ -60,9 +60,7 @@ namespace Iren.FrontOffice.Tools
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"]
-                , (CommonFunctions.AppIDs)Enum.Parse(typeof(CommonFunctions.AppIDs), ConfigurationManager.AppSettings["AppID"])
-                , dataAttiva, Globals.ThisWorkbook.Base, Version);
+            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;

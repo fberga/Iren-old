@@ -11,9 +11,13 @@ namespace Iren.FrontOffice.Base
     {
         #region Variabili
 
-        DataTable _definedNames;
-        DataView _definedNamesView;
-        string _foglio;
+        protected DataTable _definedNames;
+        protected DataView _definedNamesView;
+        protected string _foglio;
+        protected int _row = -1;
+        protected int _column = -1;
+        protected string _name = null;
+        protected bool _excludeDATA0H24 = false;
 
         #endregion
 
@@ -50,7 +54,7 @@ namespace Iren.FrontOffice.Base
 
         #region Metodi
 
-        public void Add(string nome, Tuple<int, int> cella1, Tuple<int, int> cella2 = null, bool editabile = false)
+        public void Add(string nome, Tuple<int, int> cella1, Tuple<int, int> cella2 = null, bool editabile = false, bool salvaDB = false, bool annotaModifica = false)
         {
             DataRow r = _definedNames.NewRow();
             cella2 = cella2 ?? cella1;
@@ -61,31 +65,31 @@ namespace Iren.FrontOffice.Base
             r["R2"] = cella2.Item1;
             r["C2"] = cella2.Item2;
             r["Editabile"] = editabile;
+            r["SalvaDB"] = salvaDB;
+            r["AnnotaModifica"] = annotaModifica;
 
             //TODO controllare se nome esiste già
 
             _definedNames.Rows.Add(r);
         }
-        public void Add(string name, int row, int column, bool editabile = false)
+        public void Add(string name, int row, int column, bool editabile = false, bool salvaDB = false, bool annotaModifica = false)
         {
-            Add(name, Tuple.Create(row, column), editabile: editabile);
+            Add(name, Tuple.Create(row, column), editabile: editabile, salvaDB: salvaDB, annotaModifica: annotaModifica);
         }
-        public void Add(string name, int row1, int column1, int row2, int column2, bool editabile = false)
+        public void Add(string name, int row1, int column1, int row2, int column2, bool editabile = false, bool salvaDB = false, bool annotaModifica = false)
         {
-            Add(name, Tuple.Create(row1, column1), Tuple.Create(row2, column2), editabile);
+            Add(name, Tuple.Create(row1, column1), Tuple.Create(row2, column2), editabile, salvaDB, annotaModifica);
         }
-
-        public bool IsRange(string name)
-        {
-            _definedNamesView.RowFilter = "Nome='" + name + "'";
-            if (_definedNamesView.Count == 0)
-                return false;
-            return _definedNamesView[0]["R1"] != _definedNamesView[0]["R2"] || _definedNamesView[0]["C1"] != _definedNamesView[0]["C2"];
-        }        
 
         public string[] Get(int row, int column)
         {
-            _definedNamesView.RowFilter = "Foglio='" + _foglio + "' AND R1=" + row + " AND C1=" + column;
+            if (_row != row || _column != column)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+                _row = row;
+                _column = column;
+                _name = null;
+            }
             
             if (_definedNamesView.Count == 0)
                 return null;
@@ -101,10 +105,18 @@ namespace Iren.FrontOffice.Base
         {
             name = PrepareName(name);
 
-            if (!excludeDATA0H24)
-                _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
-            else
-                _definedNamesView.RowFilter = "Nome LIKE '" + name + "%' AND Nome NOT LIKE '%DATA0.H24%'";
+            if (_name != name || _excludeDATA0H24 != excludeDATA0H24)
+            {
+                if (!excludeDATA0H24)
+                    _definedNamesView.RowFilter = "Nome LIKE '" + name + "%'";
+                else
+                    _definedNamesView.RowFilter = "Nome LIKE '" + name + "%' AND Nome NOT LIKE '%DATA0.H24%'";
+
+                _name = name;
+                _excludeDATA0H24 = excludeDATA0H24;
+                _row = -1;
+                _column = -1;
+            }
 
             if (_definedNamesView.Count == 0)
                 return null;
@@ -118,16 +130,19 @@ namespace Iren.FrontOffice.Base
 
             return o;
         }
-        public Tuple<int,int> GetFirstCell(string name)
+
+        public bool IsRange(string name)
         {
-            _definedNamesView.RowFilter = "Nome='" + name + "'";
+            if (_name != name)
+            {
+                _definedNamesView.RowFilter = "Nome='" + name + "'";
+                _name = name;
+            }
 
             if (_definedNamesView.Count == 0)
-                return null;
-
-            return Tuple.Create(int.Parse(_definedNamesView[0]["R1"].ToString()), int.Parse(_definedNamesView[0]["C1"].ToString()));
+                return false;
+            return _definedNamesView[0]["R1"] != _definedNamesView[0]["R2"] || _definedNamesView[0]["C1"] != _definedNamesView[0]["C2"];
         }
-
         public Tuple<int, int>[] GetRange(string name)
         {
             if (!IsRange(name))
@@ -146,7 +161,13 @@ namespace Iren.FrontOffice.Base
         public bool Editabile(string name)
         {
             name = PrepareName(name);
-            _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+            if (_name != name)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+                _name = name;
+                _row = -1;
+                _column = -1;
+            }
             if (_definedNamesView.Count == 0)
                 return false;
 
@@ -154,11 +175,80 @@ namespace Iren.FrontOffice.Base
         }
         public bool Editabile(int row, int column)
         {
-            _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+            if (_row != row || _column != column)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+                _row = row;
+                _column = column;
+                _name = null;
+            }
+            
             if (_definedNamesView.Count == 0)
                 return false;
 
             return (bool)_definedNamesView[0]["Editabile"];
+        }
+        
+        public bool SalvaDB(string name)
+        {
+            name = PrepareName(name);
+            if (_name != name)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+                _name = name;
+                _row = -1;
+                _column = -1;
+            }
+            if (_definedNamesView.Count == 0)
+                return false;
+
+            return (bool)_definedNamesView[0]["SalvaDB"];
+        }
+        public bool SalvaDB(int row, int column)
+        {
+            if (_row != row || _column != column)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+                _row = row;
+                _column = column;
+                _name = null;
+            }
+
+            if (_definedNamesView.Count == 0)
+                return false;
+
+            return (bool)_definedNamesView[0]["SalvaDB"];
+        }
+        
+        public bool AnnotaModifica(string name)
+        {
+            name = PrepareName(name);
+            if (_name != name)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+                _name = name;
+                _row = -1;
+                _column = -1;
+            }
+            if (_definedNamesView.Count == 0)
+                return false;
+
+            return (bool)_definedNamesView[0]["AnnotaModifica"];
+        }
+        public bool AnnotaModifica(int row, int column)
+        {
+            if (_row != row || _column != column)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+                _row = row;
+                _column = column;
+                _name = null;
+            }
+
+            if (_definedNamesView.Count == 0)
+                return false;
+
+            return (bool)_definedNamesView[0]["AnnotaModifica"];
         }
 
         #endregion
@@ -185,7 +275,9 @@ namespace Iren.FrontOffice.Base
                         {"C1", typeof(int)},
                         {"R2", typeof(int)},
                         {"C2", typeof(int)},
-                        {"Editabile", typeof(bool)}
+                        {"Editabile", typeof(bool)},
+                        {"SalvaDB", typeof(bool)},
+                        {"AnnotaModifica", typeof(bool)}
                     }
             };
             dt.TableName = name;
@@ -210,7 +302,6 @@ namespace Iren.FrontOffice.Base
 
             return definedNamesView.Count > 0;
         }
-
         public static bool IsDefined(string sheetName, int row, int column)
         {
             DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
