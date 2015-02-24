@@ -67,6 +67,7 @@
             this.TabDeveloper = this.Factory.CreateRibbonTab();
             this.TabPrintPreview = this.Factory.CreateRibbonTab();
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
+            this.TabSmartArtToolsDesign = this.Factory.CreateRibbonTab();
             this.FrontOffice.SuspendLayout();
             this.groupChiudi.SuspendLayout();
             this.groupCalendario.SuspendLayout();
@@ -86,6 +87,7 @@
             this.TabDeveloper.SuspendLayout();
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
+            this.TabSmartArtToolsDesign.SuspendLayout();
             // 
             // FrontOffice
             // 
@@ -355,13 +357,18 @@
             this.TabBackgroundRemoval.Name = "TabBackgroundRemoval";
             this.TabBackgroundRemoval.Visible = false;
             // 
+            // TabSmartArtToolsDesign
+            // 
+            this.TabSmartArtToolsDesign.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabSmartArtToolsDesign.ControlId.OfficeId = "TabSmartArtToolsDesign";
+            this.TabSmartArtToolsDesign.Label = "TabSmartArtToolsDesign";
+            this.TabSmartArtToolsDesign.Name = "TabSmartArtToolsDesign";
+            // 
             // ToolsExcelRibbon
             // 
             this.Name = "ToolsExcelRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
-            this.StartFromScratch = true;
             this.Tabs.Add(this.FrontOffice);
-            this.Tabs.Add(this.TabAddIns);
             this.Tabs.Add(this.TabHome);
             this.Tabs.Add(this.TabInsert);
             this.Tabs.Add(this.TabPageLayoutExcel);
@@ -370,8 +377,10 @@
             this.Tabs.Add(this.TabReview);
             this.Tabs.Add(this.TabView);
             this.Tabs.Add(this.TabDeveloper);
+            this.Tabs.Add(this.TabAddIns);
             this.Tabs.Add(this.TabPrintPreview);
             this.Tabs.Add(this.TabBackgroundRemoval);
+            this.Tabs.Add(this.TabSmartArtToolsDesign);
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.ToolsExcelRibbon_Load);
             this.FrontOffice.ResumeLayout(false);
             this.FrontOffice.PerformLayout();
@@ -411,6 +420,8 @@
             this.TabPrintPreview.PerformLayout();
             this.TabBackgroundRemoval.ResumeLayout(false);
             this.TabBackgroundRemoval.PerformLayout();
+            this.TabSmartArtToolsDesign.ResumeLayout(false);
+            this.TabSmartArtToolsDesign.PerformLayout();
 
         }
 
@@ -449,6 +460,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnConfigura;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupCalendario;
+        private Microsoft.Office.Tools.Ribbon.RibbonTab TabSmartArtToolsDesign;
     }
 
     partial class ThisRibbonCollection

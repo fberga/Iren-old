@@ -51,6 +51,7 @@ namespace Iren.FrontOffice.Base
         {
             DefinedNames nomiDefiniti = new DefinedNames(Target.Worksheet.Name);
             Sheet s = new Sheet(Target.Worksheet);
+            Target.Worksheet.Unprotect(Simboli.pwd);
             s.AggiornaGrafici();
 
             object[,] values;
@@ -85,7 +86,7 @@ namespace Iren.FrontOffice.Base
 
                         modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
                         if (modifiche.Count == 0)
-                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j], nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.IdApplicazione, DataBase.IdUtenteAttivo);
+                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.IdApplicazione, DataBase.IdUtenteAttivo);
                         else
                             modifiche[0]["Valore"] = values[i, j];
                     }
@@ -97,6 +98,7 @@ namespace Iren.FrontOffice.Base
                     }
                 }
             }
+            Target.Worksheet.Protect(Simboli.pwd);
         }
 
         public static void ChangeModificaDati(bool modifica)

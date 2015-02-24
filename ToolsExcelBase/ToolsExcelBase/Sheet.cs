@@ -12,15 +12,16 @@ using System.Globalization;
 using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
+using Iren.FrontOffice.Core;
 
 namespace Iren.FrontOffice.Base
 {
-    public class Sheet : CommonFunctions, IDisposable
+    public class Sheet : IDisposable
     {
         #region Variabili
 
         Excel.Worksheet _ws;
-        Dictionary<string, object> _config = new Dictionary<string, object>();
+        object _siglaCategoria;
         DateTime _dataInizio;
         DateTime _dataFine;
         int _colonnaInizio;
@@ -42,11 +43,10 @@ namespace Iren.FrontOffice.Base
             DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
 
-            _config.Add("SiglaCategoria", categorie[0]["SiglaCategoria"]);
-            _config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture));
+            _siglaCategoria = categorie[0]["SiglaCategoria"];            
 
             //dimensionamento celle in base ai parametri del DB
-            DataView paramApplicazione = LocalDB.Tables[Tab.APPLICAZIONE].DefaultView;
+            DataView paramApplicazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.APPLICAZIONE].DefaultView;
 
             _cell = new Cell();
             _struttura = new Struttura();
@@ -91,8 +91,8 @@ namespace Iren.FrontOffice.Base
         {
             for (DateTime giorno = _dataInizio; giorno <= _dataFine; giorno = giorno.AddDays(1))
             {
-                int oreGiorno = GetOreGiorno(giorno);
-                string suffissoData = GetSuffissoData(_dataInizio, giorno);
+                int oreGiorno = CommonFunctions.GetOreGiorno(giorno);
+                string suffissoData = CommonFunctions.GetSuffissoData(_dataInizio, giorno);
 
                 if (giorno == _dataInizio && _struttura.visData0H24)
                 {
@@ -105,7 +105,7 @@ namespace Iren.FrontOffice.Base
 
         private void Clear()
         {
-            int dataOreTot = GetOreIntervallo(_dataInizio, _dataInizio.AddDays(_struttura.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = CommonFunctions.GetOreIntervallo(_dataInizio, _dataInizio.AddDays(_struttura.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
 
@@ -130,7 +130,7 @@ namespace Iren.FrontOffice.Base
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;
 
-            string gotoBarRangeName = DefinedNames.GetName(_config["SiglaCategoria"], "GOTO_BAR");
+            string gotoBarRangeName = DefinedNames.GetName(_siglaCategoria, "GOTO_BAR");
             Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaBlock - 2, _struttura.colBlock + dataOreTot - 1]];
             rng.Style = "gotoBarStyle";
             rng.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
@@ -147,11 +147,11 @@ namespace Iren.FrontOffice.Base
         {
             Stopwatch watch = Stopwatch.StartNew();
 
-            DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = (DateTime)_config["DataInizio"];
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            _dataInizio = DataBase.DataAttiva;
 
             Clear();
             InitBarraNavigazione(dvCE);
@@ -180,7 +180,7 @@ namespace Iren.FrontOffice.Base
             CalcolaFormule();
             watch.Stop();
             watch = Stopwatch.StartNew();
-            AggiornaFormule(_ws);
+            CommonFunctions.AggiornaFormule(_ws);
             watch.Stop();
             watch = Stopwatch.StartNew();
             InsertGrafici();
@@ -219,23 +219,23 @@ namespace Iren.FrontOffice.Base
         private void InitBloccoEntita(DataRowView entita)
         {
             _rigaAttiva++;
-            DataView grafici = LocalDB.Tables[Tab.ENTITAGRAFICO].DefaultView;
+            DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
             grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
 
-            DataView graficiInfo = LocalDB.Tables[Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            DataView graficiInfo = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
             graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
 
-            DataView informazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
             informazioni.Sort = "Ordine";
 
-            DataView parametriD = LocalDB.Tables[Tab.ENTITAPARAMETROD].DefaultView;
-            DataView parametriH = LocalDB.Tables[Tab.ENTITAPARAMETROH].DefaultView;
+            DataView parametriD = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROD].DefaultView;
+            DataView parametriH = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROH].DefaultView;
 
-            DataView formattazione = LocalDB.Tables[Tab.ENTITAINFORMAZIONEFORMATTAZIONE].DefaultView;
+            DataView formattazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONEFORMATTAZIONE].DefaultView;
 
             _colonnaInizio = _struttura.colBlock;
-            _intervalloOre = GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            _intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             //titolo + data
             //Stopwatch watch = Stopwatch.StartNew();
@@ -507,7 +507,7 @@ namespace Iren.FrontOffice.Base
         private void InsertValoriCelle(DataView informazioni)
         {
             //carico tutti i dati reperibili durante la creazione del foglio
-            int intervalloOre = GetOreIntervallo(_dataInizio, _dataFine);
+            int intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
 
             foreach (DataRowView info in informazioni)
             {
@@ -547,7 +547,7 @@ namespace Iren.FrontOffice.Base
         private void InsertParametri(DataView informazioni, DataView parametriD, DataView parametriH)
         {
             //carico tutti i dati reperibili durante la creazione del foglio
-            int intervalloOre = GetOreIntervallo(_dataInizio, _dataFine);
+            int intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
 
             foreach (DataRowView info in informazioni)
             {
@@ -613,7 +613,7 @@ namespace Iren.FrontOffice.Base
                     if (parametroEntita.Length > 1)
                     {
                         int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
-                        DataView categoriaEntita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+                        DataView categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
                         categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
                         nome = DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], parametri[n - 1]);
                     }
@@ -656,7 +656,7 @@ namespace Iren.FrontOffice.Base
         }
         private void CreaFormattazioneCondizionale(DataView informazioni, DataView formattazione)
         {
-            int intervalloOre = GetOreIntervallo(_dataInizio, _dataFine);
+            int intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
             int colonnaInizio = !_struttura.visData0H24 ? _colonnaInizio : _colonnaInizio + 1;
 
             foreach (DataRowView info in informazioni)
@@ -731,17 +731,17 @@ namespace Iren.FrontOffice.Base
         //cancella i dati di tutti i giorni o del giorno specificato (attenzione ad usare in caso di cambio data perché il prefisso viene calcolato da data inizio config)
         private void CancellaDati(DateTime? giorno = null)
         {
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
-            _dataInizio = (DateTime)_config["DataInizio"];
-            string suffissoData = giorno == null ? null : GetSuffissoData(_dataInizio, giorno.Value);
+            _dataInizio = DataBase.DataAttiva;
+            string suffissoData = giorno == null ? null : CommonFunctions.GetSuffissoData(_dataInizio, giorno.Value);
 
             foreach (DataRowView entita in dvCE)
             {
-                DataView informazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
+                DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
                 informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND ValoreDefault IS NULL";
                 
                 foreach (DataRowView info in informazioni)
@@ -762,10 +762,10 @@ namespace Iren.FrontOffice.Base
 
         private void AggiornaDateTitoli()
         {
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND Gerarchia IS NULL";
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND Gerarchia IS NULL";
 
             foreach (DataRowView entita in dvCE)
             {
@@ -785,17 +785,17 @@ namespace Iren.FrontOffice.Base
 
         public void CaricaParametri()
         {
-            DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
 
-            DataView informazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
 
-            DataView parametriD = LocalDB.Tables[Tab.ENTITAPARAMETROD].DefaultView;
-            DataView parametriH = LocalDB.Tables[Tab.ENTITAPARAMETROH].DefaultView;
+            DataView parametriD = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROD].DefaultView;
+            DataView parametriH = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROH].DefaultView;
             
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = (DateTime)_config["DataInizio"];
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            _dataInizio = DataBase.DataAttiva;
 
             foreach (DataRowView entita in dvCE)
             {
@@ -813,11 +813,11 @@ namespace Iren.FrontOffice.Base
 
         private void InsertGrafici()
         {
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            DataView grafici = LocalDB.Tables[Tab.ENTITAGRAFICO].DefaultView;
-            DataView graficiInfo = LocalDB.Tables[Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
+            DataView graficiInfo = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "'";
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
 
             foreach (DataRowView entita in dvCE)
             {
@@ -894,11 +894,11 @@ namespace Iren.FrontOffice.Base
 
         public void AggiornaGrafici()
         {
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            DataView grafici = LocalDB.Tables[Tab.ENTITAGRAFICO].DefaultView;
-            DataView graficiInfo = LocalDB.Tables[Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
+            DataView graficiInfo = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "'";
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
 
             foreach (DataRowView entita in dvCE)
             {
@@ -915,20 +915,21 @@ namespace Iren.FrontOffice.Base
                     var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
                     Excel.Range rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
                     var chart = _ws.ChartObjects(nome).Chart;
-
+                    //rigaGrafico.Locked = false;
                     AggiornaGrafici(chart, rigaGrafico);
                     chart.Refresh();
+                    //rigaGrafico.Locked = true;
                 }
             }
         }
 
         public void CaricaInformazioni(bool all)
         {
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = (DateTime)_config["DataInizio"];
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            _dataInizio = DataBase.DataAttiva;
 
             //calcolo tutte le date e mantengo anche la data max
             DateTime dataFineMax = _dataInizio;
@@ -945,15 +946,15 @@ namespace Iren.FrontOffice.Base
             }
 
             //Stopwatch watch = Stopwatch.StartNew();
-            DataView datiApplicazione = DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=" + (all ? "1" : "0")).DefaultView;
+            DataView datiApplicazione = CommonFunctions.DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=" + (all ? "1" : "0")).DefaultView;
 
             DataView insertManuali = new DataView();
             if(all)
-                insertManuali = DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _config["SiglaCategoria"] + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
+                insertManuali = CommonFunctions.DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
             
             //watch.Stop();
 
-            //dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            //dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
             foreach (DataRowView entita in dvCE)
             {
                 //watch = Stopwatch.StartNew();
@@ -986,7 +987,7 @@ namespace Iren.FrontOffice.Base
                 } 
                 else 
                 {
-                    Tuple<int, int>[] riga = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], GetSuffissoData(_dataInizio, dataDato))];
+                    Tuple<int, int>[] riga = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], CommonFunctions.GetSuffissoData(_dataInizio, dataDato))];
 
                     List<object> o = new List<object>(dato.Row.ItemArray);
                     o.RemoveRange(0, 3);
@@ -1000,7 +1001,7 @@ namespace Iren.FrontOffice.Base
             foreach (DataRowView commento in insertManuali)
             {
                 DateTime giorno = DateTime.ParseExact(commento["Data"].ToString().Substring(0, 8), "yyyyMMdd", CultureInfo.InvariantCulture);
-                Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(commento["SiglaEntita"], commento["SiglaInformazione"], GetSuffissoData(_dataInizio, giorno), GetSuffissoOra(commento["Data"]))][0];
+                Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(commento["SiglaEntita"], commento["SiglaInformazione"], CommonFunctions.GetSuffissoData(_dataInizio, giorno), CommonFunctions.GetSuffissoOra(commento["Data"]))][0];
                 Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
                 rng.ClearComments();
                 rng.AddComment("Valore inserito manualmente");
@@ -1011,13 +1012,13 @@ namespace Iren.FrontOffice.Base
 
         public void CalcolaFormule(string siglaEntita = null, DateTime? dataAttiva = null, int ordineElaborazione = 0, bool escludiOrdine = false)
         {
-            DataView dvCE = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
-            DataView informazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _config["SiglaCategoria"] + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");
 
-            _dataInizio = (DateTime)_config["DataInizio"];
+            _dataInizio = DataBase.DataAttiva;
             DateTime giorno = dataAttiva ?? _dataInizio;
 
             foreach (DataRowView entita in dvCE)
@@ -1046,11 +1047,11 @@ namespace Iren.FrontOffice.Base
                         _dataFine = giorno;
                     }
 
-                    int intervalloOre = GetOreIntervallo(giorno, _dataFine);
+                    int intervalloOre = CommonFunctions.GetOreIntervallo(giorno, _dataFine);
                     int colonnaInizio = (_struttura.visData0H24 && giorno == _dataInizio) ? _colonnaInizio + 1 : _colonnaInizio;
 
-                    string suffissoDataPrec = GetSuffissoData(_dataInizio, giorno.AddDays(-1));
-                    string suffissoData = GetSuffissoData(_dataInizio, giorno);
+                    string suffissoDataPrec = CommonFunctions.GetSuffissoData(_dataInizio, giorno.AddDays(-1));
+                    string suffissoData = CommonFunctions.GetSuffissoData(_dataInizio, giorno);
 
                     foreach (DataRowView info in informazioni)
                     {
@@ -1058,7 +1059,7 @@ namespace Iren.FrontOffice.Base
 
                         int deltaNeg;
                         int deltaPos;
-                        string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, GetOreGiorno(giorno.AddDays(-1)), out deltaNeg, out deltaPos);
+                        string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, CommonFunctions.GetOreGiorno(giorno.AddDays(-1)), out deltaNeg, out deltaPos);
 
                         Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio - deltaNeg], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - deltaPos - 1]];
 
@@ -1076,7 +1077,7 @@ namespace Iren.FrontOffice.Base
 
         public static void Proteggi(bool proteggi)
         {
-            foreach (Excel.Worksheet ws in WB.Sheets)
+            foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
             {
                 if (proteggi)
                     if(ws.Name == "Log")
@@ -1090,11 +1091,10 @@ namespace Iren.FrontOffice.Base
 
         public static void AbilitaModifica(bool abilita)
         {
-            DataView categorie = LocalDB.Tables[Tab.CATEGORIA].DefaultView;
+            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = '1'";
-            DataView entita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
-            
-            DataView informazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
 
             foreach (DataRowView categoria in categorie)
             {

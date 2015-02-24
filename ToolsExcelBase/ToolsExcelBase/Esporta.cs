@@ -149,7 +149,7 @@ namespace Iren.FrontOffice.Base
         public static string PreparePath(string path)
         {
             Regex options = new Regex(@"\[\w+\]");
-            options.Replace(path, match =>
+            path = options.Replace(path, match =>
             {
                 string opt = match.Value.Replace("[", "").Replace("]", "");
                 string o = "";

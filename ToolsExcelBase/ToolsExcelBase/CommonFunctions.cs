@@ -3,6 +3,7 @@ using Iren.FrontOffice.UserConfig;
 using Microsoft.Office.Tools.Excel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -11,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
@@ -105,7 +108,7 @@ namespace Iren.FrontOffice.Base
 
         #region Metodi
 
-        private static void ResetTable(string name)
+        public static void ResetTable(string name)
         {
             if (_localDB.Tables.Contains(name))
             {
@@ -132,24 +135,6 @@ namespace Iren.FrontOffice.Base
             return int.Parse(""+dtUtente.Rows[0]["IdUtente"]);
         }
 
-        public static void InitLog()
-        {            
-            ResetTable(Tab.LOG);
-            DataTable dtLog = _db.Select("spApplicazioneLog");
-            dtLog.TableName = Tab.LOG;
-            dtLog.PrimaryKey = new DataColumn[] 
-            {
-                dtLog.Columns["Utente"],
-                dtLog.Columns["Data"],
-                dtLog.Columns["Testo"]
-
-            };
-            _localDB.Tables.Add(dtLog);
-            
-            DataView dv = _localDB.Tables[Tab.LOG].DefaultView;
-            dv.Sort = "Data DESC";
-        }
-
         private static DataTable CaricaApplicazione(object idApplicazione)
         {
             string name = Tab.APPLICAZIONE;
@@ -173,6 +158,18 @@ namespace Iren.FrontOffice.Base
         {
             RefreshAppSettings("DB", ambiente);
             _db = new DataBase(ambiente);
+        }
+
+        public static void InitLog()
+        {
+            DataTable dtLog = CommonFunctions.DB.Select("spApplicazioneLog");
+            dtLog.TableName = CommonFunctions.Tab.LOG;
+            CommonFunctions.LocalDB.Tables.Add(dtLog);
+
+            DataView dv = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
+            dv.Sort = "Data DESC";
+
+            CommonFunctions.DB.CloseConnection();
         }
 
         public static void Init(string dbName, object appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
@@ -303,6 +300,7 @@ namespace Iren.FrontOffice.Base
             CaricaEntitaParametroH();
             _localDB.AcceptChanges();
         }
+
         #region Aggiorna Struttura Dati
 
         private static bool CreaTabellaNomi()
@@ -320,7 +318,6 @@ namespace Iren.FrontOffice.Base
                 return false;
             }
         }
-
         private static bool CreaTabellaModifica()
         {
             try
@@ -334,7 +331,7 @@ namespace Iren.FrontOffice.Base
                         {"SiglaEntita", typeof(string)},
                         {"SiglaInformazione", typeof(string)},
                         {"Data", typeof(string)},
-                        {"Valore", typeof(object)},
+                        {"Valore", typeof(string)},
                         {"AnnotaModifica", typeof(string)},
                         {"IdApplicazione", typeof(string)},
                         {"IdUtente", typeof(string)}
@@ -351,7 +348,6 @@ namespace Iren.FrontOffice.Base
                 return false;
             }
         }
-
         private static bool CaricaAzioni()
         {
             try
@@ -774,31 +770,39 @@ namespace Iren.FrontOffice.Base
 
         #endregion
 
-        public static void Close()
+        public static void DumpDataSet()
         {
-            StringWriter sw = new StringWriter();
-            _localDB.WriteXml(sw);
-            string locDBXml = sw.ToString();
+            StringWriter strWriter = new StringWriter();
+            XmlWriter xmlWriter = XmlWriter.Create(strWriter);
+            _localDB.Tables.Remove(Tab.LOG);
+            _localDB.WriteXml(xmlWriter);
+            string locDBXml = strWriter.ToString();
+            Microsoft.Office.Core.CustomXMLPart part;
             try
             {
-                _wb.CustomXMLParts[_namespace].Delete();
+                part = _wb.CustomXMLParts[_namespace];
             }
             catch
             {
+                part = _wb.CustomXMLParts.Add();
             }
-            _wb.CustomXMLParts.Add(locDBXml);
+
+            part.LoadXML(locDBXml);
         }
 
         public static void InsertLog(DataBase.TipologiaLOG logType, string message)
         {
-            _wb.Sheets["Log"].Unprotect();
-            _db.OpenConnection();
-            _db.InsertLog(logType, message);
-            //_db.CloseConnection();
-            DataTable dt = _db.Select("spApplicazioneLog");
-            dt.TableName = Tab.LOG;
-            _localDB.Merge(dt);
-            _wb.Sheets["Log"].Protect();
+            if (_db.OpenConnection())
+            {
+                _wb.Sheets["Log"].Unprotect();
+                _db.InsertLog(logType, message);
+                //_db.CloseConnection();
+                DataTable dt = _db.Select("spApplicazioneLog");
+                dt.TableName = Tab.LOG;
+                _localDB.Merge(dt);
+                _wb.Sheets["Log"].Protect();
+            }
+
         }
 
         public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true)
@@ -823,7 +827,7 @@ namespace Iren.FrontOffice.Base
             }
         }
 
-        public void AggiornaFormule(Excel.Worksheet ws)
+        public static void AggiornaFormule(Excel.Worksheet ws)
         {
             ws.Application.CalculateFull();
         }
@@ -1013,7 +1017,7 @@ namespace Iren.FrontOffice.Base
                 object[] values = tmpVal.Cast<object>().ToArray();
                 for (int i = oraInizio; i < oraFine; i++)
                 {
-                    entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaCommitment = '" + values[i - oraInizio] + "' AND AbilitaOfferta = '1'";
+                    entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaCommitment = '" + values[i - oraInizio] + "' AND AbilitaOffertaMGP = '1'";
                     if (entitaCommitment.Count > 0)
                         oreDaCalcolare.Add(i);
                 }
@@ -1090,10 +1094,11 @@ namespace Iren.FrontOffice.Base
                             watch = Stopwatch.StartNew();
                             if (step == 0)
                             {
-                                Tuple<int, int>[] celle = nomiDefiniti[DefinedNames.GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)];
-                                if (celle != null)
+                                if (nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)))
                                 {
-                                    Excel.Range rng = ws.Cells[celle[0].Item1, celle[0].Item2];
+                                    Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)][0];
+                                
+                                    Excel.Range rng = ws.Cells[cella.Item1, cella.Item2];
                                     rng.Formula = calcolo["SiglaInformazione"].Equals("CHECKINFO") ? GetMessaggioCheck(risultato) : risultato;
 
                                     if (calcolo["BackColor"] != DBNull.Value)
@@ -1105,12 +1110,12 @@ namespace Iren.FrontOffice.Base
 
                                     if (calcolo["Commento"] != DBNull.Value)
                                         rng.AddComment(calcolo["Commento"]).Visible = false;
-                                }
 
-                                entitaInformazioni.RowFilter = "SiglaInformazione = '" + calcolo["SiglaInformazione"] + "'";
-                                if (entitaInformazioni.Count > 0 && entitaInformazioni[0]["SalvaDB"].Equals("1"))
-                                {
-                                    //TODO Annotamodifica!!!!!!!!!!!!!!!!!
+                                    entitaInformazioni.RowFilter = "SiglaInformazione = '" + calcolo["SiglaInformazione"] + "'";
+                                    if (entitaInformazioni.Count > 0 && entitaInformazioni[0]["SalvaDB"].Equals("1"))
+                                    {
+                                        BaseHandler.StoreEdit(ws, rng);
+                                    }
                                 }
                             }
                             watch.Stop();
@@ -1424,48 +1429,62 @@ namespace Iren.FrontOffice.Base
 
         public static void SalvaModificheDB()
         {
+            DataTable modifiche = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.MODIFICA];
+
+            DataTable dt = modifiche.Copy();
+            dt.TableName = modifiche.TableName;
+            dt.Namespace = "";
+
+            if (dt.Rows.Count == 0)
+                return;
+
             bool onLine = DB.OpenConnection();
 
-            DataTable modifiche = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.MODIFICA];
             var path = Esporta.GetPath("pathExportModifiche");
 
             string cartellaRemota = Esporta.PreparePath(path.Value);
+            string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
+            string cartellaArchivio = Esporta.PreparePath(path.Archivio);
 
             string fileName = "";
-            string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
-
             if (onLine && Directory.Exists(cartellaRemota)) 
             {
-                string[] files = Directory.GetFiles(cartellaEmergenza);
+                string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
 
-                if (files.Length > 0)
+                if (fileEmergenza.Length > 0)
                 {
-                    Array.Sort<string>(files);
-                    
-                    //, (s1, s2) =>
-                    //{
-                    //    int n1 = int.Parse(s1.Replace(".xml", "").Split('_')[1]);
-                    //    int n2 = int.Parse(s2.Replace(".xml", "").Split('_')[1]);
-
-                    //    return n1.CompareTo(n2);
-                    //});
+                    Array.Sort<string>(fileEmergenza);
+                    foreach (string file in fileEmergenza)
+                    {
+                        File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
+                        //TODO esegui stored procedure sul file
+                        if(true)
+                            File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                    }
                 }
 
-                foreach (string oldFileName in files)
-                {
-                    File.Copy(oldFileName, Path.Combine(cartellaRemota, oldFileName.Split('/')[oldFileName.Length - 1]));
-                }
-
-                fileName = Path.Combine(Esporta.PreparePath(path.Value), Simboli.nomeApplicazione + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".xml");
+                fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                dt.WriteXml(fileName);
+                //TODO esegui stored procedure
+                if (true)
+                    File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
             } 
             else 
             {
-                fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".xml");
+                fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                try
+                {
+                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Directory.CreateDirectory(cartellaEmergenza);
+                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                }
             }
 
-            //StreamWriter sw = new StreamWriter()
-            
-
+            modifiche.Clear();
+            DB.CloseConnection();
         }
         
         #endregion

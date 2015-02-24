@@ -25,28 +25,28 @@ namespace Iren.FrontOffice.UserConfig
         [ConfigurationProperty("value", IsRequired = true)]
         public string Value
         {
-            get { return (string)base["value"]; }
+            get { return Environment.ExpandEnvironmentVariables((string)base["value"]); }
             set { base["value"] = value; }
         }
 
         [ConfigurationProperty("default", IsRequired = false, DefaultValue="")]
         public string Default
         {
-            get { return (string)base["default"]; }
+            get { return Environment.ExpandEnvironmentVariables((string)base["default"]); }
             set { base["default"] = value; }
         }
 
         [ConfigurationProperty("emergenza", IsRequired = false, DefaultValue="")]
         public string Emergenza
         {
-            get { return (string)base["emergenza"]; }
+            get { return Environment.ExpandEnvironmentVariables((string)base["emergenza"]); }
             set { base["emergenza"] = value; }
         }
 
         [ConfigurationProperty("archivio", IsRequired = false, DefaultValue = "")]
         public string Archivio
         {
-            get { return (string)base["archivio"]; }
+            get { return Environment.ExpandEnvironmentVariables((string)base["archivio"]); }
             set { base["archivio"] = value; }
         }
 

@@ -28,7 +28,7 @@ namespace Iren.FrontOffice.Tools
         #region Eventi
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
-        {
+        {      
             if (Globals.ThisWorkbook.Sheets.Count <= 2)
             {//disabilito tutti i tasti
                 AbilitaTasti(false);
@@ -112,7 +112,6 @@ namespace Iren.FrontOffice.Tools
 
             Forms.FormCalendar cal = new FormCalendar();
             cal.ShowDialog();
-
 
             DateTime dataOld = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
 
@@ -285,7 +284,7 @@ namespace Iren.FrontOffice.Tools
             else
             {
                 //Salva modifiche su db
-
+                CommonFunctions.SalvaModificheDB();
                 btnModifica.Label = "Modifica NO";
                 btnModifica.Image = Resources.edit_not_validated_icon;
             }
@@ -373,6 +372,9 @@ namespace Iren.FrontOffice.Tools
             btnAzioni.Enabled = abilita;
             btnRampe.Enabled = abilita;
             btnAggiornaDati.Enabled = abilita;
+            btnModifica.Enabled = abilita;
+            btnOttimizza.Enabled = abilita;
+            btnCalendar.Enabled = abilita;
         }
         
         private void AggiornaStruttura()
@@ -409,6 +411,9 @@ namespace Iren.FrontOffice.Tools
                     s.LoadStructure();
                 }
             }
+
+            CommonFunctions.DumpDataSet();
+            
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
         }

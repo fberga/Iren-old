@@ -20,7 +20,6 @@ namespace Iren.FrontOffice.Base
         #region Variabili
         
         Excel.Worksheet _ws;
-        Dictionary<string, object> _config = new Dictionary<string,object>();
         DateTime _dataInizio;
         DateTime _dataFine;
         DefinedNames _nomiDefiniti;
@@ -38,8 +37,6 @@ namespace Iren.FrontOffice.Base
         public Riepilogo(Excel.Worksheet ws)
         {
             _ws = ws;
-
-            _config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture));
 
             //dimensionamento celle in base ai parametri del DB
             DataView paramApplicazione = LocalDB.Tables[Tab.APPLICAZIONE].DefaultView;
@@ -156,7 +153,7 @@ namespace Iren.FrontOffice.Base
 
             _colonnaInizio = _struttura.colRecap;
             _rigaAttiva = _struttura.rowRecap;
-            _dataInizio = (DateTime)_config["DataInizio"];
+            _dataInizio = DataBase.DataAttiva;
             _dataFine = _dataInizio.AddDays(_struttura.intervalloGiorni);
 
             Clear();
