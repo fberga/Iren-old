@@ -327,27 +327,36 @@ namespace Iren.FrontOffice.Base
         }
         private void CaricaDatiRiepilogo()
         {
-            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            try
             {
-                DataView datiRiepilogo = DB.Select("spApplicazioneRiepilogo", "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;                
-                foreach (DataRowView valore in datiRiepilogo)
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
-                    Tuple<int, int> cella = _nomiDefiniti[nome][0];
-                    string commento = "";
-
-                    Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
-
-                    if(valore["Presente"].Equals("1")) 
+                    DataView datiRiepilogo = DB.Select("spApplicazioneRiepilogo", "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                    foreach (DataRowView valore in datiRiepilogo)
                     {
-                        DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
-                        commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
-                        rng.AddComment(commento);
-                        rng.Value = "OK";
-                        Style.RangeStyle(rng, "BackColor:4;Align:Center");
+                        string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
+                        Tuple<int, int> cella = _nomiDefiniti[nome][0];
+                        string commento = "";
+
+                        Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
+
+                        if (valore["Presente"].Equals("1"))
+                        {
+                            DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
+                            commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
+                            rng.AddComment(commento);
+                            rng.Value = "OK";
+                            Style.RangeStyle(rng, "BackColor:4;Align:Center");
+                        }
                     }
-                }
-            });
+                });
+            }
+            catch (Exception e)
+            {
+                CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaDatiRiepilogo: " + e.Message);
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
 
         public void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
@@ -371,6 +380,21 @@ namespace Iren.FrontOffice.Base
                 rng.Value = "Non presente";
                 Style.RangeStyle(rng, "FontSize:7;ForeColor:3;BackColor:2;Align:Center;Bold:false");
             }
+
+        }
+
+        private void AggiornaDate()
+        {
+
+        }
+
+        private void AggiornaValori()
+        {
+
+        }
+
+        public void UpdateData()
+        {
 
         }
 

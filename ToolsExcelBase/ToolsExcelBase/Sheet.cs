@@ -145,7 +145,7 @@ namespace Iren.FrontOffice.Base
 
         public void LoadStructure()
         {
-            Stopwatch watch = Stopwatch.StartNew();
+            //Stopwatch watch = Stopwatch.StartNew();
 
             DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
             DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
@@ -171,20 +171,20 @@ namespace Iren.FrontOffice.Base
             }
             dvEP.RowFilter = "";
             dvCE.RowFilter = "";
-            watch.Stop();
+            //watch.Stop();
 
-            watch = Stopwatch.StartNew();
+            //watch = Stopwatch.StartNew();
             CaricaInformazioni(true);
-            watch.Stop();
-            watch = Stopwatch.StartNew();
+            //watch.Stop();
+            //watch = Stopwatch.StartNew();
             CalcolaFormule();
-            watch.Stop();
-            watch = Stopwatch.StartNew();
+            //watch.Stop();
+            //watch = Stopwatch.StartNew();
             CommonFunctions.AggiornaFormule(_ws);
-            watch.Stop();
-            watch = Stopwatch.StartNew();
+            //watch.Stop();
+            //watch = Stopwatch.StartNew();
             InsertGrafici();
-            watch.Stop();
+            //watch.Stop();
         }
 
         public void UpdateData(bool all = true)
@@ -631,15 +631,22 @@ namespace Iren.FrontOffice.Base
                         } 
                         else 
                         {
-                            int ora = (deltaOre < 0 ? oreDataPrec : Math.Abs(tmpdeltaNeg)) + deltaOre + 1;
+                            int ora = (deltaOre < 0 ? oreDataPrec + deltaOre + 1 : deltaOre + 1);
                             nome += Simboli.UNION + DefinedNames.GetName(deltaOre < 0 ? suffissoDataPrec : suffissoData, "H" + ora);
                         }
                         nome = Regex.Replace(nome, @"\[[-+]?\d+\]", "");
                     }
                     else
                     {
-                        int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
-                        nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H" + ora);
+                        if (suffissoData == "DATA1")
+                        {
+                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H" + ora);
+                        }
+                        else
+                        {
+                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H1");
+                        }
                     }
 
                     Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
@@ -736,8 +743,7 @@ namespace Iren.FrontOffice.Base
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
-            _dataInizio = DataBase.DataAttiva;
-            string suffissoData = giorno == null ? null : CommonFunctions.GetSuffissoData(_dataInizio, giorno.Value);
+            string suffissoData = giorno == null ? null : CommonFunctions.GetSuffissoData(DataBase.DataAttiva, giorno.Value);
 
             foreach (DataRowView entita in dvCE)
             {
@@ -766,6 +772,7 @@ namespace Iren.FrontOffice.Base
             DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND Gerarchia IS NULL";
+            _dataInizio = DataBase.DataAttiva;
 
             foreach (DataRowView entita in dvCE)
             {
@@ -925,52 +932,52 @@ namespace Iren.FrontOffice.Base
 
         public void CaricaInformazioni(bool all)
         {
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = DataBase.DataAttiva;
-
-            //calcolo tutte le date e mantengo anche la data max
-            DateTime dataFineMax = _dataInizio;
-            Dictionary<object, DateTime> dateFineUP = new Dictionary<object, DateTime>();
-            foreach (DataRowView entita in dvCE)
+            try
             {
-                dvEP.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                if (dvEP.Count > 0)
-                    dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"])));
-                else
-                    dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(_struttura.intervalloGiorni));
+                DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+                DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
-                dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
-            }
+                dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+                _dataInizio = DataBase.DataAttiva;
 
-            //Stopwatch watch = Stopwatch.StartNew();
-            DataView datiApplicazione = CommonFunctions.DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=" + (all ? "1" : "0")).DefaultView;
-
-            DataView insertManuali = new DataView();
-            if(all)
-                insertManuali = CommonFunctions.DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
-            
-            //watch.Stop();
-
-            //dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            foreach (DataRowView entita in dvCE)
-            {
-                //watch = Stopwatch.StartNew();
-                datiApplicazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
-                _dataFine = dateFineUP[entita["SiglaEntita"]];
-                CaricaInformazioniEntita(datiApplicazione);
-                //watch.Stop();
-                //watch = Stopwatch.StartNew();
-                if (all)
+                //calcolo tutte le date e mantengo anche la data max
+                DateTime dataFineMax = _dataInizio;
+                Dictionary<object, DateTime> dateFineUP = new Dictionary<object, DateTime>();
+                foreach (DataRowView entita in dvCE)
                 {
-                    insertManuali.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(SUBSTRING(Data, 1, 8), System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
-                    CaricaCommentiEntita(insertManuali);
-                }
-                //watch.Stop();
-            }
+                    dvEP.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    if (dvEP.Count > 0)
+                        dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"])));
+                    else
+                        dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(_struttura.intervalloGiorni));
 
+                    dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
+                }
+
+                DataView datiApplicazione = CommonFunctions.DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=" + (all ? "1" : "0")).DefaultView;
+
+                DataView insertManuali = new DataView();
+                if (all)
+                    insertManuali = CommonFunctions.DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
+
+                foreach (DataRowView entita in dvCE)
+                {
+                    datiApplicazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
+                    _dataFine = dateFineUP[entita["SiglaEntita"]];
+                    CaricaInformazioniEntita(datiApplicazione);
+                    if (all)
+                    {
+                        insertManuali.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(SUBSTRING(Data, 1, 8), System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
+                        CaricaCommentiEntita(insertManuali);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni [all = " + all + "]: " + e.Message);
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
         #region Informazioni
 
@@ -1010,16 +1017,18 @@ namespace Iren.FrontOffice.Base
 
         #endregion
 
-        public void CalcolaFormule(string siglaEntita = null, DateTime? dataAttiva = null, int ordineElaborazione = 0, bool escludiOrdine = false)
+        public void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false)
         {
             DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
             DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
             DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
 
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");            
 
-            _dataInizio = DataBase.DataAttiva;
-            DateTime giorno = dataAttiva ?? _dataInizio;
+            //_dataInizio = DataBase.DataAttiva;
+            //DateTime giorno = dataAttiva ?? DataBase.DataAttiva;
+
+            bool all = giorno == null;
 
             foreach (DataRowView entita in dvCE)
             {
@@ -1034,38 +1043,41 @@ namespace Iren.FrontOffice.Base
 
                 if (informazioni.Count > 0)
                 {
-                    if (dataAttiva == null)
-                    {
-                        dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                        if (dvEP.Count > 0)
-                            _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
-                        else
-                            _dataFine = _dataInizio.AddDays(_struttura.intervalloGiorni);
-                    }
+                    DateTime dataFine;
+
+                    dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    if (dvEP.Count > 0)
+                        dataFine = DataBase.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                     else
-                    {
-                        _dataFine = giorno;
-                    }
+                        dataFine = DataBase.DataAttiva.AddDays(_struttura.intervalloGiorni);
 
-                    int intervalloOre = CommonFunctions.GetOreIntervallo(giorno, _dataFine);
-                    int colonnaInizio = (_struttura.visData0H24 && giorno == _dataInizio) ? _colonnaInizio + 1 : _colonnaInizio;
-
-                    string suffissoDataPrec = CommonFunctions.GetSuffissoData(_dataInizio, giorno.AddDays(-1));
-                    string suffissoData = CommonFunctions.GetSuffissoData(_dataInizio, giorno);
+                    string suffissoData = all ? "DATA1" : CommonFunctions.GetSuffissoData(DataBase.DataAttiva, giorno.Value);
+                    string suffissoDataPrec = all ? "DATA0" : CommonFunctions.GetSuffissoData(DataBase.DataAttiva, giorno.Value.AddDays(-1));
+                    string suffissoUltimoGiorno = CommonFunctions.GetSuffissoData(DataBase.DataAttiva, dataFine);
 
                     foreach (DataRowView info in informazioni)
                     {
-                        int rigaAttiva = _nomiDefiniti[DefinedNames.GetName(entita["SiglaEntita"], info["SiglaInformazione"])][0].Item1;
+                        Tuple<int,int>[] riga;
+                        if(all)
+                            riga = _nomiDefiniti[DefinedNames.GetName(entita["SiglaEntita"], info["SiglaInformazione"]), info["Data0H24"].Equals("0")];
+                        else
+                            riga = _nomiDefiniti[DefinedNames.GetName(entita["SiglaEntita"], info["SiglaInformazione"], suffissoData)];
+                        
 
                         int deltaNeg;
                         int deltaPos;
-                        string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, CommonFunctions.GetOreGiorno(giorno.AddDays(-1)), out deltaNeg, out deltaPos);
+                        int oreDataPrec = all ? 24 : CommonFunctions.GetOreGiorno(giorno.Value.AddDays(-1));
+                        
+                        string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, oreDataPrec, out deltaNeg, out deltaPos);
 
-                        Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio - deltaNeg], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - deltaPos - 1]];
+                        if (suffissoData != "DATA1")
+                            deltaNeg = 0;
+                        if (suffissoData != suffissoUltimoGiorno)
+                            deltaPos = 0;
+
+                        Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2 - deltaNeg], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2 - deltaPos]];
 
                         rng.Formula = formula;
-
-                        rigaAttiva++;
                     }
                 }
                 informazioni.Sort = "";

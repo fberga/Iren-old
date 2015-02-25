@@ -73,7 +73,7 @@ namespace Iren.FrontOffice.Tools
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
-            CommonFunctions.Close();
+            //CommonFunctions.Close();
         }
 
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)

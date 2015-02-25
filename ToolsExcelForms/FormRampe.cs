@@ -1,15 +1,19 @@
-﻿using System;
+﻿using Iren.FrontOffice.Base;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data;
-using System.Windows.Forms;
 using System.Drawing;
-using Iren.FrontOffice.Base;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.FrontOffice.Forms
 {
     public partial class FormRampe : Form
     {
+        #region Variabili
+
         int _oreGiorno = 24;
         DataView _entitaRampa;
         double _pRif;
@@ -18,30 +22,119 @@ namespace Iren.FrontOffice.Forms
         List<object> _sigleRampa;
         int _childWidth;
         int _oreFermata;
-
+        Excel.Worksheet _ws;
         object[] _valoriPQNR;
+        Tuple<int, int>[] _profiloPQNR;
 
-        public DataTable _out = new DataTable();
+        #endregion
 
-        public FormRampe(string desEntita, double pRif, double?[] pMin, int oreGiorno, DataView entitaRampa, object[] valoriPQNR, int oreFermata)
+        #region Costruttore
+
+        public FormRampe(DefinedNames nomiDefiniti, Excel.Range rng)
         {
             InitializeComponent();
-
-            _entitaRampa = entitaRampa;
-            _sigleRampa = entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
-            _oreGiorno = oreGiorno;
-            _pRif = pRif;
-            _pMin = pMin;
-            _desEntita = desEntita;
-            _valoriPQNR = valoriPQNR;
-            _oreFermata = oreFermata;
-
-            _childWidth = panelValoriRampa.Width / _oreGiorno;
-            this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-
             this.Text = Simboli.nomeApplicazione + " - Rampe";
+
+            if (CommonFunctions.DB.OpenConnection())
+            {
+                _ws = (Excel.Worksheet)CommonFunctions.WB.ActiveSheet;
+
+                string nome = nomiDefiniti[rng.Row, rng.Column][0];
+                string up = nome.Split(Simboli.UNION[0])[0];
+
+                string suffissoData = Regex.Match(nome, @"DATA\d+").Value;
+                suffissoData = suffissoData == "" ? "DATA1" : suffissoData;
+
+                DataView proprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+                proprieta.RowFilter = "SiglaEntita = '" + up + "' AND SiglaProprieta = 'SISTEMA_COMANDI_PRIF'";
+                _pRif = 0;
+                if (proprieta.Count > 0)
+                    _pRif = Double.Parse(proprieta[0]["Valore"].ToString());
+
+                DataView categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaEntita = '" + up + "'";
+                _desEntita = categoriaEntita[0]["DesEntita"].ToString();
+
+                _entitaRampa = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITARAMPA].DefaultView;
+                _entitaRampa.RowFilter = "SiglaEntita = '" + up + "'";
+                _sigleRampa = _entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
+
+                _profiloPQNR = nomiDefiniti[DefinedNames.GetName(up, "PQNR_PROFILO", suffissoData)];
+                object[,] values = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]].Value;
+                _valoriPQNR = values.Cast<object>().ToArray();
+
+                DataView assetti = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAASSETTO].DefaultView;
+                assetti.RowFilter = "SiglaEntita = '" + up + "'";
+
+                //TODO controllare se si può semplificare
+                _pMin = new double?[_valoriPQNR.Length];
+                int numAssetto = 1;
+                foreach (DataRowView assetto in assetti)
+                {
+                    Tuple<int, int>[] cellePmin = nomiDefiniti[DefinedNames.GetName(up, "PMIN_TERNA_ASSETTO" + numAssetto, suffissoData)];
+                    object[,] tmppMinOraria = _ws.Range[_ws.Cells[cellePmin[0].Item1, cellePmin[0].Item2], _ws.Cells[cellePmin[0].Item1, cellePmin[cellePmin.Length - 1].Item2]].Value;
+                    double?[] pMinOraria = tmppMinOraria.Cast<double?>().ToArray();
+                    for (int i = 0; i < pMinOraria.Length; i++)
+                    {
+                        _pMin[i] = Math.Min(_pMin[i] ?? pMinOraria[i] ?? 0, pMinOraria[i] ?? 0);
+                    }
+                    numAssetto++;
+                }
+
+                _oreGiorno = _valoriPQNR.Length;
+                _oreFermata = int.Parse(CommonFunctions.DB.Select("spGetOreFermata", "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
+
+                _childWidth = panelValoriRampa.Width / _oreGiorno;
+                this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
+                this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+
+                CommonFunctions.DB.CloseConnection();
+            }
         }
+
+        #endregion
+
+        #region Metodi
+
+        private DataTable initOutTable()
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                {
+                    {"SiglaRampa", typeof(string)},
+                    {"Q1", typeof(Int32)},
+                    {"Q2", typeof(Int32)},
+                    {"Q3", typeof(Int32)},
+                    {"Q4", typeof(Int32)},
+                    {"Q5", typeof(Int32)},
+                    {"Q6", typeof(Int32)},
+                    {"Q7", typeof(Int32)},
+                    {"Q8", typeof(Int32)},
+                    {"Q9", typeof(Int32)},
+                    {"Q10", typeof(Int32)},
+                    {"Q11", typeof(Int32)},
+                    {"Q12", typeof(Int32)},
+                    {"Q13", typeof(Int32)},
+                    {"Q14", typeof(Int32)},
+                    {"Q15", typeof(Int32)},
+                    {"Q16", typeof(Int32)},
+                    {"Q17", typeof(Int32)},
+                    {"Q18", typeof(Int32)},
+                    {"Q19", typeof(Int32)},
+                    {"Q20", typeof(Int32)},
+                    {"Q21", typeof(Int32)},
+                    {"Q22", typeof(Int32)},
+                    {"Q23", typeof(Int32)},
+                    {"Q24", typeof(Int32)}
+                }
+            };
+            return dt;
+        }
+
+        #endregion
+
+        #region Eventi
 
         private void frmRAMPE_Load(object sender, EventArgs e)
         {
@@ -182,8 +275,7 @@ namespace Iren.FrontOffice.Forms
                 tableLayoutDesRampa.Controls.OfType<RadioButton>().First().Checked = true;
             }
         }
-
-        void tb_CellPaint(object sender, TableLayoutCellPaintEventArgs e)
+        private void tb_CellPaint(object sender, TableLayoutCellPaintEventArgs e)
         {
             if (((TableLayoutPanel)sender).Name == "tableLayoutRampe")
             {
@@ -225,8 +317,7 @@ namespace Iren.FrontOffice.Forms
                 }
             }
         }
-
-        void rbOre_CheckedChanged(object sender, EventArgs e)
+        private void rbOre_CheckedChanged(object sender, EventArgs e)
         {
             RadioButton rb = (RadioButton)sender;
             int pos = rb.Parent.Controls.GetChildIndex(rb);
@@ -239,7 +330,7 @@ namespace Iren.FrontOffice.Forms
 
             ((RadioButton)Controls.Find(_sigleRampa[pos - 1].ToString(), true)[0]).Checked = allChecked;
         }
-        void rbTutti_CheckedChanged(object sender, EventArgs e)
+        private void rbTutti_CheckedChanged(object sender, EventArgs e)
         {
             RadioButton rb = (RadioButton)sender;
             if (rb.Checked)
@@ -252,55 +343,12 @@ namespace Iren.FrontOffice.Forms
                 }
             }
         }
-
-        
-        private void btnAnnulla_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private DataTable initOutTable()
-        {
-            DataTable dt = new DataTable()
-            {
-                Columns =
-                {
-                    {"SiglaRampa", typeof(string)},
-                    {"Q1", typeof(Int32)},
-                    {"Q2", typeof(Int32)},
-                    {"Q3", typeof(Int32)},
-                    {"Q4", typeof(Int32)},
-                    {"Q5", typeof(Int32)},
-                    {"Q6", typeof(Int32)},
-                    {"Q7", typeof(Int32)},
-                    {"Q8", typeof(Int32)},
-                    {"Q9", typeof(Int32)},
-                    {"Q10", typeof(Int32)},
-                    {"Q11", typeof(Int32)},
-                    {"Q12", typeof(Int32)},
-                    {"Q13", typeof(Int32)},
-                    {"Q14", typeof(Int32)},
-                    {"Q15", typeof(Int32)},
-                    {"Q16", typeof(Int32)},
-                    {"Q17", typeof(Int32)},
-                    {"Q18", typeof(Int32)},
-                    {"Q19", typeof(Int32)},
-                    {"Q20", typeof(Int32)},
-                    {"Q21", typeof(Int32)},
-                    {"Q22", typeof(Int32)},
-                    {"Q23", typeof(Int32)},
-                    {"Q24", typeof(Int32)}
-                }
-            };
-            return dt;
-        }
-
         private void btnApplica_Click(object sender, EventArgs e)
         {
-            _out = initOutTable();
+            DataTable o = initOutTable();
             for (int i = 1; i <= _oreGiorno; i++)
             {
-                DataRow riga = _out.NewRow();
+                DataRow riga = o.NewRow();
 
                 var oraX = panelValoriRampa.Controls.OfType<TableLayoutPanel>().FirstOrDefault(r => r.Name == "H" + i);
                 var check = oraX.Controls.OfType<RadioButton>().FirstOrDefault(r => r.Checked);
@@ -320,8 +368,19 @@ namespace Iren.FrontOffice.Forms
 
                 _entitaRampa.RowFilter = _entitaRampa.RowFilter.Replace(" AND SiglaRampa = '" + _sigleRampa[pos] + "'", "");
 
-                _out.Rows.Add(riga);
+                o.Rows.Add(riga);
             }
+            Excel.Range rng = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]];
+            rng.Value = o.AsEnumerable().Select(r => r["SiglaRampa"]).ToArray();
+
+            BaseHandler.StoreEdit(_ws, rng);
+            CommonFunctions.SalvaModificheDB();
         }
+        private void btnAnnulla_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        #endregion
     }
 }

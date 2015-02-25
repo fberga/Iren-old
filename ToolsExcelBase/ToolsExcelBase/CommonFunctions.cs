@@ -118,21 +118,32 @@ namespace Iren.FrontOffice.Base
 
         private static int InitUser()
         {
-            ResetTable(Tab.UTENTE);
-
-            DataTable dtUtente = _db.Select("spUtente", new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
-            dtUtente.TableName = Tab.UTENTE;
-
-            if (dtUtente.Rows.Count == 0)
+            try
             {
-                DataRow r = dtUtente.NewRow();
-                r["IdUtente"] = 0;
-                r["Nome"] = "NON CONFIGURATO";
-                dtUtente.Rows.Add(r);
-            }
-            _localDB.Tables.Add(dtUtente);
+                ResetTable(Tab.UTENTE);
 
-            return int.Parse(""+dtUtente.Rows[0]["IdUtente"]);
+                DataTable dtUtente = _db.Select("spUtente", new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
+                dtUtente.TableName = Tab.UTENTE;
+
+                if (dtUtente.Rows.Count == 0)
+                {
+                    DataRow r = dtUtente.NewRow();
+                    r["IdUtente"] = 0;
+                    r["Nome"] = "NON CONFIGURATO";
+                    dtUtente.Rows.Add(r);
+                }
+                _localDB.Tables.Add(dtUtente);
+
+                return int.Parse("" + dtUtente.Rows[0]["IdUtente"]);
+            }
+            catch (Exception e)
+            {
+                _db.InsertLog(DataBase.TipologiaLOG.LogErrore, "InitUser: " + e.Message);
+                
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                return -1;
+            }
         }
 
         private static DataTable CaricaApplicazione(object idApplicazione)
@@ -821,8 +832,8 @@ namespace Iren.FrontOffice.Base
             }
             catch (Exception e)
             {
-                //TODO riabilitare log
-                //InsertLog(DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo ["+ dataRif ?? DataBase.DataAttiva +", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                InsertLog(DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo ["+ dataRif ?? DataBase.DataAttiva +", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
@@ -902,8 +913,7 @@ namespace Iren.FrontOffice.Base
             }
             catch (Exception e)
             {
-                //TODO riabilitare log!!
-                //InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram CaricaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 return false;

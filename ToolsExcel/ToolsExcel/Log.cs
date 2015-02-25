@@ -40,23 +40,6 @@ namespace Iren.FrontOffice.Tools
 
         #region Metodi
 
-        //public object[,] DataTableToObjArray(System.Data.DataTable dt)
-        //{
-        //    object[,] o = new object[dt.Rows.Count, dt.Columns.Count];
-
-        //    int i = 0;
-        //    foreach (System.Data.DataRow row in dt.Rows)
-        //    {
-        //        int j = 0;
-        //        foreach (System.Data.DataColumn col in dt.Columns)
-        //        {
-        //            o[i, j++] = row[col];
-        //        }
-        //        i++;
-        //    }
-        //    return o;
-        //}
-
         #endregion
 
         #region Callbacks
@@ -72,20 +55,20 @@ namespace Iren.FrontOffice.Tools
                 _logObj = Controls.AddListObject(Range["A1"], "LogList");
             }
             _logObj.AutoSetDataBoundColumnHeaders = true;
-            _logObj.DataSource = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
-            try
+
+            if (CommonFunctions.DB.OpenConnection())
             {
-                //TODO controllare perché alla riapertura va in errore tutto............
+                _logObj.DataSource = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
+                Unprotect(Simboli.pwd);
                 _logObj.Range.EntireColumn.AutoFit();
                 _logObj.TableStyle = "TableStyleLight16";
 
                 Excel.Range rng = Columns[2];
                 rng.NumberFormat = "dd/MM/yyyy HH:mm:ss";
                 rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
-            }
-            catch (Exception)
-            {
+                Protect(Simboli.pwd);
 
+                CommonFunctions.DB.CloseConnection();
             }
         }
 

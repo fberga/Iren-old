@@ -34,11 +34,11 @@ namespace Iren.FrontOffice.Base
 
         #region Overload Operatori
 
-        public Tuple<int, int>[] this[string key]
+        public Tuple<int, int>[] this[string key, bool excludeDATA0H24 = false]
         {
             get
             {
-                return Get(key);
+                return Get(key, excludeDATA0H24);
             }
         }
 
@@ -67,8 +67,6 @@ namespace Iren.FrontOffice.Base
             r["Editabile"] = editabile;
             r["SalvaDB"] = salvaDB;
             r["AnnotaModifica"] = annotaModifica;
-
-            //TODO controllare se nome esiste già
 
             _definedNames.Rows.Add(r);
         }
@@ -129,6 +127,32 @@ namespace Iren.FrontOffice.Base
             }
 
             return o;
+        }
+
+        public bool IsDefined(string name)
+        {
+            name = PrepareName(name);
+            if (_name != name)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+                _name = name;
+                _row = -1;
+                _column = -1;
+            }
+
+            return _definedNamesView.Count > 0;
+        }
+        public bool IsDefined(int row, int column)
+        {
+            if (_row != row || _column != column)
+            {
+                _definedNamesView.RowFilter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
+                _row = row;
+                _column = column;
+                _name = null;
+            }
+
+            return _definedNamesView.Count > 0;
         }
 
         public bool IsRange(string name)
@@ -280,6 +304,8 @@ namespace Iren.FrontOffice.Base
                         {"AnnotaModifica", typeof(bool)}
                     }
             };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Foglio"], dt.Columns["Nome"] };
             dt.TableName = name;
             return dt;
         }
