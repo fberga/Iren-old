@@ -11,9 +11,9 @@ using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
-using Iren.FrontOffice.Base;
+using Iren.ToolsExcel.Base;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.ToolsExcel
 {
     public partial class Log
     {

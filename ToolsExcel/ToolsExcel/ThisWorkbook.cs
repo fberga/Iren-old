@@ -12,13 +12,13 @@ using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
 using System.Configuration;
 using System.IO;
-using Iren.FrontOffice.Base;
+using Iren.ToolsExcel.Base;
 using System.Deployment.Application;
 using System.Reflection;
 using System.Globalization;
-using Iren.FrontOffice.Core;
+using Iren.ToolsExcel.Core;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.ToolsExcel
 {
     public partial class ThisWorkbook
     {

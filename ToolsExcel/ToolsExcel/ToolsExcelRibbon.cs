@@ -1,17 +1,17 @@
-﻿using Iren.FrontOffice.Base;
-using Iren.FrontOffice.Core;
-using Iren.FrontOffice.Forms;
+﻿using Iren.ToolsExcel.Base;
+using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Forms;
 using Microsoft.Office.Tools.Ribbon;
 using System;
 using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-using ToolsExcel.Properties;
+using Iren.ToolsExcel.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
     {
@@ -26,14 +26,9 @@ namespace Iren.FrontOffice.Tools
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {      
             if (Globals.ThisWorkbook.Sheets.Count <= 2)
-            {//disabilito tutti i tasti
                 AbilitaTasti(false);
-            }
 
-            foreach (RibbonTab tab in this.Tabs)
-            {
-
-            }
+            CheckTastoApplicativo();
 
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
@@ -44,10 +39,10 @@ namespace Iren.FrontOffice.Tools
             //configuro gli ambienti selezionabili
             string[] ambienti = ConfigurationManager.AppSettings["AmbientiVisibili"].Split('|');
             foreach (string ambiente in ambienti)
-                groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ambiente).ToArray()[0].Visible = true;
+                groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == "btn" + ambiente).ToArray()[0].Visible = true;
 
             //seleziono l'ambiente attivo
-            groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == ConfigurationManager.AppSettings["DB"]).ToArray()[0].Checked = true;
+            groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == "btn" + ConfigurationManager.AppSettings["DB"]).ToArray()[0].Checked = true;
 
             //configuro i tasti visibili
             if (ConfigurationManager.AppSettings["RampeVisible"] != null && ConfigurationManager.AppSettings["RampeVisible"].ToLowerInvariant() == "false")
@@ -73,7 +68,7 @@ namespace Iren.FrontOffice.Tools
             {
                 //TODO riabilitare log!!
                 //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
-                CommonFunctions.SwitchEnvironment(ambienteScelto.Name);
+                CommonFunctions.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
                 btnAggiornaStruttura_Click(null, null);
             }
 
@@ -309,6 +304,49 @@ namespace Iren.FrontOffice.Tools
 
         #region Metodi
 
+        private void CheckTastoApplicativo()
+        {
+            switch (ConfigurationManager.AppSettings["AppID"])
+            {
+                case "1":
+                    btnOfferteMGP.Checked = true;
+                    break;
+                case "2":
+                case "3":
+                case "4":
+                case "13":
+                    btnInvioProgrammi.Checked = true;
+                    break;
+                case "5":
+                    btnProgrammazioneImpianti.Checked = true;
+                    break;
+                case "6":
+                    btnUnitCommitment.Checked = true;
+                    break;
+                case "7":
+                    btnPrezziMSD.Checked = true;
+                    break;
+                case "8":
+                    btnSistemaComandi.Checked = true;
+                    break;
+                case "9":
+                    btnOfferteMSD.Checked = true;
+                    break;
+                case "10":
+                    btnOfferteMB.Checked = true;
+                    break;
+                case "11":
+                    btnValidazioneTL.Checked = true;
+                    break;
+                case "12":
+                    btnPrevisioneCT.Checked = true;
+                    break;
+            }
+
+
+
+        }
+
         private bool SelezionaUP(string siglaInformazione, out string siglaEntita, out DefinedNames nomiDefiniti, out Excel.Range rng)
         {
             FormSelezioneUP selUP = new FormSelezioneUP(siglaInformazione);
@@ -399,7 +437,7 @@ namespace Iren.FrontOffice.Tools
             if (all)
             {
                 Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
-                main.LoadStructure();
+                main.UpdateRiepilogo();
             }
 
             //Log
@@ -517,6 +555,20 @@ namespace Iren.FrontOffice.Tools
                 Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset42;
 
             kkk++;
+        }
+
+        private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
+        {
+            RibbonToggleButton btn = (RibbonToggleButton)sender;
+
+            if (!btn.Checked)
+            {
+                btn.Checked = true;
+            }
+            else
+            {
+                //TODO aprire gli altri file!!!!!!
+            }
         }
 
     }

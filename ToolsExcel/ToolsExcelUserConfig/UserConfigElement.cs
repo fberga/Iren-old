@@ -4,7 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 
-namespace Iren.FrontOffice.UserConfig
+namespace Iren.ToolsExcel.UserConfig
 {
     public class UserConfigElement : ConfigurationElement
     {        

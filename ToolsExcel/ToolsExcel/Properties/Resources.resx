@@ -157,4 +157,37 @@
   <data name="Folder_Settings_Tools_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\res\folder-settings-tools-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="gas_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\gas-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ct_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\ct-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="invio_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\invio-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mb_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\mb-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mgp_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\mgp-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="mp_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\mp-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="msd_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\msd-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="prezziMSD_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\prezzimsd-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sc_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\sc-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="tl_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\tl-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="uc_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\res\uc-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
