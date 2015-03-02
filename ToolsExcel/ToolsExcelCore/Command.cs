@@ -35,9 +35,9 @@ namespace Iren.ToolsExcel.Core
             cmd.CommandTimeout = timeout;
             return cmd;
         }
-        public SqlCommand SqlCmd(string commandText)
+        public SqlCommand SqlCmd(string commandText, int timeout = 300)
         {
-            return SqlCmd(commandText, CommandType.StoredProcedure);
+            return SqlCmd(commandText, CommandType.StoredProcedure, timeout);
         }
         public SqlCommand SqlCmd(string commandText, CommandType commandType, QryParams parameters, int timeout = 300)
         {
@@ -56,9 +56,9 @@ namespace Iren.ToolsExcel.Core
             }
             return cmd;
         }
-        public SqlCommand SqlCmd(string commandText, QryParams parameters)
+        public SqlCommand SqlCmd(string commandText, QryParams parameters, int timeout = 300)
         {
-            return SqlCmd(commandText, CommandType.StoredProcedure, parameters);
+            return SqlCmd(commandText, CommandType.StoredProcedure, parameters, timeout);
         }
        
         #endregion

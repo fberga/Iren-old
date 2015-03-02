@@ -7,25 +7,24 @@ using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-using Iren.ToolsExcel.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-namespace Iren.ToolsExcel
+namespace Iren.ToolsExcel.Ribbon
 {
-    public partial class ToolsExcelRibbon
+    public partial class SharedRibbon
     {
         #region Variabili
 
         LoaderScreen loader = new LoaderScreen();
-        
+
         #endregion
 
         #region Eventi
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
-        {      
-            if (Globals.ThisWorkbook.Sheets.Count <= 2)
+        {
+            if (CommonFunctions.WB.Sheets.Count <= 2)
                 AbilitaTasti(false);
 
             CheckTastoApplicativo();
@@ -35,7 +34,7 @@ namespace Iren.ToolsExcel
 
             btnModifica.Checked = false;
 
-            
+
             //configuro gli ambienti selezionabili
             string[] ambienti = ConfigurationManager.AppSettings["AmbientiVisibili"].Split('|');
             foreach (string ambiente in ambienti)
@@ -52,10 +51,10 @@ namespace Iren.ToolsExcel
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
-            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
+            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
 
             int count = 0;
-            foreach (RibbonToggleButton button in FrontOffice.Groups.Last().Items)
+            foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
             {
                 if (button.Checked)
                 {
@@ -72,15 +71,15 @@ namespace Iren.ToolsExcel
                 btnAggiornaStruttura_Click(null, null);
             }
 
-            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
+            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
             ambienteScelto.Checked = true;
         }
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
-            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
+            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
             if (CommonFunctions.DB.OpenConnection())
             {
@@ -91,19 +90,19 @@ namespace Iren.ToolsExcel
                 CommonFunctions.DB.CloseConnection();
             }
 
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
-            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = true;
+            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
 
             AbilitaTasti(true);
         }
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
             Forms.FormCalendar cal = new FormCalendar();
             cal.ShowDialog();
@@ -114,11 +113,9 @@ namespace Iren.ToolsExcel
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+                    if (CommonFunctions.DB.OpenConnection())
                     {
-
                         CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
-
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
 
                         //TODO riabilitare log!!
@@ -127,7 +124,7 @@ namespace Iren.ToolsExcel
                         CommonFunctions.RefreshDate(cal.Date.Value);
                         CommonFunctions.ConvertiParametriInformazioni();
 
-                        DataView stato = CommonFunctions.DB.Select("spCheckModificaStruttura", "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                        DataView stato = CommonFunctions.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
                         if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
                         {
                             CommonFunctions.AggiornaStrutturaDati();
@@ -139,25 +136,43 @@ namespace Iren.ToolsExcel
                         }
                         CommonFunctions.DB.CloseConnection();
                     }
+                    else  //emergenza
+                    {
+                        CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
+                        btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
+                        CommonFunctions.RefreshDate(cal.Date.Value);
+
+                        foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
+                        {
+                            if (ws.Name != "Log" && ws.Name != "Main")
+                            {
+                                Sheet s = new Sheet(ws);
+                                s.AggiornaDateTitoli();
+                            }
+                        }
+
+                        Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+                        main.RiepilogoInEmergenza();
+                    }
                 }
             }
             cal.Dispose();
 
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
-            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = true;
+            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
         }
         private void btnRampe_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            Excel.Worksheet ws = (Excel.Worksheet)Globals.ThisWorkbook.ActiveSheet;
+            Excel.Worksheet ws = (Excel.Worksheet)CommonFunctions.WB.ActiveSheet;
             Excel.Range rng = CommonFunctions.WB.Application.Selection;
-            
+
             DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
 
             string siglaEntita = "";
@@ -170,13 +185,13 @@ namespace Iren.ToolsExcel
                 DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
 
-                if (entitaInformazioni.Count == 0 
+                if (entitaInformazioni.Count == 0
                     && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                     && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
                 {
-                        Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
-                        rampe.ShowDialog();
-                        rampe.Dispose();
+                    Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                    rampe.ShowDialog();
+                    rampe.Dispose();
                 }
                 else
                 {
@@ -193,19 +208,19 @@ namespace Iren.ToolsExcel
                 rampe.Dispose();
             }
 
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
-            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = true;
+            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
         }
         private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.SheetChange -= BaseHandler.StoreEdit;
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            if (CommonFunctions.DB.OpenConnection())
             {
                 AggiornaDati(all: false);
 
@@ -214,52 +229,48 @@ namespace Iren.ToolsExcel
 
                 CommonFunctions.DB.CloseConnection();
             }
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
-            Globals.ThisWorkbook.SheetChange += BaseHandler.StoreEdit;
+            CommonFunctions.WB.Application.ScreenUpdating = true;
+            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
         }
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
             FormAzioni frmAz = new FormAzioni();
             frmAz.ShowDialog();
 
-            Globals.ThisWorkbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            CommonFunctions.WB.Application.ScreenUpdating = true;
         }
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
-            
+            CommonFunctions.WB.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
             Simboli.ModificaDati = btnModifica.Checked;
 
             Sheet.AbilitaModifica(btnModifica.Checked);
-            if (btnModifica.Checked) 
-            {
-                btnModifica.Label = "Modifica SI";
-                btnModifica.Image = Resources.edit_validated_icon;
-            }
+            if (btnModifica.Checked)
+                btnModifica.Image = global::Iren.ToolsExcel.Properties.Resources.edit_validated_icon;
             else
             {
                 //Salva modifiche su db
                 CommonFunctions.SalvaModificheDB();
-                btnModifica.Label = "Modifica NO";
-                btnModifica.Image = Resources.edit_not_validated_icon;
+                btnModifica.Image = global::Iren.ToolsExcel.Properties.Resources.edit_not_validated_icon;
             }
-
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            Sheet.Proteggi(true);
+            CommonFunctions.WB.Application.ScreenUpdating = true;
         }
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.Application.ScreenUpdating = false;
+            CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
 
-            Excel.Worksheet ws = (Excel.Worksheet)Globals.ThisWorkbook.ActiveSheet;
+            Excel.Worksheet ws = (Excel.Worksheet)CommonFunctions.WB.ActiveSheet;
             Excel.Range rng = CommonFunctions.WB.Application.Selection;
 
             DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
@@ -274,8 +285,8 @@ namespace Iren.ToolsExcel
                 DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
 
-                if (entitaInformazioni.Count == 0 
-                    && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes 
+                if (entitaInformazioni.Count == 0
+                    && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                     && SelezionaUP("OTTIMO", out siglaEntita, out nomiDefiniti, out rng))
                 {
                     Optimizer.EseguiOttimizzazione(siglaEntita);
@@ -292,7 +303,7 @@ namespace Iren.ToolsExcel
             }
 
             Sheet.Proteggi(true);
-            Globals.ThisWorkbook.Application.ScreenUpdating = true;
+            CommonFunctions.WB.Application.ScreenUpdating = true;
         }
         private void btnConfigura_Click(object sender, RibbonControlEventArgs e)
         {
@@ -366,7 +377,7 @@ namespace Iren.ToolsExcel
                 Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
 
                 Excel.Worksheet ws = CommonFunctions.WB.Application.Sheets[foglio];
-                ws.Activate();
+                ((Excel._Worksheet)ws).Activate();
                 rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
                 rng.Select();
                 CommonFunctions.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
@@ -396,21 +407,21 @@ namespace Iren.ToolsExcel
                 Excel.Worksheet ws;
                 try
                 {
-                    ws = Globals.ThisWorkbook.Worksheets[categoria["DesCategoria"].ToString()];
+                    ws = CommonFunctions.WB.Worksheets[categoria["DesCategoria"].ToString()];
                 }
                 catch
                 {
-                    ws = (Excel.Worksheet)Globals.ThisWorkbook.Worksheets.Add(Globals.ThisWorkbook.Worksheets["Log"]);
+                    ws = (Excel.Worksheet)CommonFunctions.WB.Worksheets.Add(CommonFunctions.WB.Worksheets["Log"]);
                     ws.Name = categoria["DesCategoria"].ToString();
                     ws.Select();
-                    Globals.ThisWorkbook.Application.Windows[1].DisplayGridlines = false;                    
+                    CommonFunctions.WB.Application.Windows[1].DisplayGridlines = false;
                 }
             }
 
-            Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
+            Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
             main.LoadStructure();
 
-            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
+            foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
@@ -420,13 +431,13 @@ namespace Iren.ToolsExcel
             }
 
             CommonFunctions.DumpDataSet();
-            
-            Globals.Main.Select();
-            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+
+            CommonFunctions.WB.Sheets["Main"].Select();
+            CommonFunctions.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
         }
         private void AggiornaDati(bool all)
         {
-            foreach (Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
+            foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
@@ -436,7 +447,7 @@ namespace Iren.ToolsExcel
             }
             if (all)
             {
-                Riepilogo main = new Riepilogo(Globals.ThisWorkbook.Sheets["Main"]);
+                Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
                 main.UpdateRiepilogo();
             }
 
@@ -445,117 +456,6 @@ namespace Iren.ToolsExcel
         }
 
         #endregion
-        
-        //TODO rimuovere questo metodo e il tasto! inutili
-        static int kkk = 1;
-        private void button1_Click(object sender, RibbonControlEventArgs e)
-        {
-            if (kkk == 43)
-                kkk = 1;
-
-            if (kkk == 1)
-                //Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset1;
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset1;            
-            else if (kkk == 2)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset2;
-            
-
-            else if (kkk == 3)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset3;
-            
-            else if (kkk == 4)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset4;
-           
-            else if (kkk == 5)
-                 Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset5;
-            
-            else if (kkk == 6)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset6;
-            
-            else if (kkk == 7)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset7;
-            
-            else if (kkk == 8)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset8;
-            
-            else if (kkk == 9)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset9;
-            
-            else if (kkk == 10)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset10;
-            
-            else if (kkk == 11)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset11;
-            
-            else if (kkk == 12)
-               Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset12;
-           
-            else if (kkk == 13)
-                 Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset13;
-            
-            else if (kkk == 14)
-               Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset14;
-            
-            else if (kkk == 15)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset15;
-           
-            else if (kkk == 16)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset16;
-            else if (kkk == 17)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset17;
-            else if (kkk == 18)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset18;
-            else if (kkk == 19)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset19;
-            else if (kkk == 20)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset20;
-            else if (kkk == 21)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset21;
-            else if (kkk == 22)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset22;
-            else if (kkk == 23)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset23;
-            else if (kkk == 24)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset24;
-            else if (kkk == 25)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset25;
-            else if (kkk == 26)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset26;
-            else if (kkk == 27)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset27;
-            else if (kkk == 28)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset28;
-            else if (kkk == 29)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset29;
-            else if (kkk == 30)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset30;
-            else if (kkk == 31)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset31;
-            else if (kkk == 32)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset32;
-            else if (kkk == 33)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset33;
-            else if (kkk == 34)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset34;
-            else if (kkk == 35)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset35;
-            else if (kkk == 36)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset36;
-            else if (kkk == 37)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset37;
-            else if (kkk == 38)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset38;
-            else if (kkk == 39)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset39;
-            else if (kkk == 40)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset40;
-            else if (kkk == 41)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset41;
-            else if (kkk == 42)
-                Globals.Main.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset42;
-
-            kkk++;
-        }
 
         private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
         {
@@ -568,6 +468,13 @@ namespace Iren.ToolsExcel
             else
             {
                 //TODO aprire gli altri file!!!!!!
+                switch (btn.Name)
+                {
+                    case "btnInvioProgrammi":
+                        break;
+                }
+
+
             }
         }
 

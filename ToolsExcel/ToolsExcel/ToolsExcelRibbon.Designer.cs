@@ -1,13 +1,13 @@
-﻿namespace Iren.ToolsExcel
+﻿namespace Iren.ToolsExcel.Ribbon
 {
-    partial class ToolsExcelRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
+    partial class SharedRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
     {
         /// <summary>
         /// Variabile di progettazione necessaria.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        public ToolsExcelRibbon()
+        public SharedRibbon()
             : base(Globals.Factory.GetRibbonFactory())
         {
             InitializeComponent();
@@ -49,7 +49,6 @@
             this.btnOttimizza = this.Factory.CreateRibbonButton();
             this.btnRampe = this.Factory.CreateRibbonButton();
             this.groupModifica = this.Factory.CreateRibbonGroup();
-            this.button1 = this.Factory.CreateRibbonButton();
             this.btnModifica = this.Factory.CreateRibbonToggleButton();
             this.groupAmbienti = this.Factory.CreateRibbonGroup();
             this.btnProduzione = this.Factory.CreateRibbonToggleButton();
@@ -225,17 +224,9 @@
             // 
             // groupModifica
             // 
-            this.groupModifica.Items.Add(this.button1);
             this.groupModifica.Items.Add(this.btnModifica);
             this.groupModifica.Label = "Modifica";
             this.groupModifica.Name = "groupModifica";
-            // 
-            // button1
-            // 
-            this.button1.Label = "button1";
-            this.button1.Name = "button1";
-            this.button1.Visible = false;
-            this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button1_Click);
             // 
             // btnModifica
             // 
@@ -495,9 +486,9 @@
             this.TabSmartArtToolsDesign.Label = "TabSmartArtToolsDesign";
             this.TabSmartArtToolsDesign.Name = "TabSmartArtToolsDesign";
             // 
-            // ToolsExcelRibbon
+            // SharedRibbon
             // 
-            this.Name = "ToolsExcelRibbon";
+            this.Name = "SharedRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
             this.Tabs.Add(this.FrontOffice);
             this.Tabs.Add(this.TabHome);
@@ -589,7 +580,6 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnProduzione;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnTest;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnDev;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnOttimizza;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnConfigura;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupCalendario;
@@ -608,13 +598,5 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnOfferteMB;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnInvioProgrammi;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnSistemaComandi;
-    }
-
-    partial class ThisRibbonCollection
-    {
-        internal ToolsExcelRibbon ToolsExcelRibbon
-        {
-            get { return this.GetRibbon<ToolsExcelRibbon>(); }
-        }
     }
 }

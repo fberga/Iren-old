@@ -64,8 +64,8 @@ namespace Iren.ToolsExcel.Base
 
         private void CicloGiorni(Action<int, string, DateTime> callback)
         {
-            DateTime dataInizio = DataBase.DataAttiva;
-            DateTime dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
+            DateTime dataInizio = CommonFunctions.DB.DataAttiva;
+            DateTime dataFine = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
         private void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
@@ -86,22 +86,25 @@ namespace Iren.ToolsExcel.Base
 
         public void InitLabels()
         {
-            var stato = DB.StatoDB();
+            //var stato = CommonFunctions.DB.StatoDB;
 
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"];
 
-            _ws.Shapes.Item("lbSQLServer").TextFrame.Characters().Text = "Database SQL Server: " + (stato[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
-            _ws.Shapes.Item("lbImpianti").TextFrame.Characters().Text = "Database Impianti: " + (stato[DataBase.NomiDB.IMP] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
-            _ws.Shapes.Item("lbElsag").TextFrame.Characters().Text = "Database Elsag: " + (stato[DataBase.NomiDB.ELSAG] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
+            
 
-            _ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: NO";
+            //_ws.Shapes.Item("lbSQLServer").TextFrame.Characters().Text = "Database SQL Server: " + (stato[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
+            //_ws.Shapes.Item("lbImpianti").TextFrame.Characters().Text = "Database Impianti: " + (stato[DataBase.NomiDB.IMP] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
+            //_ws.Shapes.Item("lbElsag").TextFrame.Characters().Text = "Database Elsag: " + (stato[DataBase.NomiDB.ELSAG] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
 
-            //questo aggiorna la scritta e il colore del label che mostra l'ambiente
+            //aggiorna la scritta di modifica dati
+            Simboli.ModificaDati = false;
+
+            //aggiorna la scritta e il colore del label che mostra l'ambiente
             Simboli.Ambiente = ConfigurationManager.AppSettings["DB"];
 
             if (Simboli.intervalloGiorni > 0)
@@ -118,10 +121,10 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataInizio").Width = 485.8582677165f;
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
             }
-        }
+        }        
         private void Clear()
         {
-            int dataOreTot = GetOreIntervallo(DataBase.DataAttiva, DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = GetOreIntervallo(CommonFunctions.DB.DataAttiva, CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
 
@@ -135,7 +138,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = _cell.Width.empty;            
             _ws.Rows[1].RowHeight = _cell.Height.empty;
 
-            _ws.Activate();
+            ((Excel._Worksheet)_ws).Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
             _ws.Cells[_struttura.rigaBlock, _struttura.colBlock].Select();
             _ws.Application.ActiveWindow.ScrollColumn = 1;
@@ -328,7 +331,7 @@ namespace Iren.ToolsExcel.Base
             {
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    DataView datiRiepilogo = DB.Select("spApplicazioneRiepilogo", "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                    DataView datiRiepilogo = DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                     foreach (DataRowView valore in datiRiepilogo)
                     {
                         string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
@@ -359,9 +362,9 @@ namespace Iren.ToolsExcel.Base
         public void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
         {
             if(dataRif == null)
-                dataRif = DataBase.DataAttiva;
+                dataRif = CommonFunctions.DB.DataAttiva;
 
-            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, GetSuffissoData(DataBase.DataAttiva, dataRif.Value))][0];
+            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif.Value))][0];
             Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
 
             if (presente)
@@ -382,8 +385,8 @@ namespace Iren.ToolsExcel.Base
 
         private void AggiornaDate()
         {
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
 
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {

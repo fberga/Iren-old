@@ -61,7 +61,7 @@ namespace Iren.ToolsExcel.Forms
                 foreach (RadioButton rdb in radioArray)
                     groupDati.Controls.Remove(rdb);
 
-                DataView fonti = CommonFunctions.DB.Select("spCheckFonteMeteo", "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
+                DataView fonti = CommonFunctions.DB.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
 
                 int fonteOrdine = 0;
                 foreach (DataRowView fonte in fonti)

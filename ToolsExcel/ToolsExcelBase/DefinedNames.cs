@@ -78,7 +78,6 @@ namespace Iren.ToolsExcel.Base
             Add(name, Tuple.Create(row1, column1), Tuple.Create(row2, column2), editabile, salvaDB, annotaModifica);
         }
 
-
         public string[] Get(int row, int column)
         {
             string filter = "Foglio = '" + _foglio + "' AND R1 = " + row + " AND C1 = " + column;
@@ -249,6 +248,11 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi Statici
 
+        /// <summary>
+        /// Funzione che prepara il nome per un confronto con l'operatore LIKE. Se il nome passato non fa parte del riepilogo, non è una cella goto, non è un titolo di entita e non finisce con il suffisso data ora, aggiungo un '.' alla fine in maniera da limitare il numero di match.
+        /// </summary>
+        /// <param name="name">Il nome su cui operare il confronto</param>
+        /// <returns>Ritorna la stringa pronta per il confronto con l'operatore LIKE</returns>
         private static string PrepareName(string name)
         {
             //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
@@ -256,7 +260,11 @@ namespace Iren.ToolsExcel.Base
                 name += Simboli.UNION;
             return name;
         }
-
+        /// <summary>
+        /// Inizializza la tabella dei nomi assegnandole un nome e la restituisce.
+        /// </summary>
+        /// <param name="name">Il nome da assegnare alla tabella per la serializzazione.</param>
+        /// <returns>Ritorna una nuova istanza della tabella dei nomi.</returns>
         public static DataTable GetDefaultTable(string name)
         {
             DataTable dt = new DataTable()
@@ -279,42 +287,69 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
-
+        /// <summary>
+        /// Funzione che restituisce il nome del foglio a cui appartiene la cella passata in input.
+        /// </summary>
+        /// <param name="name">Il nome della cella in input.</param>
+        /// <returns>Ritorna il nome del foglio a cui appartiene la cella o null se non esiste.</returns>
         public static string GetSheetName(object name)
         {
             DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
-            definedNamesView.RowFilter = "Nome LIKE'" + name + "%'";
+            string filter = "Nome LIKE'" + name + "%'";
+            if (definedNamesView.RowFilter != filter)
+                definedNamesView.RowFilter = filter;
+
             if (definedNamesView.Count == 0)
                 return null;
 
             return definedNamesView[0]["Foglio"].ToString();
         }
-
+        /// <summary>
+        /// Verifica se il nome in input è definito nella tabella dei nomi per il foglio in input.
+        /// </summary>
+        /// <param name="sheetName">Il nome del foglio su cui si vuole verificare se la cella è definita</param>
+        /// <param name="cellName">Il nome della cella da verificare</param>
+        /// <returns>Ritorna true se esiste un match per la coppia foglio - nome, false altrimenti.</returns>
         public static bool IsDefined(string sheetName, string cellName)
         {
             cellName = PrepareName(cellName);
             DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
-            definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
+            string filter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
+            if (definedNamesView.RowFilter != filter)
+                definedNamesView.RowFilter = filter;
 
             return definedNamesView.Count > 0;
         }
+        /// <summary>
+        /// Verifica se l'indirizzo R-C in input è definito nella tabella dei nomi per il foglio in input.
+        /// </summary>
+        /// <param name="sheetName">Il nome del foglio su cui si vuole verificare se la cella è definita</param>
+        /// <param name="row">La riga dell'indirizzo da verificare</param>
+        /// <param name="column">La colonna dell'indirizzo da verificare</param>
+        /// <returns>Ritorna true se esiste un match per la coppia foglio - indirizzo, false altrimenti.</returns>
         public static bool IsDefined(string sheetName, int row, int column)
         {
             DataView definedNamesView = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.NOMIDEFINITI].DefaultView;
-            definedNamesView.RowFilter = "Foglio = '" + sheetName + "' AND R1 = " + row + " AND C1 = " + column;
+            string filter = "Foglio = '" + sheetName + "' AND R1 = " + row + " AND C1 = " + column;
+            if (definedNamesView.RowFilter != filter)
+                definedNamesView.RowFilter = filter;
 
             return definedNamesView.Count > 0;
         }
-
+        /// <summary>
+        /// Da una lista di oggetti in input, compone il nome con il simbolo di unione.
+        /// </summary>
+        /// <param name="parts">Lista di stringhe che andranno a comporre il nome in output</param>
+        /// <returns>Restituisce la stringa che rappresenta il nome</returns>
         public static string GetName(params object[] parts)
         {
             string o = "";
             bool first = true;
             foreach (object part in parts)
             {
-                if (part != null)
+                if (part != null && part != "")
                 {
-                    o += (!first && part != "" ? Simboli.UNION : "") + part;
+                    o += (!first ? Simboli.UNION : "") + part;
                     first = false;
                 }
             }

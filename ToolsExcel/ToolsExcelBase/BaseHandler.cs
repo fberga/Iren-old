@@ -62,8 +62,8 @@ namespace Iren.ToolsExcel.Base
             }
             else if (Target.Value.GetType() != typeof(object[,]))   //caso in cui modifico il valore di una cella
             {
-                values = new object[1,1];
-                values[0,0] = Target.Value;
+                values = new object[1, 1];
+                values[0, 0] = Target.Value;
             }
             else    //caso in cui modifico un range di celle
             {
@@ -86,7 +86,7 @@ namespace Iren.ToolsExcel.Base
 
                         modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
                         if (modifiche.Count == 0)
-                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.IdApplicazione, DataBase.IdUtenteAttivo);
+                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), CommonFunctions.DB.IdApplicazione, CommonFunctions.DB.IdUtenteAttivo);
                         else
                             modifiche[0]["Valore"] = values[i, j];
                     }
@@ -104,46 +104,93 @@ namespace Iren.ToolsExcel.Base
         public static void ChangeModificaDati(bool modifica)
         {
             Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
-            ws.Unprotect(Simboli.pwd);
+            ws.Shapes.Item("lbModifica").Locked = false;
             ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: " + (modifica ? "SI" : "NO");
             if (modifica) 
-                ws.Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset10;
+            {
+                //giallo
+                ws.Shapes.Item("lbModifica").Line.Weight = 2f;
+                ws.Shapes.Item("lbModifica").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 204, 0));
+                ws.Shapes.Item("lbModifica").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 102));
+            }
             else
             {
-                ws.Shapes.Item("lbModifica").BackgroundStyle = Office.MsoBackgroundStyleIndex.msoBackgroundStylePreset1;
-                ws.Shapes.Item("lbModifica").TextFrame.Characters().Font.ColorIndex = 1;
+                //bianco normale
                 ws.Shapes.Item("lbModifica").Line.Weight = 0.75f;
-                ws.Shapes.Item("lbModifica").Line.ForeColor.ObjectThemeColor = Office.MsoThemeColorIndex.msoThemeColorBackground1;
-                ws.Shapes.Item("lbModifica").Line.ForeColor.TintAndShade = 0;
-                ws.Shapes.Item("lbModifica").Line.ForeColor.Brightness = -0.25f;
-                ws.Shapes.Item("lbModifica").Shadow.Visible = Office.MsoTriState.msoFalse;
+                ws.Shapes.Item("lbModifica").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                ws.Shapes.Item("lbModifica").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                //ws.Shapes.Item("lbModifica").Line.ForeColor.Brightness = -0.25f;
             }
-
-            ws.Protect(Simboli.pwd);
+            ws.Shapes.Item("lbModifica").Locked = true;
         }
-
         public static void ChangeAmbiente(string ambiente)
         {
             Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
-            ws.Unprotect(Simboli.pwd);
-
+            ws.Shapes.Item("lbTest").Locked = false;
             switch (ambiente)
             {
                 case "Dev":
                     ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: DEVELOPMENT";
-                    ws.Shapes.Item("lbTest").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset10;
+                    //rosso
+                    ws.Shapes.Item("lbTest").Line.Weight = 2f;
+                    ws.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
+                    ws.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
                     break;
                 case "Test":
                     ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: TEST";
-                    ws.Shapes.Item("lbTest").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset14;
+                    //giallo
+                    ws.Shapes.Item("lbTest").Line.Weight = 2f;
+                    ws.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 204, 0));
+                    ws.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 102));
                     break;
                 case "Produzione":
                     ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: PRODUZIONE";
-                    ws.Shapes.Item("lbTest").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset11;
+                    //bianco normale
+                    ws.Shapes.Item("lbTest").Line.Weight = 0.75f;
+                    ws.Shapes.Item("lbTest").BackgroundStyle = Office.MsoBackgroundStyleIndex.msoBackgroundStylePreset1;
+                    ws.Shapes.Item("lbTest").Line.ForeColor.ObjectThemeColor = Office.MsoThemeColorIndex.msoThemeColorBackground1;
+                    ws.Shapes.Item("lbTest").Line.ForeColor.Brightness = -0.25f;
+                    break;
+            }
+            ws.Shapes.Item("lbTest").Locked = true;
+        }
+        public static void ChangeStatoDB(DataBase.NomiDB db, bool online)
+        {
+            string labelName = "";
+            string labelText = "";
+            switch (db)
+            {
+                case DataBase.NomiDB.SQLSERVER:
+                    labelName = "lbSQLServer";
+                    labelText = "Database SQL Server: ";
+                    break;
+                case DataBase.NomiDB.IMP:
+                    labelName = "lbImpianti";
+                    labelText = "Database Impianti: ";
+                    break;
+                case DataBase.NomiDB.ELSAG:
+                    labelName = "lbElsag";
+                    labelText = "Database Elsag: ";
                     break;
             }
 
-            ws.Protect(Simboli.pwd);
+            Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+            ws.Shapes.Item(labelName).TextFrame.Characters().Text = labelText + (online ? "OPERATIVO" : "FUORI SERVIZIO");
+            if (online)
+            {
+                //bianco normale
+                ws.Shapes.Item(labelName).Line.Weight = 0.75f;
+                ws.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                ws.Shapes.Item(labelName).Line.ForeColor.Brightness = -0.25f;
+            }
+            else
+            {
+                //rosso
+                ws.Shapes.Item(labelName).Line.Weight = 2f;
+                ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
+                ws.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
+            }
         }
     }
 }

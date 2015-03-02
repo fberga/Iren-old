@@ -116,7 +116,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Columns[1].ColumnWidth = _cell.Width.empty;
             _ws.Columns[2].ColumnWidth = _cell.Width.entita;
 
-            _ws.Activate();
+            ((Excel._Worksheet)_ws).Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
             _ws.Cells[_struttura.rigaBlock, _struttura.colBlock].Select();
             _ws.Application.ActiveWindow.ScrollColumn = 1;
@@ -144,7 +144,7 @@ namespace Iren.ToolsExcel.Base
             DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = DataBase.DataAttiva;
+            _dataInizio = CommonFunctions.DB.DataAttiva;
 
             Clear();
             InitBarraNavigazione(dvCE);
@@ -736,7 +736,7 @@ namespace Iren.ToolsExcel.Base
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
-            string suffissoData = giorno == null ? null : CommonFunctions.GetSuffissoData(DataBase.DataAttiva, giorno.Value);
+            string suffissoData = giorno == null ? null : CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, giorno.Value);
 
             foreach (DataRowView entita in dvCE)
             {
@@ -765,7 +765,7 @@ namespace Iren.ToolsExcel.Base
             DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND Gerarchia IS NULL";
-            _dataInizio = DataBase.DataAttiva;
+            _dataInizio = CommonFunctions.DB.DataAttiva;
 
             foreach (DataRowView entita in dvCE)
             {
@@ -795,7 +795,7 @@ namespace Iren.ToolsExcel.Base
             
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = DataBase.DataAttiva;
+            _dataInizio = CommonFunctions.DB.DataAttiva;
 
             foreach (DataRowView entita in dvCE)
             {
@@ -931,7 +931,7 @@ namespace Iren.ToolsExcel.Base
                 DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
 
                 dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
-                _dataInizio = DataBase.DataAttiva;
+                _dataInizio = CommonFunctions.DB.DataAttiva;
 
                 //calcolo tutte le date e mantengo anche la data max
                 DateTime dataFineMax = _dataInizio;
@@ -947,11 +947,11 @@ namespace Iren.ToolsExcel.Base
                     dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
                 }
 
-                DataView datiApplicazione = CommonFunctions.DB.Select("spApplicazioneInformazione_test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=" + (all ? "1" : "0")).DefaultView;
+                DataView datiApplicazione = CommonFunctions.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
 
                 DataView insertManuali = new DataView();
                 if (all)
-                    insertManuali = CommonFunctions.DB.Select("spApplicazioneInformazioneCommento_Test", "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
+                    insertManuali = CommonFunctions.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
 
                 foreach (DataRowView entita in dvCE)
                 {
@@ -1019,8 +1019,8 @@ namespace Iren.ToolsExcel.Base
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");            
 
-            //_dataInizio = DataBase.DataAttiva;
-            //DateTime giorno = dataAttiva ?? DataBase.DataAttiva;
+            //_dataInizio = CommonFunctions.DB.DataAttiva;
+            //DateTime giorno = dataAttiva ?? CommonFunctions.DB.DataAttiva;
 
             bool all = giorno == null;
 
@@ -1041,13 +1041,13 @@ namespace Iren.ToolsExcel.Base
 
                     dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
                     if (dvEP.Count > 0)
-                        dataFine = DataBase.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
+                        dataFine = CommonFunctions.DB.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                     else
-                        dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
+                        dataFine = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
 
-                    string suffissoData = all ? "DATA1" : CommonFunctions.GetSuffissoData(DataBase.DataAttiva, giorno.Value);
-                    string suffissoDataPrec = all ? "DATA0" : CommonFunctions.GetSuffissoData(DataBase.DataAttiva, giorno.Value.AddDays(-1));
-                    string suffissoUltimoGiorno = CommonFunctions.GetSuffissoData(DataBase.DataAttiva, dataFine);
+                    string suffissoData = all ? "DATA1" : CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, giorno.Value);
+                    string suffissoDataPrec = all ? "DATA0" : CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, giorno.Value.AddDays(-1));
+                    string suffissoUltimoGiorno = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataFine);
 
                     foreach (DataRowView info in informazioni)
                     {
@@ -1107,8 +1107,7 @@ namespace Iren.ToolsExcel.Base
                 DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
                 Excel.Worksheet ws = CommonFunctions.WB.Sheets[categoria["DesCategoria"].ToString()];
 
-                ws.Unprotect(Simboli.pwd);
-
+                Proteggi(false);
                 entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
                 foreach (DataRowView e in entita)
                 {
@@ -1121,7 +1120,7 @@ namespace Iren.ToolsExcel.Base
                         ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
                     }
                 }
-                ws.Protect(Simboli.pwd);
+                Proteggi(true);
             }
         }
 

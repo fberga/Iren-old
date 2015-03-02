@@ -20,7 +20,7 @@ namespace Iren.ToolsExcel.Base
         public bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
         {
             if (dataRif == null)
-                dataRif = DataBase.DataAttiva;
+                dataRif = CommonFunctions.DB.DataAttiva;
 
             try
             {
@@ -61,7 +61,7 @@ namespace Iren.ToolsExcel.Base
                             }
                         };
                         
-                        string suffissoData = CommonFunctions.GetSuffissoData(DataBase.DataAttiva, dataRif.Value);
+                        string suffissoData = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif.Value);
                         foreach (DataRowView entAzInfo in entitaAzioneInformazione)
                         {
                             object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);

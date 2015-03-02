@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -9,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Iren.ToolsExcel.Core
 {
-    public class DataBase
+    public class DataBase : INotifyPropertyChanged
     {
         #region Nomi di Sistema
 
@@ -32,38 +33,43 @@ namespace Iren.ToolsExcel.Core
 
         public const string ALL = "ALL";
 
-        public struct StoredProcedure
+        public struct SP
         {
-            public const string UTENTE = "spUtente",
-            APPLICAZIONE = "spApplicazioneProprieta",
-            GETVERSION = "spGetVersione",
-            LOG = "spLog",
-            INSERT_LOG = "spInsertLog",
-            APP_INFO = "spApplicazioneInformazione",
-            AZIONE = "spAzione",
-            CATEGORIA = "spCategoria",
-            AZIONECATEGORIA = "spAzioneCategoria",
-            ENTITAAZIONE = "spEntitaAzione",
-            ENTITAINFORMAZIONE = "spEntitaInformazione",
-            ENTITAAZIONEINFORMAZIONE = "spEntitaAzioneInformazione",
-            CALCOLO = "spCalcolo",
-            CALCOLOINFORMAZIONE = "spCalcoloInformazione",
-            ENTITACALCOLO = "spEntitaCalcolo",
-            ENTITAGRAFICO = "spEntitaGrafico",
-            ENTITAGRAFICOINFORMAZIONE = "spEntitaGraficoInformazione",
-            ENTITACOMMITMENT = "spEntitaCommitment",
-            ENTITARAMPA = "spEntitaRampa",
-            ENTITAASSETTO = "spEntitaAssetto",
-            ENTITAPROPRIETA = "spEntitaProprieta",
-            ENTITAINFORMAZIONEFORMATTAZIONE = "spEntitaInformazioneFormattazione",
-            TIPOLOGIACHECK = "spTipologiaCheck",
-            TIPOLOGIARAMPA = "spTipologiaRampa",
-            CATEGORIAENTITA = "spCategoriaEntita",
-            APP_RIEPILOGO = "spApplicazioneRiepilogo",
-            INS_PROG_PARAM = "spInsertProgrammazione_Parametro",
-            CHECK_MOD_STRUCT = "spCheckModificaStruttura",
-            ENTITAPARAMETROD = "spEntitaParametroD",
-            ENTITAPARAMETROH = "spEntitaParametroH";
+            public const string APPLICAZIONE = "spApplicazioneProprieta",
+                APPLICAZIONE_INFORMAZIONE = "spApplicazioneInformazione",
+                APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
+                APPLICAZIONE_INIT = "spApplicazioneInit",
+                APPLICAZIONE_LOG = "spApplicazioneLog",
+                APPLICAZIONE_RIEPILOGO = "spApplicazioneRiepilogo",
+                AZIONE = "spAzione",
+                AZIONE_CATEGORIA = "spAzioneCategoria",
+                CALCOLO = "spCalcolo",
+                CALCOLO_INFORMAZIONE = "spCalcoloInformazione",
+                CARICA_AZIONE_INFORMAZIONE = "spCaricaAzioneInformazione",
+                CATEGORIA = "spCategoria",
+                CATEGORIA_ENTITA = "spCategoriaEntita",
+                CHECK_FONTE_METEO = "spCheckFonteMeteo",
+                CHECKMODIFICASTRUTTURA = "spCheckModificaStruttura",
+                ENTITA_ASSETTO = "spEntitaAssetto",
+                ENTITA_AZIONE = "spEntitaAzione",
+                ENTITA_AZIONE_INFORMAZIONE = "spEntitaAzioneInformazione",
+                ENTITACALCOLO = "spEntitaCalcolo",
+                ENTITA_COMMITMENT = "spEntitaCommitment",
+                ENTITA_GRAFICO = "spEntitaGrafico",
+                ENTITA_GRAFICO_INFORMAZIONE = "spEntitaGraficoInformazione",
+                ENTITA_INFORMAZIONE = "spEntitaInformazione",
+                ENTITA_INFORMAZIONE_FORMATTAZIONE = "spEntitaInformazioneFormattazione",
+                ENTITA_PARAMETRO_D = "spEntitaParametroD",
+                ENTITA_PARAMETRO_H = "spEntitaParametroH",
+                ENTITA_PROPRIETA = "spEntitaProprieta",
+                ENTITA_RAMPA = "spEntitaRampa",
+                GET_ORE_FERMATA = "spGetOreFermata",
+                GET_VERSIONE = "spGetVersione",
+                INSERT_LOG = "spInsertLog",
+                INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
+                TIPOLOGIA_CHECK = "spTipologiaCheck",
+                TIPOLOGIA_RAMPA = "spTipologiaRampa",
+                UTENTE = "spUtente";
         }
 
         #endregion
@@ -71,17 +77,21 @@ namespace Iren.ToolsExcel.Core
         #region Variabili
 
         private Command _cmd;
+        private Command _internalCmd;
 
-        private static SqlConnection _sqlConn;
-        private static string _connStr = "";
-        private static ConnectionState _state = ConnectionState.Closed;
+        private System.Threading.Timer checkDBTrhead;
+
+        private SqlConnection _sqlConn;
+        private SqlConnection _internalsqlConn;
+        private string _connStr = "";
+        private ConnectionState _state = ConnectionState.Closed;
 
         private bool _rightClosure;
 
-        private static string _dataAttiva = "";
-        private static int _idUtenteAttivo = -1;
-        private static int _idApplicazione = -1;
-        private static Dictionary<NomiDB, ConnectionState> _statoDB = new Dictionary<NomiDB, ConnectionState>() { 
+        private string _dataAttiva = "";
+        private int _idUtenteAttivo = -1;
+        private int _idApplicazione = -1;
+        private Dictionary<NomiDB, ConnectionState> _statoDB = new Dictionary<NomiDB, ConnectionState>() { 
             {NomiDB.SQLSERVER, ConnectionState.Closed},
             {NomiDB.IMP, ConnectionState.Closed},
             {NomiDB.ELSAG, ConnectionState.Closed}
@@ -91,9 +101,11 @@ namespace Iren.ToolsExcel.Core
 
         #region Proprietà
 
-        public static DateTime DataAttiva { get { return DateTime.ParseExact(_dataAttiva, "yyyyMMdd", CultureInfo.InvariantCulture); } }
-        public static int IdUtenteAttivo { get { return _idUtenteAttivo; } }
-        public static int IdApplicazione { get { return _idApplicazione; } }
+        public DateTime DataAttiva { get { return DateTime.ParseExact(_dataAttiva, "yyyyMMdd", CultureInfo.InvariantCulture); } }
+        public int IdUtenteAttivo { get { return _idUtenteAttivo; } }
+        public int IdApplicazione { get { return _idApplicazione; } }
+
+        public Dictionary<NomiDB, ConnectionState> StatoDB { get { return _statoDB; } }
 
         #endregion
 
@@ -105,86 +117,72 @@ namespace Iren.ToolsExcel.Core
             {
                 _connStr = ConfigurationManager.ConnectionStrings[dbName].ConnectionString;
                 _sqlConn = new SqlConnection(_connStr);
-                _sqlConn.StateChange += ConnectionStateChange;
+                _internalsqlConn = new SqlConnection(_connStr);
+
+                checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
+
+                //_sqlConn.StateChange += ConnectionStateChange;
             }
             catch (Exception e)
             {
                 System.Windows.Forms.MessageBox.Show(e.Message, "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
 
-            _cmd = new Command(_sqlConn);                        
+            _cmd = new Command(_sqlConn);
+            _internalCmd = new Command(_internalsqlConn);
         }
 
         #endregion
 
         #region Metodi Pubblici
 
-        public Dictionary<NomiDB, ConnectionState> StatoDB()
-        {
-            OpenConnection();
-            
-            _statoDB[NomiDB.SQLSERVER] = _sqlConn.State;
+        //public Dictionary<NomiDB, ConnectionState> StatoDB()
+        //{
+        //    OpenConnection();
 
-            if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
-            {
-                DataView imp = Select("spCheckDB", "@Nome=IMP").DefaultView;
-                DataView elsag = Select("spCheckDB", "@Nome=ELSAG").DefaultView;
+        //    _statoDB[NomiDB.SQLSERVER] = _sqlConn.State;
 
-                if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
-                {
-                    _statoDB[NomiDB.IMP] = ConnectionState.Open;
-                }
-                else
-                {
-                    _statoDB[NomiDB.IMP] = ConnectionState.Closed;
-                }
+        //    if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
+        //    {
+        //        DataView imp = Select("spCheckDB", "@Nome=IMP", 3).DefaultView;
+        //        //se va in timeout la connessione si chiude
+        //        OpenConnection();
+        //        DataView elsag = Select("spCheckDB", "@Nome=ELSAG", 3).DefaultView;
+        //        //se va in timeout la connessione si chiude
+        //        OpenConnection();
 
-                if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
-                {
-                    _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
-                }
-                else
-                {
-                    _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
-                }
-            }
-            
-            return _statoDB;
-        }
+        //        if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
+        //        {
+        //            _statoDB[NomiDB.IMP] = ConnectionState.Open;
+        //        }
+        //        else
+        //        {
+        //            _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+        //        }
+
+        //        if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
+        //        {
+        //            _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+        //        }
+        //        else
+        //        {
+        //            _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+        //        }
+        //    }
+
+        //    return _statoDB;
+        //}
 
         public bool OpenConnection()
         {
-            try
-            {
-                if(_sqlConn.State == ConnectionState.Closed)
-                    _sqlConn.Open();
-            }
-            catch (Exception e)
-            {
-                //System.Windows.Forms.MessageBox.Show(e.Message, "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                return false;
-            }
-
-            return true;
+            return OpenConnection(_sqlConn);
         }
         public bool CloseConnection()
         {
-            try
-            {
-                if (_sqlConn.State == ConnectionState.Open)
-                {
-                    _rightClosure = true;
-                    _sqlConn.Close();
-                }
-            }
-            catch (Exception e)
-            {
-                System.Windows.Forms.MessageBox.Show(e.Message, "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                return false;
-            }
-
-            return true;
+            return CloseConnection(_sqlConn);
         }
+
+        
 
         public void SetParameters(string dataAttiva, int idUtenteAttivo, int idApplicazione)
         {
@@ -206,7 +204,12 @@ namespace Iren.ToolsExcel.Core
             if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
                 parameters.Add("@Data", _dataAttiva);
 
-            _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
+            try
+            {
+                _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
+            }
+            catch (TimeoutException) { }
+            
         }
         public void InsertLog(TipologiaLOG tipologia, string messaggio)
         {
@@ -216,34 +219,21 @@ namespace Iren.ToolsExcel.Core
                 {"@Messaggio", messaggio}
             };
 
-            Insert(StoredProcedure.INSERT_LOG, logParam);
+            Insert(SP.INSERT_LOG, logParam);
         }
 
-        public DataTable Select(string storedProcedure, QryParams parameters)
+        public DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
         {
-            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
-                parameters.Add("@IdApplicazione", _idApplicazione);
-            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
-                parameters.Add("@IdUtente", _idUtenteAttivo);
-            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
-                parameters.Add("@Data", _dataAttiva);
-
-            using (SqlDataReader dr = _cmd.SqlCmd(storedProcedure, parameters).ExecuteReader())
-            {
-                DataTable dt = new DataTable();
-                dt.Load(dr);
-
-                return dt;
-            }
+            return Select(_cmd, storedProcedure, parameters, timeout);
         }
-        public DataTable Select(string storedProcedure, String parameters)
+        public DataTable Select(string storedProcedure, String parameters, int timeout = 300)
         {
-            return Select(storedProcedure, getParamsFromString(parameters));
+            return Select(storedProcedure, getParamsFromString(parameters), timeout);
         }
-        public DataTable Select(string storedProcedure)
+        public DataTable Select(string storedProcedure, int timeout = 300)
         {
             QryParams parameters = new QryParams();
-            return Select(storedProcedure, parameters);
+            return Select(storedProcedure, parameters, timeout);
         }
 
         public System.Version GetCurrentV()
@@ -281,15 +271,6 @@ namespace Iren.ToolsExcel.Core
 
         #region Metodi Privati
 
-        private void ConnectionStateChange(object sender, StateChangeEventArgs e)
-        {            
-            if (e.OriginalState == ConnectionState.Open && e.CurrentState == ConnectionState.Closed && !_rightClosure)
-                System.Windows.Forms.MessageBox.Show("Attenzione, la connessione al DB si è chiusa in modo inaspettato...", "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-
-            _state = _sqlConn.State;
-            _rightClosure = false;
-        }
-
         private QryParams getParamsFromString(string parameters)
         {
             Regex regex = new Regex(@"@\w+[=:][^;:=]+");
@@ -306,6 +287,111 @@ namespace Iren.ToolsExcel.Core
             return o;
         }
 
+        private bool OpenConnection(SqlConnection conn)
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Closed)
+                    conn.Open();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        private bool CloseConnection(SqlConnection conn)
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300)
+        {
+            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
+                parameters.Add("@IdApplicazione", _idApplicazione);
+            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
+                parameters.Add("@IdUtente", _idUtenteAttivo);
+            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
+                parameters.Add("@Data", _dataAttiva);
+            try
+            {
+                using (SqlDataReader dr = cmd.SqlCmd(storedProcedure, parameters, timeout).ExecuteReader())
+                {
+                    DataTable dt = new DataTable();
+                    dt.Load(dr);
+
+                    return dt;
+                }
+            }
+            catch (SqlException)
+            {
+                return new DataTable();
+            }
+
+        }
+        private DataTable Select(Command cmd, string storedProcedure, String parameters, int timeout = 300)
+        {
+            return Select(cmd, storedProcedure, getParamsFromString(parameters), timeout);
+        }
+
         #endregion
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged(String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+
+        private void CheckDB(object state)
+        {
+            Dictionary<NomiDB, ConnectionState> oldStatoDB = new Dictionary<NomiDB,ConnectionState>(_statoDB);
+            if (OpenConnection(_internalsqlConn))
+            {
+                _statoDB[NomiDB.SQLSERVER] = _internalsqlConn.State;
+
+                if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
+                {
+                    DataView imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3).DefaultView;
+                    //se va in timeout la connessione si chiude
+                    OpenConnection(_internalsqlConn);
+                    DataView elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3).DefaultView;
+                    //se va in timeout la connessione si chiude
+                    OpenConnection(_internalsqlConn);
+
+                    if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
+                        _statoDB[NomiDB.IMP] = ConnectionState.Open;
+                    else
+                        _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+
+                    if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
+                        _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+                    else
+                        _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+                }
+
+                if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
+                    || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
+                    || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
+                {
+                    NotifyPropertyChanged("StatoDB");
+                }
+            }
+        }
     }
 }

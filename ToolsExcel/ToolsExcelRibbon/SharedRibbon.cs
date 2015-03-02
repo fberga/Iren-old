@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel.Ribbon
             CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
 
             int count = 0;
-            foreach (RibbonToggleButton button in FrontOffice.Groups.Last().Items)
+            foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
             {
                 if (button.Checked)
                 {
@@ -113,7 +113,7 @@ namespace Iren.ToolsExcel.Ribbon
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+                    if (CommonFunctions.DB.OpenConnection())
                     {
                         CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
@@ -124,7 +124,7 @@ namespace Iren.ToolsExcel.Ribbon
                         CommonFunctions.RefreshDate(cal.Date.Value);
                         CommonFunctions.ConvertiParametriInformazioni();
 
-                        DataView stato = CommonFunctions.DB.Select("spCheckModificaStruttura", "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                        DataView stato = CommonFunctions.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
                         if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
                         {
                             CommonFunctions.AggiornaStrutturaDati();
@@ -220,7 +220,7 @@ namespace Iren.ToolsExcel.Ribbon
             Sheet.Proteggi(false);
             CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            if (CommonFunctions.DB.OpenConnection())
             {
                 AggiornaDati(all: false);
 
@@ -250,23 +250,19 @@ namespace Iren.ToolsExcel.Ribbon
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
             CommonFunctions.WB.Application.ScreenUpdating = false;
-            
+            Sheet.Proteggi(false);
             Simboli.ModificaDati = btnModifica.Checked;
 
             Sheet.AbilitaModifica(btnModifica.Checked);
             if (btnModifica.Checked) 
-            {
-                btnModifica.Label = "Modifica SI";
                 btnModifica.Image = global::Iren.ToolsExcel.Ribbon.Properties.Resources.edit_validated_icon;
-            }
             else
             {
                 //Salva modifiche su db
                 CommonFunctions.SalvaModificheDB();
-                btnModifica.Label = "Modifica NO";
                 btnModifica.Image = global::Iren.ToolsExcel.Ribbon.Properties.Resources.edit_not_validated_icon;
             }
-
+            Sheet.Proteggi(true);
             CommonFunctions.WB.Application.ScreenUpdating = true;
         }
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
@@ -381,7 +377,7 @@ namespace Iren.ToolsExcel.Ribbon
                 Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
 
                 Excel.Worksheet ws = CommonFunctions.WB.Application.Sheets[foglio];
-                ws.Activate();
+                ((Excel._Worksheet)ws).Activate();
                 rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
                 rng.Select();
                 CommonFunctions.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);

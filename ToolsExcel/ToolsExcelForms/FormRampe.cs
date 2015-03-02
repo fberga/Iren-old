@@ -1,4 +1,5 @@
 ﻿using Iren.ToolsExcel.Base;
+using Iren.ToolsExcel.Core;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -82,7 +83,7 @@ namespace Iren.ToolsExcel.Forms
                 }
 
                 _oreGiorno = _valoriPQNR.Length;
-                _oreFermata = int.Parse(CommonFunctions.DB.Select("spGetOreFermata", "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
+                _oreFermata = int.Parse(CommonFunctions.DB.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
 
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
