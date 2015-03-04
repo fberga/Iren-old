@@ -23,7 +23,7 @@ namespace Iren.ToolsExcel.Base
             set 
             {
                 modificaDati = value;
-                BaseHandler.ChangeModificaDati(modificaDati);
+                Handler.ChangeModificaDati(modificaDati);
             }
         }
 
@@ -38,7 +38,7 @@ namespace Iren.ToolsExcel.Base
             set
             {
                 ambiente = value;
-                BaseHandler.ChangeAmbiente(ambiente);
+                Handler.ChangeAmbiente(ambiente);
             }
         }
 
@@ -53,7 +53,7 @@ namespace Iren.ToolsExcel.Base
             set
             {
                 sqlServerOnline = value;
-                BaseHandler.ChangeStatoDB(DataBase.NomiDB.SQLSERVER, sqlServerOnline);
+                Handler.ChangeStatoDB(DataBase.NomiDB.SQLSERVER, sqlServerOnline);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Iren.ToolsExcel.Base
             set
             {
                 impiantiOnline = value;
-                BaseHandler.ChangeStatoDB(DataBase.NomiDB.IMP, impiantiOnline);
+                Handler.ChangeStatoDB(DataBase.NomiDB.IMP, impiantiOnline);
             }
         }
 
@@ -83,7 +83,7 @@ namespace Iren.ToolsExcel.Base
             set
             {
                 elsagOnline = value;
-                BaseHandler.ChangeStatoDB(DataBase.NomiDB.ELSAG, elsagOnline);
+                Handler.ChangeStatoDB(DataBase.NomiDB.ELSAG, elsagOnline);
             }
         }
 

@@ -64,9 +64,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseHandler.cs" />
+    <Compile Include="Handler.cs" />
     <Compile Include="Cell.cs" />
-    <Compile Include="CommonFunctions.cs" />
+    <Compile Include="Utility.cs" />
     <Compile Include="DefinedNames.cs" />
     <Compile Include="Esporta.cs" />
     <Compile Include="Optimizer.cs" />

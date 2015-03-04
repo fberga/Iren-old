@@ -49,7 +49,7 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
-            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(BaseHandler.GotoClick);
+            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.GotoClick);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
             this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
         }
@@ -59,7 +59,7 @@ namespace Iren.ToolsExcel
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
+            UtilityInit.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
 
             Sheet.Proteggi(false);
             
@@ -68,7 +68,7 @@ namespace Iren.ToolsExcel
 
             Style.StdStyles();
             //TODO riabilitare log!!
-            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
             Sheet.Proteggi(true);
         }

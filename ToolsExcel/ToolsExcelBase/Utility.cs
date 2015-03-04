@@ -16,12 +16,47 @@ using Office = Microsoft.Office.Core;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class CommonFunctions
+    public class UtilityDB 
     {
-        #region Costanti
-
         public static string NAME = "LocalDB";
-
+        public struct SP
+        {
+            public const string APPLICAZIONE = "spApplicazioneProprieta",
+                APPLICAZIONE_INFORMAZIONE = "spApplicazioneInformazione",
+                APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
+                APPLICAZIONE_INIT = "spApplicazioneInit",
+                APPLICAZIONE_LOG = "spApplicazioneLog",
+                APPLICAZIONE_RIEPILOGO = "spApplicazioneRiepilogo",
+                AZIONE = "spAzione",
+                AZIONE_CATEGORIA = "spAzioneCategoria",
+                CALCOLO = "spCalcolo",
+                CALCOLO_INFORMAZIONE = "spCalcoloInformazione",
+                CARICA_AZIONE_INFORMAZIONE = "spCaricaAzioneInformazione",
+                CATEGORIA = "spCategoria",
+                CATEGORIA_ENTITA = "spCategoriaEntita",
+                CHECK_FONTE_METEO = "spCheckFonteMeteo",
+                CHECKMODIFICASTRUTTURA = "spCheckModificaStruttura",
+                ENTITA_ASSETTO = "spEntitaAssetto",
+                ENTITA_AZIONE = "spEntitaAzione",
+                ENTITA_AZIONE_INFORMAZIONE = "spEntitaAzioneInformazione",
+                ENTITACALCOLO = "spEntitaCalcolo",
+                ENTITA_COMMITMENT = "spEntitaCommitment",
+                ENTITA_GRAFICO = "spEntitaGrafico",
+                ENTITA_GRAFICO_INFORMAZIONE = "spEntitaGraficoInformazione",
+                ENTITA_INFORMAZIONE = "spEntitaInformazione",
+                ENTITA_INFORMAZIONE_FORMATTAZIONE = "spEntitaInformazioneFormattazione",
+                ENTITA_PARAMETRO_D = "spEntitaParametroD",
+                ENTITA_PARAMETRO_H = "spEntitaParametroH",
+                ENTITA_PROPRIETA = "spEntitaProprieta",
+                ENTITA_RAMPA = "spEntitaRampa",
+                GET_ORE_FERMATA = "spGetOreFermata",
+                GET_VERSIONE = "spGetVersione",
+                INSERT_LOG = "spInsertLog",
+                INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
+                TIPOLOGIA_CHECK = "spTipologiaCheck",
+                TIPOLOGIA_RAMPA = "spTipologiaRampa",
+                UTENTE = "spUtente";
+        }
         public struct Tab
         {
             public const string APPLICAZIONE = "Applicazione",
@@ -52,50 +87,16 @@ namespace Iren.ToolsExcel.Base
                 UTENTE = "Utente";
         }
 
-        #endregion
 
-        #region Variabili
 
-        private static DataSet _localDB = null;
-        private static DataBase _db = null;
-        private static Workbook _wb;
-        private static System.Version _wbVersion;        
+        protected static DataSet _localDB = null;
+        public static DataSet LocalDB { get { return _localDB; } }
 
-        #endregion
+        protected static DataBase _db = null;
+        public static DataBase DB { get { return _db; } }
 
-        #region Proprietà
+        public static DateTime DataAttiva { get { return _db.DataAttiva; } }
 
-        public static DataSet LocalDB 
-        {
-            get 
-            {
-                return _localDB;
-            }
-        }
-        public static DataBase DB 
-        {
-            get 
-            {
-                return _db;
-            } 
-        }
-        public static System.Version CoreVersion
-        {
-            get { return _db.GetCurrentV(); }
-        }
-        public static System.Version BaseVersion
-        {
-            get { return Assembly.GetExecutingAssembly().GetName().Version; }
-        }
-        public static System.Version WorkbookVersion
-        {
-            get { return _wbVersion; }
-        }
-        public static Workbook WB { get { return _wb; } }
-
-        #endregion
-
-        #region Metodi
 
         public static void ResetTable(string name)
         {
@@ -105,171 +106,143 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        private static int InitUser()
-        {
-            try
-            {
-                ResetTable(Tab.UTENTE);
-
-                DataTable dtUtente = _db.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
-                dtUtente.TableName = Tab.UTENTE;
-
-                if (dtUtente.Rows.Count == 0)
-                {
-                    DataRow r = dtUtente.NewRow();
-                    r["IdUtente"] = 0;
-                    r["Nome"] = "NON CONFIGURATO";
-                    dtUtente.Rows.Add(r);
-                }
-                _localDB.Tables.Add(dtUtente);
-
-                return int.Parse("" + dtUtente.Rows[0]["IdUtente"]);
-            }
-            catch (Exception e)
-            {
-                _db.InsertLog(DataBase.TipologiaLOG.LogErrore, "InitUser: " + e.Message);
-                
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-
-                return -1;
-            }
-        }
-
-        private static DataTable CaricaApplicazione(object idApplicazione)
-        {
-            string name = Tab.APPLICAZIONE;
-            ResetTable(name);
-            QryParams parameters = new QryParams() 
-            {
-                {"@IdApplicazione", idApplicazione},
-
-            };
-            DataTable dt = _db.Select(DataBase.SP.APPLICAZIONE, parameters);
-            dt.TableName = name;
-            return dt;
-        }
-
         public static void RefreshDate(DateTime dataAttiva)
         {
             _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
         }
 
+        public static void RefreshAppSettings(string key, string value)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings[key].Value = value;
+            config.Save(ConfigurationSaveMode.Minimal);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
         public static void SwitchEnvironment(string ambiente)
         {
             RefreshAppSettings("DB", ambiente);
+            ConfigurationManager.RefreshSection("appSettings");
+            
             _db = new DataBase(ambiente);
         }
 
-        public static void InitLog()
+        public static void SalvaModificheDB()
         {
-            DataTable dtLog = CommonFunctions.DB.Select(DataBase.SP.APPLICAZIONE_LOG);
-            dtLog.TableName = CommonFunctions.Tab.LOG;
-            CommonFunctions.LocalDB.Tables.Add(dtLog);
+            DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
 
-            DataView dv = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
-            dv.Sort = "Data DESC";
-        }
+            DataTable dt = modifiche.Copy();
+            dt.TableName = modifiche.TableName;
+            dt.Namespace = "";
 
-        private static void CryptSection()
-        {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (dt.Rows.Count == 0)
+                return;
 
-            string provider = "RsaProtectedConfigurationProvider";
+            bool onLine = DB.OpenConnection();
 
-            ConfigurationSection appSettings = config.AppSettings;
-            if (appSettings != null)
+            var path = Esporta.GetPath("pathExportModifiche");
+
+            string cartellaRemota = Esporta.PreparePath(path.Value);
+            string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
+            string cartellaArchivio = Esporta.PreparePath(path.Archivio);
+
+            string fileName = "";
+            if (onLine && Directory.Exists(cartellaRemota))
             {
-                if (!appSettings.SectionInformation.IsProtected)
-                {
-                    if (!appSettings.ElementInformation.IsLocked)
-                    {
-                        appSettings.SectionInformation.ProtectSection(provider);
+                string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
 
-                        appSettings.SectionInformation.ForceSave = true;
-                        config.Save(ConfigurationSaveMode.Modified);
+                if (fileEmergenza.Length > 0)
+                {
+                    Array.Sort<string>(fileEmergenza);
+                    foreach (string file in fileEmergenza)
+                    {
+                        File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
+                        //TODO esegui stored procedure sul file
+                        if (true)
+                            File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
                     }
                 }
+
+                fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                dt.WriteXml(fileName);
+                //TODO esegui stored procedure
+                if (true)
+                    File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
             }
+            else
+            {
+                fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                try
+                {
+                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Directory.CreateDirectory(cartellaEmergenza);
+                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                }
+            }
+
+            modifiche.Clear();
+            DB.CloseConnection();
         }
 
-        public static void Init(string dbName, object appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
+        protected static object GetMessaggioCheck(object id)
         {
-            DataBase.CryptSection();    //cripta connectionStrings
-            CryptSection();             //cripta appSettings
+            DataView tipologiaCheck = _localDB.Tables[Tab.TIPOLOGIACHECK].DefaultView;
+            tipologiaCheck.RowFilter = "IdTipologiaCheck = " + id;
 
-            _db = new DataBase(dbName);
-            _db.PropertyChanged += _db_StatoDBChanged;
-            _localDB = new DataSet(NAME);
-            _wb = wb;
-            _wbVersion = wbVersion;
+            if (tipologiaCheck.Count > 0)
+                return tipologiaCheck[0]["Messaggio"];
 
-            Simboli.pwd = ConfigurationManager.AppSettings["pwd"];
+            return null;
+        }
 
-            bool localDBNotPresent = false;
-            bool emergenza = false;
-            try
-            {
-                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[Simboli.NameSpace];
-                StringReader sr = new StringReader(xmlPart.XML);
-                _localDB.ReadXml(sr);
-            }
-            catch
-            {
-                localDBNotPresent = true;
-                _localDB.Namespace = Simboli.NameSpace;
-                _localDB.Prefix = NAME;
-            }
-
+        public static void Log(DataBase.TipologiaLOG logType, string message)
+        {
             if (_db.OpenConnection())
             {
-                DataTable dt = CaricaApplicazione(appID);
-                if (dt.Rows.Count == 0)
-                    throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
+                _db.Insert(SP.INSERT_LOG, new QryParams() { {"@IdTipologia", logType}, {"@Messaggio", message} });
+                DataTable dt = _db.Select(SP.APPLICAZIONE_LOG);
+                if (_localDB.Tables[Tab.LOG] != null && dt.Columns != _localDB.Tables[Tab.LOG].Columns)
+                    ResetTable(Tab.LOG);
 
-                Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
-
-                ResetTable(Tab.APPLICAZIONE);
-                _localDB.Tables.Add(dt);
-
-                int usr = InitUser();
-                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
-
-                InitLog();
-                _db.CloseConnection();
-            }
-            else //Emergenza
-            {
-                if (localDBNotPresent)
-                {
-                    System.Windows.Forms.MessageBox.Show("Il foglio non è inizializzato e non c'è connessione ad DB... Impossibile procedere! L'applicazione verrà chiusa.", "ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-
-                    _wb.Close();
-                }
-
-                emergenza = true;
-
-                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
-                DataView applicazione = _localDB.Tables[Tab.APPLICAZIONE].DefaultView;
-                Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (applicazione[0]["IntervalloGiorni"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorni"].ToString()));
+                dt.TableName = Tab.LOG;
+                _localDB.Merge(dt);
             }
 
-            Sheet.Proteggi(false);
-            Riepilogo r = new Riepilogo(_wb.Sheets["Main"]);
-
-            if(emergenza)
-                r.RiepilogoInEmergenza();
-
-            r.InitLabels();
-            Sheet.Proteggi(true);
         }
 
-        static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true)
         {
-            StatoDB();
+            dataRif = dataRif ?? UtilityDB.DataAttiva;
+            try
+            {
+                _db.OpenConnection();
+                QryParams parameters = new QryParams() {
+                    {"@SiglaEntita", siglaEntita},
+                    {"@SiglaAzione", siglaAzione},
+                    {"@Data", dataRif.Value.ToString("yyyyMMdd")},
+                    {"@Presente", presente ? "1" : "0"}
+                };
+                _db.Insert("spInsertApplicazioneRiepilogo", parameters);
+            }
+            catch (Exception e)
+            {
+                Log(DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo ["+ dataRif ?? UtilityDB.DataAttiva +", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
 
+        public static void ConvertiParametriInformazioni()
+        {
+            _db.Select(SP.APPLICAZIONE_INIT);
+        }
+    }
+
+    public class UtilityDate 
+    {
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)
         {
             return (int)(fine.AddDays(1).ToUniversalTime() - inizio.ToUniversalTime()).TotalHours;
@@ -296,7 +269,11 @@ namespace Iren.ToolsExcel.Base
             DateTime day = DateTime.ParseExact(giorno.ToString().Substring(0, 8), "yyyyMMdd", CultureInfo.InvariantCulture);
             return GetSuffissoData(inizio, day);
         }
-        
+
+        public static string GetSuffissoOra(int ora)
+        {
+            return "H" + ora;
+        }
         public static string GetSuffissoOra(object dataOra)
         {
             string dtO = dataOra.ToString();
@@ -309,25 +286,17 @@ namespace Iren.ToolsExcel.Base
         public static string GetDataFromSuffisso(object data, object ora = null)
         {
             int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
-            DateTime outDate = CommonFunctions.DB.DataAttiva.AddDays(giorno - 1);
+            DateTime outDate = UtilityDB.DB.DataAttiva.AddDays(giorno - 1);
 
             ora = ora ?? "0";
             int outOra = int.Parse(Regex.Match(ora.ToString(), @"\d+").Value);
 
             return outDate.ToString("yyyyMMdd") + (outOra != 0 ? outOra.ToString("D2") : "");
-
         }
+    }
 
-        public static string GetSuffissoOra(int ora)
-        {
-            return "H" + ora;
-        }
-
-        public static void ConvertiParametriInformazioni()
-        {
-            _db.Select(DataBase.SP.APPLICAZIONE_INIT);
-        }
-
+    public class UtilityStruttura : UtilityDB 
+    {
         public static void AggiornaStrutturaDati()
         {
             CreaTabellaNomi();
@@ -378,7 +347,7 @@ namespace Iren.ToolsExcel.Base
             {
                 string name = Tab.MODIFICA;
                 ResetTable(name);
-                DataTable dt = new DataTable(name) 
+                DataTable dt = new DataTable(name)
                 {
                     Columns =
                     {
@@ -414,7 +383,7 @@ namespace Iren.ToolsExcel.Base
                     {"@Operativa", DataBase.ALL},
                     {"@Visibile", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.AZIONE, parameters);
+                DataTable dt = _db.Select(SP.AZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -436,7 +405,7 @@ namespace Iren.ToolsExcel.Base
                     {"@Operativa", DataBase.ALL},
                     {"@Visibile", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.AZIONE, parameters);
+                DataTable dt = _db.Select(SP.AZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -457,7 +426,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaCategoria", DataBase.ALL},
                     {"@Operativa", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.CATEGORIA, parameters);
+                DataTable dt = _db.Select(SP.CATEGORIA, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -478,7 +447,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaAzione", DataBase.ALL},
                     {"@SiglaCategoria", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.AZIONE_CATEGORIA, parameters);
+                DataTable dt = _db.Select(SP.AZIONE_CATEGORIA, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -499,7 +468,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaCategoria", DataBase.ALL},
                     {"@SiglaEntita", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.CATEGORIA_ENTITA, parameters);
+                DataTable dt = _db.Select(SP.CATEGORIA_ENTITA, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -520,7 +489,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaEntita", DataBase.ALL},
                     {"@SiglaAzione", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_AZIONE, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_AZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -541,7 +510,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaEntita", DataBase.ALL},
                     {"@SiglaInformazione", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_INFORMAZIONE, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_INFORMAZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -563,7 +532,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaAzione", DataBase.ALL},
                     {"@SiglaInformazione", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_AZIONE_INFORMAZIONE, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_AZIONE_INFORMAZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -584,7 +553,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaCalcolo", DataBase.ALL},
                     {"@IdTipologiaCalcolo", 0}
                 };
-                DataTable dt = _db.Select(DataBase.SP.CALCOLO, parameters);
+                DataTable dt = _db.Select(SP.CALCOLO, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -605,7 +574,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaCalcolo", DataBase.ALL},
                     {"@SiglaInformazione", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.CALCOLO_INFORMAZIONE, parameters);
+                DataTable dt = _db.Select(SP.CALCOLO_INFORMAZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -626,7 +595,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaEntita", DataBase.ALL},
                     {"@SiglaCalcolo", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITACALCOLO, parameters);
+                DataTable dt = _db.Select(SP.ENTITACALCOLO, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -647,7 +616,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaEntita", DataBase.ALL},
                     {"@SiglaGrafico", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_GRAFICO, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_GRAFICO, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -669,7 +638,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaGrafico", DataBase.ALL},
                     {"@SiglaInformazione", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_GRAFICO_INFORMAZIONE, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_GRAFICO_INFORMAZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -689,7 +658,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     {"@SiglaEntita", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_COMMITMENT, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_COMMITMENT, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -709,7 +678,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     {"@SiglaEntita", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_RAMPA, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_RAMPA, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -729,7 +698,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     {"@SiglaEntita", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_ASSETTO, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_ASSETTO, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -746,7 +715,7 @@ namespace Iren.ToolsExcel.Base
                 string name = Tab.ENTITAPROPRIETA;
                 ResetTable(name);
                 QryParams parameters = new QryParams();
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_PROPRIETA, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_PROPRIETA, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -767,7 +736,7 @@ namespace Iren.ToolsExcel.Base
                     {"@SiglaEntita", DataBase.ALL},
                     {"@SiglaInformazione", DataBase.ALL}
                 };
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_INFORMAZIONE_FORMATTAZIONE, parameters);
+                DataTable dt = _db.Select(SP.ENTITA_INFORMAZIONE_FORMATTAZIONE, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -784,7 +753,7 @@ namespace Iren.ToolsExcel.Base
                 string name = Tab.TIPOLOGIACHECK;
                 ResetTable(name);
                 QryParams parameters = new QryParams();
-                DataTable dt = _db.Select(DataBase.SP.TIPOLOGIA_CHECK, parameters);
+                DataTable dt = _db.Select(SP.TIPOLOGIA_CHECK, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -801,7 +770,7 @@ namespace Iren.ToolsExcel.Base
                 string name = Tab.TIPOLOGIARAMPA;
                 ResetTable(name);
                 QryParams parameters = new QryParams();
-                DataTable dt = _db.Select(DataBase.SP.TIPOLOGIA_RAMPA, parameters);
+                DataTable dt = _db.Select(SP.TIPOLOGIA_RAMPA, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -817,7 +786,7 @@ namespace Iren.ToolsExcel.Base
             {
                 string name = Tab.ENTITAPARAMETROD;
                 ResetTable(name);
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_PARAMETRO_D);
+                DataTable dt = _db.Select(SP.ENTITA_PARAMETRO_D);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -833,7 +802,7 @@ namespace Iren.ToolsExcel.Base
             {
                 string name = Tab.ENTITAPARAMETROH;
                 ResetTable(name);
-                DataTable dt = _db.Select(DataBase.SP.ENTITA_PARAMETRO_H);
+                DataTable dt = _db.Select(SP.ENTITA_PARAMETRO_H);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -845,78 +814,36 @@ namespace Iren.ToolsExcel.Base
         }
 
         #endregion
+    }
 
-        public static void DumpDataSet()
+    public class UtilityWB : UtilityDB
+    {
+        #region Variabili
+
+        protected static Workbook _wb;
+
+        #endregion
+
+        #region Proprietà
+
+        public static Workbook WB { get { return _wb; } }
+        public static System.Version CoreVersion
         {
-            StringWriter strWriter = new StringWriter();
-            XmlWriter xmlWriter = XmlWriter.Create(strWriter);
-            _localDB.Tables.Remove(Tab.LOG);
-            _localDB.WriteXml(xmlWriter);
-            string locDBXml = strWriter.ToString();
-            Microsoft.Office.Core.CustomXMLPart part;
-            try
-            {
-                part = _wb.CustomXMLParts[Simboli.NameSpace];
-            }
-            catch
-            {
-                part = _wb.CustomXMLParts.Add();
-            }
-
-            part.LoadXML(locDBXml);
+            get { return UtilityDB.DB.GetCurrentV(); }
+        }
+        public static System.Version BaseVersion
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version; }
         }
 
-        public static void InsertLog(DataBase.TipologiaLOG logType, string message)
-        {
-            if (_db.OpenConnection())
-            {
-                _wb.Sheets["Log"].Unprotect();
-                _db.InsertLog(logType, message);
-                //_db.CloseConnection();
-                DataTable dt = _db.Select(DataBase.SP.APPLICAZIONE_LOG);
-                if (_localDB.Tables[Tab.LOG] != null && dt.Columns != _localDB.Tables[Tab.LOG].Columns)
-                    ResetTable(Tab.LOG);
-                
-                dt.TableName = Tab.LOG;
-                _localDB.Merge(dt);
-                _wb.Sheets["Log"].Protect();
-            }
 
-        }
+        #endregion
 
-        public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true)
-        {
-            dataRif = dataRif ?? CommonFunctions.DB.DataAttiva;
-            try
-            {
-                _db.OpenConnection();
-                QryParams parameters = new QryParams() {
-                    {"@SiglaEntita", siglaEntita},
-                    {"@SiglaAzione", siglaAzione},
-                    {"@Data", dataRif.Value.ToString("yyyyMMdd")},
-                    {"@Presente", presente ? "1" : "0"}
-                };
-                _db.Insert("spInsertApplicazioneRiepilogo", parameters);
-            }
-            catch (Exception e)
-            {
-                InsertLog(DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo ["+ dataRif ?? CommonFunctions.DB.DataAttiva +", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
-                
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-            }
-        }
+        #region Metodi
 
         public static void AggiornaFormule(Excel.Worksheet ws)
         {
             ws.Application.CalculateFull();
-        }
-
-        public static void RefreshAppSettings(string key, string value)
-        {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings[key].Value = value;
-            config.Save(ConfigurationSaveMode.Minimal);
-            ConfigurationManager.RefreshSection("appSettings");
         }
 
         public static bool CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime? dataRif = null, object parametro = null)
@@ -927,7 +854,7 @@ namespace Iren.ToolsExcel.Base
                 azioni.RowFilter = "SiglaAzione = '" + siglaAzione + "'";
 
                 if (dataRif == null)
-                    dataRif = CommonFunctions.DB.DataAttiva;
+                    dataRif = UtilityDB.DataAttiva;
 
                 bool procedi = true;
                 if (azioni[0]["Visibile"].Equals("1"))
@@ -955,7 +882,7 @@ namespace Iren.ToolsExcel.Base
                         }
                         else
                         {
-                            DataView azioneInformazione = _db.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + dataRif.Value.ToString("yyyyMMdd")).DefaultView;
+                            DataView azioneInformazione = _db.Select(SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + dataRif.Value.ToString("yyyyMMdd")).DefaultView;
                             if (azioneInformazione.Count == 0)
                             {
                                 if (azioni[0]["Visibile"].Equals("1"))
@@ -996,9 +923,9 @@ namespace Iren.ToolsExcel.Base
             Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == foglio);
 
             if (dataRif == null)
-                dataRif = CommonFunctions.DB.DataAttiva;
+                dataRif = UtilityDB.DataAttiva;
 
-            string suffissoData = GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif.Value);
+            string suffissoData = UtilityDate.GetSuffissoData(UtilityDB.DataAttiva, dataRif.Value);
 
             DataView entitaAzioniInformazioni = _localDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
 
@@ -1038,8 +965,8 @@ namespace Iren.ToolsExcel.Base
                 string suffissoData;
                 if (azione["SiglaEntita"].Equals("UP_BUS") && azione["SiglaInformazione"].Equals("VOL_INVASO"))
                     suffissoData = DefinedNames.GetName("DATA0", "H24");
-                else 
-                    suffissoData = DefinedNames.GetName(GetSuffissoData(CommonFunctions.DB.DataAttiva, azione["Data"]), GetSuffissoOra(azione["Data"]));
+                else
+                    suffissoData = DefinedNames.GetName(UtilityDate.GetSuffissoData(UtilityDB.DataAttiva, azione["Data"]), UtilityDate.GetSuffissoOra(azione["Data"]));
 
                 Tuple<int, int>[] celle = nomiDefiniti[DefinedNames.GetName(azione["SiglaEntita"], azione["SiglaInformazione"], suffissoData)];
                 if (celle != null)
@@ -1050,9 +977,9 @@ namespace Iren.ToolsExcel.Base
                         rng.Interior.ColorIndex = azione["BackColor"];
                     if (azione["BackColor"] != DBNull.Value)
                         rng.Font.ColorIndex = azione["ForeColor"];
-                    
+
                     rng.ClearComments();
-                    
+
                     if (azione["Commento"] != DBNull.Value)
                         rng.AddComment(azione["Commento"]).Visible = false;
                 }
@@ -1063,9 +990,9 @@ namespace Iren.ToolsExcel.Base
         {
             Dictionary<object, object> entitaRiferimento = new Dictionary<object, object>();
             List<int> oreDaCalcolare = new List<int>();
-            
 
-            string suffissoData = GetSuffissoData(CommonFunctions.DB.DataAttiva, data);
+
+            string suffissoData = UtilityDate.GetSuffissoData(UtilityDB.DataAttiva, data);
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == nomeFoglio);
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
@@ -1073,7 +1000,7 @@ namespace Iren.ToolsExcel.Base
             if (oraInizio == 0)
             {
                 oraInizio++;
-                oraFine = GetOreGiorno(data);
+                oraFine = UtilityDate.GetOreGiorno(data);
             }
             DataView categoriaEntita = _localDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
             DataView entitaInformazioni = _localDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
@@ -1112,7 +1039,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     foreach (int ora in oreDaCalcolare)
                     {
-                        Tuple<int,int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
+                        Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "CHECKINFO", suffissoData, "H" + ora)][0];
                         ws.Range[cella.Item1, cella.Item2].Value = null;
                     }
                 }
@@ -1155,11 +1082,11 @@ namespace Iren.ToolsExcel.Base
                                     i++;
                                     continue;
                                 }
-                                    
+
 
                             if (calcolo["OraFine"].Equals("0"))
                             {
-                                if (ora != GetOreGiorno(data))
+                                if (ora != UtilityDate.GetOreGiorno(data))
                                     break;
                                 i++;
                                 continue;
@@ -1175,7 +1102,7 @@ namespace Iren.ToolsExcel.Base
                                 if (nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)))
                                 {
                                     Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, calcolo["SiglaInformazione"], suffissoData, "H" + ora)][0];
-                                
+
                                     Excel.Range rng = ws.Cells[cella.Item1, cella.Item2];
                                     rng.Formula = calcolo["SiglaInformazione"].Equals("CHECKINFO") ? GetMessaggioCheck(risultato) : risultato;
 
@@ -1192,7 +1119,7 @@ namespace Iren.ToolsExcel.Base
                                     entitaInformazioni.RowFilter = "SiglaInformazione = '" + calcolo["SiglaInformazione"] + "'";
                                     if (entitaInformazioni.Count > 0 && entitaInformazioni[0]["SalvaDB"].Equals("1"))
                                     {
-                                        BaseHandler.StoreEdit(ws, rng);
+                                        Handler.StoreEdit(ws, rng);
                                     }
                                 }
                             }
@@ -1204,7 +1131,7 @@ namespace Iren.ToolsExcel.Base
                             if (calcolo["GoStep"] != DBNull.Value)
                                 step = (int)calcolo["GoStep"];
 
-                            if (step != 0) 
+                            if (step != 0)
                                 i = calcoloRows.FindIndex(row => row["Step"].Equals(step));
                             else
                                 i++;
@@ -1220,7 +1147,7 @@ namespace Iren.ToolsExcel.Base
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
             Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == nomeFoglio);
 
-            string suffissoData = GetSuffissoData(CommonFunctions.DB.DataAttiva, data);
+            string suffissoData = UtilityDate.GetSuffissoData(UtilityDB.DataAttiva, data);
 
             int ora1 = calcolo["OraInformazione1"] is DBNull ? ora : ora + (int)calcolo["OraInformazione1"];
             int ora2 = calcolo["OraInformazione2"] is DBNull ? ora : ora + (int)calcolo["OraInformazione2"];
@@ -1234,8 +1161,8 @@ namespace Iren.ToolsExcel.Base
             if (calcolo["SiglaInformazione1"] != DBNull.Value)
             {
                 Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)];
-                Tuple<int,int> cella = null;
-                if(riga != null)
+                Tuple<int, int> cella = null;
+                if (riga != null)
                     cella = riga[0];
 
                 switch (calcolo["SiglaInformazione1"].ToString())
@@ -1244,7 +1171,7 @@ namespace Iren.ToolsExcel.Base
                         DataView entitaCommitment = _localDB.Tables[Tab.ENTITACOMMITMENT].DefaultView;
                         entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Cells[cella.Item1, cella.Item2].Value + "'";
                         valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0]["IdEntitaCommitment"] : null;
-                        
+
                         break;
                     case "DISPONIBILITA":
                         if (ws.Cells[cella.Item1, cella.Item2].Value == "OFF")
@@ -1289,7 +1216,7 @@ namespace Iren.ToolsExcel.Base
                 if (entitaParametro.Count > 0)
                     valore1 = entitaParametro[0]["Valore"].ToString().Replace('.', ',');
             }
-            else if(calcolo["Valore"] != DBNull.Value)
+            else if (calcolo["Valore"] != DBNull.Value)
             {
                 valore1 = Convert.ToDouble(calcolo["Valore"]);
             }
@@ -1341,7 +1268,7 @@ namespace Iren.ToolsExcel.Base
                 step = 0;
                 if (Convert.ToDouble(valore1) == 0d)
                     return valore2;
-                
+
                 return valore1;
             }
             else if (calcolo["Funzione"] != DBNull.Value)
@@ -1349,7 +1276,7 @@ namespace Iren.ToolsExcel.Base
                 string func = calcolo["Funzione"].ToString().ToLowerInvariant();
                 if (calcolo["SiglaInformazione2"] is DBNull)
                 {
-                    if(func.Contains("abs")) 
+                    if (func.Contains("abs"))
                     {
                         retVal = Math.Abs(Convert.ToDouble(valore1));
                     }
@@ -1359,7 +1286,7 @@ namespace Iren.ToolsExcel.Base
                     }
                     else if (func.Contains("round"))
                     {
-                        int decimals = int.Parse(func.Replace("round",""));
+                        int decimals = int.Parse(func.Replace("round", ""));
                         retVal = Math.Round(Convert.ToDouble(valore1), decimals);
                     }
                     else if (func.Contains("power"))
@@ -1371,7 +1298,7 @@ namespace Iren.ToolsExcel.Base
                     {
                         foreach (var kvp in entitaRiferimento)
                         {
-                            Tuple<int,int> cella = nomiDefiniti[DefinedNames.GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
+                            Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, "H" + ora1)][0];
                             retVal += ws.Cells[cella.Item1, cella.Item2].Value ?? 0d;
                         }
                     }
@@ -1390,7 +1317,7 @@ namespace Iren.ToolsExcel.Base
                         Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
                         object[,] tmpVal = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
                         object[] values = tmpVal.Cast<object>().ToArray();
-                        for (int i = 0; i < GetOreGiorno(data); i++)
+                        for (int i = 0; i < UtilityDate.GetOreGiorno(data); i++)
                         {
                             double val = (double)(values[i] ?? 0);
                             retVal = Math.Max(val, retVal);
@@ -1402,7 +1329,7 @@ namespace Iren.ToolsExcel.Base
                         Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData)];
                         object[,] tmpVal = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value;
                         object[] values = tmpVal.Cast<object>().ToArray();
-                        for (int i = 0; i < GetOreGiorno(data); i++)
+                        for (int i = 0; i < UtilityDate.GetOreGiorno(data); i++)
                         {
                             double val = (double)(values[i] ?? 0);
                             retVal = Math.Min(val, retVal);
@@ -1494,94 +1421,216 @@ namespace Iren.ToolsExcel.Base
             return retVal;
         }
 
-        private static object GetMessaggioCheck(object id) 
+        public static void InsertLog(DataBase.TipologiaLOG logType, string message)
         {
-            DataView tipologiaCheck = _localDB.Tables[Tab.TIPOLOGIACHECK].DefaultView;
-            tipologiaCheck.RowFilter = "IdTipologiaCheck = " + id;
-
-            if(tipologiaCheck.Count > 0)
-                return tipologiaCheck[0]["Messaggio"];
-
-            return null;
+            _wb.Sheets["Log"].Unprotect();
+            UtilityDB.Log(logType, message);
+            _wb.Sheets["Log"].Protect();
         }
 
-        public static void SalvaModificheDB()
+        public static Dictionary<DataBase.NomiDB, ConnectionState> AggiornaLabelStatoDB()
         {
-            DataTable modifiche = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.MODIFICA];
-
-            DataTable dt = modifiche.Copy();
-            dt.TableName = modifiche.TableName;
-            dt.Namespace = "";
-
-            if (dt.Rows.Count == 0)
-                return;
-
-            bool onLine = DB.OpenConnection();
-
-            var path = Esporta.GetPath("pathExportModifiche");
-
-            string cartellaRemota = Esporta.PreparePath(path.Value);
-            string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
-            string cartellaArchivio = Esporta.PreparePath(path.Archivio);
-
-            string fileName = "";
-            if (onLine && Directory.Exists(cartellaRemota)) 
-            {
-                string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
-
-                if (fileEmergenza.Length > 0)
-                {
-                    Array.Sort<string>(fileEmergenza);
-                    foreach (string file in fileEmergenza)
-                    {
-                        File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
-                        //TODO esegui stored procedure sul file
-                        if(true)
-                            File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
-                    }
-                }
-
-                fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
-                dt.WriteXml(fileName);
-                //TODO esegui stored procedure
-                if (true)
-                    File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
-            } 
-            else 
-            {
-                fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
-                try
-                {
-                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    Directory.CreateDirectory(cartellaEmergenza);
-                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
-                }
-            }
-
-            modifiche.Clear();
-            DB.CloseConnection();
-        }
-
-        public static Dictionary<DataBase.NomiDB, ConnectionState> StatoDB()
-        {
-            bool ff = _wb.Sheets["Main"].ProtectContents;
-            if (ff)
+            bool isProtected = _wb.Sheets["Main"].ProtectContents;
+            
+            if (isProtected)
                 _wb.Sheets["Main"].Unprotect(Simboli.pwd);
-            Dictionary<DataBase.NomiDB, ConnectionState> stato = _db.StatoDB;
+            
+            Dictionary<DataBase.NomiDB, ConnectionState> stato = DB.StatoDB;
 
             Simboli.SQLServerOnline = stato[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
             Simboli.ImpiantiOnline = stato[DataBase.NomiDB.IMP] == ConnectionState.Open;
             Simboli.ElsagOnline = stato[DataBase.NomiDB.ELSAG] == ConnectionState.Open;
 
-            if (ff)
+            if (isProtected)
                 _wb.Sheets["Main"].Protect(Simboli.pwd);
 
             return stato;
         }
-        
+
+        public static void DumpDataSet()
+        {
+            StringWriter strWriter = new StringWriter();
+            XmlWriter xmlWriter = XmlWriter.Create(strWriter);
+            LocalDB.Tables.Remove(Tab.LOG);
+            LocalDB.WriteXml(xmlWriter);
+            string locDBXml = strWriter.ToString();
+            Microsoft.Office.Core.CustomXMLPart part;
+            try
+            {
+                part = _wb.CustomXMLParts[Simboli.NameSpace];
+            }
+            catch
+            {
+                part = _wb.CustomXMLParts.Add();
+            }
+
+            part.LoadXML(locDBXml);
+        }
+
         #endregion
+    }
+
+    public class UtilityInit : UtilityWB
+    {
+        private static System.Version _wbVersion;
+
+        public static System.Version WorkbookVersion
+        {
+            get { return _wbVersion; }
+        }
+
+        private static void CryptSection()
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            string provider = "RsaProtectedConfigurationProvider";
+
+            ConfigurationSection appSettings = config.AppSettings;
+            if (appSettings != null)
+            {
+                if (!appSettings.SectionInformation.IsProtected)
+                {
+                    if (!appSettings.ElementInformation.IsLocked)
+                    {
+                        appSettings.SectionInformation.ProtectSection(provider);
+
+                        appSettings.SectionInformation.ForceSave = true;
+                        config.Save(ConfigurationSaveMode.Modified);
+                    }
+                }
+            }
+        }
+
+        public static void InitLog()
+        {
+            DataTable dtLog = DB.Select(SP.APPLICAZIONE_LOG);
+            dtLog.TableName = Tab.LOG;
+            LocalDB.Tables.Add(dtLog);
+
+            DataView dv = LocalDB.Tables[Tab.LOG].DefaultView;
+            dv.Sort = "Data DESC";
+        }
+
+        private static int InitUser()
+        {
+            try
+            {
+                ResetTable(Tab.UTENTE);
+
+                DataTable dtUtente = _db.Select(UtilityDB.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
+                dtUtente.TableName = Tab.UTENTE;
+
+                if (dtUtente.Rows.Count == 0)
+                {
+                    DataRow r = dtUtente.NewRow();
+                    r["IdUtente"] = 0;
+                    r["Nome"] = "NON CONFIGURATO";
+                    dtUtente.Rows.Add(r);
+                }
+                _localDB.Tables.Add(dtUtente);
+
+                return int.Parse("" + dtUtente.Rows[0]["IdUtente"]);
+            }
+            catch (Exception e)
+            {
+                _db.Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", DataBase.TipologiaLOG.LogErrore }, { "@Messaggio", "InitUser: " + e.Message } });
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                return -1;
+            }
+        }
+
+        private static DataTable CaricaApplicazione(object idApplicazione)
+        {
+            string name = Tab.APPLICAZIONE;
+            ResetTable(name);
+            QryParams parameters = new QryParams() 
+            {
+                {"@IdApplicazione", idApplicazione},
+
+            };
+            DataTable dt = _db.Select(SP.APPLICAZIONE, parameters);
+            dt.TableName = name;
+            return dt;
+        }
+
+        public static void Init(string dbName, object appID, DateTime dataAttiva, Workbook wb, System.Version wbVersion)
+        {
+            DataBase.CryptSection();    //cripta connectionStrings
+            CryptSection();             //cripta appSettings
+
+            _db = new DataBase(dbName);
+            _db.PropertyChanged += _db_StatoDBChanged;
+            _localDB = new DataSet(NAME);
+            _wb = wb;
+            _wbVersion = wbVersion;
+
+            Simboli.pwd = ConfigurationManager.AppSettings["pwd"];
+
+            bool localDBNotPresent = false;
+            bool emergenza = false;
+            try
+            {
+                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[Simboli.NameSpace];
+                StringReader sr = new StringReader(xmlPart.XML);
+                _localDB.ReadXml(sr);
+            }
+            catch
+            {
+                localDBNotPresent = true;
+                _localDB.Namespace = Simboli.NameSpace;
+                _localDB.Prefix = NAME;
+            }
+
+            if (_db.OpenConnection())
+            {
+                DataTable dt = CaricaApplicazione(appID);
+                if (dt.Rows.Count == 0)
+                    throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
+
+                Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
+                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
+
+                ResetTable(Tab.APPLICAZIONE);
+                _localDB.Tables.Add(dt);
+
+                int usr = InitUser();
+                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
+
+                InitLog();
+                _db.CloseConnection();
+            }
+            else //Emergenza
+            {
+                if (localDBNotPresent)
+                {
+                    System.Windows.Forms.MessageBox.Show("Il foglio non è inizializzato e non c'è connessione ad DB... Impossibile procedere! L'applicazione verrà chiusa.", "ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                    _wb.Close();
+                }
+
+                emergenza = true;
+
+                _db.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
+                DataView applicazione = _localDB.Tables[Tab.APPLICAZIONE].DefaultView;
+                Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
+                Simboli.intervalloGiorni = (applicazione[0]["IntervalloGiorni"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorni"].ToString()));
+            }
+
+            Sheet.Proteggi(false);
+            Riepilogo r = new Riepilogo(_wb.Sheets["Main"]);
+
+            if (emergenza)
+                r.RiepilogoInEmergenza();
+
+            r.InitLabels();
+            Sheet.Proteggi(true);
+        }
+
+        public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            AggiornaLabelStatoDB();
+        }
     }
 }

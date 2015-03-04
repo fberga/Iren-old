@@ -15,7 +15,7 @@ using Iren.ToolsExcel.Core;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class Riepilogo: CommonFunctions
+    public class Riepilogo: UtilityWB
     {
         #region Variabili
         
@@ -64,16 +64,16 @@ namespace Iren.ToolsExcel.Base
 
         private void CicloGiorni(Action<int, string, DateTime> callback)
         {
-            DateTime dataInizio = CommonFunctions.DB.DataAttiva;
-            DateTime dataFine = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
+            DateTime dataInizio = DB.DataAttiva;
+            DateTime dataFine = DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
         private void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
         {
             for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
             {
-                int oreGiorno = GetOreGiorno(giorno);
-                string suffissoData = GetSuffissoData(dataInizio, giorno);
+                int oreGiorno = UtilityDate.GetOreGiorno(giorno);
+                string suffissoData = UtilityDate.GetSuffissoData(dataInizio, giorno);
 
                 if (giorno == dataInizio && _struttura.visData0H24)
                 {
@@ -88,8 +88,8 @@ namespace Iren.ToolsExcel.Base
         {
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DB.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"];
 
@@ -116,7 +116,7 @@ namespace Iren.ToolsExcel.Base
         }        
         private void Clear()
         {
-            int dataOreTot = GetOreIntervallo(CommonFunctions.DB.DataAttiva, CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = GetOreIntervallo(DB.DataAttiva, DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
 
@@ -323,7 +323,7 @@ namespace Iren.ToolsExcel.Base
             {
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    DataView datiRiepilogo = DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                    DataView datiRiepilogo = DB.Select(SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                     foreach (DataRowView valore in datiRiepilogo)
                     {
                         string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
@@ -345,7 +345,7 @@ namespace Iren.ToolsExcel.Base
             }
             catch (Exception e)
             {
-                CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaDatiRiepilogo: " + e.Message);
+                InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaDatiRiepilogo: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
@@ -354,9 +354,9 @@ namespace Iren.ToolsExcel.Base
         public void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
         {
             if(dataRif == null)
-                dataRif = CommonFunctions.DB.DataAttiva;
+                dataRif = DB.DataAttiva;
 
-            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif.Value))][0];
+            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, GetSuffissoData(DB.DataAttiva, dataRif.Value))][0];
             Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
 
             if (presente)
@@ -377,8 +377,8 @@ namespace Iren.ToolsExcel.Base
 
         private void AggiornaDate()
         {
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DB.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
 
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {

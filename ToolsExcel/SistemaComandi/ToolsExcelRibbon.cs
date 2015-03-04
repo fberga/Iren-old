@@ -24,7 +24,7 @@ namespace Iren.ToolsExcel
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {      
-            if (CommonFunctions.WB.Sheets.Count <= 2)
+            if (UtilityWB.WB.Sheets.Count <= 2)
                 AbilitaTasti(false);
 
             CheckTastoApplicativo();
@@ -51,7 +51,7 @@ namespace Iren.ToolsExcel
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
-            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
+            UtilityWB.WB.SheetChange -= Handler.StoreEdit;
 
             int count = 0;
             foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
@@ -66,43 +66,43 @@ namespace Iren.ToolsExcel
             if (count > 1)
             {
                 //TODO riabilitare log!!
-                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
-                CommonFunctions.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
+                //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
+                UtilityDB.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
                 btnAggiornaStruttura_Click(null, null);
             }
 
-            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
+            UtilityWB.WB.SheetChange += Handler.StoreEdit;
             ambienteScelto.Checked = true;
         }
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.SheetChange -= Handler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (CommonFunctions.DB.OpenConnection())
+            if (UtilityDB.DB.OpenConnection())
             {
                 AggiornaStruttura();
                 //TODO riabilitare log!!
-                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
+                //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
-                CommonFunctions.DB.CloseConnection();
+                UtilityDB.DB.CloseConnection();
             }
 
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
-            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.SheetChange += Handler.StoreEdit;
 
             AbilitaTasti(true);
         }
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.SheetChange -= Handler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
             Forms.FormCalendar cal = new FormCalendar();
             cal.ShowDialog();
@@ -113,36 +113,36 @@ namespace Iren.ToolsExcel
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    if (CommonFunctions.DB.OpenConnection())
+                    if (UtilityDB.DB.OpenConnection())
                     {
-                        CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
+                        UtilityDB.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
 
                         //TODO riabilitare log!!
-                        //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
+                        //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
 
-                        CommonFunctions.RefreshDate(cal.Date.Value);
-                        CommonFunctions.ConvertiParametriInformazioni();
+                        UtilityDB.RefreshDate(cal.Date.Value);
+                        UtilityDB.ConvertiParametriInformazioni();
 
-                        DataView stato = CommonFunctions.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                        DataView stato = UtilityDB.DB.Select(UtilityDB.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
                         if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
                         {
-                            CommonFunctions.AggiornaStrutturaDati();
+                            UtilityStruttura.AggiornaStrutturaDati();
                             AggiornaStruttura();
                         }
                         else
                         {
                             AggiornaDati(all: true);
                         }
-                        CommonFunctions.DB.CloseConnection();
+                        UtilityDB.DB.CloseConnection();
                     }
                     else  //emergenza
                     {
-                        CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
+                        UtilityDB.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
-                        CommonFunctions.RefreshDate(cal.Date.Value);
+                        UtilityDB.RefreshDate(cal.Date.Value);
 
-                        foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
+                        foreach (Excel.Worksheet ws in UtilityWB.WB.Sheets)
                         {
                             if (ws.Name != "Log" && ws.Name != "Main")
                             {
@@ -151,27 +151,27 @@ namespace Iren.ToolsExcel
                             }
                         }
 
-                        Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+                        Riepilogo main = new Riepilogo(UtilityWB.WB.Sheets["Main"]);
                         main.RiepilogoInEmergenza();
                     }
                 }
             }
             cal.Dispose();
 
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
-            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.SheetChange += Handler.StoreEdit;
         }
         private void btnRampe_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.SheetChange -= Handler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            Excel.Worksheet ws = (Excel.Worksheet)CommonFunctions.WB.ActiveSheet;
-            Excel.Range rng = CommonFunctions.WB.Application.Selection;
+            Excel.Worksheet ws = (Excel.Worksheet)UtilityWB.WB.ActiveSheet;
+            Excel.Range rng = UtilityWB.WB.Application.Selection;
             
             DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
 
@@ -182,7 +182,7 @@ namespace Iren.ToolsExcel
                 string nome = nomiDefiniti[rng.Row, rng.Column][0];
                 siglaEntita = nome.Split(char.Parse(Simboli.UNION))[0];
 
-                DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
 
                 if (entitaInformazioni.Count == 0 
@@ -208,47 +208,47 @@ namespace Iren.ToolsExcel
                 rampe.Dispose();
             }
 
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
-            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.SheetChange += Handler.StoreEdit;
         }
         private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.SheetChange -= Handler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (CommonFunctions.DB.OpenConnection())
+            if (UtilityDB.DB.OpenConnection())
             {
                 AggiornaDati(all: false);
 
                 //TODO riabilitare log!!
-                //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
+                //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
 
-                CommonFunctions.DB.CloseConnection();
+                UtilityDB.DB.CloseConnection();
             }
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
-            CommonFunctions.WB.SheetChange += BaseHandler.StoreEdit;
+            UtilityWB.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.SheetChange += Handler.StoreEdit;
         }
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             CustFormAzioni frmAz = new CustFormAzioni();
             frmAz.ShowDialog();
 
-            CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            UtilityWB.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.Application.ScreenUpdating = true;
         }
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             Simboli.ModificaDati = btnModifica.Checked;
 
@@ -258,19 +258,19 @@ namespace Iren.ToolsExcel
             else
             {
                 //Salva modifiche su db
-                CommonFunctions.SalvaModificheDB();
+                UtilityDB.SalvaModificheDB();
                 btnModifica.Image = global::Iren.ToolsExcel.Base.Properties.Resources.edit_not_validated_icon;
             }
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.Application.ScreenUpdating = true;
         }
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
         {
-            CommonFunctions.WB.Application.ScreenUpdating = false;
+            UtilityWB.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
 
-            Excel.Worksheet ws = (Excel.Worksheet)CommonFunctions.WB.ActiveSheet;
-            Excel.Range rng = CommonFunctions.WB.Application.Selection;
+            Excel.Worksheet ws = (Excel.Worksheet)UtilityWB.WB.ActiveSheet;
+            Excel.Range rng = UtilityWB.WB.Application.Selection;
 
             DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
 
@@ -281,7 +281,7 @@ namespace Iren.ToolsExcel
             {
                 siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
 
-                DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
 
                 if (entitaInformazioni.Count == 0 
@@ -302,7 +302,7 @@ namespace Iren.ToolsExcel
             }
 
             Sheet.Proteggi(true);
-            CommonFunctions.WB.Application.ScreenUpdating = true;
+            UtilityWB.WB.Application.ScreenUpdating = true;
         }
         private void btnConfigura_Click(object sender, RibbonControlEventArgs e)
         {
@@ -375,11 +375,11 @@ namespace Iren.ToolsExcel
                 nomiDefiniti = new DefinedNames(foglio);
                 Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
 
-                Excel.Worksheet ws = CommonFunctions.WB.Application.Sheets[foglio];
+                Excel.Worksheet ws = UtilityWB.WB.Application.Sheets[foglio];
                 ((Excel._Worksheet)ws).Activate();
                 rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
                 rng.Select();
-                CommonFunctions.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
+                UtilityWB.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
             }
             selUP.Dispose();
             return !selUP.IsCanceld && selUP.HasSelection;
@@ -396,9 +396,9 @@ namespace Iren.ToolsExcel
         }
         private void AggiornaStruttura()
         {
-            CommonFunctions.AggiornaStrutturaDati();
+            UtilityStruttura.AggiornaStrutturaDati();
 
-            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            DataView categorie = UtilityDB.LocalDB.Tables[UtilityDB.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = 1";
 
             foreach (DataRowView categoria in categorie)
@@ -406,21 +406,21 @@ namespace Iren.ToolsExcel
                 Excel.Worksheet ws;
                 try
                 {
-                    ws = CommonFunctions.WB.Worksheets[categoria["DesCategoria"].ToString()];
+                    ws = UtilityWB.WB.Worksheets[categoria["DesCategoria"].ToString()];
                 }
                 catch
                 {
-                    ws = (Excel.Worksheet)CommonFunctions.WB.Worksheets.Add(CommonFunctions.WB.Worksheets["Log"]);
+                    ws = (Excel.Worksheet)UtilityWB.WB.Worksheets.Add(UtilityWB.WB.Worksheets["Log"]);
                     ws.Name = categoria["DesCategoria"].ToString();
                     ws.Select();
-                    CommonFunctions.WB.Application.Windows[1].DisplayGridlines = false;                    
+                    UtilityWB.WB.Application.Windows[1].DisplayGridlines = false;                    
                 }
             }
 
-            Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+            Riepilogo main = new Riepilogo(UtilityWB.WB.Sheets["Main"]);
             main.LoadStructure();
 
-            foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
+            foreach (Excel.Worksheet ws in UtilityWB.WB.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
@@ -429,14 +429,14 @@ namespace Iren.ToolsExcel
                 }
             }
 
-            CommonFunctions.DumpDataSet();
+            UtilityWB.DumpDataSet();
             
-            CommonFunctions.WB.Sheets["Main"].Select();
-            CommonFunctions.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
+            UtilityWB.WB.Sheets["Main"].Select();
+            UtilityWB.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
         }
         private void AggiornaDati(bool all)
         {
-            foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
+            foreach (Excel.Worksheet ws in UtilityWB.WB.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
@@ -446,7 +446,7 @@ namespace Iren.ToolsExcel
             }
             if (all)
             {
-                Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+                Riepilogo main = new Riepilogo(UtilityWB.WB.Sheets["Main"]);
                 main.UpdateRiepilogo();
             }
 

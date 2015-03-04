@@ -7,7 +7,7 @@ using Office = Microsoft.Office.Core;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class BaseHandler
+    public class Handler
     {
         public static void GotoClick(object Sh, Excel.Range Target)
         {
@@ -71,7 +71,7 @@ namespace Iren.ToolsExcel.Base
                 Array.Copy(Target.Value, 1, values, 0, values.Length);
             }
 
-            DataView modifiche = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.MODIFICA].DefaultView;
+            DataView modifiche = UtilityDB.LocalDB.Tables[UtilityDB.Tab.MODIFICA].DefaultView;
 
             for (int i = 0, rowLen = values.GetLength(0); i < rowLen; i++)
             {
@@ -82,11 +82,11 @@ namespace Iren.ToolsExcel.Base
                         string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
 
                         string[] info = nomi[0].Split(Simboli.UNION[0]);
-                        string data = CommonFunctions.GetDataFromSuffisso(info[2], info[3]);
+                        string data = UtilityDate.GetDataFromSuffisso(info[2], info[3]);
 
                         modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
                         if (modifiche.Count == 0)
-                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), CommonFunctions.DB.IdApplicazione, CommonFunctions.DB.IdUtenteAttivo);
+                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), UtilityDB.DB.IdApplicazione, UtilityDB.DB.IdUtenteAttivo);
                         else
                             modifiche[0]["Valore"] = values[i, j];
                     }
@@ -103,7 +103,7 @@ namespace Iren.ToolsExcel.Base
 
         public static void ChangeModificaDati(bool modifica)
         {
-            Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+            Excel.Worksheet ws = UtilityWB.WB.Sheets["Main"];
             ws.Shapes.Item("lbModifica").Locked = false;
             ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: " + (modifica ? "SI" : "NO");
             if (modifica) 
@@ -125,7 +125,7 @@ namespace Iren.ToolsExcel.Base
         }
         public static void ChangeAmbiente(string ambiente)
         {
-            Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+            Excel.Worksheet ws = UtilityWB.WB.Sheets["Main"];
             ws.Shapes.Item("lbTest").Locked = false;
             switch (ambiente)
             {
@@ -174,7 +174,7 @@ namespace Iren.ToolsExcel.Base
                     break;
             }
 
-            Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+            Excel.Worksheet ws = UtilityWB.WB.Sheets["Main"];
             ws.Shapes.Item(labelName).TextFrame.Characters().Text = labelText + (online ? "OPERATIVO" : "FUORI SERVIZIO");
             if (online)
             {

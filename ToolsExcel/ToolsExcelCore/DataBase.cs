@@ -33,45 +33,6 @@ namespace Iren.ToolsExcel.Core
 
         public const string ALL = "ALL";
 
-        public struct SP
-        {
-            public const string APPLICAZIONE = "spApplicazioneProprieta",
-                APPLICAZIONE_INFORMAZIONE = "spApplicazioneInformazione",
-                APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
-                APPLICAZIONE_INIT = "spApplicazioneInit",
-                APPLICAZIONE_LOG = "spApplicazioneLog",
-                APPLICAZIONE_RIEPILOGO = "spApplicazioneRiepilogo",
-                AZIONE = "spAzione",
-                AZIONE_CATEGORIA = "spAzioneCategoria",
-                CALCOLO = "spCalcolo",
-                CALCOLO_INFORMAZIONE = "spCalcoloInformazione",
-                CARICA_AZIONE_INFORMAZIONE = "spCaricaAzioneInformazione",
-                CATEGORIA = "spCategoria",
-                CATEGORIA_ENTITA = "spCategoriaEntita",
-                CHECK_FONTE_METEO = "spCheckFonteMeteo",
-                CHECKMODIFICASTRUTTURA = "spCheckModificaStruttura",
-                ENTITA_ASSETTO = "spEntitaAssetto",
-                ENTITA_AZIONE = "spEntitaAzione",
-                ENTITA_AZIONE_INFORMAZIONE = "spEntitaAzioneInformazione",
-                ENTITACALCOLO = "spEntitaCalcolo",
-                ENTITA_COMMITMENT = "spEntitaCommitment",
-                ENTITA_GRAFICO = "spEntitaGrafico",
-                ENTITA_GRAFICO_INFORMAZIONE = "spEntitaGraficoInformazione",
-                ENTITA_INFORMAZIONE = "spEntitaInformazione",
-                ENTITA_INFORMAZIONE_FORMATTAZIONE = "spEntitaInformazioneFormattazione",
-                ENTITA_PARAMETRO_D = "spEntitaParametroD",
-                ENTITA_PARAMETRO_H = "spEntitaParametroH",
-                ENTITA_PROPRIETA = "spEntitaProprieta",
-                ENTITA_RAMPA = "spEntitaRampa",
-                GET_ORE_FERMATA = "spGetOreFermata",
-                GET_VERSIONE = "spGetVersione",
-                INSERT_LOG = "spInsertLog",
-                INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
-                TIPOLOGIA_CHECK = "spTipologiaCheck",
-                TIPOLOGIA_RAMPA = "spTipologiaRampa",
-                UTENTE = "spUtente";
-        }
-
         #endregion
 
         #region Variabili
@@ -84,11 +45,8 @@ namespace Iren.ToolsExcel.Core
         private SqlConnection _sqlConn;
         private SqlConnection _internalsqlConn;
         private string _connStr = "";
-        private ConnectionState _state = ConnectionState.Closed;
 
-        private bool _rightClosure;
-
-        private string _dataAttiva = "";
+        private string _dataAttiva = DateTime.Now.ToString("yyyyMMdd");
         private int _idUtenteAttivo = -1;
         private int _idApplicazione = -1;
         private Dictionary<NomiDB, ConnectionState> _statoDB = new Dictionary<NomiDB, ConnectionState>() { 
@@ -173,16 +131,6 @@ namespace Iren.ToolsExcel.Core
             }
             catch (TimeoutException) { }
             
-        }
-        public void InsertLog(TipologiaLOG tipologia, string messaggio)
-        {
-            QryParams logParam = new QryParams()
-            {
-                {"@IdTipologia", tipologia},
-                {"@Messaggio", messaggio}
-            };
-
-            Insert(SP.INSERT_LOG, logParam);
         }
 
         public DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)

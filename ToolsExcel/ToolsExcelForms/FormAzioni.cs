@@ -31,18 +31,18 @@ namespace Iren.ToolsExcel.Forms
         {
             InitializeComponent();
 
-            
-            _categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+
+            _categorie = UtilityDB.LocalDB.Tables[UtilityDB.Tab.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
-            _categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            _categoriaEntita = UtilityDB.LocalDB.Tables[UtilityDB.Tab.CATEGORIAENTITA].DefaultView;
             _categoriaEntita.RowFilter = "";
-            _azioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONE].DefaultView;
+            _azioni = UtilityDB.LocalDB.Tables[UtilityDB.Tab.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1";
-            _azioniCategorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONECATEGORIA].DefaultView;
+            _azioniCategorie = UtilityDB.LocalDB.Tables[UtilityDB.Tab.AZIONECATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "";
-            _entitaAzioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;
+            _entitaAzioni = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAAZIONE].DefaultView;
             _entitaAzioni.RowFilter = "";
-            _entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+            _entitaProprieta = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAPROPRIETA].DefaultView;
             _entitaProprieta.RowFilter = "";
 
             System.Data.DataTable dt = new System.Data.DataTable()
@@ -57,8 +57,8 @@ namespace Iren.ToolsExcel.Forms
             for (int i = 0; i <= Simboli.intervalloGiorni; i++ )
             {
                 DataRow r = dt.NewRow();
-                r["DescData"] = (i + 1) + "° - " + CommonFunctions.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
-                r["Data"] = CommonFunctions.DB.DataAttiva.AddDays(i);
+                r["DescData"] = (i + 1) + "° - " + UtilityDB.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
+                r["Data"] = UtilityDB.DB.DataAttiva.AddDays(i);
 
                 dt.Rows.Add(r);
             }
@@ -121,7 +121,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void CaricaAzioni()
         {
-            var stato = CommonFunctions.DB.StatoDB;
+            var stato = UtilityDB.DB.StatoDB;
 
             foreach (DataRowView azione in _azioni)
             {
@@ -474,9 +474,9 @@ namespace Iren.ToolsExcel.Forms
                     });
                 }
 
-                if (CommonFunctions.DB.OpenConnection())
+                if (UtilityDB.DB.OpenConnection())
                 {
-                    string suffissoData = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif);
+                    string suffissoData = UtilityDate.GetSuffissoData(UtilityDB.DB.DataAttiva, dataRif);
 
                     bool[] statoAzione = new bool[4] { false, false, false, false };
 
@@ -493,7 +493,7 @@ namespace Iren.ToolsExcel.Forms
                                     if (n1.Checked && n1.Nodes.Count == 0)
                                     {
                                         string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                        Sheet s = new Sheet(CommonFunctions.WB.Sheets[nomeFoglio]);
+                                        Sheet s = new Sheet(UtilityWB.WB.Sheets[nomeFoglio]);
                                         s.CalcolaFormule(n1.Name, dataRif);
 
                                         _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
@@ -511,17 +511,17 @@ namespace Iren.ToolsExcel.Forms
                                 if (n1.Checked && n1.Nodes.Count == 0)
                                 {
                                     string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                    Riepilogo r = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+                                    Riepilogo r = new Riepilogo(UtilityWB.WB.Sheets["Main"]);
                                     bool presente;
                                     switch (n.Parent.Name)
                                     {
                                         case "CARICA":
-                                            presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                            presente = UtilityWB.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
                                             r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[0] = true;
                                             break;
                                         case "GENERA":
-                                            presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                            presente = UtilityWB.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
                                             r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[1] = true;
                                             break;
@@ -544,7 +544,7 @@ namespace Iren.ToolsExcel.Forms
                                                 DefinedNames nomiDefiniti = new DefinedNames("Main");
                                                 Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
 
-                                                Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+                                                Excel.Worksheet ws = UtilityWB.WB.Sheets["Main"];
                                                 if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
                                                 {
                                                     ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
@@ -560,21 +560,21 @@ namespace Iren.ToolsExcel.Forms
                             {
                                 case "CARICA":
                                     //TODO riabilitare log!!
-                                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                    //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
                                     break;
                                 case "GENERA":
                                     //TODO riabilitare log!!
-                                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                    //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
                                     break;
                                 case "ESPORTA":
                                     //TODO riabilitare log!!
-                                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                    //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
                                     break;
                             }
                         }
                     });
 
-                    CommonFunctions.DB.CloseConnection();
+                    UtilityDB.DB.CloseConnection();
                 }
             }
 

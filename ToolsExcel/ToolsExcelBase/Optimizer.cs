@@ -4,14 +4,29 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class Optimizer : CommonFunctions
+    public interface IOptimizer
     {
-        private static void DeleteExistingAdjust()
-        {
-            DataView entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "WB_Adjust <> '0'";
+        //void DeleteExistingAdjust();
+        //void OmitConstraints();
+        //void AddAdjust(object siglaEntita);
+        //void AddConstraints(object siglaEntita);
+        //void AddOpt(object siglaEntita);
+        //void Execute(object siglaEntita);
+        void EseguiOttimizzazione(object siglaEntita);
+    }
 
-            foreach (DataRowView info in entitaInformazioni)
+    public class Optimizer : UtilityWB, IOptimizer
+    {
+        DataView _entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
+
+        public Optimizer() { }
+
+        protected virtual void DeleteExistingAdjust() 
+        {
+            
+            _entitaInformazioni.RowFilter = "WB_Adjust <> '0'";
+
+            foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
@@ -31,12 +46,12 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-        private static void OmitConstraints()
+        protected virtual void OmitConstraints() 
         {
-            DataView entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO'";
+            
+            _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO'";
 
-            foreach (DataRowView info in entitaInformazioni)
+            foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
@@ -48,15 +63,15 @@ namespace Iren.ToolsExcel.Base
                 WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), strRiga);
             }
         }
-        private static void AddAdjust(object siglaEntita)
+        protected virtual void AddAdjust(object siglaEntita) 
         {
-            DataView entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB_Adjust <> '0'";
+            
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB_Adjust <> '0'";
 
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
 
-            foreach (DataRowView info in entitaInformazioni)
+            foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
@@ -69,12 +84,12 @@ namespace Iren.ToolsExcel.Base
                     WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), strRiga);
             }
         }
-        private static void AddConstraints(object siglaEntita)
+        protected virtual void AddConstraints(object siglaEntita) 
         {
-            DataView entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO'";
+            
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO'";
 
-            foreach (DataRowView info in entitaInformazioni)
+            foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
@@ -86,18 +101,18 @@ namespace Iren.ToolsExcel.Base
                 WB.Names.Item("WBOMIT" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
             }
         }
-        private static void AddOpt(object siglaEntita) 
+        protected virtual void AddOpt(object siglaEntita) 
         {
-            DataView entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO'";
+            
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO'";
 
-            if (entitaInformazioni.Count > 0)
+            if (_entitaInformazioni.Count > 0)
             {
-                object siglaEntitaInfo = entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? entitaInformazioni[0]["SiglaEntita"] : entitaInformazioni[0]["SiglaEntitaRif"];
+                object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
 
-                Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntitaInfo, entitaInformazioni[0]["SiglaInformazione"])][0];
+                Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"])][0];
                 string strCella = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(cella.Item1, cella.Item2);
 
                 try { WB.Names.Item("WBMAX").Delete(); }
@@ -106,14 +121,14 @@ namespace Iren.ToolsExcel.Base
                 WB.Application.Run("wbBest", strCella, "Maximize");
             }
         }
-        private static void Execute(object siglaEntita)
+        protected virtual void Execute(object siglaEntita) 
         {
             //mantengo il filtro applicato in AddOpt
-            DataView entitaInformazioni = LocalDB.Tables[Tab.ENTITAINFORMAZIONE].DefaultView;            
+                        
 
-            if (entitaInformazioni.Count > 0)
+            if (_entitaInformazioni.Count > 0)
             {
-                object siglaEntitaInfo = entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? entitaInformazioni[0]["SiglaEntita"] : entitaInformazioni[0]["SiglaEntitaRif"];
+                object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
 
@@ -134,8 +149,7 @@ namespace Iren.ToolsExcel.Base
                 WB.Application.Run("wbsolve", Arg3: "1");
             }
         }
-
-        public static void EseguiOttimizzazione(object siglaEntita)
+        public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
             WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
 
@@ -145,12 +159,6 @@ namespace Iren.ToolsExcel.Base
             AddConstraints(siglaEntita);
             AddOpt(siglaEntita);
             Execute(siglaEntita);
-
-            Excel.Style style = WB.Styles["Adjustable"];
-            style.Font.Bold = true;
-            style.Interior.ColorIndex = 44;
         }
-
-
     }
 }

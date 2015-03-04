@@ -16,29 +16,29 @@ namespace Iren.ToolsExcel.Base
         bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null);
     }
 
-    public class Esporta : IEsporta
+    public class Esporta : UtilityWB, IEsporta
     {
         public bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
         {
             if (dataRif == null)
-                dataRif = CommonFunctions.DB.DataAttiva;
+                dataRif = DB.DataAttiva;
 
             try
             {
-                DataView entitaAzione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;
+                DataView entitaAzione = LocalDB.Tables[Tab.ENTITAAZIONE].DefaultView;
                 entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
                 if (entitaAzione.Count == 0)
                     return false;
 
-                DataView categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
-                DataView entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+                DataView entitaProprieta = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'IMP_COD_IF'";
                 object codiceIF = entitaProprieta[0]["Valore"];
 
-                DataView entitaAzioneInformazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
+                DataView entitaAzioneInformazione = LocalDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
@@ -62,13 +62,13 @@ namespace Iren.ToolsExcel.Base
                             }
                         };
 
-                        string suffissoData = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif.Value);
+                        string suffissoData = UtilityDate.GetSuffissoData(DB.DataAttiva, dataRif.Value);
                         foreach (DataRowView entAzInfo in entitaAzioneInformazione)
                         {
                             object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
 
                             Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(entita, entAzInfo["SiglaInformazione"], suffissoData)];
-                            Excel.Worksheet ws = CommonFunctions.WB.Sheets[nomeFoglio];
+                            Excel.Worksheet ws = WB.Sheets[nomeFoglio];
                             Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                             object[,] tmpVal = rng.Value;
                             object[] values = tmpVal.Cast<object>().ToArray();
@@ -110,8 +110,8 @@ namespace Iren.ToolsExcel.Base
 
                         break;
                 }
-                CommonFunctions.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
-                CommonFunctions.DB.CloseConnection();
+                InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                DB.CloseConnection();
                 return true;
             }
             catch (Exception e)
@@ -120,7 +120,7 @@ namespace Iren.ToolsExcel.Base
                 //InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram EsportaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                CommonFunctions.DB.CloseConnection();
+                DB.CloseConnection();
                 return false;
             }
         }
