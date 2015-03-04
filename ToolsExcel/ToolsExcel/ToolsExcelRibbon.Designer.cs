@@ -1,13 +1,13 @@
-﻿namespace Iren.ToolsExcel.Ribbon
+﻿namespace Iren.ToolsExcel
 {
-    partial class SharedRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
+    partial class ToolsExcelRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
     {
         /// <summary>
         /// Variabile di progettazione necessaria.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        public SharedRibbon()
+        public ToolsExcelRibbon()
             : base(Globals.Factory.GetRibbonFactory())
         {
             InitializeComponent();
@@ -79,6 +79,8 @@
             this.TabPrintPreview = this.Factory.CreateRibbonTab();
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.TabSmartArtToolsDesign = this.Factory.CreateRibbonTab();
+            this.group1 = this.Factory.CreateRibbonGroup();
+            this.toggleButton1 = this.Factory.CreateRibbonToggleButton();
             this.FrontOffice.SuspendLayout();
             this.groupChiudi.SuspendLayout();
             this.groupConfigura.SuspendLayout();
@@ -101,6 +103,7 @@
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
             this.TabSmartArtToolsDesign.SuspendLayout();
+            this.group1.SuspendLayout();
             // 
             // FrontOffice
             // 
@@ -113,6 +116,7 @@
             this.FrontOffice.Groups.Add(this.groupAmbienti);
             this.FrontOffice.Groups.Add(this.groupFileRete);
             this.FrontOffice.Groups.Add(this.groupFileLocali);
+            this.FrontOffice.Groups.Add(this.group1);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
@@ -486,9 +490,24 @@
             this.TabSmartArtToolsDesign.Label = "TabSmartArtToolsDesign";
             this.TabSmartArtToolsDesign.Name = "TabSmartArtToolsDesign";
             // 
-            // SharedRibbon
+            // group1
             // 
-            this.Name = "SharedRibbon";
+            this.group1.Items.Add(this.toggleButton1);
+            this.group1.Label = "group1";
+            this.group1.Name = "group1";
+            // 
+            // toggleButton1
+            // 
+            this.toggleButton1.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.toggleButton1.Image = global::Iren.ToolsExcel.Properties.Resources.sc_icon;
+            this.toggleButton1.Label = "Sistema Comandi";
+            this.toggleButton1.Name = "toggleButton1";
+            this.toggleButton1.ShowImage = true;
+            this.toggleButton1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.toggleButton1_Click);
+            // 
+            // ToolsExcelRibbon
+            // 
+            this.Name = "ToolsExcelRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
             this.Tabs.Add(this.FrontOffice);
             this.Tabs.Add(this.TabHome);
@@ -548,6 +567,8 @@
             this.TabBackgroundRemoval.PerformLayout();
             this.TabSmartArtToolsDesign.ResumeLayout(false);
             this.TabSmartArtToolsDesign.PerformLayout();
+            this.group1.ResumeLayout(false);
+            this.group1.PerformLayout();
 
         }
 
@@ -598,5 +619,16 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnOfferteMB;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnInvioProgrammi;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnSistemaComandi;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton toggleButton1;
     }
+
+    partial class ThisRibbonCollection
+    {
+        internal ToolsExcelRibbon ToolsExcelRibbon
+        {
+            get { return this.GetRibbon<ToolsExcelRibbon>(); }
+        }
+    }
+
 }

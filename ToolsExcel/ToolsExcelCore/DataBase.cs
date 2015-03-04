@@ -97,6 +97,8 @@ namespace Iren.ToolsExcel.Core
             {NomiDB.ELSAG, ConnectionState.Closed}
         };
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         #endregion
 
         #region Proprietà
@@ -136,43 +138,6 @@ namespace Iren.ToolsExcel.Core
 
         #region Metodi Pubblici
 
-        //public Dictionary<NomiDB, ConnectionState> StatoDB()
-        //{
-        //    OpenConnection();
-
-        //    _statoDB[NomiDB.SQLSERVER] = _sqlConn.State;
-
-        //    if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
-        //    {
-        //        DataView imp = Select("spCheckDB", "@Nome=IMP", 3).DefaultView;
-        //        //se va in timeout la connessione si chiude
-        //        OpenConnection();
-        //        DataView elsag = Select("spCheckDB", "@Nome=ELSAG", 3).DefaultView;
-        //        //se va in timeout la connessione si chiude
-        //        OpenConnection();
-
-        //        if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
-        //        {
-        //            _statoDB[NomiDB.IMP] = ConnectionState.Open;
-        //        }
-        //        else
-        //        {
-        //            _statoDB[NomiDB.IMP] = ConnectionState.Closed;
-        //        }
-
-        //        if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
-        //        {
-        //            _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
-        //        }
-        //        else
-        //        {
-        //            _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
-        //        }
-        //    }
-
-        //    return _statoDB;
-        //}
-
         public bool OpenConnection()
         {
             return OpenConnection(_sqlConn);
@@ -181,8 +146,6 @@ namespace Iren.ToolsExcel.Core
         {
             return CloseConnection(_sqlConn);
         }
-
-        
 
         public void SetParameters(string dataAttiva, int idUtenteAttivo, int idApplicazione)
         {
@@ -241,8 +204,6 @@ namespace Iren.ToolsExcel.Core
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
-        //cripta i dati di connessione se sono in chiaro
-        //public static void CryptSection(string location)
         public static void CryptSection()
         {
             //ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
@@ -345,22 +306,9 @@ namespace Iren.ToolsExcel.Core
             return Select(cmd, storedProcedure, getParamsFromString(parameters), timeout);
         }
 
-        #endregion
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void NotifyPropertyChanged(String propertyName = "")
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-
         private void CheckDB(object state)
         {
-            Dictionary<NomiDB, ConnectionState> oldStatoDB = new Dictionary<NomiDB,ConnectionState>(_statoDB);
+            Dictionary<NomiDB, ConnectionState> oldStatoDB = new Dictionary<NomiDB, ConnectionState>(_statoDB);
             if (OpenConnection(_internalsqlConn))
             {
                 _statoDB[NomiDB.SQLSERVER] = _internalsqlConn.State;
@@ -393,5 +341,14 @@ namespace Iren.ToolsExcel.Core
                 }
             }
         }
+        private void NotifyPropertyChanged(String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        #endregion
     }
 }

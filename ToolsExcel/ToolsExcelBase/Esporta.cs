@@ -11,12 +11,13 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
+    public interface IEsporta
+    {
+        bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null);
+    }
+
     public class Esporta : IEsporta
     {
-        public Esporta()
-        {
-        }
-
         public bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
         {
             if (dataRif == null)
@@ -60,7 +61,7 @@ namespace Iren.ToolsExcel.Base
                                 {"Valore", typeof(string)}
                             }
                         };
-                        
+
                         string suffissoData = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif.Value);
                         foreach (DataRowView entAzInfo in entitaAzioneInformazione)
                         {
@@ -76,7 +77,7 @@ namespace Iren.ToolsExcel.Base
                             {
                                 DataRow row = dt.NewRow();
 
-                                row["Campo1"] = nomeFoglio == "Iren Termo" ? "AHRP": "AIHRP";
+                                row["Campo1"] = nomeFoglio == "Iren Termo" ? "AHRP" : "AIHRP";
                                 row["Campo2"] = "Prod";
                                 row["UP"] = codiceIF;
                                 if (DefinedNames.IsDefined(nomeFoglio, DefinedNames.GetName(entita, "UNIT_COMM")))
@@ -104,7 +105,7 @@ namespace Iren.ToolsExcel.Base
                         else
                         {
                             System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                            return false;   
+                            return false;
                         }
 
                         break;
@@ -124,7 +125,7 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        private bool ExportToCSV(string nomeFile, DataTable dt)
+        protected static bool ExportToCSV(string nomeFile, DataTable dt)
         {
             try
             {

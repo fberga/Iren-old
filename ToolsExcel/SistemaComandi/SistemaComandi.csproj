@@ -7,7 +7,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <RootNamespace>Iren.ToolsExcel.SistemaComandi</RootNamespace>
+    <RootNamespace>Iren.ToolsExcel</RootNamespace>
     <AssemblyName>SistemaComandi</AssemblyName>
     <VSTO_HostDocumentName>SistemaComandi.xlsm</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -144,6 +144,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustFormAzioni.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
@@ -159,6 +163,12 @@
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ToolsExcelRibbon.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolsExcelRibbon.designer.cs">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
+    </Compile>
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
@@ -168,6 +178,9 @@
     </Compile>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolsExcelRibbon.resx">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ThisWorkbook.resx">
       <DependentUpon>ThisWorkbook.cs</DependentUpon>
@@ -208,10 +221,6 @@
     <ProjectReference Include="..\ToolsExcelRibbon\ToolsExcelRibbon.csproj">
       <Project>{c2bae5e5-f080-4352-b892-afb97f9d3606}</Project>
       <Name>ToolsExcelRibbon</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ToolsExcelUserConfig\ToolsExcelUserConfig.csproj">
-      <Project>{3e119690-1387-4fe3-89c1-756220fedeee}</Project>
-      <Name>ToolsExcelUserConfig</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

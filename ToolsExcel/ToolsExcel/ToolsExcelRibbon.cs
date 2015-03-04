@@ -10,9 +10,9 @@ using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-namespace Iren.ToolsExcel.Ribbon
+namespace Iren.ToolsExcel
 {
-    public partial class SharedRibbon
+    public partial class ToolsExcelRibbon
     {
         #region Variabili
 
@@ -24,9 +24,6 @@ namespace Iren.ToolsExcel.Ribbon
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
-            if (CommonFunctions.WB.Sheets.Count <= 2)
-                AbilitaTasti(false);
-
             CheckTastoApplicativo();
 
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -476,6 +473,12 @@ namespace Iren.ToolsExcel.Ribbon
 
 
             }
+        }
+
+        private void toggleButton1_Click(object sender, RibbonControlEventArgs e)
+        {
+            IEsporta eaa = new EsportaTS();
+            eaa.EsportaAzioneInformazione(null, null, null, null);
         }
 
     }

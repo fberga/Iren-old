@@ -7,11 +7,10 @@ using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-using ExcelAddIn1.Properties;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-namespace ExcelAddIn1
+namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
     {
@@ -55,7 +54,7 @@ namespace ExcelAddIn1
             CommonFunctions.WB.SheetChange -= BaseHandler.StoreEdit;
 
             int count = 0;
-            foreach (RibbonToggleButton button in FrontOffice.Groups.Last().Items)
+            foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
             {
                 if (button.Checked)
                 {
@@ -105,7 +104,7 @@ namespace ExcelAddIn1
             Sheet.Proteggi(false);
             CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            FormCalendar cal = new FormCalendar();
+            Forms.FormCalendar cal = new FormCalendar();
             cal.ShowDialog();
 
             DateTime dataOld = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -114,11 +113,9 @@ namespace ExcelAddIn1
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+                    if (CommonFunctions.DB.OpenConnection())
                     {
-
                         CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
-
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
 
                         //TODO riabilitare log!!
@@ -127,7 +124,7 @@ namespace ExcelAddIn1
                         CommonFunctions.RefreshDate(cal.Date.Value);
                         CommonFunctions.ConvertiParametriInformazioni();
 
-                        DataView stato = CommonFunctions.DB.Select("spCheckModificaStruttura", "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                        DataView stato = CommonFunctions.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
                         if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
                         {
                             CommonFunctions.AggiornaStrutturaDati();
@@ -138,6 +135,24 @@ namespace ExcelAddIn1
                             AggiornaDati(all: true);
                         }
                         CommonFunctions.DB.CloseConnection();
+                    }
+                    else  //emergenza
+                    {
+                        CommonFunctions.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
+                        btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
+                        CommonFunctions.RefreshDate(cal.Date.Value);
+
+                        foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
+                        {
+                            if (ws.Name != "Log" && ws.Name != "Main")
+                            {
+                                Sheet s = new Sheet(ws);
+                                s.AggiornaDateTitoli();
+                            }
+                        }
+
+                        Riepilogo main = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
+                        main.RiepilogoInEmergenza();
                     }
                 }
             }
@@ -174,13 +189,13 @@ namespace ExcelAddIn1
                     && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                     && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
                 {
-                        FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                        Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
                         rampe.ShowDialog();
                         rampe.Dispose();
                 }
                 else
                 {
-                    FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                    Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
                     rampe.ShowDialog();
                     rampe.Dispose();
                 }
@@ -188,7 +203,7 @@ namespace ExcelAddIn1
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                 && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
             {
-                FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
                 rampe.ShowDialog();
                 rampe.Dispose();
             }
@@ -205,7 +220,7 @@ namespace ExcelAddIn1
             Sheet.Proteggi(false);
             CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (CommonFunctions.DB.OpenConnection() && CommonFunctions.DB.StatoDB()[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open)
+            if (CommonFunctions.DB.OpenConnection())
             {
                 AggiornaDati(all: false);
 
@@ -224,8 +239,7 @@ namespace ExcelAddIn1
             CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
-
-            FormAzioni frmAz = new FormAzioni();
+            CustFormAzioni frmAz = new CustFormAzioni();
             frmAz.ShowDialog();
 
             CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
@@ -235,23 +249,19 @@ namespace ExcelAddIn1
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
             CommonFunctions.WB.Application.ScreenUpdating = false;
-            
+            Sheet.Proteggi(false);
             Simboli.ModificaDati = btnModifica.Checked;
 
             Sheet.AbilitaModifica(btnModifica.Checked);
             if (btnModifica.Checked) 
-            {
-                btnModifica.Label = "Modifica SI";
-                btnModifica.Image = Resources.edit_validated_icon;
-            }
+                btnModifica.Image = global::Iren.ToolsExcel.Base.Properties.Resources.edit_validated_icon;
             else
             {
                 //Salva modifiche su db
                 CommonFunctions.SalvaModificheDB();
-                btnModifica.Label = "Modifica NO";
-                btnModifica.Image = Resources.edit_not_validated_icon;
+                btnModifica.Image = global::Iren.ToolsExcel.Base.Properties.Resources.edit_not_validated_icon;
             }
-
+            Sheet.Proteggi(true);
             CommonFunctions.WB.Application.ScreenUpdating = true;
         }
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
@@ -366,7 +376,7 @@ namespace ExcelAddIn1
                 Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
 
                 Excel.Worksheet ws = CommonFunctions.WB.Application.Sheets[foglio];
-                ws.Activate();
+                ((Excel._Worksheet)ws).Activate();
                 rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
                 rng.Select();
                 CommonFunctions.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
@@ -445,117 +455,6 @@ namespace ExcelAddIn1
         }
 
         #endregion
-        
-        //TODO rimuovere questo metodo e il tasto! inutili
-        static int kkk = 1;
-        private void button1_Click(object sender, RibbonControlEventArgs e)
-        {
-            if (kkk == 43)
-                kkk = 1;
-
-            if (kkk == 1)
-                //CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset1;
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset1;            
-            else if (kkk == 2)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset2;
-            
-
-            else if (kkk == 3)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset3;
-            
-            else if (kkk == 4)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset4;
-           
-            else if (kkk == 5)
-                 CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset5;
-            
-            else if (kkk == 6)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset6;
-            
-            else if (kkk == 7)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset7;
-            
-            else if (kkk == 8)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset8;
-            
-            else if (kkk == 9)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset9;
-            
-            else if (kkk == 10)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset10;
-            
-            else if (kkk == 11)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset11;
-            
-            else if (kkk == 12)
-               CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset12;
-           
-            else if (kkk == 13)
-                 CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset13;
-            
-            else if (kkk == 14)
-               CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset14;
-            
-            else if (kkk == 15)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset15;
-           
-            else if (kkk == 16)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset16;
-            else if (kkk == 17)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset17;
-            else if (kkk == 18)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset18;
-            else if (kkk == 19)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset19;
-            else if (kkk == 20)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset20;
-            else if (kkk == 21)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoLineStylePreset21;
-            else if (kkk == 22)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset22;
-            else if (kkk == 23)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset23;
-            else if (kkk == 24)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset24;
-            else if (kkk == 25)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset25;
-            else if (kkk == 26)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset26;
-            else if (kkk == 27)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset27;
-            else if (kkk == 28)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset28;
-            else if (kkk == 29)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset29;
-            else if (kkk == 30)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset30;
-            else if (kkk == 31)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset31;
-            else if (kkk == 32)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset32;
-            else if (kkk == 33)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset33;
-            else if (kkk == 34)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset34;
-            else if (kkk == 35)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset35;
-            else if (kkk == 36)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset36;
-            else if (kkk == 37)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset37;
-            else if (kkk == 38)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset38;
-            else if (kkk == 39)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset39;
-            else if (kkk == 40)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset40;
-            else if (kkk == 41)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset41;
-            else if (kkk == 42)
-                CommonFunctions.WB.Sheets["Main"].Shapes.Item("lbModifica").ShapeStyle = Office.MsoShapeStyleIndex.msoShapeStylePreset42;
-
-            kkk++;
-        }
 
         private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
         {
@@ -568,6 +467,13 @@ namespace ExcelAddIn1
             else
             {
                 //TODO aprire gli altri file!!!!!!
+                switch (btn.Name)
+                {
+                    case "btnInvioProgrammi":
+                        break;
+                }
+
+
             }
         }
 

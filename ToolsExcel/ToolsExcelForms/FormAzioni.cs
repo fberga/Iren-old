@@ -11,7 +11,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Forms
 {
-    public partial class FormAzioni : Form
+    public partial class FormAzioni : Form, IEsporta
     {
         #region Variabili
 
@@ -21,6 +21,7 @@ namespace Iren.ToolsExcel.Forms
         DataView _azioniCategorie;
         DataView _entitaAzioni;
         DataView _entitaProprieta;
+        //IEsporta _esporta;
 
         #endregion
 
@@ -30,6 +31,7 @@ namespace Iren.ToolsExcel.Forms
         {
             InitializeComponent();
 
+            
             _categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
             _categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
@@ -119,9 +121,6 @@ namespace Iren.ToolsExcel.Forms
 
         private void CaricaAzioni()
         {
-            //CommonFunctions.DB.OpenConnection();
-            //var stato = CommonFunctions.StatoDB();
-            //CommonFunctions.DB.CloseConnection();
             var stato = CommonFunctions.DB.StatoDB;
 
             foreach (DataRowView azione in _azioni)
@@ -527,8 +526,8 @@ namespace Iren.ToolsExcel.Forms
                                             statoAzione[1] = true;
                                             break;
                                         case "ESPORTA":
-                                            IEsporta esporta = new Esporta();
-                                            esporta.EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            
                                             statoAzione[2] = true;
                                             break;
                                     }
@@ -585,5 +584,12 @@ namespace Iren.ToolsExcel.Forms
         }
 
         #endregion
+
+        public virtual bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
+        {
+            MessageBox.Show("Ciao");
+            return true;
+        }
     }
+
 }

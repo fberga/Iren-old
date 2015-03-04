@@ -239,7 +239,6 @@ namespace Iren.ToolsExcel.Ribbon
             CommonFunctions.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             CommonFunctions.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
-
             FormAzioni frmAz = new FormAzioni();
             frmAz.ShowDialog();
 

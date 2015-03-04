@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ExcelAddIn1.Properties {
+namespace Iren.ToolsExcel.Base.Properties {
     using System;
     
     
@@ -22,7 +22,7 @@ namespace ExcelAddIn1.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,10 +36,10 @@ namespace ExcelAddIn1.Properties {
         ///   Restituisce l'istanza di ResourceManager nella cache utilizzata da questa classe.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ExcelAddIn1.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Iren.ToolsExcel.Base.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -51,7 +51,7 @@ namespace ExcelAddIn1.Properties {
         ///   ricerche di risorse eseguite utilizzando questa classe di risorse fortemente tipizzata.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Actions_icon {
+        public static System.Drawing.Bitmap Actions_icon {
             get {
                 object obj = ResourceManager.GetObject("Actions_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -73,7 +73,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Calculator_icon {
+        public static System.Drawing.Bitmap Calculator_icon {
             get {
                 object obj = ResourceManager.GetObject("Calculator_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -83,7 +83,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Calendar_icon {
+        public static System.Drawing.Bitmap Calendar_icon {
             get {
                 object obj = ResourceManager.GetObject("Calendar_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -93,7 +93,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap checklist_icon {
+        public static System.Drawing.Bitmap checklist_icon {
             get {
                 object obj = ResourceManager.GetObject("checklist_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -103,7 +103,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap ct_icon {
+        public static System.Drawing.Bitmap ct_icon {
             get {
                 object obj = ResourceManager.GetObject("ct_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -113,7 +113,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap edit_not_validated_icon {
+        public static System.Drawing.Bitmap edit_not_validated_icon {
             get {
                 object obj = ResourceManager.GetObject("edit_not_validated_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -123,7 +123,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap edit_validated_icon {
+        public static System.Drawing.Bitmap edit_validated_icon {
             get {
                 object obj = ResourceManager.GetObject("edit_validated_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -133,7 +133,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Folder_Settings_Tools_icon {
+        public static System.Drawing.Bitmap Folder_Settings_Tools_icon {
             get {
                 object obj = ResourceManager.GetObject("Folder_Settings_Tools_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -143,7 +143,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap gas_icon {
+        public static System.Drawing.Bitmap gas_icon {
             get {
                 object obj = ResourceManager.GetObject("gas_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -153,7 +153,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Generate_tables_icon {
+        public static System.Drawing.Bitmap Generate_tables_icon {
             get {
                 object obj = ResourceManager.GetObject("Generate_tables_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -163,7 +163,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap invio_icon {
+        public static System.Drawing.Bitmap invio_icon {
             get {
                 object obj = ResourceManager.GetObject("invio_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -173,7 +173,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Letter_D_icon {
+        public static System.Drawing.Bitmap Letter_D_icon {
             get {
                 object obj = ResourceManager.GetObject("Letter_D_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -183,7 +183,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Letter_P_icon {
+        public static System.Drawing.Bitmap Letter_P_icon {
             get {
                 object obj = ResourceManager.GetObject("Letter_P_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -193,7 +193,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Letter_T_icon {
+        public static System.Drawing.Bitmap Letter_T_icon {
             get {
                 object obj = ResourceManager.GetObject("Letter_T_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -203,7 +203,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mb_icon {
+        public static System.Drawing.Bitmap mb_icon {
             get {
                 object obj = ResourceManager.GetObject("mb_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -213,7 +213,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mgp_icon {
+        public static System.Drawing.Bitmap mgp_icon {
             get {
                 object obj = ResourceManager.GetObject("mgp_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -223,7 +223,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap mp_icon {
+        public static System.Drawing.Bitmap mp_icon {
             get {
                 object obj = ResourceManager.GetObject("mp_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -233,7 +233,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap msd_icon {
+        public static System.Drawing.Bitmap msd_icon {
             get {
                 object obj = ResourceManager.GetObject("msd_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -243,7 +243,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap prezziMSD_icon {
+        public static System.Drawing.Bitmap prezziMSD_icon {
             get {
                 object obj = ResourceManager.GetObject("prezziMSD_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -253,7 +253,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Save_icon {
+        public static System.Drawing.Bitmap Save_icon {
             get {
                 object obj = ResourceManager.GetObject("Save_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -263,7 +263,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap sc_icon {
+        public static System.Drawing.Bitmap sc_icon {
             get {
                 object obj = ResourceManager.GetObject("sc_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -273,7 +273,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Structure_Refresh_icon {
+        public static System.Drawing.Bitmap Structure_Refresh_icon {
             get {
                 object obj = ResourceManager.GetObject("Structure_Refresh_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -283,7 +283,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap tl_icon {
+        public static System.Drawing.Bitmap tl_icon {
             get {
                 object obj = ResourceManager.GetObject("tl_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
@@ -293,7 +293,7 @@ namespace ExcelAddIn1.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap uc_icon {
+        public static System.Drawing.Bitmap uc_icon {
             get {
                 object obj = ResourceManager.GetObject("uc_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));

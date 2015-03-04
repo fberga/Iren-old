@@ -86,20 +86,12 @@ namespace Iren.ToolsExcel.Base
 
         public void InitLabels()
         {
-            //var stato = CommonFunctions.DB.StatoDB;
-
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"];
-
-            
-
-            //_ws.Shapes.Item("lbSQLServer").TextFrame.Characters().Text = "Database SQL Server: " + (stato[DataBase.NomiDB.SQLSERVER] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
-            //_ws.Shapes.Item("lbImpianti").TextFrame.Characters().Text = "Database Impianti: " + (stato[DataBase.NomiDB.IMP] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
-            //_ws.Shapes.Item("lbElsag").TextFrame.Characters().Text = "Database Elsag: " + (stato[DataBase.NomiDB.ELSAG] == ConnectionState.Open ? "OPERATIVO" : "FUORI SERVIZIO");
 
             //aggiorna la scritta di modifica dati
             Simboli.ModificaDati = false;

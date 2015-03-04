@@ -59,26 +59,14 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
-            DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
-
-            Globals.Main.Select();
-            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
-
-            Style.StdStyles();
-
-            //TODO riabilitare log!!
-            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
         }
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
-            //CommonFunctions.Close();
         }
 
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)
         {
-
         }
 
     }
