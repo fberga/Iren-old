@@ -1,5 +1,5 @@
 ﻿using Iren.ToolsExcel.Base;
-using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -36,9 +36,9 @@ namespace Iren.ToolsExcel.Forms
             InitializeComponent();
             this.Text = Simboli.nomeApplicazione + " - Rampe";
 
-            if (UtilityDB.DB.OpenConnection())
+            if (DataBase.DB.OpenConnection())
             {
-                _ws = (Excel.Worksheet)UtilityWB.WB.ActiveSheet;
+                _ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
 
                 string nome = nomiDefiniti[rng.Row, rng.Column][0];
                 string up = nome.Split(Simboli.UNION[0])[0];
@@ -46,17 +46,17 @@ namespace Iren.ToolsExcel.Forms
                 string suffissoData = Regex.Match(nome, @"DATA\d+").Value;
                 suffissoData = suffissoData == "" ? "DATA1" : suffissoData;
 
-                DataView proprieta = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAPROPRIETA].DefaultView;
+                DataView proprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
                 proprieta.RowFilter = "SiglaEntita = '" + up + "' AND SiglaProprieta = 'SISTEMA_COMANDI_PRIF'";
                 _pRif = 0;
                 if (proprieta.Count > 0)
                     _pRif = Double.Parse(proprieta[0]["Valore"].ToString());
 
-                DataView categoriaEntita = UtilityDB.LocalDB.Tables[UtilityDB.Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + up + "'";
                 _desEntita = categoriaEntita[0]["DesEntita"].ToString();
 
-                _entitaRampa = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITARAMPA].DefaultView;
+                _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITARAMPA].DefaultView;
                 _entitaRampa.RowFilter = "SiglaEntita = '" + up + "'";
                 _sigleRampa = _entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
 
@@ -64,7 +64,7 @@ namespace Iren.ToolsExcel.Forms
                 object[,] values = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]].Value;
                 _valoriPQNR = values.Cast<object>().ToArray();
 
-                DataView assetti = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAASSETTO].DefaultView;
+                DataView assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAASSETTO].DefaultView;
                 assetti.RowFilter = "SiglaEntita = '" + up + "'";
 
                 //TODO controllare se si può semplificare
@@ -83,13 +83,13 @@ namespace Iren.ToolsExcel.Forms
                 }
 
                 _oreGiorno = _valoriPQNR.Length;
-                _oreFermata = int.Parse(UtilityDB.DB.Select(UtilityDB.SP.GET_ORE_FERMATA, "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
+                _oreFermata = int.Parse(DataBase.DB.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
 
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
                 this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 
-                UtilityDB.DB.CloseConnection();
+                DataBase.DB.CloseConnection();
             }
         }
 
@@ -375,7 +375,7 @@ namespace Iren.ToolsExcel.Forms
             rng.Value = o.AsEnumerable().Select(r => r["SiglaRampa"]).ToArray();
 
             Handler.StoreEdit(_ws, rng);
-            UtilityDB.SalvaModificheDB();
+            DataBase.SalvaModificheDB();
         }
         private void btnAnnulla_Click(object sender, EventArgs e)
         {

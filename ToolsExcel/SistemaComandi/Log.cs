@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
+using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
 namespace Iren.ToolsExcel
@@ -57,9 +58,9 @@ namespace Iren.ToolsExcel
             }
             _logObj.AutoSetDataBoundColumnHeaders = true;
 
-            if (CommonFunctions.DB.OpenConnection())
+            if (DataBase.DB.OpenConnection())
             {
-                _logObj.DataSource = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.LOG].DefaultView;
+                _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
                 _logObj.Range.EntireColumn.AutoFit();
                 _logObj.TableStyle = "TableStyleLight16";
 
@@ -67,7 +68,7 @@ namespace Iren.ToolsExcel
                 rng.NumberFormat = "dd/MM/yyyy HH:mm:ss";
                 rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
 
-                CommonFunctions.DB.CloseConnection();
+                DataBase.DB.CloseConnection();
             }
             Protect(Simboli.pwd);
         }

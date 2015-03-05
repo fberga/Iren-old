@@ -144,9 +144,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustFormAzioni.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
@@ -161,7 +158,6 @@
     <Compile Include="Log.Designer.cs">
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="Optimizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ToolsExcelRibbon.cs">
       <SubType>Component</SubType>

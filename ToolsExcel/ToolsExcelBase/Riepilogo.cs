@@ -11,11 +11,19 @@ using System.Data;
 using System.Globalization;
 using System.Configuration;
 using System.Windows.Forms;
-using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Utility;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class Riepilogo: UtilityWB
+    public interface IRiepilogo
+    {
+        void LoadStructure();
+        void InitLabels();
+        void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null);
+        void RiepilogoInEmergenza();
+    }
+
+    public class Riepilogo : IRiepilogo
     {
         #region Variabili
         
@@ -32,12 +40,14 @@ namespace Iren.ToolsExcel.Base
 
         #region Costruttori
 
+        public Riepilogo() : this((Excel.Worksheet)Utility.Workbook.WB.Sheets["Main"])  { }
+
         public Riepilogo(Excel.Worksheet ws)
         {
             _ws = ws;
 
             //dimensionamento celle in base ai parametri del DB
-            DataView paramApplicazione = LocalDB.Tables[Tab.APPLICAZIONE].DefaultView;
+            DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
             _cell = new Cell();
             _struttura = new Struttura();
@@ -51,7 +61,7 @@ namespace Iren.ToolsExcel.Base
             _cell.Width.parametro = double.Parse(paramApplicazione[0]["ColParametroWidth"].ToString());
             _cell.Height.normal = double.Parse(paramApplicazione[0]["RowHeight"].ToString());
             _cell.Height.empty = double.Parse(paramApplicazione[0]["RowVuotaHeight"].ToString());
-            
+
             _struttura.rigaBlock = 5;
             _struttura.colBlock = 59;
 
@@ -62,18 +72,23 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        private void Init()
+        {
+            
+        }
+
         private void CicloGiorni(Action<int, string, DateTime> callback)
         {
-            DateTime dataInizio = DB.DataAttiva;
-            DateTime dataFine = DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
+            DateTime dataInizio = DataBase.DataAttiva;
+            DateTime dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
         private void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
         {
             for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
             {
-                int oreGiorno = UtilityDate.GetOreGiorno(giorno);
-                string suffissoData = UtilityDate.GetSuffissoData(dataInizio, giorno);
+                int oreGiorno = Date.GetOreGiorno(giorno);
+                string suffissoData = Date.GetSuffissoData(dataInizio, giorno);
 
                 if (giorno == dataInizio && _struttura.visData0H24)
                 {
@@ -84,14 +99,14 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        public void InitLabels()
+        public virtual void InitLabels()
         {
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DB.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + WorkbookVersion.ToString();
-            _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"];
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utilities.WorkbookVersion.ToString();
+            _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
 
             //aggiorna la scritta di modifica dati
             Simboli.ModificaDati = false;
@@ -114,9 +129,9 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
             }
         }        
-        private void Clear()
+        protected virtual void Clear()
         {
-            int dataOreTot = GetOreIntervallo(DB.DataAttiva, DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = Date.GetOreIntervallo(DataBase.DB.DataAttiva, DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
 
@@ -138,7 +153,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.FreezePanes = true;
         }
 
-        public void LoadStructure()
+        public virtual void LoadStructure()
         {
             _colonnaInizio = _struttura.colRecap;
             _rigaAttiva = _struttura.rowRecap;
@@ -146,18 +161,18 @@ namespace Iren.ToolsExcel.Base
             InitLabels();
             Clear();
 
-            DataView azioni = LocalDB.Tables[Tab.AZIONE].DefaultView;
-            DataView categorie = LocalDB.Tables[Tab.CATEGORIA].DefaultView;
-            DataView entita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
 
             categorie.RowFilter = "Operativa = 1";
             azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
             entita.RowFilter = "";
 
-            InitBarraTitolo(azioni);
+            InitBarraTitolo();
             _rigaAttiva += 3;
-            FormattaAllDati(azioni, categorie, entita);
-            InitBarraEntita(categorie, entita);
+            FormattaAllDati();
+            InitBarraEntita();
             AbilitaAzioni();
             CaricaDatiRiepilogo();
 
@@ -168,8 +183,11 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        private void InitBarraTitolo(DataView azioni)
+        protected virtual void InitBarraTitolo()
         {
+            DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
+            azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+
             _nAzioni = 0;
 
             Dictionary<object, List<object>> valAzioni = new Dictionary<object, List<object>>();
@@ -226,9 +244,16 @@ namespace Iren.ToolsExcel.Base
                 colonnaInizio += _nAzioni;
             });
         }
-        private void FormattaAllDati(DataView azioni, DataView categorie, DataView entita)
+        protected virtual void FormattaAllDati()
         {
+            DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+
             azioni.RowFilter = "Gerarchia IS NOT NULL";
+            categorie.RowFilter = "Operativa = 1";
+            entita.RowFilter = "";
+
             int numRighe = categorie.Count + entita.Count - 1;
             int colonnaInizio = _colonnaInizio + 1;
 
@@ -263,12 +288,15 @@ namespace Iren.ToolsExcel.Base
                 }
                 colonnaInizio += _nAzioni;
             });
-
-            azioni.RowFilter = "";
-            entita.RowFilter = "";
         }
-        private void InitBarraEntita(DataView categorie, DataView entita)
+        protected virtual void InitBarraEntita()
         {
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+
+            categorie.RowFilter = "Operativa = 1";
+            entita.RowFilter = "";
+
             object[,] values = new object[categorie.Count + entita.Count, 1];
             Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio], _ws.Cells[_rigaAttiva + values.Length - 1, _colonnaInizio]];
             rng.Style = "recapEntityBarStyle";
@@ -298,9 +326,9 @@ namespace Iren.ToolsExcel.Base
             entita.RowFilter = "";
             rng.EntireColumn.AutoFit();
         }
-        private void AbilitaAzioni()
+        protected virtual void AbilitaAzioni()
         {
-            DataView entitaAzioni = LocalDB.Tables[Tab.ENTITAAZIONE].DefaultView;
+            DataView entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE].DefaultView;
             entitaAzioni.RowFilter = "";
 
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
@@ -317,13 +345,13 @@ namespace Iren.ToolsExcel.Base
                 }
             });
         }
-        private void CaricaDatiRiepilogo()
+        protected virtual void CaricaDatiRiepilogo()
         {
             try
             {
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    DataView datiRiepilogo = DB.Select(SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                    DataView datiRiepilogo = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                     foreach (DataRowView valore in datiRiepilogo)
                     {
                         string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
@@ -345,23 +373,23 @@ namespace Iren.ToolsExcel.Base
             }
             catch (Exception e)
             {
-                InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaDatiRiepilogo: " + e.Message);
+                Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaDatiRiepilogo: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
 
-        public void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
+        public virtual void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
         {
             if(dataRif == null)
-                dataRif = DB.DataAttiva;
+                dataRif = DataBase.DB.DataAttiva;
 
-            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, GetSuffissoData(DB.DataAttiva, dataRif.Value))][0];
+            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, Date.GetSuffissoData(DataBase.DB.DataAttiva, dataRif.Value))][0];
             Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
 
             if (presente)
             {
-                string commento = "Utente: " + LocalDB.Tables[Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
                 rng.ClearComments();
                 rng.AddComment(commento).Visible = false;
                 rng.Value = "OK";
@@ -375,10 +403,10 @@ namespace Iren.ToolsExcel.Base
 
         }
 
-        private void AggiornaDate()
+        protected virtual void AggiornaDate()
         {
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DB.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
 
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {
@@ -386,17 +414,17 @@ namespace Iren.ToolsExcel.Base
                 _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[1].Item1, riga[1].Item2]].Value = giorno;
             });
         }
-        public void UpdateRiepilogo()
+        public virtual void UpdateRiepilogo()
         {
             AggiornaDate();
             AbilitaAzioni();
             CaricaDatiRiepilogo();
         }
 
-        private void DisabilitaTutto()
+        protected virtual void DisabilitaTutto()
         {
-            DataView categorie = LocalDB.Tables[Tab.CATEGORIA].DefaultView;
-            DataView entita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
 
             categorie.RowFilter = "Operativa = 1";
 
@@ -417,7 +445,7 @@ namespace Iren.ToolsExcel.Base
             }
 
         }
-        public void RiepilogoInEmergenza()
+        public virtual void RiepilogoInEmergenza()
         {
             AggiornaDate();
             DisabilitaTutto();

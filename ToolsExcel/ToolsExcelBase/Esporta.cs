@@ -1,5 +1,6 @@
 ﻿using Iren.ToolsExcel.UserConfig;
 using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -16,29 +17,33 @@ namespace Iren.ToolsExcel.Base
         bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null);
     }
 
-    public class Esporta : UtilityWB, IEsporta
+    public class Esporta : IEsporta
     {
-        public bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
+        Core.DataBase _db = Utility.DataBase.DB;
+        DataSet _localDB = Utility.DataBase.LocalDB;
+
+
+        public virtual bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
         {
             if (dataRif == null)
-                dataRif = DB.DataAttiva;
+                dataRif = _db.DataAttiva;
 
             try
             {
-                DataView entitaAzione = LocalDB.Tables[Tab.ENTITAAZIONE].DefaultView;
+                DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITAAZIONE].DefaultView;
                 entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
                 if (entitaAzione.Count == 0)
                     return false;
 
-                DataView categoriaEntita = LocalDB.Tables[Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIAENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
-                DataView entitaProprieta = LocalDB.Tables[Tab.ENTITAPROPRIETA].DefaultView;
+                DataView entitaProprieta = _localDB.Tables[Utility.DataBase.Tab.ENTITAPROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'IMP_COD_IF'";
                 object codiceIF = entitaProprieta[0]["Valore"];
 
-                DataView entitaAzioneInformazione = LocalDB.Tables[Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
+                DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
@@ -62,13 +67,13 @@ namespace Iren.ToolsExcel.Base
                             }
                         };
 
-                        string suffissoData = UtilityDate.GetSuffissoData(DB.DataAttiva, dataRif.Value);
+                        string suffissoData = Utility.Date.GetSuffissoData(_db.DataAttiva, dataRif.Value);
                         foreach (DataRowView entAzInfo in entitaAzioneInformazione)
                         {
                             object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
 
                             Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(entita, entAzInfo["SiglaInformazione"], suffissoData)];
-                            Excel.Worksheet ws = WB.Sheets[nomeFoglio];
+                            Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
                             Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                             object[,] tmpVal = rng.Value;
                             object[] values = tmpVal.Cast<object>().ToArray();
@@ -93,9 +98,9 @@ namespace Iren.ToolsExcel.Base
                             }
                         }
 
-                        var path = GetPath("pathExportMP_MGP");
+                        var path = Utility.Path.GetPath("pathExportMP_MGP");
 
-                        string pathStr = PreparePath(path.Value);
+                        string pathStr = Utility.Path.PreparePath(path.Value);
 
                         if (Directory.Exists(pathStr))
                         {
@@ -110,17 +115,17 @@ namespace Iren.ToolsExcel.Base
 
                         break;
                 }
-                InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
-                DB.CloseConnection();
+                Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                _db.CloseConnection();
                 return true;
             }
             catch (Exception e)
             {
                 //TODO riabilitare log!!
-                //InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram EsportaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                //Workbook.InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram EsportaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                DB.CloseConnection();
+                _db.CloseConnection();
                 return false;
             }
         }
@@ -144,33 +149,6 @@ namespace Iren.ToolsExcel.Base
             {
                 return false;
             }
-        }
-
-        public static string PreparePath(string path)
-        {
-            Regex options = new Regex(@"\[\w+\]");
-            path = options.Replace(path, match =>
-            {
-                string opt = match.Value.Replace("[", "").Replace("]", "");
-                string o = "";
-                switch (opt.ToLowerInvariant())
-                {
-                    case "appname":
-                        o = Simboli.nomeApplicazione.Replace(" ", "");
-                        break;
-                }
-
-                return o;
-            });
-            
-            return path;
-        }
-
-        public static UserConfigElement GetPath(string configKey)
-        {
-            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
-            
-            return (UserConfigElement)settings.Items[configKey];
         }
     }
 }

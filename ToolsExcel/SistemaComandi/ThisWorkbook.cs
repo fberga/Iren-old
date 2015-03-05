@@ -12,10 +12,11 @@ using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
 using System.Configuration;
 using System.IO;
-using Iren.ToolsExcel.Base;
 using System.Deployment.Application;
 using System.Reflection;
 using System.Globalization;
+using Iren.ToolsExcel.Utility;
+using Iren.ToolsExcel.Base;
 
 namespace Iren.ToolsExcel
 {
@@ -59,16 +60,16 @@ namespace Iren.ToolsExcel
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            UtilityInit.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
+            Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
 
             Sheet.Proteggi(false);
-            
+
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             Style.StdStyles();
             //TODO riabilitare log!!
-            //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            //Utility.Workbook.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
             Sheet.Proteggi(true);
         }

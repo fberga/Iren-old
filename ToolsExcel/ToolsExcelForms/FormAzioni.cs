@@ -1,5 +1,5 @@
 ﻿using Iren.ToolsExcel.Base;
-using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -11,7 +11,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Forms
 {
-    public partial class FormAzioni : Form, IEsporta
+    public partial class FormAzioni : Form
     {
         #region Variabili
 
@@ -21,28 +21,31 @@ namespace Iren.ToolsExcel.Forms
         DataView _azioniCategorie;
         DataView _entitaAzioni;
         DataView _entitaProprieta;
-        //IEsporta _esporta;
+        IEsporta _esporta;
+        IRiepilogo _r;
 
         #endregion
 
         #region Costruttori
 
-        public FormAzioni()
+        public FormAzioni(IEsporta esporta, IRiepilogo riepilogo)
         {
             InitializeComponent();
 
+            _esporta = esporta;
+            _r = riepilogo;
 
-            _categorie = UtilityDB.LocalDB.Tables[UtilityDB.Tab.CATEGORIA].DefaultView;
+            _categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
-            _categoriaEntita = UtilityDB.LocalDB.Tables[UtilityDB.Tab.CATEGORIAENTITA].DefaultView;
+            _categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             _categoriaEntita.RowFilter = "";
-            _azioni = UtilityDB.LocalDB.Tables[UtilityDB.Tab.AZIONE].DefaultView;
+            _azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1";
-            _azioniCategorie = UtilityDB.LocalDB.Tables[UtilityDB.Tab.AZIONECATEGORIA].DefaultView;
+            _azioniCategorie = DataBase.LocalDB.Tables[DataBase.Tab.AZIONECATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "";
-            _entitaAzioni = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAAZIONE].DefaultView;
+            _entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE].DefaultView;
             _entitaAzioni.RowFilter = "";
-            _entitaProprieta = UtilityDB.LocalDB.Tables[UtilityDB.Tab.ENTITAPROPRIETA].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
             _entitaProprieta.RowFilter = "";
 
             System.Data.DataTable dt = new System.Data.DataTable()
@@ -57,8 +60,8 @@ namespace Iren.ToolsExcel.Forms
             for (int i = 0; i <= Simboli.intervalloGiorni; i++ )
             {
                 DataRow r = dt.NewRow();
-                r["DescData"] = (i + 1) + "° - " + UtilityDB.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
-                r["Data"] = UtilityDB.DB.DataAttiva.AddDays(i);
+                r["DescData"] = (i + 1) + "° - " + DataBase.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
+                r["Data"] = DataBase.DB.DataAttiva.AddDays(i);
 
                 dt.Rows.Add(r);
             }
@@ -121,14 +124,14 @@ namespace Iren.ToolsExcel.Forms
 
         private void CaricaAzioni()
         {
-            var stato = UtilityDB.DB.StatoDB;
+            var stato = DataBase.DB.StatoDB;
 
             foreach (DataRowView azione in _azioni)
             {
                 bool aggiungi = true;
                 if (azione["IdFonte"] != DBNull.Value)
                 {
-                    var fonte = (DataBase.NomiDB)Enum.Parse(typeof(DataBase.NomiDB), azione["IdFonte"].ToString());
+                    var fonte = (Core.DataBase.NomiDB)Enum.Parse(typeof(Core.DataBase.NomiDB), azione["IdFonte"].ToString());
                     aggiungi = stato[fonte] == ConnectionState.Open;
                 }
 
@@ -474,9 +477,9 @@ namespace Iren.ToolsExcel.Forms
                     });
                 }
 
-                if (UtilityDB.DB.OpenConnection())
+                if (DataBase.DB.OpenConnection())
                 {
-                    string suffissoData = UtilityDate.GetSuffissoData(UtilityDB.DB.DataAttiva, dataRif);
+                    string suffissoData = Date.GetSuffissoData(DataBase.DB.DataAttiva, dataRif);
 
                     bool[] statoAzione = new bool[4] { false, false, false, false };
 
@@ -493,7 +496,7 @@ namespace Iren.ToolsExcel.Forms
                                     if (n1.Checked && n1.Nodes.Count == 0)
                                     {
                                         string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                        Sheet s = new Sheet(UtilityWB.WB.Sheets[nomeFoglio]);
+                                        Sheet s = new Sheet(Workbook.WB.Sheets[nomeFoglio]);
                                         s.CalcolaFormule(n1.Name, dataRif);
 
                                         _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
@@ -511,22 +514,22 @@ namespace Iren.ToolsExcel.Forms
                                 if (n1.Checked && n1.Nodes.Count == 0)
                                 {
                                     string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                    Riepilogo r = new Riepilogo(UtilityWB.WB.Sheets["Main"]);
+                                    //Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
                                     bool presente;
                                     switch (n.Parent.Name)
                                     {
                                         case "CARICA":
-                                            presente = UtilityWB.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                            r.AggiornaRiepilogo(n1.Name, n.Name, presente);
+                                            presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[0] = true;
                                             break;
                                         case "GENERA":
-                                            presente = UtilityWB.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                            r.AggiornaRiepilogo(n1.Name, n.Name, presente);
+                                            presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[1] = true;
                                             break;
                                         case "ESPORTA":
-                                            EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            _esporta.EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
                                             
                                             statoAzione[2] = true;
                                             break;
@@ -544,7 +547,7 @@ namespace Iren.ToolsExcel.Forms
                                                 DefinedNames nomiDefiniti = new DefinedNames("Main");
                                                 Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
 
-                                                Excel.Worksheet ws = UtilityWB.WB.Sheets["Main"];
+                                                Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
                                                 if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
                                                 {
                                                     ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
@@ -560,21 +563,21 @@ namespace Iren.ToolsExcel.Forms
                             {
                                 case "CARICA":
                                     //TODO riabilitare log!!
-                                    //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                    //Workbook.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
                                     break;
                                 case "GENERA":
                                     //TODO riabilitare log!!
-                                    //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                    //Workbook.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
                                     break;
                                 case "ESPORTA":
                                     //TODO riabilitare log!!
-                                    //UtilityWB.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                    //Workbook.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
                                     break;
                             }
                         }
                     });
 
-                    UtilityDB.DB.CloseConnection();
+                    DataBase.DB.CloseConnection();
                 }
             }
 
@@ -584,12 +587,5 @@ namespace Iren.ToolsExcel.Forms
         }
 
         #endregion
-
-        public virtual bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime? dataRif = null)
-        {
-            MessageBox.Show("Ciao");
-            return true;
-        }
     }
-
 }

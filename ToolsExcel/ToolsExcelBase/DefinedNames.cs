@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Text.RegularExpressions;
+using Iren.ToolsExcel.Utility;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class DefinedNames : UtilityDB
+    public class DefinedNames
     {
         #region Variabili
 
         protected DataTable _definedNames;
         protected DataView _definedNamesView;
         protected string _foglio;
-        //protected int _row = -1;
-        //protected int _column = -1;
-        //protected string _name = null;
-        //protected string _exclude = "";
-        //protected bool _excludeDATA0H24 = false;
 
         #endregion
 
@@ -25,7 +21,7 @@ namespace Iren.ToolsExcel.Base
         public DefinedNames(string foglio)
         {
             _foglio = foglio;
-            _definedNames = LocalDB.Tables[Tab.NOMIDEFINITI];
+            _definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI];
             _definedNamesView = new DataView(_definedNames);
         }
 
@@ -294,7 +290,7 @@ namespace Iren.ToolsExcel.Base
         /// <returns>Ritorna il nome del foglio a cui appartiene la cella o null se non esiste.</returns>
         public static string GetSheetName(object name)
         {
-            DataView definedNamesView = LocalDB.Tables[Tab.NOMIDEFINITI].DefaultView;
+            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI].DefaultView;
             string filter = "Nome LIKE'" + name + "%'";
             if (definedNamesView.RowFilter != filter)
                 definedNamesView.RowFilter = filter;
@@ -313,7 +309,7 @@ namespace Iren.ToolsExcel.Base
         public static bool IsDefined(string sheetName, string cellName)
         {
             cellName = PrepareName(cellName);
-            DataView definedNamesView = LocalDB.Tables[Tab.NOMIDEFINITI].DefaultView;
+            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI].DefaultView;
             string filter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
             if (definedNamesView.RowFilter != filter)
                 definedNamesView.RowFilter = filter;
@@ -329,7 +325,7 @@ namespace Iren.ToolsExcel.Base
         /// <returns>Ritorna true se esiste un match per la coppia foglio - indirizzo, false altrimenti.</returns>
         public static bool IsDefined(string sheetName, int row, int column)
         {
-            DataView definedNamesView = LocalDB.Tables[Tab.NOMIDEFINITI].DefaultView;
+            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI].DefaultView;
             string filter = "Foglio = '" + sheetName + "' AND R1 = " + row + " AND C1 = " + column;
             if (definedNamesView.RowFilter != filter)
                 definedNamesView.RowFilter = filter;
