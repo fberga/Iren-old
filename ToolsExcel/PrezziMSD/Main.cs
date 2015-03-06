@@ -11,11 +11,11 @@ using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Configuration;
 using System.Globalization;
-using Iren.FrontOffice.Base;
+using Iren.ToolsExcel.Base;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.ToolsExcel
 {
-    public partial class IrenTermo
+    public partial class Main
     {
         public Dictionary<string, object> config = new Dictionary<string, object>();
 
@@ -27,30 +27,18 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(this.IrenTermo_Startup);
-            this.Shutdown += new System.EventHandler(this.IrenTermo_Shutdown);
-
+            this.Startup += new System.EventHandler(Main_Startup);
+            this.Shutdown += new System.EventHandler(Main_Shutdown);
         }
 
         #endregion
 
-        private void IrenTermo_Shutdown(object sender, EventArgs e)
+        private void Main_Startup(object sender, System.EventArgs e)
         {
-
         }
 
-        private void IrenTermo_Startup(object sender, EventArgs e)
+        private void Main_Shutdown(object sender, System.EventArgs e)
         {
-            //inizializzo parametri da file di configurazione
-            config.Add("SiglaCategoria", "IREN_60T");
-            config.Add("DataInizio", DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], 
-                "yyyyMMdd", CultureInfo.InvariantCulture));
-        }
-
-        //public void LoadStructure()
-        //{
-        //    Sheet<IrenTermo> s = new Sheet<IrenTermo>(this);
-        //    s.LoadStructure();
-        //}
+        }        
     }
 }

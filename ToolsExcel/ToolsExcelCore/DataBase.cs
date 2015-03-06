@@ -152,30 +152,6 @@ namespace Iren.ToolsExcel.Core
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
-        public static void CryptSection()
-        {
-            //ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
-            //fileMap.ExeConfigFilename = location;
-            //var config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            string provider = "RsaProtectedConfigurationProvider";
-            ConfigurationSection connStrings = config.ConnectionStrings;
-            if (connStrings != null)
-            {
-                if (!connStrings.SectionInformation.IsProtected)
-                {
-                    if (!connStrings.ElementInformation.IsLocked)
-                    {
-                        connStrings.SectionInformation.ProtectSection(provider);
-
-                        connStrings.SectionInformation.ForceSave = true;
-                        config.Save(ConfigurationSaveMode.Modified);
-                    }
-                }
-            }
-        }
-
         #endregion
 
         #region Metodi Privati

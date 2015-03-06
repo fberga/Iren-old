@@ -155,11 +155,11 @@ namespace Iren.ToolsExcel.Utility
 
             bool onLine = DB.OpenConnection();
 
-            var path = Path.GetPath("pathExportModifiche");
+            var path = Utilities.GetUsrConfigElement("pathExportModifiche");
 
-            string cartellaRemota = Path.PreparePath(path.Value);
-            string cartellaEmergenza = Path.PreparePath(path.Emergenza);
-            string cartellaArchivio = Path.PreparePath(path.Archivio);
+            string cartellaRemota = ExportPath.PreparePath(path.Value);
+            string cartellaEmergenza = ExportPath.PreparePath(path.Emergenza);
+            string cartellaArchivio = ExportPath.PreparePath(path.Archivio);
 
             string fileName = "";
             if (onLine && Directory.Exists(cartellaRemota))
@@ -254,7 +254,7 @@ namespace Iren.ToolsExcel.Utility
         #endregion
     }
 
-    public class Path 
+    public class ExportPath 
     {
         #region Metodi
 
@@ -276,12 +276,6 @@ namespace Iren.ToolsExcel.Utility
             });
 
             return path;
-        }
-        public static UserConfigElement GetPath(string configKey) 
-        {
-            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
-
-            return (UserConfigElement)settings.Items[configKey];
         }
 
         #endregion
@@ -1520,27 +1514,6 @@ namespace Iren.ToolsExcel.Utility
 
         #region Metodi
 
-        private static void CryptSection() 
-        {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            string provider = "RsaProtectedConfigurationProvider";
-
-            ConfigurationSection appSettings = config.AppSettings;
-            if (appSettings != null)
-            {
-                if (!appSettings.SectionInformation.IsProtected)
-                {
-                    if (!appSettings.ElementInformation.IsLocked)
-                    {
-                        appSettings.SectionInformation.ProtectSection(provider);
-
-                        appSettings.SectionInformation.ForceSave = true;
-                        config.Save(ConfigurationSaveMode.Modified);
-                    }
-                }
-            }
-        }
         public static void InitLog() 
         {
             DataTable dtLog = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_LOG);
@@ -1594,8 +1567,7 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void Init(string dbName, object appID, DateTime dataAttiva, Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion) 
         {
-            Core.DataBase.CryptSection();    //cripta connectionStrings
-            CryptSection();             //cripta appSettings
+            Core.CryptHelper.CryptSection("connectionStrings", "appSettings");
 
             DataBase.InitNewDB(dbName);
             DataBase.DB.PropertyChanged += _db_StatoDBChanged;
@@ -1627,7 +1599,7 @@ namespace Iren.ToolsExcel.Utility
                     throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
                 Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);
+                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);                
 
                 DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
                 DataBase.LocalDB.Tables.Add(dt);
@@ -1667,6 +1639,13 @@ namespace Iren.ToolsExcel.Utility
         public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) 
         {
             AggiornaLabelStatoDB();
+        }
+
+        public static UserConfigElement GetUsrConfigElement(string configKey)
+        {
+            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+
+            return (UserConfigElement)settings.Items[configKey];
         }
 
         #endregion

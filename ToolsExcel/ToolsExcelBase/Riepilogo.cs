@@ -15,29 +15,69 @@ using Iren.ToolsExcel.Utility;
 
 namespace Iren.ToolsExcel.Base
 {
-    public interface IRiepilogo
-    {
-        void LoadStructure();
-        void InitLabels();
-        void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null);
-        void RiepilogoInEmergenza();
-    }
-
-    public class Riepilogo : IRiepilogo
+    public abstract class ARiepilogo
     {
         #region Variabili
-        
-        Excel.Worksheet _ws;
-        DefinedNames _nomiDefiniti;
-        Cell _cell;
-        Struttura _struttura;
-        int _rigaAttiva;
-        int _colonnaInizio;
-        int _nAzioni;
-        static bool _resizeFatto = false;
+
+        protected Excel.Worksheet _ws;
+        protected DefinedNames _nomiDefiniti;
+        protected Cell _cell;
+        protected Struct _struttura;
+        protected int _rigaAttiva;
+        protected int _colonnaInizio;
+        protected int _nAzioni;
+        protected static bool _resizeFatto = false;
 
         #endregion
 
+        #region Metodi
+
+        protected virtual void CicloGiorni(Action<int, string, DateTime> callback)
+        {
+            DateTime dataInizio = DataBase.DataAttiva;
+            DateTime dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
+            CicloGiorni(dataInizio, dataFine, callback);
+        }
+        protected virtual void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
+        {
+            for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
+            {
+                int oreGiorno = Date.GetOreGiorno(giorno);
+                string suffissoData = Date.GetSuffissoData(dataInizio, giorno);
+
+                if (giorno == dataInizio && _struttura.visData0H24)
+                {
+                    oreGiorno++;
+                }
+
+                callback(oreGiorno, suffissoData, giorno);
+            }
+        }
+
+        public abstract void InitLabels();
+        protected abstract void Clear();
+
+        public abstract void LoadStructure();
+
+        protected abstract void InitBarraTitolo();
+        protected abstract void FormattaAllDati();
+        protected abstract void InitBarraEntita();
+        protected abstract void AbilitaAzioni();
+        protected abstract void CaricaDatiRiepilogo();
+
+        public abstract void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null);
+
+        protected abstract void AggiornaDate();
+        public abstract void UpdateRiepilogo();
+
+        protected abstract void DisabilitaTutto();
+        public abstract void RiepilogoInEmergenza();
+
+        #endregion
+    }
+
+    public class Riepilogo : ARiepilogo
+    {
         #region Costruttori
 
         public Riepilogo() : this((Excel.Worksheet)Utility.Workbook.WB.Sheets["Main"])  { }
@@ -50,7 +90,7 @@ namespace Iren.ToolsExcel.Base
             DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
             _cell = new Cell();
-            _struttura = new Struttura();
+            _struttura = new Struct();
 
             //prendo i valori di default
             _cell.Width.empty = double.Parse(paramApplicazione[0]["ColVuotaWidth"].ToString());
@@ -72,34 +112,7 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
-        private void Init()
-        {
-            
-        }
-
-        private void CicloGiorni(Action<int, string, DateTime> callback)
-        {
-            DateTime dataInizio = DataBase.DataAttiva;
-            DateTime dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
-            CicloGiorni(dataInizio, dataFine, callback);
-        }
-        private void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
-        {
-            for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
-            {
-                int oreGiorno = Date.GetOreGiorno(giorno);
-                string suffissoData = Date.GetSuffissoData(dataInizio, giorno);
-
-                if (giorno == dataInizio && _struttura.visData0H24)
-                {
-                    oreGiorno++;
-                }
-
-                callback(oreGiorno, suffissoData, giorno);
-            }
-        }
-
-        public virtual void InitLabels()
+        public override void InitLabels()
         {
             //inizializzo i label
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
@@ -116,20 +129,35 @@ namespace Iren.ToolsExcel.Base
 
             if (Simboli.intervalloGiorni > 0)
             {
-                if (!_resizeFatto)
-                {
-                    _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
-                    _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
-                    _resizeFatto = true;
-                }
+                _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoFalse;
+                _ws.Shapes.Item("lbDataInizio").Width = 26 * (float)_ws.Columns[1].Width;
+                _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
+                _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
             else
             {
-                _ws.Shapes.Item("lbDataInizio").Width = 485.8582677165f;
+                _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoFalse;
+                _ws.Shapes.Item("lbDataInizio").Width = 54 * (float)_ws.Columns[1].Width;
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
+                _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
-        }        
-        protected virtual void Clear()
+            
+            //if (Simboli.intervalloGiorni > 0)
+            //{
+            //    if (!_resizeFatto)
+            //    {
+            //        _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
+            //        _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
+            //        _resizeFatto = true;
+            //    }
+            //}
+            //else
+            //{
+            //    _ws.Shapes.Item("lbDataInizio").Width = 485.8582677165f;
+            //    _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
+            //}
+        }
+        protected override void Clear()
         {
             int dataOreTot = Date.GetOreIntervallo(DataBase.DB.DataAttiva, DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
@@ -153,7 +181,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.FreezePanes = true;
         }
 
-        public virtual void LoadStructure()
+        public override void LoadStructure()
         {
             _colonnaInizio = _struttura.colRecap;
             _rigaAttiva = _struttura.rowRecap;
@@ -183,7 +211,7 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        protected virtual void InitBarraTitolo()
+        protected override void InitBarraTitolo()
         {
             DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
@@ -244,7 +272,7 @@ namespace Iren.ToolsExcel.Base
                 colonnaInizio += _nAzioni;
             });
         }
-        protected virtual void FormattaAllDati()
+        protected override void FormattaAllDati()
         {
             DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
@@ -289,7 +317,7 @@ namespace Iren.ToolsExcel.Base
                 colonnaInizio += _nAzioni;
             });
         }
-        protected virtual void InitBarraEntita()
+        protected override void InitBarraEntita()
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
@@ -326,7 +354,7 @@ namespace Iren.ToolsExcel.Base
             entita.RowFilter = "";
             rng.EntireColumn.AutoFit();
         }
-        protected virtual void AbilitaAzioni()
+        protected override void AbilitaAzioni()
         {
             DataView entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE].DefaultView;
             entitaAzioni.RowFilter = "";
@@ -345,7 +373,7 @@ namespace Iren.ToolsExcel.Base
                 }
             });
         }
-        protected virtual void CaricaDatiRiepilogo()
+        protected override void CaricaDatiRiepilogo()
         {
             try
             {
@@ -379,7 +407,7 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        public virtual void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
+        public override void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null)
         {
             if(dataRif == null)
                 dataRif = DataBase.DB.DataAttiva;
@@ -403,7 +431,7 @@ namespace Iren.ToolsExcel.Base
 
         }
 
-        protected virtual void AggiornaDate()
+        protected override void AggiornaDate()
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
@@ -414,14 +442,14 @@ namespace Iren.ToolsExcel.Base
                 _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[1].Item1, riga[1].Item2]].Value = giorno;
             });
         }
-        public virtual void UpdateRiepilogo()
+        public override void UpdateRiepilogo()
         {
             AggiornaDate();
             AbilitaAzioni();
             CaricaDatiRiepilogo();
         }
 
-        protected virtual void DisabilitaTutto()
+        protected override void DisabilitaTutto()
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
@@ -445,7 +473,7 @@ namespace Iren.ToolsExcel.Base
             }
 
         }
-        public virtual void RiepilogoInEmergenza()
+        public override void RiepilogoInEmergenza()
         {
             AggiornaDate();
             DisabilitaTutto();

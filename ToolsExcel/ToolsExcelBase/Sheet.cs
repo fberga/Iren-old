@@ -11,7 +11,17 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class Sheet : IDisposable
+    public interface ISheet
+    {
+        void LoadStructure();
+        void CaricaInformazioni(bool all);
+        void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false);
+        void UpdateData(bool all = true);
+        void AggiornaDateTitoli();
+        void AggiornaGrafici();
+    }
+
+    public class Sheet : IDisposable, ISheet
     {
         #region Variabili
 
@@ -25,7 +35,7 @@ namespace Iren.ToolsExcel.Base
         bool _disposed = false;
         DefinedNames _nomiDefiniti;
         Cell _cell;
-        Struttura _struttura;
+        Struct _struttura;
 
         #endregion
 
@@ -44,7 +54,7 @@ namespace Iren.ToolsExcel.Base
             DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
             _cell = new Cell();
-            _struttura = new Struttura();
+            _struttura = new Struct();
 
             _cell.Width.empty = double.Parse(paramApplicazione[0]["ColVuotaWidth"].ToString());
             _cell.Width.dato = double.Parse(paramApplicazione[0]["ColDatoWidth"].ToString());
