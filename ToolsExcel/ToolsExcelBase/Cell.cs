@@ -1,7 +1,7 @@
 ﻿
 namespace Iren.ToolsExcel.Base
 {
-    internal class Cell
+    public class Cell
     {
         private WidthClass _w;
         private HeightClass _h;
@@ -15,7 +15,7 @@ namespace Iren.ToolsExcel.Base
         public WidthClass Width { get { return _w; } }
         public HeightClass Height { get { return _h; } }
 
-        internal class WidthClass
+        public class WidthClass
         {
             public double empty = 1,
             dato = 8.8,
@@ -26,7 +26,7 @@ namespace Iren.ToolsExcel.Base
             riepilogo = 9;            
         }
 
-        internal class HeightClass
+        public class HeightClass
         {
             public double normal = 15,
             empty = 5;

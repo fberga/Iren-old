@@ -79,7 +79,7 @@
     <Compile Include="Riepilogo.cs" />
     <Compile Include="Sheet.cs" />
     <Compile Include="Simboli.cs" />
-    <Compile Include="Struttura.cs" />
+    <Compile Include="Struct.cs" />
     <Compile Include="Style.cs" />
   </ItemGroup>
   <ItemGroup>

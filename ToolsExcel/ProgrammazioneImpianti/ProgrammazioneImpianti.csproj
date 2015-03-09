@@ -9,12 +9,12 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>Iren.ToolsExcel</RootNamespace>
     <AssemblyName>SistemaComandi</AssemblyName>
-    <VSTO_HostDocumentName>SistemaComandi.xlsm</VSTO_HostDocumentName>
+    <VSTO_HostDocumentName>ProgrammazioneImpianti.xlsm</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
     <OfficeApplication>Excel</OfficeApplication>
-    <ProjectGuid>{DACE9F55-E32F-4937-B8D9-4415E4579CD0}</ProjectGuid>
+    <ProjectGuid>{3CB9C2FD-0679-4B47-93CA-22EC683ABB55}</ProjectGuid>
     <SolutionID>4818c659-0c03-4f91-8f0c-5e0e9375d22f</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <FileUpgradeFlags>
@@ -144,16 +144,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
-      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
+      <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Log.cs">
-      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
+      <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
     </Compile>
     <Compile Include="Log.Designer.cs">
@@ -167,7 +166,7 @@
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </Compile>
     <Compile Include="ThisWorkbook.cs">
-      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
+      <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
     </Compile>
     <Compile Include="ThisWorkbook.Designer.cs">
@@ -185,7 +184,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="SistemaComandi.xlsm" />
+    <None Include="ProgrammazioneImpianti.xlsm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ThisWorkbook.Designer.xml">
@@ -229,8 +228,8 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.FrontOffice.Tools">
+        <ProjectProperties HostName="ProgrammazioneImpianti.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ProgrammazioneImpianti.xlsm&quot;" />
+        <Host Name="Excel Document" Path=".\ProgrammazioneImpianti.xlsm" GeneratedCodeNamespace="Iren.FrontOffice.Tools">
           <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
           <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />

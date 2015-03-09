@@ -118,8 +118,8 @@ namespace Iren.ToolsExcel.Base
                 //bianco normale
                 ws.Shapes.Item("lbModifica").Line.Weight = 0.75f;
                 ws.Shapes.Item("lbModifica").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
-                ws.Shapes.Item("lbModifica").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
-                //ws.Shapes.Item("lbModifica").Line.ForeColor.Brightness = -0.25f;
+                ws.Shapes.Item("lbModifica").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
+                ws.Shapes.Item("lbModifica").Line.ForeColor.Brightness = +0.75f;
             }
             ws.Shapes.Item("lbModifica").Locked = true;
         }
@@ -147,9 +147,9 @@ namespace Iren.ToolsExcel.Base
                     ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: PRODUZIONE";
                     //bianco normale
                     ws.Shapes.Item("lbTest").Line.Weight = 0.75f;
-                    ws.Shapes.Item("lbTest").BackgroundStyle = Office.MsoBackgroundStyleIndex.msoBackgroundStylePreset1;
-                    ws.Shapes.Item("lbTest").Line.ForeColor.ObjectThemeColor = Office.MsoThemeColorIndex.msoThemeColorBackground1;
-                    ws.Shapes.Item("lbTest").Line.ForeColor.Brightness = -0.25f;
+                    ws.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                    ws.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
+                    ws.Shapes.Item("lbTest").Line.ForeColor.Brightness = +0.75f;
                     break;
             }
             ws.Shapes.Item("lbTest").Locked = true;
@@ -181,8 +181,8 @@ namespace Iren.ToolsExcel.Base
                 //bianco normale
                 ws.Shapes.Item(labelName).Line.Weight = 0.75f;
                 ws.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
-                ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
-                ws.Shapes.Item(labelName).Line.ForeColor.Brightness = -0.25f;
+                ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
+                ws.Shapes.Item(labelName).Line.ForeColor.Brightness = +0.75f;
             }
             else
             {

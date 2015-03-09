@@ -69,7 +69,7 @@ namespace Iren.ToolsExcel
 
             Style.StdStyles();
             //TODO riabilitare log!!
-            //Utility.Workbook.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
             Sheet.Proteggi(true);
         }

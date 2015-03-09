@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
@@ -213,6 +214,7 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void InsertLog(Core.DataBase.TipologiaLOG logType, string message) 
         {
+            #if (!DEBUG)
             if (_db.OpenConnection())
             {
                 _db.Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });
@@ -223,7 +225,7 @@ namespace Iren.ToolsExcel.Utility
                 dt.TableName = Tab.LOG;
                 _localDB.Merge(dt);
             }
-
+            #endif
         }
         public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true) 
         {
@@ -293,6 +295,10 @@ namespace Iren.ToolsExcel.Utility
         {
             DateTime giornoSucc = giorno.AddDays(1);
             return (int)(giornoSucc.ToUniversalTime() - giorno.ToUniversalTime()).TotalHours;
+        }
+        public static string GetSuffissoData(DateTime giorno)
+        {
+            return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
         }
         public static string GetSuffissoData(DateTime inizio, DateTime giorno)
         {
@@ -1451,9 +1457,11 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
         {
-            _wb.Sheets["Log"].Unprotect();
+            Excel.Worksheet log = _wb.Sheets["Log"];
+            bool prot = log.ProtectContents;
+            if (prot) log.Unprotect();
             DataBase.InsertLog(logType, message);
-            _wb.Sheets["Log"].Protect();
+            if (prot) log.Protect();
         }
         public static Dictionary<Core.DataBase.NomiDB, ConnectionState> AggiornaLabelStatoDB()
         {
@@ -1477,20 +1485,39 @@ namespace Iren.ToolsExcel.Utility
         {
             StringWriter strWriter = new StringWriter();
             XmlWriter xmlWriter = XmlWriter.Create(strWriter);
-            Utility.DataBase.LocalDB.Tables.Remove(Utility.DataBase.Tab.LOG);
+            //try
+            //{
+            //    Utility.DataBase.LocalDB.Tables.Remove(Utility.DataBase.Tab.LOG);
+            //}
+            //catch
+            //{
+
+            //}
             Utility.DataBase.LocalDB.WriteXml(xmlWriter);
+
+            XElement root = XElement.Parse(strWriter.ToString());
+            XNamespace ns = Simboli.NameSpace;
+
+            IEnumerable<XElement> log =
+                from tables in root.Elements(ns + Utility.DataBase.Tab.LOG)
+                select tables;
+
+            log.Remove();
+
             string locDBXml = strWriter.ToString();
             Microsoft.Office.Core.CustomXMLPart part;
+
             try
             {
-                part = _wb.CustomXMLParts[Simboli.NameSpace];
+                _wb.CustomXMLParts[Simboli.NameSpace].Delete();
             }
             catch
             {
-                part = _wb.CustomXMLParts.Add();
             }
+            part = _wb.CustomXMLParts.Add();
 
-            part.LoadXML(locDBXml);
+            part.LoadXML(root.ToString(SaveOptions.DisableFormatting));
+            //part.LoadXML(locDBXml);
         }
 
         #endregion

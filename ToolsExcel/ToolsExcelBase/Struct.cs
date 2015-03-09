@@ -1,7 +1,7 @@
 ﻿
 namespace Iren.ToolsExcel.Base
 {
-    internal class Struttura
+    public class Struct
     {
         public int colBlock = 5,
             rigaBlock = 6,
@@ -11,6 +11,6 @@ namespace Iren.ToolsExcel.Base
         public bool visData0H24 = false,
             visParametro = false;
 
-        public Struttura() { }
+        public Struct() { }
     }
 }

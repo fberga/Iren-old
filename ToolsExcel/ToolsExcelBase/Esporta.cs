@@ -32,7 +32,7 @@ namespace Iren.ToolsExcel.Base
             catch (Exception e)
             {
                 //TODO riabilitare log!!
-                //Workbook.InsertLog(DataBase.TipologiaLOG.LogErrore, "modProgram EsportaAzioneInformazione [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 _db.CloseConnection();

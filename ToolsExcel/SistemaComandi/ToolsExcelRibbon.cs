@@ -10,6 +10,8 @@ using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
+// ******************************************** SISTEMA COMANDI RIBBON ******************************************** //
+
 namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
@@ -66,7 +68,7 @@ namespace Iren.ToolsExcel
             if (count > 1)
             {
                 //TODO riabilitare log!!
-                //Workbook.InsertLog(DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
                 DataBase.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
                 btnAggiornaStruttura_Click(null, null);
             }
@@ -85,7 +87,7 @@ namespace Iren.ToolsExcel
             {
                 AggiornaStruttura();
                 //TODO riabilitare log!!
-                //Workbook.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
                 DataBase.DB.CloseConnection();
             }
@@ -119,7 +121,7 @@ namespace Iren.ToolsExcel
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
 
                         //TODO riabilitare log!!
-                        //Workbook.InsertLog(DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
+                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
 
                         DataBase.RefreshDate(cal.Date.Value);
                         DataBase.ConvertiParametriInformazioni();
@@ -225,7 +227,7 @@ namespace Iren.ToolsExcel
                 AggiornaDati(all: false);
 
                 //TODO riabilitare log!!
-                //Workbook.InsertLog(DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
 
                 DataBase.DB.CloseConnection();
             }
@@ -239,6 +241,7 @@ namespace Iren.ToolsExcel
             Workbook.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            
             FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo());
             frmAz.ShowDialog();
 

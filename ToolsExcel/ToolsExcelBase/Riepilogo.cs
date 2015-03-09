@@ -390,6 +390,7 @@ namespace Iren.ToolsExcel.Base
 
                         if (valore["Presente"].Equals("1"))
                         {
+                            rng.ClearComments();
                             DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
                             commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
                             rng.AddComment(commento);

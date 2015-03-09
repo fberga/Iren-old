@@ -21,14 +21,14 @@ namespace Iren.ToolsExcel.Forms
         DataView _azioniCategorie;
         DataView _entitaAzioni;
         DataView _entitaProprieta;
-        IEsporta _esporta;
-        IRiepilogo _r;
+        AEsporta _esporta;
+        ARiepilogo _r;
 
         #endregion
 
         #region Costruttori
 
-        public FormAzioni(IEsporta esporta, IRiepilogo riepilogo)
+        public FormAzioni(AEsporta esporta, ARiepilogo riepilogo)
         {
             InitializeComponent();
 
@@ -268,10 +268,8 @@ namespace Iren.ToolsExcel.Forms
         private void frmAZIONI_Load(object sender, EventArgs e)
         {
             this.Text = Simboli.nomeApplicazione + " - Azioni";
-            Sheet.Proteggi(false);
             CaricaAzioni();
             CaricaCategorie();
-            Sheet.Proteggi(true);
         }
         
         private void treeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
@@ -529,7 +527,7 @@ namespace Iren.ToolsExcel.Forms
                                             statoAzione[1] = true;
                                             break;
                                         case "ESPORTA":
-                                            _esporta.EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, dataRif);
                                             
                                             statoAzione[2] = true;
                                             break;
@@ -563,15 +561,15 @@ namespace Iren.ToolsExcel.Forms
                             {
                                 case "CARICA":
                                     //TODO riabilitare log!!
-                                    //Workbook.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
                                     break;
                                 case "GENERA":
                                     //TODO riabilitare log!!
-                                    //Workbook.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
                                     break;
                                 case "ESPORTA":
                                     //TODO riabilitare log!!
-                                    //Workbook.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
                                     break;
                             }
                         }
