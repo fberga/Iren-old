@@ -8,6 +8,23 @@ namespace Iren.ToolsExcel.Base
 {
     public class DefinedNames
     {
+        #region Costanti
+
+        public struct Fields
+        {
+            public const string Foglio = "Foglio",
+                Nome = "Nome",
+                R1 = "R1",
+                C1 = "C1",
+                R2 = "R2",
+                C2 = "C2",
+                Editabile = "Editabile",
+                SalvaDB = "SalvaDB",
+                AnnotaModifica = "AnnotaModifica";
+        }
+
+        #endregion
+
         #region Variabili
 
         protected DataTable _definedNames;
@@ -121,6 +138,30 @@ namespace Iren.ToolsExcel.Base
             }
 
             return o;
+        }
+        public Tuple<int, int>[] GetByFilter(string filter, string sortCondition = "")
+        {
+            if(_definedNamesView.RowFilter != filter)
+                _definedNamesView.RowFilter = filter;
+
+            _definedNamesView.Sort = sortCondition;
+
+            if (_definedNamesView.Count == 0)
+                return null;
+
+            Tuple<int, int>[] o = new Tuple<int, int>[_definedNamesView.Count];
+            int i = 0;
+            foreach (DataRowView defName in _definedNamesView)
+            {
+                o[i++] = Tuple.Create(int.Parse(defName["R1"].ToString()), int.Parse(defName["C1"].ToString()));
+            }
+
+            return o;
+        }
+
+        public void ApplySort(string sortCondition)
+        {
+            _definedNamesView.Sort = sortCondition;
         }
 
         public bool IsDefined(string name)
@@ -267,19 +308,19 @@ namespace Iren.ToolsExcel.Base
             {
                 Columns =
                     {
-                        {"Foglio", typeof(String)},
-                        {"Nome", typeof(String)},
-                        {"R1", typeof(int)},
-                        {"C1", typeof(int)},
-                        {"R2", typeof(int)},
-                        {"C2", typeof(int)},
-                        {"Editabile", typeof(bool)},
-                        {"SalvaDB", typeof(bool)},
-                        {"AnnotaModifica", typeof(bool)}
+                        {Fields.Foglio, typeof(String)},
+                        {Fields.Nome, typeof(String)},
+                        {Fields.R1, typeof(int)},
+                        {Fields.C1, typeof(int)},
+                        {Fields.R2, typeof(int)},
+                        {Fields.C2, typeof(int)},
+                        {Fields.Editabile, typeof(bool)},
+                        {Fields.SalvaDB, typeof(bool)},
+                        {Fields.AnnotaModifica, typeof(bool)}
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Foglio"], dt.Columns["Nome"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns[Fields.Foglio], dt.Columns[Fields.Nome] };
             dt.TableName = name;
             return dt;
         }

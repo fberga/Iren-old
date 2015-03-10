@@ -486,25 +486,25 @@ namespace Iren.ToolsExcel.Forms
                         if (n.Checked && n.Nodes.Count == 0)
                         {
                             TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                            if (statoAzione[0] && !statoAzione[3] && n.Parent.Name == "GENERA")
-                            {
-                                statoAzione[3] = true;
-                                ThroughAllNodes(treeViewUP.Nodes, n1 =>
-                                {
-                                    if (n1.Checked && n1.Nodes.Count == 0)
-                                    {
-                                        string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                        Sheet s = new Sheet(Workbook.WB.Sheets[nomeFoglio]);
-                                        s.CalcolaFormule(n1.Name, dataRif);
+                            //if (statoAzione[0] && !statoAzione[3] && n.Parent.Name == "GENERA")
+                            //{
+                            //    statoAzione[3] = true;
+                            //    ThroughAllNodes(treeViewUP.Nodes, n1 =>
+                            //    {
+                            //        if (n1.Checked && n1.Nodes.Count == 0)
+                            //        {
+                            //            string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
+                            //            Sheet s = new Sheet(Workbook.WB.Sheets[nomeFoglio]);
+                            //            s.CalcolaFormule(n1.Name, dataRif);
 
-                                        _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
-                                        if (_categoriaEntita.Count > 0)
-                                            s.CalcolaFormule(_categoriaEntita[0]["Gerarchia"].ToString(), dataRif);
-                                    }
-                                });
+                            //            _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
+                            //            if (_categoriaEntita.Count > 0)
+                            //                s.CalcolaFormule(_categoriaEntita[0]["Gerarchia"].ToString(), dataRif);
+                            //        }
+                            //    });
 
-                                //TODO SALVA MODIFICA
-                            }
+                            //    //TODO SALVA MODIFICA
+                            //}
                             _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
 
                             ThroughAllNodes(treeViewUP.Nodes, n1 =>
@@ -512,7 +512,6 @@ namespace Iren.ToolsExcel.Forms
                                 if (n1.Checked && n1.Nodes.Count == 0)
                                 {
                                     string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                    //Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
                                     bool presente;
                                     switch (n.Parent.Name)
                                     {
@@ -527,8 +526,8 @@ namespace Iren.ToolsExcel.Forms
                                             statoAzione[1] = true;
                                             break;
                                         case "ESPORTA":
-                                            _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, dataRif);
-                                            
+                                            presente = _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[2] = true;
                                             break;
                                     }
@@ -560,15 +559,12 @@ namespace Iren.ToolsExcel.Forms
                             switch (n.Parent.Name)
                             {
                                 case "CARICA":
-                                    //TODO riabilitare log!!
                                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
                                     break;
                                 case "GENERA":
-                                    //TODO riabilitare log!!
                                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
                                     break;
                                 case "ESPORTA":
-                                    //TODO riabilitare log!!
                                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
                                     break;
                             }

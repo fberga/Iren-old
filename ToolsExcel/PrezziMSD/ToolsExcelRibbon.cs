@@ -10,6 +10,8 @@ using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
+// ***************************************************** PREZZI MSD ***************************************************** //
+
 namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
@@ -65,7 +67,6 @@ namespace Iren.ToolsExcel
             //se maggiore di 1 allora c'è un cambio ambiente altrimenti doppio click sullo stesso e non faccio nulla
             if (count > 1)
             {
-                //TODO riabilitare log!!
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
                 DataBase.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
                 btnAggiornaStruttura_Click(null, null);
@@ -84,7 +85,6 @@ namespace Iren.ToolsExcel
             if (DataBase.DB.OpenConnection())
             {
                 AggiornaStruttura();
-                //TODO riabilitare log!!
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
                 DataBase.DB.CloseConnection();
@@ -118,7 +118,6 @@ namespace Iren.ToolsExcel
                         DataBase.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
 
-                        //TODO riabilitare log!!
                         Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
 
                         DataBase.RefreshDate(cal.Date.Value);
@@ -224,7 +223,6 @@ namespace Iren.ToolsExcel
             {
                 AggiornaDati(all: false);
 
-                //TODO riabilitare log!!
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
 
                 DataBase.DB.CloseConnection();

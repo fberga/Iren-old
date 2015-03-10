@@ -995,7 +995,7 @@ namespace Iren.ToolsExcel.Utility
             string foglio = DefinedNames.GetSheetName(siglaEntita);
 
             DefinedNames nomiDefiniti = new DefinedNames(foglio);
-            Excel.Worksheet ws = _wb.Sheets.OfType<Excel.Worksheet>().FirstOrDefault(sheet => sheet.Name == foglio);
+            Excel.Worksheet ws = _wb.Sheets[foglio];
 
             foreach (DataRowView azione in azioneInformazione)
             {
@@ -1485,14 +1485,6 @@ namespace Iren.ToolsExcel.Utility
         {
             StringWriter strWriter = new StringWriter();
             XmlWriter xmlWriter = XmlWriter.Create(strWriter);
-            //try
-            //{
-            //    Utility.DataBase.LocalDB.Tables.Remove(Utility.DataBase.Tab.LOG);
-            //}
-            //catch
-            //{
-
-            //}
             Utility.DataBase.LocalDB.WriteXml(xmlWriter);
 
             XElement root = XElement.Parse(strWriter.ToString());
@@ -1626,7 +1618,7 @@ namespace Iren.ToolsExcel.Utility
                     throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
                 Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorni"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorni"]);                
+                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);                
 
                 DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
                 DataBase.LocalDB.Tables.Add(dt);
@@ -1651,7 +1643,7 @@ namespace Iren.ToolsExcel.Utility
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
                 DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
                 Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (applicazione[0]["IntervalloGiorni"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorni"].ToString()));
+                Simboli.intervalloGiorni = (applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString()));
             }
 
             Sheet.Proteggi(false);

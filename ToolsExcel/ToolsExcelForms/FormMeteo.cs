@@ -163,8 +163,7 @@ namespace Iren.ToolsExcel.Forms
             Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
             r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
 
-            //TODO riabilitare log
-            //Workbook.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
+            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
             DataBase.DB.CloseConnection();
 
             btnCarica.Enabled = true;

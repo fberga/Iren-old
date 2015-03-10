@@ -27,15 +27,26 @@ namespace Iren.ToolsExcel.Base
         {
             try
             {
-                return EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif);
+                if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif))
+                {
+                    if(_db.OpenConnection())
+                        Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                    
+                    _db.CloseConnection();
+                    
+                    return true;
+                }
+
+                return false;
             }
             catch (Exception e)
             {
-                //TODO riabilitare log!!
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                if (_db.OpenConnection())
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+
+                _db.CloseConnection();
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                _db.CloseConnection();
                 return false;
             }
         }
@@ -126,9 +137,6 @@ namespace Iren.ToolsExcel.Base
 
                     break;
             }
-            Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
-            _db.CloseConnection();
-            
             return true;
         }
 

@@ -68,7 +68,6 @@ namespace Iren.ToolsExcel
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             Style.StdStyles();
-            //TODO riabilitare log!!
             Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
             Sheet.Proteggi(true);
