@@ -30,7 +30,7 @@ namespace Iren.ToolsExcel.Base
         protected virtual void DeleteExistingAdjust() 
         {
             
-            _entitaInformazioni.RowFilter = "WB_Adjust <> '0'";
+            _entitaInformazioni.RowFilter = "WB <> '0'";
 
             foreach (DataRowView info in _entitaInformazioni)
             {
@@ -42,7 +42,7 @@ namespace Iren.ToolsExcel.Base
                 string strRiga = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                 Workbook.WB.Application.Run("wbAdjust", strRiga, "Reset");
-                if (info["WB_Adjust"].Equals("2"))
+                if (info["WB"].Equals("2"))
                 {
                     try
                     {
@@ -72,7 +72,7 @@ namespace Iren.ToolsExcel.Base
         protected virtual void AddAdjust(object siglaEntita) 
         {
             
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB_Adjust <> '0'";
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0'";
 
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
@@ -86,7 +86,7 @@ namespace Iren.ToolsExcel.Base
                 string strRiga = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                 Workbook.WB.Application.Run("wbAdjust", strRiga);
-                if (info["WB_Adjust"].Equals("2"))
+                if (info["WB"].Equals("2"))
                     Workbook.WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), strRiga);
             }
         }
@@ -134,6 +134,8 @@ namespace Iren.ToolsExcel.Base
 
             if (_entitaInformazioni.Count > 0)
             {
+                Workbook.WB.SheetChange -= Handler.StoreEdit;
+
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
@@ -153,6 +155,8 @@ namespace Iren.ToolsExcel.Base
                 //eseguo con previsione prezzi
                 ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = 3;
                 Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+
+                Workbook.WB.SheetChange += Handler.StoreEdit;
             }
         }
         public virtual void EseguiOttimizzazione(object siglaEntita) 
@@ -165,6 +169,8 @@ namespace Iren.ToolsExcel.Base
             AddConstraints(siglaEntita);
             AddOpt(siglaEntita);
             Execute(siglaEntita);
+
+
         }
     }
 }

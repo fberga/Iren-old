@@ -159,12 +159,6 @@
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ToolsExcelRibbon.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ToolsExcelRibbon.designer.cs">
-      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
-    </Compile>
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
@@ -172,14 +166,20 @@
     <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
     </Compile>
+    <Compile Include="ToolsExcelRibbon.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolsExcelRibbon.designer.cs">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolsExcelRibbon.resx">
-      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="ThisWorkbook.resx">
       <DependentUpon>ThisWorkbook.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolsExcelRibbon.resx">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="App.config">
       <SubType>Designer</SubType>

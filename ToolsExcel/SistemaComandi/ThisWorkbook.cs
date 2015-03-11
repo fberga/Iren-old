@@ -18,6 +18,10 @@ using System.Globalization;
 using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
+
+// ********************************************* SISTEMA COMANDI ********************************************* //
+
+
 namespace Iren.ToolsExcel
 {
     public partial class ThisWorkbook

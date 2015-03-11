@@ -150,6 +150,8 @@ namespace Iren.ToolsExcel.Base
             //watch = Stopwatch.StartNew();
             InsertGrafici();
             //watch.Stop();
+
+            Utilities.SalvaModifiche(_ws);
         }
 
         protected virtual void InitBarraNavigazione()
@@ -509,8 +511,8 @@ namespace Iren.ToolsExcel.Base
                     {
                         Tuple<int, int> cella = riga[0];
 
-                        Excel.Range cellRng = _ws.Cells[cella.Item1, cella.Item2];
-                        cellRng.Formula = "=SUM(" + Sheet.R1C1toA1(riga[1].Item1, riga[1].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ")";
+                        Excel.Range optRng = _ws.Cells[cella.Item1, cella.Item2];
+                        optRng.Formula = "=SUM(" + Sheet.R1C1toA1(riga[1].Item1, riga[1].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ")";
 
                         Excel.Range rng = _ws.Range[_ws.Cells[riga[1].Item1, riga[1].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                         rng.Formula = formula;
@@ -834,7 +836,6 @@ namespace Iren.ToolsExcel.Base
             catch (Exception e)
             {
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni [all = " + all + "]: " + e.Message);
-
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
@@ -955,6 +956,8 @@ namespace Iren.ToolsExcel.Base
             }
             CaricaInformazioni(all);
             AggiornaGrafici();
+
+            Utilities.SalvaModifiche(_ws);
         }
         #region UpdateData
 
@@ -1146,6 +1149,23 @@ namespace Iren.ToolsExcel.Base
             output += riga;
             return output;
         }
+        public static Tuple<int,int> A1toR1C1(string address)
+        {
+            address = address.Replace("$", "");
+            string alpha = Regex.Match(address, @"\D+").Value;
+            int riga = int.Parse(Regex.Match(address, @"\d+").Value);
+
+            int colonna = 0;
+            int incremento = (alpha.Length == 1 ? 1 : 26 * (alpha.Length - 1));
+            for (int i = 0; i < alpha.Length; i++)
+            {
+                colonna += (char.ConvertToUtf32(alpha, i) - 64) * incremento;
+                incremento = incremento - 26 == 0 ? 1 : incremento - 26;
+            }
+
+            return Tuple.Create<int,int>(riga, colonna);
+        }
+        
 
         #endregion
 

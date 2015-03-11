@@ -571,6 +571,11 @@ namespace Iren.ToolsExcel.Forms
                         }
                     });
 
+                    if (statoAzione[0] || statoAzione[1])
+                    {
+                        DataBase.SalvaModificheDB();
+                    }
+
                     DataBase.DB.CloseConnection();
                 }
             }

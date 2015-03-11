@@ -941,7 +941,6 @@ namespace Iren.ToolsExcel.Utility
                         if (azionePadre.Equals("GENERA"))
                             ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
                     }
-
                 }
                 return true;
             }
@@ -1151,12 +1150,13 @@ namespace Iren.ToolsExcel.Utility
 
                                     if (calcolo["Commento"] != DBNull.Value)
                                         rng.AddComment(calcolo["Commento"]).Visible = false;
-
-                                    entitaInformazioni.RowFilter = "SiglaInformazione = '" + calcolo["SiglaInformazione"] + "'";
-                                    if (entitaInformazioni.Count > 0 && entitaInformazioni[0]["SalvaDB"].Equals("1"))
-                                    {
+                                    
+                                    //TODO CHECK SE TUTTO FUNZIONA BENE...
+                                    //entitaInformazioni.RowFilter = "SiglaInformazione = '" + calcolo["SiglaInformazione"] + "'";
+                                    //if (entitaInformazioni.Count > 0 && entitaInformazioni[0]["SalvaDB"].Equals("1"))
+                                    //{
                                         Handler.StoreEdit(ws, rng);
-                                    }
+                                    //}
                                 }
                             }
                             watch.Stop();
@@ -1510,6 +1510,47 @@ namespace Iren.ToolsExcel.Utility
 
             part.LoadXML(root.ToString(SaveOptions.DisableFormatting));
             //part.LoadXML(locDBXml);
+        }
+        public static void SalvaModifiche(Excel.Worksheet ws, DateTime giorno)
+        {
+            DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            categoriaEntita.RowFilter = "DesCategoria = '" + ws.Name + "'";
+
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                foreach (DataRowView info in entitaInformazione)
+                {
+                    Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(info["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(giorno))];
+                    Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
+                    Handler.StoreEdit(ws, rng);
+                }
+            }
+            DataBase.SalvaModificheDB();
+        }
+        public static void SalvaModifiche(Excel.Worksheet ws)
+        {
+            DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                foreach (DataRowView info in entitaInformazione)
+                {
+                    object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                    Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
+                    Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
+                    Handler.StoreEdit(ws, rng);
+                }
+            }
+            DataBase.SalvaModificheDB();
         }
 
         #endregion

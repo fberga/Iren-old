@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using Iren.ToolsExcel.Utility;
+using System.Collections.Generic;
 
 namespace Iren.ToolsExcel.Base
 {
@@ -54,50 +56,74 @@ namespace Iren.ToolsExcel.Base
             Target.Worksheet.Unprotect(Simboli.pwd);
             s.AggiornaGrafici();
 
-            object[,] values;
-            if (Target.Value == null)   //caso in cui cancello il valore di una cella
+            //trovo tutte le righe che dipendono dalla mia e le salvo nella tabella di modifica
+            Excel.Range rngDependents = Target.Dependents;
+            List<Tuple<int, int>[]> dependents = new List<Tuple<int, int>[]>();
+            foreach (Excel.Range dep in rngDependents.Rows)
             {
-                values = new object[1, 1];
-                values[0, 0] = null;
-            }
-            else if (Target.Value.GetType() != typeof(object[,]))   //caso in cui modifico il valore di una cella
-            {
-                values = new object[1, 1];
-                values[0, 0] = Target.Value;
-            }
-            else    //caso in cui modifico un range di celle
-            {
-                values = new object[Target.Value.GetLength(0), Target.Value.GetLength(1)];
-                Array.Copy(Target.Value, 1, values, 0, values.Length);
+                string[] cells = dep.Address.Split(':');
+                Tuple<int, int>[] rc = new Tuple<int, int>[2];
+                rc[0] = Sheet.A1toR1C1(cells[0]);
+                rc[1] = Sheet.A1toR1C1(cells[1]);
+
+                if (nomiDefiniti.SalvaDB(rc[0].Item1, rc[0].Item2))
+                    dependents.Add(rc);
             }
 
-            DataView modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA].DefaultView;
-
-            for (int i = 0, rowLen = values.GetLength(0); i < rowLen; i++)
+            if (nomiDefiniti.SalvaDB(Target.Row, Target.Column))
             {
-                for (int j = 0, colLen = values.GetLength(1); j < colLen; j++)
+                object[,] values;
+                if (Target.Value == null)   //caso in cui cancello il valore di una cella
                 {
-                    if (nomiDefiniti.SalvaDB(i + Target.Row, j + Target.Column))
-                    {
-                        string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
-
-                        string[] info = nomi[0].Split(Simboli.UNION[0]);
-                        string data = Utility.Date.GetDataFromSuffisso(info[2], info[3]);
-
-                        modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
-                        if (modifiche.Count == 0)
-                            modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.DB.IdApplicazione, DataBase.DB.IdUtenteAttivo);
-                        else
-                            modifiche[0]["Valore"] = values[i, j];
-                    }
-                    if (nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column))
-                    {
-                        Excel.Range rng = Target.Worksheet.Cells[i + Target.Row, j + Target.Column];
-                        rng.ClearComments();
-                        rng.AddComment("Valore inserito manualmente").Visible = false;
-                    }
+                    values = new object[1, 1];
+                    values[0, 0] = null;
                 }
+                else if (Target.Value.GetType() != typeof(object[,]))   //caso in cui modifico il valore di una cella
+                {
+                    values = new object[1, 1];
+                    values[0, 0] = Target.Value;
+                }
+                else    //caso in cui modifico un range di celle
+                {
+                    values = new object[Target.Value.GetLength(0), Target.Value.GetLength(1)];
+                    Array.Copy(Target.Value, 1, values, 0, values.Length);
+                }
+
+                DataView modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA].DefaultView;
+
+                for (int i = 0, rowLen = values.GetLength(0); i < rowLen; i++)
+                {
+                    for (int j = 0, colLen = values.GetLength(1); j < colLen; j++)
+                    {
+                        if (nomiDefiniti.SalvaDB(i + Target.Row, j + Target.Column))
+                        {
+                            string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
+
+                            string[] info = nomi[0].Split(Simboli.UNION[0]);
+                            string data = Utility.Date.GetDataFromSuffisso(info[2], info[3]);
+
+                            modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
+                            if (modifiche.Count == 0)
+                                modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.DB.IdApplicazione, DataBase.DB.IdUtenteAttivo);
+                            else
+                                modifiche[0]["Valore"] = values[i, j];
+                        }
+                        if (nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column))
+                        {
+                            Excel.Range rng = Target.Worksheet.Cells[i + Target.Row, j + Target.Column];
+                            rng.ClearComments();
+                            rng.AddComment("Valore inserito manualmente").Visible = false;
+                        }
+                    }
+                } 
             }
+
+            foreach (var rngBounds in dependents)
+            {
+                if (nomiDefiniti.SalvaDB(rngBounds[0].Item1, rngBounds[0].Item2))
+                    StoreEdit(null, Target.Worksheet.Range[Target.Worksheet.Cells[rngBounds[0].Item1, rngBounds[0].Item2], Target.Worksheet.Cells[rngBounds[1].Item1, rngBounds[1].Item2]]);
+            }
+
             Target.Worksheet.Protect(Simboli.pwd);
         }
 
