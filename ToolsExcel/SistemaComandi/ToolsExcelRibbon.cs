@@ -10,7 +10,7 @@ using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-// ******************************************** SISTEMA COMANDI RIBBON ******************************************** //
+// ***************************************************** SISTEMA COMANDI ***************************************************** //
 
 namespace Iren.ToolsExcel
 {
@@ -175,35 +175,37 @@ namespace Iren.ToolsExcel
             
             DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
 
-            string siglaEntita = "";
+            FormSelezioneUP selUP = new FormSelezioneUP("PQNR_PROFILO");
 
             if (ws.Name == "Iren Termo" && nomiDefiniti.IsDefined(rng.Row, rng.Column))
             {
                 string nome = nomiDefiniti[rng.Row, rng.Column][0];
-                siglaEntita = nome.Split(char.Parse(Simboli.UNION))[0];
+                string siglaEntita = nome.Split(char.Parse(Simboli.UNION))[0];
 
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
 
-                if (entitaInformazioni.Count == 0 
-                    && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                    && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
+                if (entitaInformazioni.Count == 0)
                 {
-                        Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                    if (System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
+                        && selUP.ShowDialog() != "")
+                    {
+                        Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
                         rampe.ShowDialog();
                         rampe.Dispose();
+                    }
                 }
                 else
                 {
-                    Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                    Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
                     rampe.ShowDialog();
                     rampe.Dispose();
                 }
             }
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
+                && selUP.ShowDialog() != "")
             {
-                Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
                 rampe.ShowDialog();
                 rampe.Dispose();
             }
@@ -272,32 +274,36 @@ namespace Iren.ToolsExcel
 
             DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
 
-            string siglaEntita = "";
-
             Optimizer opt = new Optimizer();
+
+            FormSelezioneUP selUP = new FormSelezioneUP("OTTIMO");
 
             if (nomiDefiniti.IsDefined(rng.Row, rng.Column))
             {
-                siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
+                string siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
 
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
 
-                if (entitaInformazioni.Count == 0 
-                    && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes 
-                    && SelezionaUP("OTTIMO", out siglaEntita, out nomiDefiniti, out rng))
+                if (entitaInformazioni.Count == 0)
                 {
-                    opt.EseguiOttimizzazione(siglaEntita);
+                    if(System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        siglaEntita = selUP.ShowDialog();
+                        if(siglaEntita != "")
+                            opt.EseguiOttimizzazione(siglaEntita);
+                    }
                 }
                 else
                 {
                     opt.EseguiOttimizzazione(siglaEntita);
                 }
             }
-            else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                    && SelezionaUP("OTTIMO", out siglaEntita, out nomiDefiniti, out rng))
+            else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
             {
-                opt.EseguiOttimizzazione(siglaEntita);
+                string siglaEntita = selUP.ShowDialog();
+                if (siglaEntita != "")
+                    opt.EseguiOttimizzazione(siglaEntita);
             }
 
             Sheet.Proteggi(true);
@@ -307,6 +313,20 @@ namespace Iren.ToolsExcel
         {
             FormConfig conf = new FormConfig();
             conf.ShowDialog();
+        }
+        private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
+        {
+            RibbonToggleButton btn = (RibbonToggleButton)sender;
+
+            if (!btn.Checked)
+            {
+                btn.Checked = true;
+            }
+            else
+            {
+                btn.Checked = false;
+                Handler.SwithWorksheet(btn.Name.Substring(3));
+            }
         }
 
         #endregion
@@ -356,33 +376,32 @@ namespace Iren.ToolsExcel
 
         }
 
-        private bool SelezionaUP(string siglaInformazione, out string siglaEntita, out DefinedNames nomiDefiniti, out Excel.Range rng)
-        {
-            FormSelezioneUP selUP = new FormSelezioneUP(siglaInformazione);
+        //private bool SelezionaUP(string siglaInformazione, out string siglaEntita, out Excel.Range rng)
+        //{
+        //    FormSelezioneUP selUP = new FormSelezioneUP(siglaInformazione);
 
-            selUP.ShowDialog();
+        //    selUP.ShowDialog();
 
-            nomiDefiniti = null;
-            rng = null;
-            siglaEntita = "";
+        //    rng = null;
+        //    siglaEntita = "";
 
-            if (!selUP.IsCanceld && selUP.HasSelection)
-            {
-                siglaEntita = selUP.SiglaEntita;
-                string nome = DefinedNames.GetName(selUP.SiglaEntita, "T", "DATA1");
-                string foglio = DefinedNames.GetSheetName(nome);
-                nomiDefiniti = new DefinedNames(foglio);
-                Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
+        //    if (!selUP.IsCanceld && selUP.HasSelection)
+        //    {
+        //        siglaEntita = selUP.SiglaEntita;
+        //        string nome = DefinedNames.GetName(selUP.SiglaEntita, "T", "DATA1");
+        //        string foglio = DefinedNames.GetSheetName(nome);
+        //        DefinedNames nomiDefiniti = new DefinedNames(foglio);
+        //        Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
 
-                Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
-                ((Excel._Worksheet)ws).Activate();
-                rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
-                rng.Select();
-                Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
-            }
-            selUP.Dispose();
-            return !selUP.IsCanceld && selUP.HasSelection;
-        }
+        //        Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
+        //        ((Excel._Worksheet)ws).Activate();
+        //        rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
+        //        rng.Select();
+        //        Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
+        //    }
+        //    selUP.Dispose();
+        //    return !selUP.IsCanceld && selUP.HasSelection;
+        //}
         private void AbilitaTasti(bool abilita)
         {
             btnCalendar.Enabled = abilita;
@@ -454,27 +473,5 @@ namespace Iren.ToolsExcel
         }
 
         #endregion
-
-        private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
-        {
-            RibbonToggleButton btn = (RibbonToggleButton)sender;
-
-            if (!btn.Checked)
-            {
-                btn.Checked = true;
-            }
-            else
-            {
-                //TODO aprire gli altri file!!!!!!
-                switch (btn.Name)
-                {
-                    case "btnInvioProgrammi":
-                        break;
-                }
-
-
-            }
-        }
-
     }
 }

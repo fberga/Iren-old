@@ -486,25 +486,6 @@ namespace Iren.ToolsExcel.Forms
                         if (n.Checked && n.Nodes.Count == 0)
                         {
                             TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                            //if (statoAzione[0] && !statoAzione[3] && n.Parent.Name == "GENERA")
-                            //{
-                            //    statoAzione[3] = true;
-                            //    ThroughAllNodes(treeViewUP.Nodes, n1 =>
-                            //    {
-                            //        if (n1.Checked && n1.Nodes.Count == 0)
-                            //        {
-                            //            string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                            //            Sheet s = new Sheet(Workbook.WB.Sheets[nomeFoglio]);
-                            //            s.CalcolaFormule(n1.Name, dataRif);
-
-                            //            _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
-                            //            if (_categoriaEntita.Count > 0)
-                            //                s.CalcolaFormule(_categoriaEntita[0]["Gerarchia"].ToString(), dataRif);
-                            //        }
-                            //    });
-
-                            //    //TODO SALVA MODIFICA
-                            //}
                             _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
 
                             ThroughAllNodes(treeViewUP.Nodes, n1 =>
@@ -573,6 +554,7 @@ namespace Iren.ToolsExcel.Forms
 
                     if (statoAzione[0] || statoAzione[1])
                     {
+                        Sheet.SalvaModifiche();
                         DataBase.SalvaModificheDB();
                     }
 

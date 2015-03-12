@@ -18,20 +18,22 @@ namespace Iren.ToolsExcel.Forms
         int _oreGiorno = 24;
         DataView _entitaRampa;
         double _pRif;
-        double?[] _pMin;
-        string _desEntita;
+        double[] _pMin;
         List<object> _sigleRampa;
         int _childWidth;
         int _oreFermata;
         Excel.Worksheet _ws;
         object[] _valoriPQNR;
+        DefinedNames _nomiDefiniti;
+        string _siglaEntita;
+        string _suffissoData;
         Tuple<int, int>[] _profiloPQNR;
 
         #endregion
 
         #region Costruttore
 
-        public FormRampe(DefinedNames nomiDefiniti, Excel.Range rng)
+        public FormRampe(Excel.Range rng)
         {
             InitializeComponent();
             this.Text = Simboli.nomeApplicazione + " - Rampe";
@@ -39,51 +41,48 @@ namespace Iren.ToolsExcel.Forms
             if (DataBase.DB.OpenConnection())
             {
                 _ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
+                _nomiDefiniti = new DefinedNames(_ws.Name);
 
-                string nome = nomiDefiniti[rng.Row, rng.Column][0];
-                string up = nome.Split(Simboli.UNION[0])[0];
+                string nome = _nomiDefiniti[rng.Row, rng.Column][0];
+                _siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
-                string suffissoData = Regex.Match(nome, @"DATA\d+").Value;
-                suffissoData = suffissoData == "" ? "DATA1" : suffissoData;
+                _suffissoData = Regex.Match(nome, @"DATA\d+").Value;
+                _suffissoData = _suffissoData == "" ? "DATA1" : _suffissoData;
 
                 DataView proprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-                proprieta.RowFilter = "SiglaEntita = '" + up + "' AND SiglaProprieta = 'SISTEMA_COMANDI_PRIF'";
+                proprieta.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_PRIF'";
                 _pRif = 0;
                 if (proprieta.Count > 0)
                     _pRif = Double.Parse(proprieta[0]["Valore"].ToString());
 
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + up + "'";
-                _desEntita = categoriaEntita[0]["DesEntita"].ToString();
-
                 _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITARAMPA].DefaultView;
-                _entitaRampa.RowFilter = "SiglaEntita = '" + up + "'";
+                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
                 _sigleRampa = _entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
 
-                _profiloPQNR = nomiDefiniti[DefinedNames.GetName(up, "PQNR_PROFILO", suffissoData)];
+                DataView assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAASSETTO].DefaultView;
+                assetti.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
+
+                _profiloPQNR = _nomiDefiniti[DefinedNames.GetName(_siglaEntita, "PQNR_PROFILO", _suffissoData)];
                 object[,] values = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]].Value;
                 _valoriPQNR = values.Cast<object>().ToArray();
 
-                DataView assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAASSETTO].DefaultView;
-                assetti.RowFilter = "SiglaEntita = '" + up + "'";
-
                 //TODO controllare se si può semplificare
-                _pMin = new double?[_valoriPQNR.Length];
+                _pMin = new double[_valoriPQNR.Length];
                 int numAssetto = 1;
                 foreach (DataRowView assetto in assetti)
                 {
-                    Tuple<int, int>[] cellePmin = nomiDefiniti[DefinedNames.GetName(up, "PMIN_TERNA_ASSETTO" + numAssetto, suffissoData)];
-                    object[,] tmppMinOraria = _ws.Range[_ws.Cells[cellePmin[0].Item1, cellePmin[0].Item2], _ws.Cells[cellePmin[0].Item1, cellePmin[cellePmin.Length - 1].Item2]].Value;
-                    double?[] pMinOraria = tmppMinOraria.Cast<double?>().ToArray();
-                    for (int i = 0; i < pMinOraria.Length; i++)
+                    Tuple<int, int>[] cellePmin = _nomiDefiniti[DefinedNames.GetName(_siglaEntita, "PMIN_TERNA_ASSETTO" + numAssetto, _suffissoData)];
+                    object[,] pMinOraria = _ws.Range[_ws.Cells[cellePmin[0].Item1, cellePmin[0].Item2], _ws.Cells[cellePmin[0].Item1, cellePmin[cellePmin.Length - 1].Item2]].Value;
+                    //object[] pMinOraria = tmppMinOraria.Cast<object>().ToArray();
+                    for (int i = 0; i < pMinOraria.GetLength(1); i++)
                     {
-                        _pMin[i] = Math.Min(_pMin[i] ?? pMinOraria[i] ?? 0, pMinOraria[i] ?? 0);
+                        _pMin[i] = Math.Min(_pMin[i], (double)(pMinOraria[1, i + 1] ?? 0d));
                     }
                     numAssetto++;
                 }
 
                 _oreGiorno = _valoriPQNR.Length;
-                _oreFermata = int.Parse(DataBase.DB.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + up).Rows[0]["OreFermata"].ToString());
+                _oreFermata = int.Parse(DataBase.DB.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita).Rows[0]["OreFermata"].ToString());
 
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
@@ -139,7 +138,10 @@ namespace Iren.ToolsExcel.Forms
 
         private void frmRAMPE_Load(object sender, EventArgs e)
         {
-            lbDesEntita.Text = _desEntita + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + _oreFermata;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
+
+            lbDesEntita.Text = categoriaEntita[0]["DesEntita"].ToString() + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + _oreFermata;
 
             tableLayoutDesRampa.Controls.Clear();
             tableLayoutDesRampa.ColumnStyles.Clear();
@@ -349,6 +351,8 @@ namespace Iren.ToolsExcel.Forms
             DataTable o = initOutTable();
             for (int i = 1; i <= _oreGiorno; i++)
             {
+                _pMin[i - 1] = _pMin[i - 1] < _pRif ? _pRif : _pMin[i - 1];
+
                 DataRow riga = o.NewRow();
 
                 var oraX = panelValoriRampa.Controls.OfType<TableLayoutPanel>().FirstOrDefault(r => r.Name == "H" + i);
@@ -362,7 +366,6 @@ namespace Iren.ToolsExcel.Forms
                 {
                     if (_entitaRampa[0]["Q" + j] != DBNull.Value)
                     {
-                        _pMin[i - 1] = _pMin[i - 1] < _pRif ? _pRif : _pMin[i - 1];
                         riga["Q" + j] = ((int)_entitaRampa[0]["Q" + j]) * _pRif / _pMin[i - 1];
                     }
                 }
@@ -371,8 +374,30 @@ namespace Iren.ToolsExcel.Forms
 
                 o.Rows.Add(riga);
             }
+
             Excel.Range rng = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]];
             rng.Value = o.AsEnumerable().Select(r => r["SiglaRampa"]).ToArray();
+
+            Tuple<int,int>[] valoriRampe = _nomiDefiniti.GetByFilter(DefinedNames.Fields.Foglio + " = '" + _ws.Name + "' AND " +
+                                                 DefinedNames.Fields.Nome + " LIKE '" + DefinedNames.GetName(_siglaEntita, "PQNR") + "%' AND " +
+                                                 DefinedNames.Fields.Nome + " NOT LIKE '%PROFILO%' AND " +
+                                                 DefinedNames.Fields.Nome + " LIKE '%" + _suffissoData + "%'");
+            
+            Excel.Range rngValori = _ws.Range[_ws.Cells[valoriRampe[0].Item1, valoriRampe[0].Item2], _ws.Cells[valoriRampe[valoriRampe.Length - 1].Item1, valoriRampe[valoriRampe.Length - 1].Item2]];
+            //rngValori.Value = o.AsEnumerable().Select(r => r["Q1"]);
+            object[,] oVal = new object[o.Columns.Count - 1, o.Rows.Count];
+            foreach (DataRow r in o.Rows)
+            {
+                foreach (DataColumn c in o.Columns)
+                {
+                    if (c.ColumnName != "SiglaRampa")
+                    {
+
+                    }
+                }
+            }
+            
+
 
             Handler.StoreEdit(_ws, rng);
             DataBase.SalvaModificheDB();

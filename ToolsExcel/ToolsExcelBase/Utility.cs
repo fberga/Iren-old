@@ -146,61 +146,63 @@ namespace Iren.ToolsExcel.Utility
         public static void SalvaModificheDB() 
         {
             DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
-
-            DataTable dt = modifiche.Copy();
-            dt.TableName = modifiche.TableName;
-            dt.Namespace = "";
-
-            if (dt.Rows.Count == 0)
-                return;
-
-            bool onLine = DB.OpenConnection();
-
-            var path = Utilities.GetUsrConfigElement("pathExportModifiche");
-
-            string cartellaRemota = ExportPath.PreparePath(path.Value);
-            string cartellaEmergenza = ExportPath.PreparePath(path.Emergenza);
-            string cartellaArchivio = ExportPath.PreparePath(path.Archivio);
-
-            string fileName = "";
-            if (onLine && Directory.Exists(cartellaRemota))
+            if (modifiche != null)
             {
-                string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
+                DataTable dt = modifiche.Copy();
+                dt.TableName = modifiche.TableName;
+                dt.Namespace = "";
 
-                if (fileEmergenza.Length > 0)
+                if (dt.Rows.Count == 0)
+                    return;
+
+                bool onLine = DB.OpenConnection();
+
+                var path = Utilities.GetUsrConfigElement("pathExportModifiche");
+
+                string cartellaRemota = ExportPath.PreparePath(path.Value);
+                string cartellaEmergenza = ExportPath.PreparePath(path.Emergenza);
+                string cartellaArchivio = ExportPath.PreparePath(path.Archivio);
+
+                string fileName = "";
+                if (onLine && Directory.Exists(cartellaRemota))
                 {
-                    Array.Sort<string>(fileEmergenza);
-                    foreach (string file in fileEmergenza)
+                    string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
+
+                    if (fileEmergenza.Length > 0)
                     {
-                        File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
-                        //TODO esegui stored procedure sul file
-                        if (true)
-                            File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                        Array.Sort<string>(fileEmergenza);
+                        foreach (string file in fileEmergenza)
+                        {
+                            File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
+                            //TODO esegui stored procedure sul file
+                            if (true)
+                                File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                        }
+                    }
+
+                    fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                    dt.WriteXml(fileName);
+                    //TODO esegui stored procedure
+                    if (true)
+                        File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
+                }
+                else
+                {
+                    fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                    try
+                    {
+                        dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        Directory.CreateDirectory(cartellaEmergenza);
+                        dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
                     }
                 }
 
-                fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
-                dt.WriteXml(fileName);
-                //TODO esegui stored procedure
-                if (true)
-                    File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
+                modifiche.Clear();
+                DB.CloseConnection();
             }
-            else
-            {
-                fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
-                try
-                {
-                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    Directory.CreateDirectory(cartellaEmergenza);
-                    dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
-                }
-            }
-
-            modifiche.Clear();
-            DB.CloseConnection();
         }
         public static object GetMessaggioCheck(object id) 
         {
@@ -1510,47 +1512,6 @@ namespace Iren.ToolsExcel.Utility
 
             part.LoadXML(root.ToString(SaveOptions.DisableFormatting));
             //part.LoadXML(locDBXml);
-        }
-        public static void SalvaModifiche(Excel.Worksheet ws, DateTime giorno)
-        {
-            DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            categoriaEntita.RowFilter = "DesCategoria = '" + ws.Name + "'";
-
-            foreach (DataRowView entita in categoriaEntita)
-            {
-                entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
-                foreach (DataRowView info in entitaInformazione)
-                {
-                    Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(info["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(giorno))];
-                    Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
-                    Handler.StoreEdit(ws, rng);
-                }
-            }
-            DataBase.SalvaModificheDB();
-        }
-        public static void SalvaModifiche(Excel.Worksheet ws)
-        {
-            DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
-            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
-
-            foreach (DataRowView entita in categoriaEntita)
-            {
-                entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
-                foreach (DataRowView info in entitaInformazione)
-                {
-                    object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                    Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
-                    Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
-                    Handler.StoreEdit(ws, rng);
-                }
-            }
-            DataBase.SalvaModificheDB();
         }
 
         #endregion

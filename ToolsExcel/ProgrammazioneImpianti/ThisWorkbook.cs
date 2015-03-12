@@ -18,6 +18,8 @@ using System.Globalization;
 using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
+// ************************************************************* PROGRAMMAZIONE ************************************************************* //
+
 namespace Iren.ToolsExcel
 {
     public partial class ThisWorkbook
@@ -75,7 +77,8 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
-            //CommonFunctions.Close();
+            DataBase.SalvaModificheDB();
+            this.Save();
         }
 
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)

@@ -72,7 +72,6 @@ namespace Iren.ToolsExcel
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             Style.StdStyles();
-
             Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
             Sheet.Proteggi(true);
@@ -80,7 +79,8 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
-            //CommonFunctions.Close();
+            DataBase.SalvaModificheDB();
+            this.Save();
         }
 
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)

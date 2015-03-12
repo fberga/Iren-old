@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using System.Resources;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using Iren.ToolsExcel.Utility;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Iren.ToolsExcel.Base
 {
@@ -27,26 +29,31 @@ namespace Iren.ToolsExcel.Base
             if (isGOTO)
             {
                 string entita = Regex.Replace(names[i - 1], "(RIEPILOGO" + Simboli.UNION + "|" + Simboli.UNION + "GOTO)", "");
-
-                if (Target.Worksheet.Name == "Main")
-                {
-                    string sheet = DefinedNames.GetSheetName(entita);
-                    if (DefinedNames.IsDefined(sheet, DefinedNames.GetName(entita, "T", "DATA1")))
-                    {
-                        Target.Application.Worksheets[sheet].Activate();
-                        Tuple<int, int> coordinate = definedNames[DefinedNames.GetName(entita, "T", "DATA1")][0];
-                        Target.Application.Worksheets[sheet].Cells[coordinate.Item1, coordinate.Item2].Select();
-                        Target.Application.ActiveWindow.SmallScroll(coordinate.Item1 - Target.Worksheet.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
-                    }
-                }
-                else
-                {
-                    Tuple<int, int> coordinate = definedNames[entita + Simboli.UNION + "T" + Simboli.UNION + "DATA1"][0];
-                    Excel.Range rng = Target.Worksheet.Cells[coordinate.Item1, coordinate.Item2];
-                    rng.Select();
-                    Target.Worksheet.Application.ActiveWindow.SmallScroll(rng.Row - Target.Worksheet.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
-                }
+                GOTO(entita);
             }
+        }
+
+        public static void GOTO(object siglaEntita)
+        {
+            string nomeFoglio = Workbook.WB.Application.ActiveSheet.Name;
+            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
+
+            if (nomeFoglio == "Main" || !nomiDefiniti.IsDefined(siglaEntita.ToString()))
+            {
+                nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+                if (nomeFoglio == null)
+                    return;
+
+                nomiDefiniti = new DefinedNames(nomeFoglio);
+                if (!nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "T", "DATA1")))
+                    return;
+
+                Workbook.WB.Worksheets[nomeFoglio].Activate();
+            }           
+
+            Tuple<int, int> coordinate = nomiDefiniti[DefinedNames.GetName(siglaEntita, "T", "DATA1")][0];
+            Workbook.WB.ActiveSheet.Cells[coordinate.Item1, coordinate.Item2].Select();
+            Workbook.WB.Application.ActiveWindow.SmallScroll(coordinate.Item1 - Workbook.WB.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
         }
 
         public static void StoreEdit(object Sh, Excel.Range Target)
@@ -57,18 +64,18 @@ namespace Iren.ToolsExcel.Base
             s.AggiornaGrafici();
 
             //trovo tutte le righe che dipendono dalla mia e le salvo nella tabella di modifica
-            Excel.Range rngDependents = Target.Dependents;
-            List<Tuple<int, int>[]> dependents = new List<Tuple<int, int>[]>();
-            foreach (Excel.Range dep in rngDependents.Rows)
-            {
-                string[] cells = dep.Address.Split(':');
-                Tuple<int, int>[] rc = new Tuple<int, int>[2];
-                rc[0] = Sheet.A1toR1C1(cells[0]);
-                rc[1] = Sheet.A1toR1C1(cells[1]);
+            //Excel.Range rngDependents = Target.Dependents;
+            //List<Tuple<int, int>[]> dependents = new List<Tuple<int, int>[]>();
+            //foreach (Excel.Range dep in rngDependents.Rows)
+            //{
+            //    string[] cells = dep.Address.Split(':');
+            //    Tuple<int, int>[] rc = new Tuple<int, int>[2];
+            //    rc[0] = Sheet.A1toR1C1(cells[0]);
+            //    rc[1] = Sheet.A1toR1C1(cells[1]);
 
-                if (nomiDefiniti.SalvaDB(rc[0].Item1, rc[0].Item2))
-                    dependents.Add(rc);
-            }
+            //    if (nomiDefiniti.SalvaDB(rc[0].Item1, rc[0].Item2))
+            //        dependents.Add(rc);
+            //}
 
             if (nomiDefiniti.SalvaDB(Target.Row, Target.Column))
             {
@@ -95,34 +102,37 @@ namespace Iren.ToolsExcel.Base
                 {
                     for (int j = 0, colLen = values.GetLength(1); j < colLen; j++)
                     {
-                        if (nomiDefiniti.SalvaDB(i + Target.Row, j + Target.Column))
+                        if (values[i, j] != null)
                         {
-                            string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
+                            if (nomiDefiniti.SalvaDB(i + Target.Row, j + Target.Column))
+                            {
+                                string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
 
-                            string[] info = nomi[0].Split(Simboli.UNION[0]);
-                            string data = Utility.Date.GetDataFromSuffisso(info[2], info[3]);
+                                string[] info = nomi[0].Split(Simboli.UNION[0]);
+                                string data = Utility.Date.GetDataFromSuffisso(info[2], info[3]);
 
-                            modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
-                            if (modifiche.Count == 0)
-                                modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.DB.IdApplicazione, DataBase.DB.IdUtenteAttivo);
-                            else
-                                modifiche[0]["Valore"] = values[i, j];
-                        }
-                        if (nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column))
-                        {
-                            Excel.Range rng = Target.Worksheet.Cells[i + Target.Row, j + Target.Column];
-                            rng.ClearComments();
-                            rng.AddComment("Valore inserito manualmente").Visible = false;
+                                modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
+                                if (modifiche.Count == 0)
+                                    modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.DB.IdApplicazione, DataBase.DB.IdUtenteAttivo);
+                                else
+                                    modifiche[0]["Valore"] = values[i, j];
+                            }
+                            if (nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column))
+                            {
+                                Excel.Range rng = Target.Worksheet.Cells[i + Target.Row, j + Target.Column];
+                                rng.ClearComments();
+                                rng.AddComment("Valore inserito manualmente").Visible = false;
+                            }
                         }
                     }
                 } 
             }
 
-            foreach (var rngBounds in dependents)
-            {
-                if (nomiDefiniti.SalvaDB(rngBounds[0].Item1, rngBounds[0].Item2))
-                    StoreEdit(null, Target.Worksheet.Range[Target.Worksheet.Cells[rngBounds[0].Item1, rngBounds[0].Item2], Target.Worksheet.Cells[rngBounds[1].Item1, rngBounds[1].Item2]]);
-            }
+            //foreach (var rngBounds in dependents)
+            //{
+            //    if (nomiDefiniti.SalvaDB(rngBounds[0].Item1, rngBounds[0].Item2))
+            //        StoreEdit(null, Target.Worksheet.Range[Target.Worksheet.Cells[rngBounds[0].Item1, rngBounds[0].Item2], Target.Worksheet.Cells[rngBounds[1].Item1, rngBounds[1].Item2]]);
+            //}
 
             Target.Worksheet.Protect(Simboli.pwd);
         }
@@ -201,6 +211,9 @@ namespace Iren.ToolsExcel.Base
             }
 
             Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+            var locked = ws.ProtectContents;
+            if (locked)
+                ws.Unprotect(Simboli.pwd);
             ws.Shapes.Item(labelName).TextFrame.Characters().Text = labelText + (online ? "OPERATIVO" : "FUORI SERVIZIO");
             if (online)
             {
@@ -216,6 +229,41 @@ namespace Iren.ToolsExcel.Base
                 ws.Shapes.Item(labelName).Line.Weight = 2f;
                 ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
                 ws.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
+            }
+
+            if (locked)
+                ws.Protect(Simboli.pwd);
+        }
+
+        public static void SwithWorksheet(string name)
+        {
+            //TODO aprire gli altri file!!!!!!
+            string path = "";
+#if(DEBUG)
+            path = "D:\\Repository\\Iren\\ToolsExcel\\"+name+"\\bin\\Debug\\"+name+".xlsm";
+#else
+
+#endif
+            if (!IsWorkbookOpen(name))
+            {
+                Workbook.WB.Application.Workbooks.Open(path);
+            }
+            else
+            {
+                Workbook.WB.Application.Workbooks[name + ".xlsm"].Activate();
+            }
+        }
+
+        private static bool IsWorkbookOpen(string name)
+        {
+            try
+            {
+                Microsoft.Office.Interop.Excel._Workbook wb = Workbook.WB.Application.Workbooks[name + ".xlsm"];
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

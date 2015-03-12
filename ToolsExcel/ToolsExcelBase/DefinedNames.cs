@@ -46,11 +46,11 @@ namespace Iren.ToolsExcel.Base
 
         #region Overload Operatori
 
-        public Tuple<int, int>[] this[string key]
+        public Tuple<int, int>[] this[string key, bool excludeDATA0H24 = false]
         {
             get
             {
-                return Get(key);
+                return Get(key, excludeDATA0H24);
             }
         }
 
@@ -139,12 +139,10 @@ namespace Iren.ToolsExcel.Base
 
             return o;
         }
-        public Tuple<int, int>[] GetByFilter(string filter, string sortCondition = "")
+        public Tuple<int, int>[] GetByFilter(string filter)
         {
             if(_definedNamesView.RowFilter != filter)
                 _definedNamesView.RowFilter = filter;
-
-            _definedNamesView.Sort = sortCondition;
 
             if (_definedNamesView.Count == 0)
                 return null;

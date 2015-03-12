@@ -10,7 +10,6 @@ using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 
-
 // ***************************************************** PROGRAMMAZIONE ***************************************************** //
 
 namespace Iren.ToolsExcel
@@ -86,6 +85,8 @@ namespace Iren.ToolsExcel
             if (DataBase.DB.OpenConnection())
             {
                 AggiornaStruttura();
+                Sheet.SalvaModifiche();
+                //DataBase.SalvaModificheDB();
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
                 DataBase.DB.CloseConnection();
@@ -127,12 +128,11 @@ namespace Iren.ToolsExcel
                         DataView stato = DataBase.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
                         if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
                         {
-                            Struttura.AggiornaStrutturaDati();
-                            AggiornaStruttura();
+                            btnAggiornaStruttura_Click(null, null);
                         }
                         else
                         {
-                            AggiornaDati(all: true);
+                            btnAggiornaDati_Click(null, null);
                         }
                         DataBase.DB.CloseConnection();
                     }
@@ -187,23 +187,23 @@ namespace Iren.ToolsExcel
 
                 if (entitaInformazioni.Count == 0 
                     && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                    && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
+                    && SelezionaUP("PQNR_PROFILO", out siglaEntita, out rng))
                 {
-                        Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                        Forms.FormRampe rampe = new FormRampe(rng);
                         rampe.ShowDialog();
                         rampe.Dispose();
                 }
                 else
                 {
-                    Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                    Forms.FormRampe rampe = new FormRampe(rng);
                     rampe.ShowDialog();
                     rampe.Dispose();
                 }
             }
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                && SelezionaUP("PQNR_PROFILO", out siglaEntita, out nomiDefiniti, out rng))
+                && SelezionaUP("PQNR_PROFILO", out siglaEntita, out rng))
             {
-                Forms.FormRampe rampe = new FormRampe(nomiDefiniti, rng);
+                Forms.FormRampe rampe = new FormRampe(rng);
                 rampe.ShowDialog();
                 rampe.Dispose();
             }
@@ -223,6 +223,8 @@ namespace Iren.ToolsExcel
             if (DataBase.DB.OpenConnection())
             {
                 AggiornaDati(all: false);
+                Sheet.SalvaModifiche();
+                DataBase.SalvaModificheDB();
 
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
 
@@ -241,6 +243,9 @@ namespace Iren.ToolsExcel
             FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo());
             frmAz.ShowDialog();
 
+            Sheet.SalvaModifiche();
+            DataBase.SalvaModificheDB();
+
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
@@ -257,6 +262,7 @@ namespace Iren.ToolsExcel
             else
             {
                 //Salva modifiche su db
+                Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
                 btnModifica.Image = global::Iren.ToolsExcel.Base.Properties.Resources.edit_not_validated_icon;
             }
@@ -286,7 +292,7 @@ namespace Iren.ToolsExcel
 
                 if (entitaInformazioni.Count == 0 
                     && System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes 
-                    && SelezionaUP("OTTIMO", out siglaEntita, out nomiDefiniti, out rng))
+                    && SelezionaUP("OTTIMO", out siglaEntita, out rng))
                 {
                     opt.EseguiOttimizzazione(siglaEntita);
                 }
@@ -296,10 +302,13 @@ namespace Iren.ToolsExcel
                 }
             }
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                    && SelezionaUP("OTTIMO", out siglaEntita, out nomiDefiniti, out rng))
+                    && SelezionaUP("OTTIMO", out siglaEntita, out rng))
             {
                 opt.EseguiOttimizzazione(siglaEntita);
             }
+
+            Sheet.SalvaModifiche();
+            DataBase.SalvaModificheDB();
 
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
@@ -309,11 +318,50 @@ namespace Iren.ToolsExcel
             FormConfig conf = new FormConfig();
             conf.ShowDialog();
         }
+        private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
+        {
+            RibbonToggleButton btn = (RibbonToggleButton)sender;
+
+            if (!btn.Checked)
+            {
+                btn.Checked = true;
+            }
+            else
+            {
+                btn.Checked = false;
+                Handler.SwithWorksheet(btn.Name.Substring(3));
+            }
+        }
 
         #endregion
 
         #region Metodi
 
+        private bool SelezionaUP(string siglaInformazione, out string siglaEntita, out Excel.Range rng)
+        {
+            FormSelezioneUP selUP = new FormSelezioneUP(siglaInformazione);
+
+            selUP.ShowDialog();
+            rng = null;
+            siglaEntita = "";
+
+            if (!selUP.IsCanceld && selUP.HasSelection)
+            {
+                siglaEntita = selUP.SiglaEntita;
+                string nome = DefinedNames.GetName(selUP.SiglaEntita, "T", "DATA1");
+                string foglio = DefinedNames.GetSheetName(nome);
+                DefinedNames nomiDefiniti = new DefinedNames(foglio);
+                Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
+
+                Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
+                ((Excel._Worksheet)ws).Activate();
+                rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
+                rng.Select();
+                Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
+            }
+            selUP.Dispose();
+            return !selUP.IsCanceld && selUP.HasSelection;
+        }
         private void CheckTastoApplicativo()
         {
             switch (ConfigurationManager.AppSettings["AppID"])
@@ -355,34 +403,6 @@ namespace Iren.ToolsExcel
 
 
 
-        }
-
-        private bool SelezionaUP(string siglaInformazione, out string siglaEntita, out DefinedNames nomiDefiniti, out Excel.Range rng)
-        {
-            FormSelezioneUP selUP = new FormSelezioneUP(siglaInformazione);
-
-            selUP.ShowDialog();
-
-            nomiDefiniti = null;
-            rng = null;
-            siglaEntita = "";
-
-            if (!selUP.IsCanceld && selUP.HasSelection)
-            {
-                siglaEntita = selUP.SiglaEntita;
-                string nome = DefinedNames.GetName(selUP.SiglaEntita, "T", "DATA1");
-                string foglio = DefinedNames.GetSheetName(nome);
-                nomiDefiniti = new DefinedNames(foglio);
-                Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
-
-                Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
-                ((Excel._Worksheet)ws).Activate();
-                rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
-                rng.Select();
-                Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
-            }
-            selUP.Dispose();
-            return !selUP.IsCanceld && selUP.HasSelection;
         }
         private void AbilitaTasti(bool abilita)
         {
@@ -455,27 +475,5 @@ namespace Iren.ToolsExcel
         }
 
         #endregion
-
-        private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
-        {
-            RibbonToggleButton btn = (RibbonToggleButton)sender;
-
-            if (!btn.Checked)
-            {
-                btn.Checked = true;
-            }
-            else
-            {
-                //TODO aprire gli altri file!!!!!!
-                switch (btn.Name)
-                {
-                    case "btnInvioProgrammi":
-                        break;
-                }
-
-
-            }
-        }
-
     }
 }

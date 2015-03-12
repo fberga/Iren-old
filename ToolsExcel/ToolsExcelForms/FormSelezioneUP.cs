@@ -3,6 +3,7 @@ using Iren.ToolsExcel.Base;
 using System;
 using System.Data;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Forms
 {
@@ -64,13 +65,12 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            _isCanceld = true;
+            _siglaEntita = "";
             this.Close();
         }
 
         private void btnCarica_Click(object sender, EventArgs e)
         {
-            _hasSelection = true;
             this.Close();
         }
 
@@ -78,6 +78,27 @@ namespace Iren.ToolsExcel.Forms
         {
             _siglaEntita = ((DataRowView)comboUP.SelectedItem)["SiglaEntita"].ToString();
         }
+
+        /// <summary>
+        /// Seleziona il titolo dell'UP scelta e sposta la
+        /// </summary>
+        /// <returns></returns>
+        public new string ShowDialog()
+        {
+            base.ShowDialog();
+
+            //string nome = DefinedNames.GetName(_siglaEntita, "T", "DATA1");
+            //string foglio = DefinedNames.GetSheetName(nome);
+            //DefinedNames nomiDefiniti = new DefinedNames(foglio);
+            //Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
+            Handler.GOTO(_siglaEntita);            
+            //Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
+            //((Excel._Worksheet)ws).Activate();
+            //ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]].Select();
+            //Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
+
+            return _siglaEntita;
+        } 
 
         #endregion
     }

@@ -150,8 +150,6 @@ namespace Iren.ToolsExcel.Base
             //watch = Stopwatch.StartNew();
             InsertGrafici();
             //watch.Stop();
-
-            Utilities.SalvaModifiche(_ws);
         }
 
         protected virtual void InitBarraNavigazione()
@@ -956,8 +954,6 @@ namespace Iren.ToolsExcel.Base
             }
             CaricaInformazioni(all);
             AggiornaGrafici();
-
-            Utilities.SalvaModifiche(_ws);
         }
         #region UpdateData
 
@@ -1164,6 +1160,66 @@ namespace Iren.ToolsExcel.Base
             }
 
             return Tuple.Create<int,int>(riga, colonna);
+        }
+
+        public static void SalvaModifiche(DateTime inizio, DateTime fine)
+        {
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+
+            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            {
+                if (ws.Name != "Main" && ws.Name != "Log")
+                {
+                    DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+                    categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
+                    categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+
+                    for (DateTime giorno = inizio; giorno <= fine; giorno = giorno.AddDays(1))
+                    {
+                        foreach (DataRowView entita in categoriaEntita)
+                        {
+                            entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                            foreach (DataRowView info in entitaInformazione)
+                            {
+                                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                                Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno))];
+                                Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
+                                Handler.StoreEdit(ws, rng);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public static void SalvaModifiche()
+        {
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+
+            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            {
+                if (ws.Name != "Main" && ws.Name != "Log")
+                {
+                    DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+                    categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
+                    categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+
+                    foreach (DataRowView entita in categoriaEntita)
+                    {
+                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                        foreach (DataRowView info in entitaInformazione)
+                        {
+                            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                            Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"]), info["Data0H24"].Equals("0")];
+                            Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
+                            Handler.StoreEdit(ws, rng);
+                        }
+                    }
+                }
+            }
         }
         
 
