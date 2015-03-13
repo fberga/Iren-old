@@ -423,7 +423,18 @@ namespace Iren.ToolsExcel.Forms
 
         private void treeViewUP_AfterCheck(object sender, TreeViewEventArgs e)
         {
+            checkTutte.CheckedChanged -= checkTutte_CheckedChanged;
+            
             Evidenzia(e.Node, e.Node.Checked);
+
+            bool check = true;
+            foreach (TreeNode node in treeViewUP.Nodes)
+            {
+                check = check && node.Checked;
+            }
+            checkTutte.Checked = check;
+
+            checkTutte.CheckedChanged += checkTutte_CheckedChanged;
         }
 
         private void btnMeteo_Click(object sender, EventArgs e)
@@ -568,5 +579,16 @@ namespace Iren.ToolsExcel.Forms
         }
 
         #endregion
+
+        private void checkTutte_CheckedChanged(object sender, EventArgs e)
+        {
+            treeViewUP.AfterCheck -= treeViewUP_AfterCheck;
+            foreach (TreeNode node in treeViewUP.Nodes)
+            {
+                node.Checked = checkTutte.Checked;
+                Evidenzia(node, checkTutte.Checked);
+            }
+            treeViewUP.AfterCheck += treeViewUP_AfterCheck;
+        }
     }
 }

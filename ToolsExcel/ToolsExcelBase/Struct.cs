@@ -11,6 +11,8 @@ namespace Iren.ToolsExcel.Base
         public bool visData0H24 = false,
             visParametro = false;
 
+        public string tipoVisualizzazione = "O";
+
         public Struct() { }
     }
 }

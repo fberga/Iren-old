@@ -80,22 +80,15 @@ namespace Iren.ToolsExcel.Forms
         }
 
         /// <summary>
-        /// Seleziona il titolo dell'UP scelta e sposta la
+        /// Sposta la selezione sul titolo dell'UP scelta e ritorna la sua sugla.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Restituisce la sigla dell'UP scelta.</returns>
         public new string ShowDialog()
         {
             base.ShowDialog();
 
-            //string nome = DefinedNames.GetName(_siglaEntita, "T", "DATA1");
-            //string foglio = DefinedNames.GetSheetName(nome);
-            //DefinedNames nomiDefiniti = new DefinedNames(foglio);
-            //Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
-            Handler.GOTO(_siglaEntita);            
-            //Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
-            //((Excel._Worksheet)ws).Activate();
-            //ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]].Select();
-            //Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
+            if(_siglaEntita != "")
+                Handler.GOTO(_siglaEntita);            
 
             return _siglaEntita;
         } 

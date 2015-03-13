@@ -234,8 +234,8 @@ namespace Iren.ToolsExcel
                             if (pqnrVal != null)
                                 pqnr.Add(new XElement("Q", pqnrVal.ToString()));
                         }
+                        vdt.Add(pqnr);
                     }
-
 
                     inserisci.Add(vdt);
                 }

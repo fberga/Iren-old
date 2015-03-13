@@ -43,6 +43,7 @@
             this.treeViewCategorie = new System.Windows.Forms.TreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
             this.treeViewAzioni = new System.Windows.Forms.TreeView();
+            this.checkTutte = new System.Windows.Forms.CheckBox();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.groupDate.SuspendLayout();
@@ -161,6 +162,7 @@
             // 
             // panelUP
             // 
+            this.panelUP.Controls.Add(this.checkTutte);
             this.panelUP.Controls.Add(this.treeViewUP);
             this.panelUP.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelUP.Location = new System.Drawing.Point(700, 5);
@@ -233,7 +235,22 @@
             this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
-            // frmAZIONI
+            // checkTutte
+            // 
+            this.checkTutte.AutoSize = true;
+            this.checkTutte.BackColor = System.Drawing.SystemColors.Window;
+            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkTutte.Location = new System.Drawing.Point(279, 1);
+            this.checkTutte.Name = "checkTutte";
+            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.checkTutte.Size = new System.Drawing.Size(65, 24);
+            this.checkTutte.TabIndex = 2;
+            this.checkTutte.Text = "Tutte";
+            this.checkTutte.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkTutte.UseVisualStyleBackColor = false;
+            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
+            // 
+            // FormAzioni
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -241,7 +258,7 @@
             this.Controls.Add(this.panelCentrale);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelButtons);
-            this.Name = "frmAZIONI";
+            this.Name = "FormAzioni";
             this.Padding = new System.Windows.Forms.Padding(5);
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -252,6 +269,7 @@
             this.groupDate.ResumeLayout(false);
             this.panelCentrale.ResumeLayout(false);
             this.panelUP.ResumeLayout(false);
+            this.panelUP.PerformLayout();
             this.panelCategorie.ResumeLayout(false);
             this.panelAzioni.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -275,5 +293,6 @@
         private System.Windows.Forms.GroupBox groupDate;
         private System.Windows.Forms.Button btnMeteo;
         private System.Windows.Forms.ComboBox comboGiorni;
+        private System.Windows.Forms.CheckBox checkTutte;
     }
 }

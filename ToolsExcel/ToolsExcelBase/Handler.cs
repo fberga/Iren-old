@@ -33,6 +33,10 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
+        /// <summary>
+        /// Trova il foglio e la posizione dell'entita data in input. Se esiste, sposta la selezione al titolo.
+        /// </summary>
+        /// <param name="siglaEntita">La sigla dell'UP su cui spostare la selezione</param>
         public static void GOTO(object siglaEntita)
         {
             string nomeFoglio = Workbook.WB.Application.ActiveSheet.Name;
@@ -250,7 +254,7 @@ namespace Iren.ToolsExcel.Base
             }
             else
             {
-                Workbook.WB.Application.Workbooks[name + ".xlsm"].Activate();
+                ((Excel._Worksheet)Workbook.WB.Application.Workbooks[name + ".xlsm"]).Activate();
             }
         }
 

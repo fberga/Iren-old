@@ -1586,7 +1586,7 @@ namespace Iren.ToolsExcel.Utility
             dt.TableName = name;
             return dt;
         }
-        public static void Init(string dbName, object appID, DateTime dataAttiva, Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion) 
+        public static bool Init(string dbName, object appID, DateTime dataAttiva, Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion) 
         {
             Core.CryptHelper.CryptSection("connectionStrings", "appSettings");
 
@@ -1599,7 +1599,6 @@ namespace Iren.ToolsExcel.Utility
             Simboli.pwd = ConfigurationManager.AppSettings["pwd"];
 
             bool localDBNotPresent = false;
-            bool emergenza = false;
             try
             {
                 Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[Simboli.NameSpace];
@@ -1620,7 +1619,7 @@ namespace Iren.ToolsExcel.Utility
                     throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
                 Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);                
+                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
 
                 DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
                 DataBase.LocalDB.Tables.Add(dt);
@@ -1630,6 +1629,8 @@ namespace Iren.ToolsExcel.Utility
 
                 InitLog();
                 DataBase.DB.CloseConnection();
+
+                return false;
             }
             else //Emergenza
             {
@@ -1640,22 +1641,13 @@ namespace Iren.ToolsExcel.Utility
                     _wb.Close();
                 }
 
-                emergenza = true;
-
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
                 DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
                 Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
                 Simboli.intervalloGiorni = (applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString()));
+
+                return true;
             }
-
-            Sheet.Proteggi(false);
-            Riepilogo r = new Riepilogo(_wb.Sheets["Main"]);
-
-            if (emergenza)
-                r.RiepilogoInEmergenza();
-
-            r.InitLabels();
-            Sheet.Proteggi(true);
         }
         public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) 
         {

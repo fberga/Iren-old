@@ -18,9 +18,7 @@ using System.Globalization;
 using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
-
-// ********************************************* SISTEMA COMANDI ********************************************* //
-
+// ************************************************************* SISTEMA COMANDI ************************************************************* //
 
 namespace Iren.ToolsExcel
 {
@@ -64,9 +62,16 @@ namespace Iren.ToolsExcel
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
+            bool emergenza = Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
 
             Sheet.Proteggi(false);
+
+            Riepilogo r = new Riepilogo(this.Sheets["Main"]);
+
+            if (emergenza)
+                r.RiepilogoInEmergenza();
+
+            r.InitLabels();
 
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;

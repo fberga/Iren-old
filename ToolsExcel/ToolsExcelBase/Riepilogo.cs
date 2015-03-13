@@ -19,26 +19,19 @@ namespace Iren.ToolsExcel.Base
     {
         #region Variabili
 
-        protected Excel.Worksheet _ws;
-        protected DefinedNames _nomiDefiniti;
-        protected Cell _cell;
         protected Struct _struttura;
-        protected int _rigaAttiva;
-        protected int _colonnaInizio;
-        protected int _nAzioni;
-        protected static bool _resizeFatto = false;
 
         #endregion
 
         #region Metodi
 
-        protected virtual void CicloGiorni(Action<int, string, DateTime> callback)
+        protected void CicloGiorni(Action<int, string, DateTime> callback)
         {
             DateTime dataInizio = DataBase.DataAttiva;
             DateTime dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
-        protected virtual void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
+        protected void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
         {
             for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
             {
@@ -55,22 +48,9 @@ namespace Iren.ToolsExcel.Base
         }
 
         public abstract void InitLabels();
-        protected abstract void Clear();
-
         public abstract void LoadStructure();
-
-        protected abstract void InitBarraTitolo();
-        protected abstract void FormattaAllDati();
-        protected abstract void InitBarraEntita();
-        protected abstract void AbilitaAzioni();
-        protected abstract void CaricaDatiRiepilogo();
-
         public abstract void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif = null);
-
-        protected abstract void AggiornaDate();
         public abstract void UpdateRiepilogo();
-
-        protected abstract void DisabilitaTutto();
         public abstract void RiepilogoInEmergenza();
 
         #endregion
@@ -78,6 +58,18 @@ namespace Iren.ToolsExcel.Base
 
     public class Riepilogo : ARiepilogo
     {
+        #region Variabili
+
+        protected Excel.Worksheet _ws;
+        protected DefinedNames _nomiDefiniti;
+        protected Cell _cell;
+        protected int _rigaAttiva;
+        protected int _colonnaInizio;
+        protected int _nAzioni;
+        protected static bool _resizeFatto = false;
+
+        #endregion
+
         #region Costruttori
 
         public Riepilogo() : this((Excel.Worksheet)Utility.Workbook.WB.Sheets["Main"])  { }
@@ -115,6 +107,10 @@ namespace Iren.ToolsExcel.Base
         public override void InitLabels()
         {
             //inizializzo i label
+            _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoFalse;
+            _ws.Shapes.Item("sfondo").Height = (float)(16.5 * _ws.Rows[5].Height);
+            _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoCTrue;
+
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
@@ -141,23 +137,8 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
                 _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
-            
-            //if (Simboli.intervalloGiorni > 0)
-            //{
-            //    if (!_resizeFatto)
-            //    {
-            //        _ws.Shapes.Item("lbDataInizio").ScaleWidth(0.4819f, Office.MsoTriState.msoFalse);
-            //        _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoTrue;
-            //        _resizeFatto = true;
-            //    }
-            //}
-            //else
-            //{
-            //    _ws.Shapes.Item("lbDataInizio").Width = 485.8582677165f;
-            //    _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
-            //}
         }
-        protected override void Clear()
+        protected void Clear()
         {
             int dataOreTot = Date.GetOreIntervallo(DataBase.DB.DataAttiva, DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
@@ -211,7 +192,7 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        protected override void InitBarraTitolo()
+        protected void InitBarraTitolo()
         {
             DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
@@ -272,7 +253,7 @@ namespace Iren.ToolsExcel.Base
                 colonnaInizio += _nAzioni;
             });
         }
-        protected override void FormattaAllDati()
+        protected void FormattaAllDati()
         {
             DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
@@ -317,7 +298,7 @@ namespace Iren.ToolsExcel.Base
                 colonnaInizio += _nAzioni;
             });
         }
-        protected override void InitBarraEntita()
+        protected void InitBarraEntita()
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
@@ -354,7 +335,7 @@ namespace Iren.ToolsExcel.Base
             entita.RowFilter = "";
             rng.EntireColumn.AutoFit();
         }
-        protected override void AbilitaAzioni()
+        protected void AbilitaAzioni()
         {
             DataView entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE].DefaultView;
             entitaAzioni.RowFilter = "";
@@ -373,7 +354,7 @@ namespace Iren.ToolsExcel.Base
                 }
             });
         }
-        protected override void CaricaDatiRiepilogo()
+        protected void CaricaDatiRiepilogo()
         {
             try
             {
@@ -432,7 +413,7 @@ namespace Iren.ToolsExcel.Base
 
         }
 
-        protected override void AggiornaDate()
+        protected void AggiornaDate()
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
@@ -450,7 +431,7 @@ namespace Iren.ToolsExcel.Base
             CaricaDatiRiepilogo();
         }
 
-        protected override void DisabilitaTutto()
+        protected void DisabilitaTutto()
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;

@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>Iren.ToolsExcel</RootNamespace>
-    <AssemblyName>SistemaComandi</AssemblyName>
+    <AssemblyName>PrezziMSD</AssemblyName>
     <VSTO_HostDocumentName>PrezziMSD.xlsm</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -32,10 +32,10 @@
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <ProductName>SistemaComandi</ProductName>
+    <ProductName>PrezziMSD</ProductName>
     <PublisherName />
     <SupportUrl />
-    <FriendlyName>SistemaComandi</FriendlyName>
+    <FriendlyName>PrezziMSD</FriendlyName>
     <OfficeApplicationDescription />
   </PropertyGroup>
   <ItemGroup>
@@ -160,12 +160,16 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Riepilogo.cs" />
-    <Compile Include="ToolsExcelRibbon.cs">
+    <Compile Include="..\SistemaComandi\ToolsExcelRibbon.cs">
+      <link>ToolsExcelRibbon.cs</link>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ToolsExcelRibbon.designer.cs">
+    <Compile Include="..\SistemaComandi\ToolsExcelRibbon.designer.cs">
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="..\SistemaComandi\ToolsExcelRibbon.resx">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>PrezziMSD.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
@@ -175,9 +179,6 @@
     </Compile>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ToolsExcelRibbon.resx">
-      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ThisWorkbook.resx">
       <DependentUpon>ThisWorkbook.cs</DependentUpon>

@@ -382,7 +382,7 @@ namespace Iren.ToolsExcel.Base
             bool first = true;
             foreach (object part in parts)
             {
-                if (part != null && part != "")
+                if (part != null && part.ToString() != "")
                 {
                     o += (!first ? Simboli.UNION : "") + part;
                     first = false;

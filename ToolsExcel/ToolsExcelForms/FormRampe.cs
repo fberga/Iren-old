@@ -348,54 +348,39 @@ namespace Iren.ToolsExcel.Forms
         }
         private void btnApplica_Click(object sender, EventArgs e)
         {
-            DataTable o = initOutTable();
-            for (int i = 1; i <= _oreGiorno; i++)
+            //DataTable o = initOutTable();
+            object[] intestazione = new object[_oreGiorno];
+            object[,] valori = new object[24, _oreGiorno];
+
+            for (int i = 0; i < _oreGiorno; i++)
             {
-                _pMin[i - 1] = _pMin[i - 1] < _pRif ? _pRif : _pMin[i - 1];
+                _pMin[i] = _pMin[i] < _pRif ? _pRif : _pMin[i];
 
-                DataRow riga = o.NewRow();
-
-                var oraX = panelValoriRampa.Controls.OfType<TableLayoutPanel>().FirstOrDefault(r => r.Name == "H" + i);
+                var oraX = panelValoriRampa.Controls.OfType<TableLayoutPanel>().FirstOrDefault(r => r.Name == "H" + (i + 1));
                 var check = oraX.Controls.OfType<RadioButton>().FirstOrDefault(r => r.Checked);
                 int pos = oraX.Controls.IndexOf(check) - 1;
 
-                riga["SiglaRampa"] = _sigleRampa[pos];
-                _entitaRampa.RowFilter += " AND SiglaRampa = '" + _sigleRampa[pos] + "'";
+                intestazione[i] = _sigleRampa[pos];
+                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaRampa = '" + _sigleRampa[pos] + "'";
 
-                for (int j = 1; j <= 24; j++)
+                for (int j = 0; j < 24; j++)
                 {
-                    if (_entitaRampa[0]["Q" + j] != DBNull.Value)
+                    if (_entitaRampa[0]["Q" + (j + 1)] != DBNull.Value)
                     {
-                        riga["Q" + j] = ((int)_entitaRampa[0]["Q" + j]) * _pRif / _pMin[i - 1];
+                        valori[j, i] = ((int)_entitaRampa[0]["Q" + (j + 1)]) * _pRif / _pMin[i];
                     }
                 }
-
-                _entitaRampa.RowFilter = _entitaRampa.RowFilter.Replace(" AND SiglaRampa = '" + _sigleRampa[pos] + "'", "");
-
-                o.Rows.Add(riga);
             }
 
             Excel.Range rng = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]];
-            rng.Value = o.AsEnumerable().Select(r => r["SiglaRampa"]).ToArray();
+            rng.Value = intestazione;
 
             Tuple<int,int>[] valoriRampe = _nomiDefiniti.GetByFilter(DefinedNames.Fields.Foglio + " = '" + _ws.Name + "' AND " +
                                                  DefinedNames.Fields.Nome + " LIKE '" + DefinedNames.GetName(_siglaEntita, "PQNR") + "%' AND " +
                                                  DefinedNames.Fields.Nome + " NOT LIKE '%PROFILO%' AND " +
                                                  DefinedNames.Fields.Nome + " LIKE '%" + _suffissoData + "%'");
-            
-            Excel.Range rngValori = _ws.Range[_ws.Cells[valoriRampe[0].Item1, valoriRampe[0].Item2], _ws.Cells[valoriRampe[valoriRampe.Length - 1].Item1, valoriRampe[valoriRampe.Length - 1].Item2]];
-            //rngValori.Value = o.AsEnumerable().Select(r => r["Q1"]);
-            object[,] oVal = new object[o.Columns.Count - 1, o.Rows.Count];
-            foreach (DataRow r in o.Rows)
-            {
-                foreach (DataColumn c in o.Columns)
-                {
-                    if (c.ColumnName != "SiglaRampa")
-                    {
 
-                    }
-                }
-            }
+            _ws.Range[_ws.Cells[valoriRampe[0].Item1, valoriRampe[0].Item2], _ws.Cells[valoriRampe[valoriRampe.Length - 1].Item1, valoriRampe[valoriRampe.Length - 1].Item2]].Value = valori;
             
 
 
