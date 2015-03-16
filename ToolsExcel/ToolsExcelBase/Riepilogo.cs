@@ -28,7 +28,7 @@ namespace Iren.ToolsExcel.Base
         protected void CicloGiorni(Action<int, string, DateTime> callback)
         {
             DateTime dataInizio = DataBase.DataAttiva;
-            DateTime dataFine = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni);
+            DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
         protected void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
@@ -113,7 +113,7 @@ namespace Iren.ToolsExcel.Base
 
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utilities.WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
 
@@ -123,7 +123,7 @@ namespace Iren.ToolsExcel.Base
             //aggiorna la scritta e il colore del label che mostra l'ambiente
             Simboli.Ambiente = ConfigurationManager.AppSettings["DB"];
 
-            if (Simboli.intervalloGiorni > 0)
+            if (Struct.intervalloGiorni > 0)
             {
                 _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoFalse;
                 _ws.Shapes.Item("lbDataInizio").Width = 26 * (float)_ws.Columns[1].Width;
@@ -140,7 +140,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected void Clear()
         {
-            int dataOreTot = Date.GetOreIntervallo(DataBase.DB.DataAttiva, DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = Date.GetOreIntervallo(DataBase.DB.DataAttiva, DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
 
@@ -313,7 +313,7 @@ namespace Iren.ToolsExcel.Base
             int i = 0;
             foreach (DataRowView categoria in categorie)
             {
-                Excel.Range titoloCategoria = _ws.Range[_ws.Cells[_rigaAttiva + i, _colonnaInizio], _ws.Cells[_rigaAttiva + i, _colonnaInizio + ((Simboli.intervalloGiorni + 1) * _nAzioni)]];
+                Excel.Range titoloCategoria = _ws.Range[_ws.Cells[_rigaAttiva + i, _colonnaInizio], _ws.Cells[_rigaAttiva + i, _colonnaInizio + ((Struct.intervalloGiorni + 1) * _nAzioni)]];
                 titoloCategoria.Merge();
                 titoloCategoria.Style = "recapCategoryTitle";
                 Style.RangeStyle(titoloCategoria, "Borders:[left:medium, top:medium, right:medium]");
@@ -416,11 +416,11 @@ namespace Iren.ToolsExcel.Base
         protected void AggiornaDate()
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
 
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {
-                Tuple<int, int>[] riga = _nomiDefiniti.GetRange(DefinedNames.GetName("RIEPILOGO", "T", suffissoData));
+                Tuple<int, int>[] riga = _nomiDefiniti.GetRanges(DefinedNames.GetName("RIEPILOGO", "T", suffissoData))[0];
                 _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[1].Item1, riga[1].Item2]].Value = giorno;
             });
         }

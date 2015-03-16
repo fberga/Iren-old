@@ -181,30 +181,27 @@ namespace Iren.ToolsExcel.Base
             return _definedNamesView.Count > 0;
         }
 
-        public bool IsRange(string name)
+        public List<Tuple<int, int>[]> GetRanges(string name)
         {
-            string filter = "Nome='" + name + "'";
-            
+            string filter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
             if (_definedNamesView.RowFilter != filter)
                 _definedNamesView.RowFilter = filter;
 
             if (_definedNamesView.Count == 0)
-                return false;
-            return _definedNamesView[0]["R1"] != _definedNamesView[0]["R2"] || _definedNamesView[0]["C1"] != _definedNamesView[0]["C2"];
-        }
-        public Tuple<int, int>[] GetRange(string name)
-        {
-            if (!IsRange(name))
                 return null;
 
-            if (_definedNamesView.Count == 0)
-                return null;
+            List<Tuple<int, int>[]> o = new List<Tuple<int, int>[]>();
 
-            return new Tuple<int, int>[2] 
+            foreach (DataRowView range in _definedNamesView)
+            {
+                o.Add(new Tuple<int, int>[2] 
                 { 
                     Tuple.Create(int.Parse(_definedNamesView[0]["R1"].ToString()), int.Parse(_definedNamesView[0]["C1"].ToString())),
                     Tuple.Create(int.Parse(_definedNamesView[0]["R2"].ToString()), int.Parse(_definedNamesView[0]["C2"].ToString()))
-                };
+                });
+            }
+
+            return o;
         }
 
         public bool Editabile(string name)
@@ -291,6 +288,7 @@ namespace Iren.ToolsExcel.Base
         private static string PrepareName(string name)
         {
             //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
+            //if (!Regex.IsMatch(name, @"DATA\d+\.\w+|GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
             if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
                 name += Simboli.UNION;
             return name;

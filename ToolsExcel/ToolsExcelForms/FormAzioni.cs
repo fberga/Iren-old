@@ -57,7 +57,7 @@ namespace Iren.ToolsExcel.Forms
                 }
             };
 
-            for (int i = 0; i <= Simboli.intervalloGiorni; i++ )
+            for (int i = 0; i <= Struct.intervalloGiorni; i++ )
             {
                 DataRow r = dt.NewRow();
                 r["DescData"] = (i + 1) + "° - " + DataBase.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");

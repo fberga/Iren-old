@@ -41,7 +41,16 @@ namespace Iren.ToolsExcel.Base
         {
             string nomeFoglio = Workbook.WB.Application.ActiveSheet.Name;
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-
+            string suffissoData = "";
+            if (Struct.tipoVisualizzazione == "V")
+            {
+                string[] split = siglaEntita.ToString().Split(Simboli.UNION[0]);
+                if (split.Length > 1)
+                {
+                    siglaEntita = split[0];
+                    suffissoData = split[1];
+                }
+            }
             if (nomeFoglio == "Main" || !nomiDefiniti.IsDefined(siglaEntita.ToString()))
             {
                 nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
@@ -49,13 +58,12 @@ namespace Iren.ToolsExcel.Base
                     return;
 
                 nomiDefiniti = new DefinedNames(nomeFoglio);
-                if (!nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "T", "DATA1")))
+                if (!nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "T", suffissoData == "" ? "DATA1" : suffissoData)))
                     return;
 
                 Workbook.WB.Worksheets[nomeFoglio].Activate();
-            }           
-
-            Tuple<int, int> coordinate = nomiDefiniti[DefinedNames.GetName(siglaEntita, "T", "DATA1")][0];
+            }
+            Tuple<int, int> coordinate = nomiDefiniti[DefinedNames.GetName(siglaEntita, "T", suffissoData == "" ? "DATA1" : suffissoData)][0];
             Workbook.WB.ActiveSheet.Cells[coordinate.Item1, coordinate.Item2].Select();
             Workbook.WB.Application.ActiveWindow.SmallScroll(coordinate.Item1 - Workbook.WB.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
         }

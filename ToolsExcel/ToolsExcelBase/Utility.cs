@@ -1619,7 +1619,8 @@ namespace Iren.ToolsExcel.Utility
                     throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
                 Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
+                Struct.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
+                Struct.tipoVisualizzazione = dt.Rows[0]["TipoVisualizzazione"] is DBNull ? "O" : dt.Rows[0]["TipoVisualizzazione"].ToString();
 
                 DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
                 DataBase.LocalDB.Tables.Add(dt);
@@ -1644,7 +1645,7 @@ namespace Iren.ToolsExcel.Utility
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
                 DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
                 Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
-                Simboli.intervalloGiorni = (applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString()));
+                Struct.intervalloGiorni = (applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString()));
 
                 return true;
             }

@@ -8,8 +8,6 @@ namespace Iren.ToolsExcel.Base
             ALL = "ALL";
 
         public static string nomeApplicazione = "";
-        public static int intervalloGiorni = 0;
-        
 
         public static string pwd = "";
 

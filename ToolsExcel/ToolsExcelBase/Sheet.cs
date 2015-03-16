@@ -28,10 +28,13 @@ namespace Iren.ToolsExcel.Base
             for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
             {
                 int oreGiorno = Date.GetOreGiorno(giorno);
-                if (_struttura.tipoVisualizzazione == "V")
-                    oreGiorno = 25;
-
                 string suffissoData = Date.GetSuffissoData(_dataInizio, giorno);
+
+                if (Struct.tipoVisualizzazione == "V")
+                {
+                    oreGiorno = 25;
+                    suffissoData = Date.GetSuffissoData(DataBase.DataAttiva, giorno);
+                }
 
                 if (giorno == _dataInizio && _struttura.visData0H24)
                 {
@@ -316,7 +319,8 @@ namespace Iren.ToolsExcel.Base
             _struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
             _struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
             _struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (_struttura.visParametro ? 1 : 0);
-            _struttura.tipoVisualizzazione = paramApplicazione[0]["TipoVisualizzazione"].ToString();
+            Struct.tipoVisualizzazione = paramApplicazione[0]["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione[0]["TipoVisualizzazione"].ToString();
+            Struct.intervalloGiorni = paramApplicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione[0]["IntervalloGiorniEntita"];
 
             _nomiDefiniti = new DefinedNames(_ws.Name);
         }
@@ -348,49 +352,44 @@ namespace Iren.ToolsExcel.Base
 
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
             _dataInizio = Utility.DataBase.DB.DataAttiva;
-            _dataFine = Utility.DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
+            _dataFine = Utility.DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni);
 
             Clear();
             InitBarraNavigazione();
 
             _rigaAttiva = _struttura.rigaBlock + 1;
-            
+
             foreach (DataRowView entita in categoriaEntita)
             {
                 string siglaEntita = "" + entita["SiglaEntita"];
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                
-                if(_struttura.tipoVisualizzazione == "O")
+
+                if (Struct.tipoVisualizzazione == "O")
                 {
                     if (entitaProprieta.Count > 0)
                         _dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));
                     else
-                        _dataFine = _dataInizio.AddDays(Simboli.intervalloGiorni);
+                        _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
+
+                    InitBloccoEntita(entita);
                 }
-                else if (_struttura.tipoVisualizzazione == "V")
+                else if (Struct.tipoVisualizzazione == "V")
                 {
-                    _dataFine = _dataInizio;
+                    CicloGiorni(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni), (oreGiorno, suffissoData, giorno) =>
+                    {
+                        _dataFine = _dataInizio = giorno;
+                        InitBloccoEntita(entita);
+                    });
                 }
-                
-                InitBloccoEntita(entita);
             }
 
             entitaProprieta.RowFilter = "";
             categoriaEntita.RowFilter = "";
-            //watch.Stop();
 
-            //watch = Stopwatch.StartNew();
             CaricaInformazioni(all: true);
-            //watch.Stop();
-            //watch = Stopwatch.StartNew();
             CalcolaFormule();
-            //watch.Stop();
-            //watch = Stopwatch.StartNew();
             Utilities.AggiornaFormule(_ws);
-            //watch.Stop();
-            //watch = Stopwatch.StartNew();
             InsertGrafici();
-            //watch.Stop();
         }
 
         protected void InitBarraNavigazione()
@@ -399,11 +398,11 @@ namespace Iren.ToolsExcel.Base
 
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            
-            if (_struttura.tipoVisualizzazione == "O")
+
+            if (Struct.tipoVisualizzazione == "O")
                 numElementiMenu = categoriaEntita.Count;
-            else if (_struttura.tipoVisualizzazione == "V") 
-                numElementiMenu = Simboli.intervalloGiorni + 1;
+            else if (Struct.tipoVisualizzazione == "V")
+                numElementiMenu = Struct.intervalloGiorni + 1;
 
             int numRighe = 1;
             if (numElementiMenu > 8)
@@ -423,7 +422,7 @@ namespace Iren.ToolsExcel.Base
             object[,] descrizioni = new object[numRighe, numElementiMenu / numRighe];
             int i = 0;
 
-            if (_struttura.tipoVisualizzazione == "O")
+            if (Struct.tipoVisualizzazione == "O")
             {
                 foreach (DataRowView e in categoriaEntita)
                 {
@@ -448,32 +447,17 @@ namespace Iren.ToolsExcel.Base
                     rngData.Value = giorno.ToString("MM/dd/yyyy");
                     rngData.RowHeight = 20;
 
-                    Excel.Range rngOre = _ws.Range[_ws.Cells[_struttura.rigaBlock - 1, colonnaInizio], _ws.Cells[_struttura.rigaBlock - 1, colonnaInizio + oreGiorno - 1]];
-                    rngOre.Style = "dateBarStyle";
-                    rngOre.NumberFormat = "00";
-                    rngOre.Font.Size = 10;
-                    rngOre.RowHeight = 20;
-
-                    object[] valoriOre = new object[oreGiorno];
-                    for (int ora = 0; ora < oreGiorno; ora++)
-                    {
-                        int val = ora + 1;
-                        if (giorno == _dataInizio && _struttura.visData0H24)
-                            val = ora == 0 ? 24 : ora;
-                        
-                        valoriOre[ora] = val;
-                    }
-                    rngOre.Value = valoriOre;
+                    InsertOre(_struttura.rigaBlock - 1, colonnaInizio, giorno, oreGiorno);
                     colonnaInizio += oreGiorno;
                 });
             }
-            else if (_struttura.tipoVisualizzazione == "V")
+            else if (Struct.tipoVisualizzazione == "V")
             {
                 CicloGiorni((oreGiorno, suffissoData, giorno) => 
                 {
                     int r = (i / (int)Math.Ceiling(numEleRiga));
                     int c = (i % (int)Math.Ceiling(numEleRiga));
-                    _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["siglaEntita"], suffissoData, "GOTO"), Tuple.Create(_struttura.rigaGoto + r, _struttura.colBlock + c));
+                    _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], suffissoData, "GOTO"), Tuple.Create(_struttura.rigaGoto + r, _struttura.colBlock + c));
 
                     Excel.Range rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
                     rng.Value = giorno;
@@ -486,8 +470,8 @@ namespace Iren.ToolsExcel.Base
         }
         protected void Clear()
         {
-            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
-            if (_struttura.tipoVisualizzazione == "V")
+            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            if (Struct.tipoVisualizzazione == "V")
                 dataOreTot = 25;
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
@@ -552,8 +536,7 @@ namespace Iren.ToolsExcel.Base
 
         protected virtual void InsertTitoloEntita(DataRowView entita)
         {
-            int colonnaInizio = _colonnaInizio;
-
+            int colonnaInizio = _colonnaInizio;            
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
                 bool isVisibleData0H24 = giorno == _dataInizio && _struttura.visData0H24;
@@ -562,35 +545,25 @@ namespace Iren.ToolsExcel.Base
                 {
                     colonnaInizio++;
                     oreGiorno--;
-                }                
-                if (_struttura.tipoVisualizzazione == "O")
-                {
-                    Excel.Range rngTitolo = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
+                }
+                Excel.Range rngTitolo = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
 
-                    _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], "T", suffissoData), Tuple.Create(_rigaAttiva, colonnaInizio), Tuple.Create(_rigaAttiva, colonnaInizio + oreGiorno - 1));
+                _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], "T", suffissoData), Tuple.Create(_rigaAttiva, colonnaInizio), Tuple.Create(_rigaAttiva, colonnaInizio + oreGiorno - 1));
 
-                    rngTitolo.Merge();
-                    rngTitolo.Style = "titleBarStyle";
+                rngTitolo.Merge();
+                rngTitolo.Style = "titleBarStyle";
+                if (Struct.tipoVisualizzazione == "O")
                     rngTitolo.Value = entita["DesEntita"].ToString().ToUpperInvariant();
-                    rngTitolo.RowHeight = 25;
-                }
-                else if (_struttura.tipoVisualizzazione == "V")
-                {
-                    Excel.Range rngData = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
+                else if (Struct.tipoVisualizzazione == "V")
+                    rngTitolo.Value = giorno.ToString("MM/dd/yyyy");
 
-                    _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], suffissoData), Tuple.Create(_rigaAttiva + 1, colonnaInizio), Tuple.Create(_rigaAttiva + 1, colonnaInizio + oreGiorno - 1));
-
-                    rngData.Merge();
-                    rngData.Style = "dateBarStyle";
-                    rngData.Value = giorno.ToString("MM/dd/yyyy");
-                    rngData.RowHeight = 25;   
-                }
+                rngTitolo.RowHeight = 25;
 
                 colonnaInizio += oreGiorno;
             });
             _rigaAttiva++;
         }
-        protected virtual void InsertRangeGrafici(object siglaEntita)
+        protected virtual void InsertRangeGrafici(object siglaEntita, DateTime? giorno = null)
         {
             DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
             grafici.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
@@ -598,9 +571,11 @@ namespace Iren.ToolsExcel.Base
             int i = 1;
             foreach (DataRowView grafico in grafici)
             {
-                string graficoRange = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
+                string suffissoData = giorno == null ? "DATA1" : Date.GetSuffissoData(giorno.Value);
 
-                Excel.Range rng = _ws.Range[_ws.Cells[++_rigaAttiva, _colonnaInizio],
+                string graficoRange = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++, suffissoData);
+
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio],
                     _ws.Cells[_rigaAttiva, _colonnaInizio + _intervalloOre - 1]];
 
                 _nomiDefiniti.Add(graficoRange, Tuple.Create(_rigaAttiva, _colonnaInizio), Tuple.Create(_rigaAttiva, _colonnaInizio + _intervalloOre - 1));
@@ -612,32 +587,33 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void InsertOre(object siglaEntita)
         {
-            if (_struttura.tipoVisualizzazione == "V")
+            if (Struct.tipoVisualizzazione == "V")
             {
                 int colonnaInizio = _colonnaInizio;
-
-                CicloGiorni((oreGiorno, suffissoData, giorno) =>
-                {
-                    Excel.Range rngOre = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
-                    rngOre.Style = "dateBarStyle";
-                    rngOre.NumberFormat = "00";
-                    rngOre.Font.Size = 10;
-                    rngOre.RowHeight = 20;
-
-                    object[] valoriOre = new object[oreGiorno];
-                    for (int ora = 0; ora < oreGiorno; ora++)
-                    {
-                        int val = ora + 1;
-                        if (giorno == _dataInizio && _struttura.visData0H24)
-                            val = ora == 0 ? 24 : ora;
-
-                        valoriOre[ora] = val;
-                    }
-                    rngOre.Value = valoriOre;
-                    colonnaInizio += oreGiorno;
-                });
+                
+                InsertOre(_rigaAttiva, colonnaInizio, _dataInizio, 25);
+                
                 _rigaAttiva++;
             }
+        }
+        private void InsertOre(int rigaAttiva, int colonnaInizio, DateTime giorno, int oreGiorno)
+        {
+            Excel.Range rngOre = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + oreGiorno - 1]];
+            rngOre.Style = "dateBarStyle";
+            rngOre.NumberFormat = "00";
+            rngOre.Font.Size = 10;
+            rngOre.RowHeight = 20;
+
+            object[] valoriOre = new object[oreGiorno];
+            for (int ora = 0; ora < oreGiorno; ora++)
+            {
+                int val = ora + 1;
+                if (giorno == _dataInizio && _struttura.visData0H24)
+                    val = ora == 0 ? 24 : ora;
+
+                valoriOre[ora] = val;
+            }
+            rngOre.Value = valoriOre;
         }
         protected virtual void InsertTitoloVerticale(object siglaEntita, object siglaEntitaBreve, int numInformazioni)
         {
@@ -645,9 +621,18 @@ namespace Iren.ToolsExcel.Base
             Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaTitoloVert], _ws.Cells[_rigaAttiva + numInformazioni - 1, colonnaTitoloVert]];
             rng.Style = "titoloVertStyle";
             rng.Merge();
-            rng.Orientation = numInformazioni == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical;
-            rng.Font.Size = numInformazioni == 1 ? 6 : 9;
-            rng.Value = siglaEntitaBreve;
+            if (numInformazioni > 3) 
+            {
+                rng.Orientation = numInformazioni == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical;
+                rng.Font.Size = numInformazioni == 1 ? 6 : 9;
+                if (Struct.tipoVisualizzazione == "O")
+                    rng.Value = siglaEntitaBreve;
+                else if (Struct.tipoVisualizzazione == "V")
+                {
+                    rng.NumberFormat = "ddd d";
+                    rng.Value = _dataInizio;
+                }
+            }
         }
         protected virtual void FormattaAllDati(object siglaEntita)
         {
@@ -663,27 +648,40 @@ namespace Iren.ToolsExcel.Base
             int ultimaColonna = 0;
             foreach (DataRowView info in informazioni)
             {
-                bool primaRiga = informazioni[0] == info;
-                bool ultimaRiga = informazioni[informazioni.Count - 1] == info;
+                bool isPrimaRiga = informazioni[0] == info;
+                bool isUltimaRiga = informazioni[informazioni.Count - 1] == info;
 
                 //se non è la prima riga, se è l'ultima, se è un inizio gruppo e se prima non ho sistemato un TITOLO2, creo un range ALLDATI
-                if ((!primaRiga && info["InizioGruppo"].ToString() == "1" && rigaInizioGruppo < rigaAttiva) || ultimaRiga)
+                if ((!isPrimaRiga && info["InizioGruppo"].ToString() == "1" && rigaInizioGruppo < rigaAttiva) || isUltimaRiga)
                 {
                     int colonnaInizioAllDati = _colonnaInizio;
                     CicloGiorni((oreGiorno, suffissoData, giorno) =>
                     {
-                        Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[rigaAttiva - (ultimaRiga ? 0 : 1), colonnaInizioAllDati + oreGiorno - 1]];
+                        ultimaColonna = colonnaInizioAllDati + oreGiorno - 1;
+                        int ultimaRiga = rigaAttiva - (isUltimaRiga ? 0 : 1);
+                        Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[ultimaRiga, ultimaColonna]];
                         allDati.Style = "allDatiStyle";
-                        //allDati.Name = GetName(info["SiglaEntita"], suffissoData, "ALLDATI" + allDatiIndice);
+                        if (isUltimaRiga && rigaAttiva - rigaInizioGruppo == 1)
+                            allDati.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlMedium;
                         allDati.EntireColumn.ColumnWidth = _cell.Width.dato;
                         allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+
+                        if (Struct.tipoVisualizzazione == "V")
+                        {
+                            int deltaOre = 24 - Date.GetOreGiorno(giorno);
+                            if (deltaOre >= 0)
+                            {
+                                Excel.Range rngOre = _ws.Range[_ws.Cells[rigaInizioGruppo, ultimaColonna - deltaOre], _ws.Cells[ultimaRiga, ultimaColonna]];
+                                Style.RangeStyle(rngOre, "BackPattern:CrissCross");
+                            }
+                        }
                         colonnaInizioAllDati += oreGiorno;
-                        ultimaColonna = colonnaInizioAllDati + oreGiorno - 1;
                     });
+                    ultimaColonna = colonnaInizioAllDati - 1;
                     allDatiIndice++;
                     rigaInizioGruppo = rigaAttiva + (info["SiglaTipologiaInformazione"].ToString() == "TITOLO2" ? 1 : 0);
                 }
-                if (primaRiga && primaRigaTitolo2)
+                if (isPrimaRiga && primaRigaTitolo2)
                     rigaInizioGruppo++;
 
                 rigaAttiva++;
@@ -973,48 +971,51 @@ namespace Iren.ToolsExcel.Base
                 foreach (DataRowView grafico in grafici)
                 {
                     string nome = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
-                    Tuple<int, int>[] rangeGrafico = _nomiDefiniti.GetRange(nome);
+                    List<Tuple<int, int>[]> rangeGrafici = _nomiDefiniti.GetRanges(nome);
 
-                    var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
-
-                    var rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
-                    Excel.Chart chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
-
-                    chart.Parent.Name = nome;
-
-                    chart.Axes(Excel.XlAxisType.xlCategory).TickLabelPosition = Excel.XlTickLabelPosition.xlTickLabelPositionNone;
-                    chart.Axes(Excel.XlAxisType.xlValue).HasMajorGridlines = false;
-                    chart.Axes(Excel.XlAxisType.xlValue).HasMinorGridlines = false;
-                    chart.Axes(Excel.XlAxisType.xlValue).MinorTickMark = Excel.XlTickMark.xlTickMarkOutside;
-                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name = "Verdana";
-                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size = 11;
-                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "general";
-
-                    chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionTop;
-                    chart.HasDataTable = false;
-                    chart.DisplayBlanksAs = Excel.XlDisplayBlanksAs.xlNotPlotted;
-                    chart.ChartGroups(1).GapWidth = 0;
-                    chart.ChartGroups(1).Overlap = 100;
-                    chart.ChartArea.Border.ColorIndex = 1;
-                    chart.ChartArea.Border.Weight = 3;
-                    chart.ChartArea.Border.LineStyle = 0;
-
-                    chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
-
-                    foreach (DataRowView info in graficiInfo)
+                    foreach (var rangeGrafico in rangeGrafici)
                     {
-                        Tuple<int, int>[] rangeDati = _nomiDefiniti[DefinedNames.GetName(grafico["SiglaEntita"], info["SiglaInformazione"])];
-                        var datiGrafico = _ws.Range[_ws.Cells[rangeDati[0].Item1, rangeDati[0].Item2], _ws.Cells[rangeDati[0].Item1, rangeDati[rangeDati.Length - 1].Item2]];
-                        var serie = chart.SeriesCollection().Add(datiGrafico);
-                        serie.Name = info["DesInformazione"].ToString();
-                        serie.ChartType = (Excel.XlChartType)info["ChartType"];
-                        serie.Interior.ColorIndex = info["InteriorColor"];
-                        serie.Border.ColorIndex = info["BorderColor"];
-                        serie.Border.Weight = info["BorderWeight"];
-                        serie.Border.LineStyle = info["BorderLineStyle"];
-                    }
+                        var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
 
-                    AggiornaGrafici(chart, rigaGrafico);
+                        var rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
+                        Excel.Chart chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
+
+                        chart.Parent.Name = nome;
+
+                        chart.Axes(Excel.XlAxisType.xlCategory).TickLabelPosition = Excel.XlTickLabelPosition.xlTickLabelPositionNone;
+                        chart.Axes(Excel.XlAxisType.xlValue).HasMajorGridlines = false;
+                        chart.Axes(Excel.XlAxisType.xlValue).HasMinorGridlines = false;
+                        chart.Axes(Excel.XlAxisType.xlValue).MinorTickMark = Excel.XlTickMark.xlTickMarkOutside;
+                        chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name = "Verdana";
+                        chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size = 11;
+                        chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "general";
+
+                        chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionTop;
+                        chart.HasDataTable = false;
+                        chart.DisplayBlanksAs = Excel.XlDisplayBlanksAs.xlNotPlotted;
+                        chart.ChartGroups(1).GapWidth = 0;
+                        chart.ChartGroups(1).Overlap = 100;
+                        chart.ChartArea.Border.ColorIndex = 1;
+                        chart.ChartArea.Border.Weight = 3;
+                        chart.ChartArea.Border.LineStyle = 0;
+
+                        chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+
+                        foreach (DataRowView info in graficiInfo)
+                        {
+                            Tuple<int, int>[] rangeDati = _nomiDefiniti[DefinedNames.GetName(grafico["SiglaEntita"], info["SiglaInformazione"])];
+                            var datiGrafico = _ws.Range[_ws.Cells[rangeDati[0].Item1, rangeDati[0].Item2], _ws.Cells[rangeDati[0].Item1, rangeDati[rangeDati.Length - 1].Item2]];
+                            var serie = chart.SeriesCollection().Add(datiGrafico);
+                            serie.Name = info["DesInformazione"].ToString();
+                            serie.ChartType = (Excel.XlChartType)info["ChartType"];
+                            serie.Interior.ColorIndex = info["InteriorColor"];
+                            serie.Border.ColorIndex = info["BorderColor"];
+                            serie.Border.Weight = info["BorderWeight"];
+                            serie.Border.LineStyle = info["BorderLineStyle"];
+                        }
+
+                        AggiornaGrafici(chart, rigaGrafico);
+                    }
                 }
             }
         }
@@ -1038,7 +1039,7 @@ namespace Iren.ToolsExcel.Base
                     if (dvEP.Count > 0)
                         dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"])));
                     else
-                        dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(Simboli.intervalloGiorni));
+                        dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(Struct.intervalloGiorni));
 
                     dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
                 }
@@ -1138,7 +1139,7 @@ namespace Iren.ToolsExcel.Base
                     if (dvEP.Count > 0)
                         dataFine = DataBase.DB.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                     else
-                        dataFine = DataBase.DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
+                        dataFine = DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni);
 
                     string suffissoData = all ? "DATA1" : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value);
                     string suffissoDataPrec = all ? "DATA0" : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value.AddDays(-1));
@@ -1231,11 +1232,11 @@ namespace Iren.ToolsExcel.Base
                 if (dvEP.Count > 0)
                     _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                 else
-                    _dataFine = _dataInizio.AddDays(Simboli.intervalloGiorni);
+                    _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    Tuple<int, int>[] range = _nomiDefiniti.GetRange(DefinedNames.GetName(entita["SiglaEntita"], suffissoData));
+                    Tuple<int, int>[] range = _nomiDefiniti.GetRanges(DefinedNames.GetName(entita["SiglaEntita"], suffissoData))[0];
                     _ws.Range[_ws.Cells[range[0].Item1, range[0].Item2], _ws.Cells[range[1].Item1, range[1].Item2]].Value = giorno;
                 });
             }
@@ -1255,7 +1256,7 @@ namespace Iren.ToolsExcel.Base
                 if (entitaProprieta.Count > 0)
                     _dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));
                 else
-                    _dataFine = _dataInizio.AddDays(Simboli.intervalloGiorni);
+                    _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
                 InsertParametri(entita["SiglaEntita"]);
             }
@@ -1277,15 +1278,16 @@ namespace Iren.ToolsExcel.Base
                 {
                     string nome = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
 
-                    Tuple<int, int>[] rangeGrafico = _nomiDefiniti.GetRange(nome);
+                    List<Tuple<int, int>[]> rangeGrafici = _nomiDefiniti.GetRanges(nome);
 
-                    var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
-                    Excel.Range rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
-                    var chart = _ws.ChartObjects(nome).Chart;
-                    //rigaGrafico.Locked = false;
-                    AggiornaGrafici(chart, rigaGrafico);
-                    chart.Refresh();
-                    //rigaGrafico.Locked = true;
+                    foreach (var rangeGrafico in rangeGrafici)
+                    {
+                        var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
+                        Excel.Range rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
+                        var chart = _ws.ChartObjects(nome).Chart;
+                        AggiornaGrafici(chart, rigaGrafico);
+                        chart.Refresh();
+                    }
                 }
             }
         }

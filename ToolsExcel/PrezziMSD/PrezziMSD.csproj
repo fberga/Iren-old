@@ -170,6 +170,7 @@
     <EmbeddedResource Include="..\SistemaComandi\ToolsExcelRibbon.resx">
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Include="Sheet.cs" />
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>PrezziMSD.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
