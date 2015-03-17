@@ -1,4 +1,5 @@
-﻿using Iren.ToolsExcel.Utility;
+﻿using Iren.ToolsExcel.Base;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,15 +14,44 @@ namespace Iren.ToolsExcel
 {
     class Sheet : Base.Sheet
     {
-        protected override void InsertInformazioniEntita(object siglaEntita)
+        public Sheet(Excel.Worksheet ws)
+            : base(ws) { }
+
+        protected override void InsertTitoloEntita(DataRowView entita)
         {
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
+            entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
+
+            int colonnaTitoloInfo = _colonnaInizio - VisParametro;
 
             if (entitaProprieta.Count > 0)
             {
-                //dalla classe base mi trovo in _rigaAttiva = prima riga di informazioni dell'entità
+                //dalla classe base mi trovo in _rigaAttiva = riga del titolo
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaTitoloInfo], _ws.Cells[_rigaAttiva, colonnaTitoloInfo + 1]];
+                rng.Value = new object[] {"Accensione",""};
+                Style.RangeStyle(rng, "BackColor:36;Align:Center;Borders:[top:medium,right:medium,bottom:medium,left:medium,insidev:thin];NumberFormat:[#,##0;-#,##0;-]");
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], "ACCENSIONE", suffissoData), _rigaAttiva, colonnaTitoloInfo + 1, true, true, true);
+                });
             }
+
+            entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'MSD_CAMBIO_ASSETTO'";
+
+            if (entitaProprieta.Count > 0)
+            {
+                //dalla classe base mi trovo in _rigaAttiva = riga del titolo
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaTitoloInfo], _ws.Cells[_rigaAttiva + 1, colonnaTitoloInfo + 1]];
+                rng.Value = new object[] { "Cambio Assetto", "" };
+                Style.RangeStyle(rng, "BackColor:35;Align:Center;Borders:[top:medium,right:medium,bottom:medium,left:medium,insidev:thin];NumberFormat:[#,##0;-#,##0;-]");
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], "CAMBIO_ASSETTO", suffissoData), _rigaAttiva + 1, colonnaTitoloInfo + 1, true, true, true);
+                });
+            }
+
+
+            base.InsertTitoloEntita(entita);
         }
     }
 }

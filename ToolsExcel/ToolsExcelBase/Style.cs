@@ -130,7 +130,7 @@ namespace Iren.ToolsExcel.Base
 
         public static void RangeStyle(Excel.Range rng, string style)
         {
-            MatchCollection paramsList = Regex.Matches(style, @"\w+[=:]((\[.*\])|([^;:=]+))");
+            MatchCollection paramsList = Regex.Matches(style, @"\w+[=:]((\[([^\]].)*\])|([^;:=]+))");
             foreach (Match par in paramsList)
             {
                 string[] keyVal;

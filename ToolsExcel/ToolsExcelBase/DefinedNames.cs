@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Iren.ToolsExcel.Utility;
+using System.Collections;
 
 namespace Iren.ToolsExcel.Base
 {
@@ -106,23 +108,26 @@ namespace Iren.ToolsExcel.Base
                 o.Add(name["Nome"].ToString());
 
             return o.ToArray();
-        }
-        public Tuple<int, int>[] Get(string name, bool excludeDATA0H24 = false)
+        }        
+        public Tuple<int, int>[] Get(string name, bool excludeDATA0H24)
         {
-            return Get(name, "", excludeDATA0H24);
+            if(excludeDATA0H24)
+                return Get(name, "DATA0.H24");
+
+            return Get(name);
         }
-        public Tuple<int, int>[] Get(string name, string exclude, bool excludeDATA0H24 = false)
+        public Tuple<int, int>[] Get(string name, params string[] exclude)
         {
             string filter = "";
             name = PrepareName(name);
 
-            if (!excludeDATA0H24)
-                filter = "Nome LIKE '" + name + "%'";
-            else
-                filter = "Nome LIKE '" + name + "%' AND Nome NOT LIKE '%DATA0.H24%'";
+            filter = "Nome LIKE '" + name + "%'";
 
-            if (exclude != "")
-                filter += " AND Nome NOT LIKE '%" + exclude + "%'";
+            if (exclude.Length > 0)
+                foreach (string exc in exclude)
+                {
+                    filter += " AND Nome NOT LIKE '%" + exc + "%'";
+                }
 
             if (_definedNamesView.RowFilter != filter)
                 _definedNamesView.RowFilter = filter;
@@ -276,6 +281,34 @@ namespace Iren.ToolsExcel.Base
             return (bool)_definedNamesView[0]["AnnotaModifica"];
         }
 
+        public DataView GetEditable()
+        {
+            string filter = "Foglio = '" + _foglio + "' AND Editabile = 1";
+            if (_definedNamesView.RowFilter != filter)
+                _definedNamesView.RowFilter = filter;
+
+            DataTable dt = new DataTable("Editabili")
+            {
+                Columns =
+                {
+                    {"SiglaEntita", typeof(string)},
+                    {"SiglaInformazione", typeof(string)},
+                    {"SuffissoData", typeof(string)}
+                }
+            };
+
+            var o =  from DataRow r in _definedNamesView.ToTable("Nome").AsEnumerable().Distinct(new DistinctEntitaInformazione())
+                     select dt.LoadDataRow(
+                        new object[] 
+                            { 
+                                r.Field<string>("Nome").Split(Simboli.UNION[0])[0], 
+                                r.Field<string>("Nome").Split(Simboli.UNION[0])[1], 
+                                r.Field<string>("Nome").Split(Simboli.UNION[0])[2]
+                            }, LoadOption.OverwriteChanges);
+
+            return o.CopyToDataTable().DefaultView;
+        }
+
         #endregion
 
         #region Metodi Statici
@@ -289,7 +322,7 @@ namespace Iren.ToolsExcel.Base
         {
             //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
             //if (!Regex.IsMatch(name, @"DATA\d+\.\w+|GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
-            if (!Regex.IsMatch(name, @"GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
+            if (!Regex.IsMatch(name, @"\.CAMBIO_ASSETTO\.|\.ACCENSIONE\.|GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
                 name += Simboli.UNION;
             return name;
         }
@@ -390,5 +423,23 @@ namespace Iren.ToolsExcel.Base
         }
 
         #endregion
+    }
+
+    internal class DistinctEntitaInformazione : IEqualityComparer<DataRow>
+    {
+        public bool Equals(DataRow x, DataRow y)
+        {
+            string[] xSplit = x["Nome"].ToString().Split(Simboli.UNION[0]);
+            string[] ySplit = y["Nome"].ToString().Split(Simboli.UNION[0]);
+
+            return xSplit[0] == ySplit[0] && xSplit[1] == ySplit[1] && xSplit[2] == ySplit[2];
+        }
+
+        public int GetHashCode(DataRow obj)
+        {
+            string[] objSplit = obj["Nome"].ToString().Split(Simboli.UNION[0]);
+            string o = DefinedNames.GetName(objSplit[0], objSplit[1], objSplit[2]);
+            return o.GetHashCode();
+        }
     }
 }

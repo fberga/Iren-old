@@ -330,15 +330,18 @@ namespace Iren.ToolsExcel.Utility
         }
         public static string GetDataFromSuffisso(object data, object ora = null)
         {
-            int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
-            DateTime outDate = DataBase.DB.DataAttiva.AddDays(giorno - 1);
+            DateTime outDate = GetDataFromSuffisso(data);
 
             ora = ora ?? "0";
             int outOra = int.Parse(Regex.Match(ora.ToString(), @"\d+").Value);
 
             return outDate.ToString("yyyyMMdd") + (outOra != 0 ? outOra.ToString("D2") : "");
         }
-
+        public static DateTime GetDataFromSuffisso(object data)
+        {
+            int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
+            return DataBase.DB.DataAttiva.AddDays(giorno - 1);
+        }
         #endregion
     }
 

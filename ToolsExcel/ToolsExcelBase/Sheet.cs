@@ -23,6 +23,18 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
+        #region Parametri
+
+        protected int VisParametro
+        {
+            get
+            {
+                return _struttura.visParametro ? 3 : 2;
+            }
+        }
+
+        #endregion
+
         protected void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
         {
             for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
@@ -157,29 +169,60 @@ namespace Iren.ToolsExcel.Base
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = '1'";
-            DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
 
+            Proteggi(false);
             foreach (DataRowView categoria in categorie)
             {
                 DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
                 Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
 
-                Proteggi(false);
-                entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
-                foreach (DataRowView e in entita)
+                DataView informazioni = nomiDefiniti.GetEditable();
+                foreach (DataRowView info in informazioni)
                 {
-                    informazioni.RowFilter = "SiglaEntita = '" + e["SiglaEntita"] + "' AND Editabile = '1'";
-                    foreach (DataRowView info in informazioni)
+                    //se i giorni sono in verticale, devo disabilitare dove necessario l'ora 24 e la 25
+                    List<string> exclude = new List<string>();
+                    if (Struct.tipoVisualizzazione == "V")
                     {
-                        object siglaEntita = info["SiglaEntitaRif"] is DBNull ? e["SiglaEntita"] : info["SiglaEntitaRif"];
-                        Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
-
-                        ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
+                        int oreGiorno = Date.GetOreGiorno(Date.GetDataFromSuffisso(info["SuffissoData"]));
+                        if (oreGiorno == 23)
+                        {
+                            exclude.Add("H24");
+                            exclude.Add("H25");
+                        }
+                        else if (oreGiorno == 24)
+                            exclude.Add("H25");
                     }
+                    Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(info["SiglaEntita"], info["SiglaInformazione"], info["SuffissoData"]), exclude.ToArray());
+                    ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
                 }
-                Proteggi(true);
             }
+            Proteggi(true);
+
+            //DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            //categorie.RowFilter = "Operativa = '1'";
+            //DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            //DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+
+            //foreach (DataRowView categoria in categorie)
+            //{
+            //    DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
+            //    Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
+
+            //    Proteggi(false);
+            //    entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
+            //    foreach (DataRowView e in entita)
+            //    {
+            //        informazioni.RowFilter = "SiglaEntita = '" + e["SiglaEntita"] + "' AND Editabile = '1'";
+            //        foreach (DataRowView info in informazioni)
+            //        {
+            //            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? e["SiglaEntita"] : info["SiglaEntitaRif"];
+            //            Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
+
+            //            ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
+            //        }
+            //    }
+            //    Proteggi(true);
+            //}
         }
         public static string R1C1toA1(int riga, int colonna)
         {
@@ -327,18 +370,6 @@ namespace Iren.ToolsExcel.Base
         ~Sheet()
         {
             Dispose();
-        }
-
-        #endregion
-
-        #region Parametri
-
-        private int VisParametro
-        {
-            get
-            {
-                return _struttura.visParametro ? 3 : 2;
-            }
         }
 
         #endregion

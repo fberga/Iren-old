@@ -121,7 +121,7 @@ namespace Iren.ToolsExcel.Base
                                 string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
 
                                 string[] info = nomi[0].Split(Simboli.UNION[0]);
-                                string data = Utility.Date.GetDataFromSuffisso(info[2], info[3]);
+                                string data = Utility.Date.GetDataFromSuffisso(info[2], info.Length == 4 ? info[3] : null);
 
                                 modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
                                 if (modifiche.Count == 0)

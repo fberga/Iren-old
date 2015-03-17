@@ -24,6 +24,11 @@ namespace Iren.ToolsExcel.Forms
         AEsporta _esporta;
         ARiepilogo _r;
 
+        bool _categorieVisible = true;
+        bool _mercatiDaEsportareVisible = true;
+        bool _meteoVisible = true;
+        bool _giorniVisible = true;
+
         #endregion
 
         #region Costruttori
@@ -95,18 +100,22 @@ namespace Iren.ToolsExcel.Forms
             {
                 panelCategorie.Hide();
                 Width -= panelCategorie.Width;
+                _categorieVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()))
             {
                 groupDate.Hide();
+                _giorniVisible = false;
             }
             if (settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
             {
                 groupMercati.Hide();
+                _mercatiDaEsportareVisible = false;
             }
             if (settings.Contains("MeteoVisible") && falseMatch.IsMatch(settings["MeteoVisible"].ToString()))
             {
                 groupMercati.Hide();
+                _meteoVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()) &&
                 settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
@@ -157,7 +166,10 @@ namespace Iren.ToolsExcel.Forms
                 }
                 else
                 {
-                    treeViewCategorie.Nodes[categoria["Gerarchia"].ToString()].Nodes.Add(categoria["SiglaCategoria"].ToString(), categoria["DesCategoriaBreve"].ToString());
+                    if (categoria["Gerarchia"] is DBNull)
+                        treeViewCategorie.Nodes.Add(categoria["SiglaCategoria"].ToString(), categoria["DesCategoriaBreve"].ToString());
+                    else
+                        treeViewCategorie.Nodes[categoria["Gerarchia"].ToString()].Nodes.Add(categoria["SiglaCategoria"].ToString(), categoria["DesCategoriaBreve"].ToString());
                 }
             }
             treeViewCategorie.ExpandAll();
@@ -454,13 +466,19 @@ namespace Iren.ToolsExcel.Forms
             btnAnnulla.Enabled = false;
             btnMeteo.Enabled = false;
 
-            if (comboGiorni.SelectedIndex == -1)
+            if (_giorniVisible && comboGiorni.SelectedIndex == -1)
                 MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (treeViewUP.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
                 MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
-                DateTime dataRif = (DateTime)((DataRowView)comboGiorni.SelectedItem)["Data"];
+                
+                DateTime dataRif;
+                if (_giorniVisible)
+                    dataRif = (DateTime)((DataRowView)comboGiorni.SelectedItem)["Data"];
+                else
+                    dataRif = DataBase.DataAttiva;
+
                 bool calcola = false;
                 int count = 0;
                 ThroughAllNodes(treeViewAzioni.Nodes, n =>
