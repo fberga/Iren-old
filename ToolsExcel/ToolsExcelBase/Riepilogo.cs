@@ -91,6 +91,7 @@ namespace Iren.ToolsExcel.Base
             _cell.Width.informazione = double.Parse(paramApplicazione[0]["ColInformazioneWidth"].ToString());
             _cell.Width.unitaMisura = double.Parse(paramApplicazione[0]["ColUMWidth"].ToString());
             _cell.Width.parametro = double.Parse(paramApplicazione[0]["ColParametroWidth"].ToString());
+            _cell.Width.jolly1 = double.Parse(paramApplicazione[0]["ColJolly1Width"].ToString());
             _cell.Height.normal = double.Parse(paramApplicazione[0]["RowHeight"].ToString());
             _cell.Height.empty = double.Parse(paramApplicazione[0]["RowVuotaHeight"].ToString());
 
@@ -138,7 +139,7 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
         }
-        protected void Clear()
+        protected virtual void Clear()
         {
             int dataOreTot = Date.GetOreIntervallo(DataBase.DB.DataAttiva, DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
@@ -345,11 +346,14 @@ namespace Iren.ToolsExcel.Base
                 foreach (DataRowView entitaAzione in entitaAzioni)
                 {
                     string nome = DefinedNames.GetName("RIEPILOGO", entitaAzione["SiglaEntita"], entitaAzione["SiglaAzione"]);
-                    Tuple<int, int>[] celleAzione = _nomiDefiniti[nome];
-
-                    foreach (Tuple<int, int> cella in celleAzione)
+                    if (_nomiDefiniti.IsDefined(nome))
                     {
-                        Style.RangeStyle(_ws.Cells[cella.Item1, cella.Item2], "BackPattern: none");
+                        Tuple<int, int>[] celleAzione = _nomiDefiniti[nome];
+
+                        foreach (Tuple<int, int> cella in celleAzione)
+                        {
+                            Style.RangeStyle(_ws.Cells[cella.Item1, cella.Item2], "BackPattern: none");
+                        }
                     }
                 }
             });
@@ -364,19 +368,22 @@ namespace Iren.ToolsExcel.Base
                     foreach (DataRowView valore in datiRiepilogo)
                     {
                         string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
-                        Tuple<int, int> cella = _nomiDefiniti[nome][0];
-                        string commento = "";
-
-                        Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
-
-                        if (valore["Presente"].Equals("1"))
+                        if (_nomiDefiniti.IsDefined(nome))
                         {
-                            rng.ClearComments();
-                            DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
-                            commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
-                            rng.AddComment(commento);
-                            rng.Value = "OK";
-                            Style.RangeStyle(rng, "BackColor:4;Align:Center");
+                            Tuple<int, int> cella = _nomiDefiniti[nome][0];
+                            string commento = "";
+
+                            Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
+
+                            if (valore["Presente"].Equals("1"))
+                            {
+                                rng.ClearComments();
+                                DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
+                                commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
+                                rng.AddComment(commento);
+                                rng.Value = "OK";
+                                Style.RangeStyle(rng, "BackColor:4;Align:Center");
+                            }
                         }
                     }
                 });
@@ -394,23 +401,25 @@ namespace Iren.ToolsExcel.Base
             if(dataRif == null)
                 dataRif = DataBase.DB.DataAttiva;
 
-            Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, Date.GetSuffissoData(DataBase.DB.DataAttiva, dataRif.Value))][0];
-            Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
-
-            if (presente)
+            if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", entita, azione, Date.GetSuffissoData(dataRif.Value))))
             {
-                string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
-                rng.ClearComments();
-                rng.AddComment(commento).Visible = false;
-                rng.Value = "OK";
-                Style.RangeStyle(rng, "FontSize:9;ForeColor:1;BackColor:4;Align:Center;Bold:true");
-            }
-            else
-            {
-                rng.Value = "Non presente";
-                Style.RangeStyle(rng, "FontSize:7;ForeColor:3;BackColor:2;Align:Center;Bold:false");
-            }
+                Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, Date.GetSuffissoData(dataRif.Value))][0];
+                Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
 
+                if (presente)
+                {
+                    string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                    rng.ClearComments();
+                    rng.AddComment(commento).Visible = false;
+                    rng.Value = "OK";
+                    Style.RangeStyle(rng, "FontSize:9;ForeColor:1;BackColor:4;Align:Center;Bold:true");
+                }
+                else
+                {
+                    rng.Value = "Non presente";
+                    Style.RangeStyle(rng, "FontSize:7;ForeColor:3;BackColor:2;Align:Center;Bold:false");
+                }
+            }
         }
 
         protected void AggiornaDate()
@@ -420,8 +429,11 @@ namespace Iren.ToolsExcel.Base
 
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {
-                Tuple<int, int>[] riga = _nomiDefiniti.GetRanges(DefinedNames.GetName("RIEPILOGO", "T", suffissoData))[0];
-                _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[1].Item1, riga[1].Item2]].Value = giorno;
+                if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", "T", suffissoData)))
+                {
+                    Tuple<int, int>[] riga = _nomiDefiniti.GetRanges(DefinedNames.GetName("RIEPILOGO", "T", suffissoData))[0];
+                    _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[1].Item1, riga[1].Item2]].Value = giorno;
+                }
             });
         }
         public override void UpdateRiepilogo()
@@ -444,13 +456,16 @@ namespace Iren.ToolsExcel.Base
                 
                 foreach (DataRowView e in entita)
                 {
-                    Tuple<int, int>[] riga = _nomiDefiniti.Get(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"]), "GOTO");
+                    if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"])))
+                    {
+                        Tuple<int, int>[] riga = _nomiDefiniti.Get(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"]), "GOTO");
 
-                    Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
-                    rng.Value = "";
-                    rng.ClearComments();
+                        Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
+                        rng.Value = "";
+                        rng.ClearComments();
 
-                    Style.RangeStyle(rng, "BackPattern: CrissCross");
+                        Style.RangeStyle(rng, "BackPattern: CrissCross");
+                    }
                 }
             }
 

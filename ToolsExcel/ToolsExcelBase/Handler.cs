@@ -75,20 +75,6 @@ namespace Iren.ToolsExcel.Base
             Target.Worksheet.Unprotect(Simboli.pwd);
             s.AggiornaGrafici();
 
-            //trovo tutte le righe che dipendono dalla mia e le salvo nella tabella di modifica
-            //Excel.Range rngDependents = Target.Dependents;
-            //List<Tuple<int, int>[]> dependents = new List<Tuple<int, int>[]>();
-            //foreach (Excel.Range dep in rngDependents.Rows)
-            //{
-            //    string[] cells = dep.Address.Split(':');
-            //    Tuple<int, int>[] rc = new Tuple<int, int>[2];
-            //    rc[0] = Sheet.A1toR1C1(cells[0]);
-            //    rc[1] = Sheet.A1toR1C1(cells[1]);
-
-            //    if (nomiDefiniti.SalvaDB(rc[0].Item1, rc[0].Item2))
-            //        dependents.Add(rc);
-            //}
-
             if (nomiDefiniti.SalvaDB(Target.Row, Target.Column))
             {
                 object[,] values;
@@ -139,13 +125,6 @@ namespace Iren.ToolsExcel.Base
                     }
                 } 
             }
-
-            //foreach (var rngBounds in dependents)
-            //{
-            //    if (nomiDefiniti.SalvaDB(rngBounds[0].Item1, rngBounds[0].Item2))
-            //        StoreEdit(null, Target.Worksheet.Range[Target.Worksheet.Cells[rngBounds[0].Item1, rngBounds[0].Item2], Target.Worksheet.Cells[rngBounds[1].Item1, rngBounds[1].Item2]]);
-            //}
-
             Target.Worksheet.Protect(Simboli.pwd);
         }
 
@@ -247,7 +226,7 @@ namespace Iren.ToolsExcel.Base
                 ws.Protect(Simboli.pwd);
         }
 
-        public static void SwithWorksheet(string name)
+        public static void SwitchWorksheet(string name)
         {
             //TODO aprire gli altri file!!!!!!
             string path = "";
@@ -262,7 +241,14 @@ namespace Iren.ToolsExcel.Base
             }
             else
             {
-                ((Excel._Worksheet)Workbook.WB.Application.Workbooks[name + ".xlsm"]).Activate();
+                try
+                {
+                    Workbook.WB.Application.Workbooks[name + ".xlsm"].Activate();
+                }
+                catch(Exception)
+                {
+                    Workbook.WB.Application.Workbooks[name].Activate();
+                }
             }
         }
 

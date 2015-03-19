@@ -18,7 +18,7 @@ using System.Globalization;
 using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
-// ************************************************************* SISTEMA COMANDI ************************************************************* //
+// ************************************************************* PREZZI MSD ************************************************************* //
 
 namespace Iren.ToolsExcel
 {
@@ -52,10 +52,9 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
-            this.WindowActivate += new Microsoft.Office.Interop.Excel.WorkbookEvents_WindowActivateEventHandler(this.ThisWorkbook_WindowActivate);
+            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.GotoClick);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
             this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
-
         }
 
         #endregion
@@ -92,18 +91,6 @@ namespace Iren.ToolsExcel
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)
         {
 
-        }
-
-        private void ThisWorkbook_WindowActivate(Excel.Window Wn)
-        {
-            try
-            {
-                Globals.Ribbons.ToolsExcelRibbon.RibbonUI.ActivateTab(Globals.Ribbons.ToolsExcelRibbon.FrontOffice.ControlId.CustomId);
-            }
-            catch (Exception)
-            {
-
-            }
         }
 
         //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()

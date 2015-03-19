@@ -8,6 +8,19 @@ namespace Iren.ToolsExcel.Base
             ALL = "ALL";
 
         public static string nomeApplicazione = "";
+        private static bool emergenzaForzata = false;
+        public static bool EmergenzaForzata
+        {
+            get
+            {
+                return emergenzaForzata;
+            }
+            set
+            {
+                emergenzaForzata = value;
+                Utility.Workbook.AggiornaLabelStatoDB();
+            }
+        }
 
         public static string pwd = "";
 

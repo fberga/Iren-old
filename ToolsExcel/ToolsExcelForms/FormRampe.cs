@@ -38,7 +38,7 @@ namespace Iren.ToolsExcel.Forms
             InitializeComponent();
             this.Text = Simboli.nomeApplicazione + " - Rampe";
 
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 _ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
                 _nomiDefiniti = new DefinedNames(_ws.Name);

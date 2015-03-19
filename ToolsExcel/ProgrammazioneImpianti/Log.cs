@@ -58,7 +58,7 @@ namespace Iren.ToolsExcel
             }
             _logObj.AutoSetDataBoundColumnHeaders = true;
 
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
                 _logObj.Range.EntireColumn.AutoFit();

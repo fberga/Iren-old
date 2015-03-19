@@ -27,10 +27,11 @@ namespace Iren.ToolsExcel.Utility
         public struct SP
         {
             public const string APPLICAZIONE = "spApplicazioneProprieta",
-                APPLICAZIONE_INFORMAZIONE = "spApplicazioneInformazione",
+                APPLICAZIONE_INFORMAZIONE_H = "spApplicazioneInformazioneH",
                 APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
                 APPLICAZIONE_INIT = "spApplicazioneInit",
                 APPLICAZIONE_LOG = "spApplicazioneLog",
+                APPLICAZIONE_NOTE = "spApplicazioneNote",
                 APPLICAZIONE_RIEPILOGO = "spApplicazioneRiepilogo",
                 AZIONE = "spAzione",
                 AZIONE_CATEGORIA = "spAzioneCategoria",
@@ -254,6 +255,20 @@ namespace Iren.ToolsExcel.Utility
         {
             _db.Select(SP.APPLICAZIONE_INIT);
         }
+        public static bool OpenConnection()
+        {
+            if (!Simboli.EmergenzaForzata)
+                return _db.OpenConnection();
+
+            return false;
+        }
+        public static bool CloseConnection()
+        {
+            if (!Simboli.EmergenzaForzata)
+                return _db.CloseConnection();
+
+            return false;
+        }
 
         #endregion
     }
@@ -299,6 +314,10 @@ namespace Iren.ToolsExcel.Utility
             return (int)(giornoSucc.ToUniversalTime() - giorno.ToUniversalTime()).TotalHours;
         }
         public static string GetSuffissoData(DateTime giorno)
+        {
+            return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
+        }
+        public static string GetSuffissoData(string giorno)
         {
             return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
         }
@@ -916,7 +935,7 @@ namespace Iren.ToolsExcel.Utility
                 {
                     AzzeraInformazione(siglaEntita, siglaAzione, dataRif);
 
-                    if (DataBase.DB.OpenConnection())
+                    if (DataBase.OpenConnection())
                     {
                         if (azionePadre.Equals("GENERA"))
                         {
@@ -1468,23 +1487,32 @@ namespace Iren.ToolsExcel.Utility
             DataBase.InsertLog(logType, message);
             if (prot) log.Protect();
         }
-        public static Dictionary<Core.DataBase.NomiDB, ConnectionState> AggiornaLabelStatoDB()
+        public static void AggiornaLabelStatoDB()
         {
             bool isProtected = _wb.Sheets["Main"].ProtectContents;
             
             if (isProtected)
                 _wb.Sheets["Main"].Unprotect(Simboli.pwd);
-            
-            Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.DB.StatoDB;
 
-            Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
-            Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
-            Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+            if (DataBase.OpenConnection())
+            {
+                Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.DB.StatoDB;
+                Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
+                Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
+                Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+
+                DataBase.CloseConnection();
+            }
+            else
+            {
+                Simboli.SQLServerOnline = false;
+                Simboli.ImpiantiOnline = false;
+                Simboli.ElsagOnline = false;
+            }
+            
 
             if (isProtected)
                 _wb.Sheets["Main"].Protect(Simboli.pwd);
-
-            return stato;
         }
         public static void DumpDataSet()
         {
@@ -1615,7 +1643,7 @@ namespace Iren.ToolsExcel.Utility
                 DataBase.LocalDB.Prefix = DataBase.NAME;
             }
 
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 DataTable dt = CaricaApplicazione(appID);
                 if (dt.Rows.Count == 0)

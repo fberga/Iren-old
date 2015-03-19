@@ -150,7 +150,8 @@ namespace Iren.ToolsExcel.Forms
                 }
                 else if (aggiungi)
                 {
-                    treeViewAzioni.Nodes[azione["Gerarchia"].ToString()].Nodes.Add(azione["SiglaAzione"].ToString(), azione["DesAzione"].ToString());
+                    if(treeViewAzioni.Nodes.ContainsKey(azione["Gerarchia"].ToString()))
+                        treeViewAzioni.Nodes[azione["Gerarchia"].ToString()].Nodes.Add(azione["SiglaAzione"].ToString(), azione["DesAzione"].ToString());
                 }
             }
             treeViewAzioni.ExpandAll();
@@ -504,7 +505,7 @@ namespace Iren.ToolsExcel.Forms
                     });
                 }
 
-                if (DataBase.DB.OpenConnection())
+                if (DataBase.OpenConnection())
                 {
                     string suffissoData = Date.GetSuffissoData(DataBase.DB.DataAttiva, dataRif);
 

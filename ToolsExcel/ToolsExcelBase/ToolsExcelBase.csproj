@@ -102,6 +102,7 @@
     <Content Include="res\edit-not-validated-icon.png" />
     <Content Include="res\edit-validated-icon.png" />
     <Content Include="res\Folder-Settings-Tools-icon.png" />
+    <Content Include="res\forza-emergenza-icon.png" />
     <Content Include="res\gas-icon.png" />
     <Content Include="res\Generate-tables-icon.png" />
     <Content Include="res\invio-icon.png" />

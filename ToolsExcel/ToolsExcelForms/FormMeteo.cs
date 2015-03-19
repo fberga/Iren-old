@@ -50,7 +50,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void comboUP_SelectedIndexChanged(object sender, EventArgs e)
         {            
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 Array comboArray = groupDati.Controls.OfType<ComboBox>().ToArray();
                 foreach (ComboBox cmb in comboArray)
@@ -101,7 +101,7 @@ namespace Iren.ToolsExcel.Forms
 
         void rdb_CheckedChanged(object sender, EventArgs e)
         {
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 DataRowView entita = (DataRowView)comboUP.SelectedItem;
                 RadioButton rbt = (RadioButton)sender;
@@ -125,7 +125,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
                 foreach (DataRowView entita in _entita)
@@ -158,7 +158,7 @@ namespace Iren.ToolsExcel.Forms
 
             bool gone = Workbook.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, dataEmissione);
 
-            DataBase.DB.OpenConnection();
+            DataBase.OpenConnection();
 
             Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
             r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);

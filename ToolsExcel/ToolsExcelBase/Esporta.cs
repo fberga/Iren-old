@@ -110,7 +110,7 @@ namespace Iren.ToolsExcel.Base
                             if (DefinedNames.IsDefined(nomeFoglio, DefinedNames.GetName(entita, "UNIT_COMM")))
                                 row["Campo3"] = "17";
                             else
-                                row["Campo3"] = "na";
+                                row["Campo3"] = "NA";
                             row["Data"] = dataRif.ToString("yyyy/MM/dd");
                             row["Ora"] = i + 1;
                             row["Informazione"] = entAzInfo["SiglaInformazione"].Equals("PMAX") ? "Pmax" : "Pmin";

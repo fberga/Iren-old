@@ -20,7 +20,7 @@ namespace Iren.ToolsExcel.Forms
         {
             InitializeComponent();
             Application.EnableVisualStyles();
-
+            calObj.SetDate(Utility.DataBase.DataAttiva);
             this.Text = Simboli.nomeApplicazione + " - Calendar";
         }
 

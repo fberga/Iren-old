@@ -25,7 +25,9 @@ namespace Iren.ToolsExcel
         #region Eventi
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
-        {      
+        {
+            this.RibbonUI.ActivateTab(FrontOffice.ControlId.CustomId);
+
             if (Workbook.WB.Sheets.Count <= 2)
                 AbilitaTasti(false);
 
@@ -82,7 +84,7 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(false);
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 AggiornaStruttura();
                 //TODO riabilitare log!!
@@ -114,7 +116,7 @@ namespace Iren.ToolsExcel
             {
                 if (dataOld != cal.Date.Value)
                 {
-                    if (DataBase.DB.OpenConnection())
+                    if (DataBase.OpenConnection())
                     {
                         DataBase.RefreshAppSettings("DataInizio", cal.Date.Value.ToString("yyyyMMdd"));
                         btnCalendar.Label = cal.Date.Value.ToString("dddd dd MMM yyyy");
@@ -222,7 +224,7 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(false);
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            if (DataBase.DB.OpenConnection())
+            if (DataBase.OpenConnection())
             {
                 AggiornaDati(all: false);
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
@@ -254,12 +256,12 @@ namespace Iren.ToolsExcel
 
             Sheet.AbilitaModifica(btnModifica.Checked);
             if (btnModifica.Checked) 
-                btnModifica.Image = global::Iren.ToolsExcel.Base.Properties.Resources.edit_validated_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_icon;
             else
             {
                 //Salva modifiche su db
                 DataBase.SalvaModificheDB();
-                btnModifica.Image = global::Iren.ToolsExcel.Base.Properties.Resources.edit_not_validated_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
             }
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
@@ -325,10 +327,13 @@ namespace Iren.ToolsExcel
             else
             {
                 btn.Checked = false;
-                Handler.SwithWorksheet(btn.Name.Substring(3));
+                Handler.SwitchWorksheet(btn.Name.Substring(3));
             }
         }
-
+        private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
+        {
+            Simboli.EmergenzaForzata = btnForzaEmergenza.Checked;
+        }
         #endregion
 
         #region Metodi
@@ -472,6 +477,6 @@ namespace Iren.ToolsExcel
             //CommonFunctions.InitLog();
         }
 
-        #endregion
+        #endregion        
     }
 }

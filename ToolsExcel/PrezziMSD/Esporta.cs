@@ -57,40 +57,41 @@ namespace Iren.ToolsExcel
                         }
                     };
 
-                    List<bool> valAccensioneNULL = new List<bool>();
-                    List<bool> cambioAssettoNULL = new List<bool>();
-                    List<bool> datiEsportati = new List<bool>();
+                    bool valAccensioneNULL = false;
+                    bool cambioAssettoNULL = false;
+                    bool datiEsportatiAccensioneNULL = false;
+                    bool datiEsportatiCambioAssettoNULL = false;
+
+                    bool isDefinedAccensione = nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "ACCENSIONE", "DATA1"));
+                    bool isDefinedCambioAssetto = nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "CAMBIO_ASSETTO", "DATA1"));
+
                     for (DateTime giorno = DataBase.DataAttiva, dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni); giorno <= dataFine; giorno = giorno.AddDays(1))
                     {
                         string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva, giorno);
                         int oreData = Date.GetOreGiorno(giorno);
 
-                        string valAccensione = "NULL";
-                        if (nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "ACCENSIONE", suffissoData)))
+                        object valAccensione = "NULL";
+                        if (isDefinedAccensione)
                         {
                             Tuple<int,int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "ACCENSIONE", suffissoData)][0];
-                            valAccensione = ws.Cells[cella.Item1, cella.Item2].Value.ToString();
-                            if (valAccensione == "")
+                            valAccensione = ws.Cells[cella.Item1, cella.Item2].Value;
+                            if (valAccensione == null)
                             {
-                                valAccensioneNULL.Add(true);
+                                valAccensioneNULL = true;
                                 valAccensione = "0";
                             }
-                            else
-                                valAccensioneNULL.Add(false);
                         }
 
-                        string cambioAssetto = "NULL";
-                        if (nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, "CAMBIO_ASSETTO", suffissoData)))
+                        object cambioAssetto = "NULL";
+                        if (isDefinedCambioAssetto)
                         {
                             Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntita, "CAMBIO_ASSETTO", suffissoData)][0];
-                            cambioAssetto = ws.Cells[cella.Item1, cella.Item2].Value.ToString();
-                            if (cambioAssetto == "")
+                            cambioAssetto = ws.Cells[cella.Item1, cella.Item2].Value;
+                            if (cambioAssetto == null)
                             {
-                                cambioAssettoNULL.Add(true);
+                                cambioAssettoNULL = true;
                                 cambioAssetto = "0";
                             } 
-                            else
-                                cambioAssettoNULL.Add(false);
                         }
 
                         Dictionary<object, object[]> informazioni = new Dictionary<object, object[]>();
@@ -109,7 +110,12 @@ namespace Iren.ToolsExcel
 
                         if (informazioni.Count > 0)
                         {
-                            datiEsportati.Add(true);
+                            if (isDefinedAccensione && valAccensioneNULL)
+                                datiEsportatiAccensioneNULL = true;
+
+                            if (isDefinedCambioAssetto && cambioAssettoNULL)
+                                datiEsportatiCambioAssettoNULL = true;
+
                             for (int i = 0; i < oreData; i++)
                             {
                                 DataRow row = dt.NewRow();
@@ -130,39 +136,34 @@ namespace Iren.ToolsExcel
                                     else
                                         row[j] = "NULL";
                                 }
-                                row["ACCENSIONE"] = valAccensione;
-                                row["CAMBIO_ASSETTO"] = cambioAssetto;
+                                row["ACCENSIONE"] = valAccensione.ToString();
+                                row["CAMBIO_ASSETTO"] = cambioAssetto.ToString();
 
                                 dt.Rows.Add(row);
                             }
                         }
-                        else
-                            datiEsportati.Add(false);
                     }
 
-                    if (dt.Rows.Count > 0)
+                    if (datiEsportatiAccensioneNULL)
+                        System.Windows.Forms.MessageBox.Show("Per " + codiceRUP + " sono stati esportati valori di Accensione nulli", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+
+                    if (datiEsportatiCambioAssettoNULL)
+                        System.Windows.Forms.MessageBox.Show("Per " + codiceRUP + " sono stati esportati valori di Cambio Assetto nulli", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+
+                    var path = Utility.Utilities.GetUsrConfigElement("pathCaricatorePEXCA");
+
+                    string pathStr = Utility.ExportPath.PreparePath(path.Value);
+
+                    if (Directory.Exists(pathStr))
                     {
-                        for (int i = 0; i < datiEsportati.Count; i++)
-                        {
-                            if (datiEsportati[i] && valAccensioneNULL[i] && cambioAssettoNULL[i])
-                                System.Windows.Forms.MessageBox.Show("Per " + codiceRUP + " sono stati esportati valori di Accensione nulli", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
-                        }
+                        if (!ExportToCSV(System.IO.Path.Combine(pathStr, "PREZZO_MSD_" + codiceRUP + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
+                            return false;
                     }
-
-                    //var path = Utility.Utilities.GetUsrConfigElement("pathExportMP_MGP");
-
-                    //string pathStr = Utility.ExportPath.PreparePath(path.Value);
-
-                    //if (Directory.Exists(pathStr))
-                    //{
-                    //    if (!ExportToCSV(System.IO.Path.Combine(pathStr, "AEM_" + (nomeFoglio == "Iren Termo" ? "AHRP_" : "AIHRP_") + codiceIF + "_" + dataRif.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
-                    //        return false;
-                    //}
-                    //else
-                    //{
-                    //    System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                    //    return false;
-                    //}
+                    else
+                    {
+                        System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        return false;
+                    }
 
                     break;
             }

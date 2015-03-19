@@ -129,20 +129,7 @@ namespace Iren.ToolsExcel.Base
                     filter += " AND Nome NOT LIKE '%" + exc + "%'";
                 }
 
-            if (_definedNamesView.RowFilter != filter)
-                _definedNamesView.RowFilter = filter;
-
-            if (_definedNamesView.Count == 0)
-                return null;
-
-            Tuple<int, int>[] o = new Tuple<int, int>[_definedNamesView.Count];
-            int i = 0;
-            foreach (DataRowView defName in _definedNamesView)
-            {
-                o[i++] = Tuple.Create(int.Parse(defName["R1"].ToString()), int.Parse(defName["C1"].ToString()));
-            }
-
-            return o;
+            return GetByFilter(filter);
         }
         public Tuple<int, int>[] GetByFilter(string filter)
         {
@@ -309,6 +296,15 @@ namespace Iren.ToolsExcel.Base
             return o.CopyToDataTable().DefaultView;
         }
 
+        //public Tuple<int, int>[] GetRangeEntita(object siglaEntita, object suffissoData = null, bool excludeTitleBar = true)
+        //{
+        //    string filter = "Foglio = '" + _foglio + "' AND Nome LIKE = '" + siglaEntita + "%' AND Nome LIKE '%" + suffissoData + "%'";
+        //    if (excludeTitleBar)
+        //        filter += " AND Nome NOT LIKE '" + GetName(siglaEntita, "T", suffissoData) + "'";
+
+        //    return GetByFilter(filter);
+        //}
+
         #endregion
 
         #region Metodi Statici
@@ -322,7 +318,7 @@ namespace Iren.ToolsExcel.Base
         {
             //se il nome non fa parte del riepilogo e non finisce con il suffisso data ora, aggiungo un punto
             //if (!Regex.IsMatch(name, @"DATA\d+\.\w+|GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
-            if (!Regex.IsMatch(name, @"\.CAMBIO_ASSETTO\.|\.ACCENSIONE\.|GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\."))
+            if (!Regex.IsMatch(name, @"\.NOTE\.|\.CAMBIO_ASSETTO\.|\.ACCENSIONE\.|GRAFICO\d+|RIEPILOGO|DATA\d+\.H\d+|\.T\.|.+\.GOTO"))
                 name += Simboli.UNION;
             return name;
         }

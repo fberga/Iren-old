@@ -151,9 +151,6 @@ namespace Iren.ToolsExcel {
             // 
             this.ActionsPane.AutoSize = false;
             this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            // 
-            // ThisWorkbook
-            // 
         }
         
         /// 

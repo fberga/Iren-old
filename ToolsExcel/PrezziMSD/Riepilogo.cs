@@ -63,19 +63,19 @@ namespace Iren.ToolsExcel
             _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoTrue;
         }
 
-        public override void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif)
-        {
+        //public override void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif)
+        //{
             
-        }
+        //}
 
-        public override void UpdateRiepilogo()
-        {
+        //public override void UpdateRiepilogo()
+        //{
             
-        }
+        //}
 
-        public override void RiepilogoInEmergenza()
-        {
+        //public override void RiepilogoInEmergenza()
+        //{
             
-        }
+        //}
     }
 }

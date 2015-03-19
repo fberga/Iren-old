@@ -137,7 +137,7 @@ namespace Iren.ToolsExcel {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeComponents() {
             // 
-            // Foglio2
+            // Main
             // 
         }
         

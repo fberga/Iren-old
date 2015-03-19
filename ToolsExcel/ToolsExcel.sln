@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrezziMSD", "PrezziMSD\Prez
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgrammazioneImpianti", "ProgrammazioneImpianti\ProgrammazioneImpianti.csproj", "{3CB9C2FD-0679-4B47-93CA-22EC683ABB55}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitCommitment", "UnitCommitment\UnitCommitment.csproj", "{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,16 @@ Global
 		{3CB9C2FD-0679-4B47-93CA-22EC683ABB55}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3CB9C2FD-0679-4B47-93CA-22EC683ABB55}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3CB9C2FD-0679-4B47-93CA-22EC683ABB55}.Release|x86.ActiveCfg = Release|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

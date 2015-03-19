@@ -8,13 +8,13 @@
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>Iren.ToolsExcel</RootNamespace>
-    <AssemblyName>PrezziMSD</AssemblyName>
-    <VSTO_HostDocumentName>PrezziMSD.xlsm</VSTO_HostDocumentName>
+    <AssemblyName>UnitComm</AssemblyName>
+    <VSTO_HostDocumentName>UnitCommitment.xlsm</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
     <OfficeApplication>Excel</OfficeApplication>
-    <ProjectGuid>{E98446FD-3610-4629-B65C-7FFDDC478E1B}</ProjectGuid>
+    <ProjectGuid>{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}</ProjectGuid>
     <SolutionID>4818c659-0c03-4f91-8f0c-5e0e9375d22f</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <FileUpgradeFlags>
@@ -32,10 +32,10 @@
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <ProductName>PrezziMSD</ProductName>
+    <ProductName>UnitComm</ProductName>
     <PublisherName />
     <SupportUrl />
-    <FriendlyName>PrezziMSD</FriendlyName>
+    <FriendlyName>UnitComm</FriendlyName>
     <OfficeApplicationDescription />
   </PropertyGroup>
   <ItemGroup>
@@ -146,14 +146,14 @@
   <ItemGroup>
     <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
-      <DependentUpon>PrezziMSD.xlsm</DependentUpon>
+      <DependentUpon>UnitCommitment.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Log.cs">
-      <DependentUpon>PrezziMSD.xlsm</DependentUpon>
+      <DependentUpon>UnitCommitment.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
     </Compile>
     <Compile Include="Log.Designer.cs">
@@ -173,7 +173,7 @@
     </EmbeddedResource>
     <Compile Include="Sheet.cs" />
     <Compile Include="ThisWorkbook.cs">
-      <DependentUpon>PrezziMSD.xlsm</DependentUpon>
+      <DependentUpon>UnitCommitment.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
     </Compile>
     <Compile Include="ThisWorkbook.Designer.cs">
@@ -188,7 +188,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="PrezziMSD.xlsm" />
+    <None Include="UnitCommitment.xlsm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ThisWorkbook.Designer.xml">
@@ -232,8 +232,8 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="PrezziMSD.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]PrezziMSD.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\PrezziMSD.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
+        <ProjectProperties HostName="UnitCommitment.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]UnitCommitment.xlsm&quot;" />
+        <Host Name="Excel Document" Path=".\UnitCommitment.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
           <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
           <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />

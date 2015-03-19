@@ -23,6 +23,7 @@ namespace Iren.ToolsExcel.Base
             informazione = 28,
             unitaMisura = 6,
             parametro = 8.8,
+            jolly1 = 0.0,
             riepilogo = 9;            
         }
 
