@@ -7,6 +7,8 @@ namespace Iren.ToolsExcel.Base
         public const string UNION = ".", 
             ALL = "ALL";
 
+        public const string EXCLUDE = "<!--%EXCLUDE%-->";
+
         public static string nomeApplicazione = "";
         private static bool emergenzaForzata = false;
         public static bool EmergenzaForzata

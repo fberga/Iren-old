@@ -48,13 +48,44 @@ namespace Iren.ToolsExcel.Base
 
         #region Overload Operatori
 
-        public Tuple<int, int>[] this[string key, bool excludeDATA0H24 = false]
+        //public string this[params object[] parts] 
+        //{
+        //    get
+        //    {
+        //        return Get(parts);
+        //    }
+        //}
+        //public string this[bool excludeDATA0H24, params object[] parts]
+        //{
+        //    get
+        //    {
+        //        return Get(excludeDATA0H24, parts);
+        //    }
+        //}
+        
+        
+        public Tuple<int, int>[] this[params object[] parts] 
+        {
+            get 
+            {
+                return Get(parts);
+            }
+        }
+        public Tuple<int, int>[] this[bool excludeDATA0H24, params object[] parts]
         {
             get
             {
-                return Get(key, excludeDATA0H24);
+                return Get(excludeDATA0H24, parts);
             }
         }
+        
+        //public Tuple<int, int>[] this[string key, bool excludeDATA0H24 = false]
+        //{
+        //    get
+        //    {
+        //        return Get(key, excludeDATA0H24);
+        //    }
+        //}
 
         public string[] this[int r1, int c1]
         {
@@ -108,30 +139,61 @@ namespace Iren.ToolsExcel.Base
                 o.Add(name["Nome"].ToString());
 
             return o.ToArray();
-        }        
-        public Tuple<int, int>[] Get(string name, bool excludeDATA0H24)
-        {
-            if(excludeDATA0H24)
-                return Get(name, "DATA0.H24");
-
-            return Get(name);
         }
-        public Tuple<int, int>[] Get(string name, params string[] exclude)
+        public Tuple<int, int>[] Get(bool excludeDATA0H24, params object[] parts)
         {
-            string filter = "";
-            name = PrepareName(name);
+            if (excludeDATA0H24)
+            {
+                Array.Resize(ref parts, parts.Length + 2);
+                parts[parts.Length - 2] = Simboli.EXCLUDE;
+                parts[parts.Length - 1] = "DATA0.H24";
+            }
+            return Get(parts);
+        }
+        public Tuple<int, int>[] Get(params object[] parts)
+        {
+            if (parts.Length > 1)
+            {
+                int pos = Array.FindIndex(parts, ele => ele.ToString() == Simboli.EXCLUDE);
+                pos = pos == -1 ? parts.Length : pos;
 
-            filter = "Nome LIKE '" + name + "%'";
+                string exclude = "";
+                for (int i = pos + 1; i < parts.Length; i++)
+                    exclude += " AND Nome NOT LIKE '%" + parts[i] + "%'";
 
-            if (exclude.Length > 0)
-                foreach (string exc in exclude)
+                Array.Resize(ref parts, pos);
+
+                if (Struct.tipoVisualizzazione == "V")
                 {
-                    filter += " AND Nome NOT LIKE '%" + exc + "%'";
+                    string suffissoData = parts.Last().ToString().Contains("DATA") ? parts.Last().ToString() : parts[parts.Length - 2].ToString();
+                    if (suffissoData.Contains("DATA"))
+                    {
+                        int oreGiorno = Date.GetOreGiorno(suffissoData);
+                        if (oreGiorno == 23)
+                        {
+                            exclude += " AND Nome NOT LIKE '%H24'";
+                            exclude += " AND Nome NOT LIKE '%H25'";
+                        }
+                        else if (oreGiorno == 24)
+                            exclude += " AND Nome NOT LIKE '%H25'";
+                    }
                 }
 
-            return GetByFilter(filter);
+                string name = PrepareName(GetName(parts));
+                string filter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'" + exclude;
+
+                return GetByFilter(filter);
+            }
+            else
+            {
+                string name = PrepareName(parts[0].ToString());
+                string filter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'";
+
+                return GetByFilter(filter);
+            }
+            
         }
-        public Tuple<int, int>[] GetByFilter(string filter)
+        public Tuple<int, int>[] GetByFilter(string filter, bool range = false)
         {
             if(_definedNamesView.RowFilter != filter)
                 _definedNamesView.RowFilter = filter;
@@ -139,14 +201,57 @@ namespace Iren.ToolsExcel.Base
             if (_definedNamesView.Count == 0)
                 return null;
 
-            Tuple<int, int>[] o = new Tuple<int, int>[_definedNamesView.Count];
+            Tuple<int, int>[] o;
             int i = 0;
-            foreach (DataRowView defName in _definedNamesView)
+            if (!range)
             {
-                o[i++] = Tuple.Create(int.Parse(defName["R1"].ToString()), int.Parse(defName["C1"].ToString()));
+                 o = new Tuple<int, int>[_definedNamesView.Count];
+                 foreach (DataRowView defName in _definedNamesView)
+                     o[i++] = Tuple.Create(int.Parse(defName["R1"].ToString()), int.Parse(defName["C1"].ToString()));
+            }
+            else
+            {
+                o = new Tuple<int, int>[2];
+                o[0] = Tuple.Create(int.Parse(_definedNamesView[0]["R1"].ToString()), int.Parse(_definedNamesView[0]["C1"].ToString()));
+                o[1] = Tuple.Create(int.Parse(_definedNamesView[_definedNamesView.Count - 1]["R1"].ToString()), int.Parse(_definedNamesView[_definedNamesView.Count - 1]["C1"].ToString()));
             }
 
             return o;
+        }
+        //public string GetRange(bool excludeDATA0H24, params object[] parts) 
+        //{
+        //    if (excludeDATA0H24)
+        //    {
+        //        Array.Resize(ref parts, parts.Length + 2);
+        //        parts[parts.Length - 2] = Simboli.EXCLUDE;
+        //        parts[parts.Length - 1] = "DATA0.H24";
+        //    }
+        //    return GetRange(parts);
+        //}
+        //public string GetRange(params object[] parts)
+        //{
+        //    int pos = Array.FindIndex(parts, ele => ele.ToString() == Simboli.EXCLUDE);
+        //    pos = pos == -1 ? parts.Length : pos;
+
+        //    string exclude = "";
+        //    for (int i = pos + 1; i < parts.Length; i++)
+        //        exclude += " AND Nome NOT LIKE '%" + parts[i] + "%'";
+
+        //    Array.Resize(ref parts, pos);
+
+        //    string name = PrepareName(GetName(parts));
+        //    string filter = "Foglio = '" + _foglio + "' AND Nome LIKE '" + name + "%'" + exclude;
+        //    Tuple<int, int>[] rng = GetByFilter(filter, true);
+        //    return Sheet.R1C1toA1(rng[0].Item1, rng[0].Item2) + ":" + Sheet.R1C1toA1(rng[1].Item1, rng[1].Item2);
+        //}
+
+        public string GetRange(Tuple<int, int> first, Tuple<int, int> last)
+        {
+            return Sheet.R1C1toA1(first) + ":" + Sheet.R1C1toA1(last);
+        }
+        public string GetRange(Tuple<int,int>[] range)
+        {
+            return GetRange(range.First(), range.Last());
         }
 
         public void ApplySort(string sortCondition)
@@ -437,5 +542,5 @@ namespace Iren.ToolsExcel.Base
             string o = DefinedNames.GetName(objSplit[0], objSplit[1], objSplit[2]);
             return o.GetHashCode();
         }
-    }
+    }    
 }

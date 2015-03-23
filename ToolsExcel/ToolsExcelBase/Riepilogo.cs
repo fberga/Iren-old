@@ -403,7 +403,7 @@ namespace Iren.ToolsExcel.Base
 
             if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", entita, azione, Date.GetSuffissoData(dataRif.Value))))
             {
-                Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName("RIEPILOGO", entita, azione, Date.GetSuffissoData(dataRif.Value))][0];
+                Tuple<int, int> cella = _nomiDefiniti["RIEPILOGO", entita, azione, Date.GetSuffissoData(dataRif.Value)][0];
                 Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
 
                 if (presente)
@@ -432,7 +432,7 @@ namespace Iren.ToolsExcel.Base
                 if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", "T", suffissoData)))
                 {
                     Tuple<int, int>[] riga = _nomiDefiniti.GetRanges(DefinedNames.GetName("RIEPILOGO", "T", suffissoData))[0];
-                    _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[1].Item1, riga[1].Item2]].Value = giorno;
+                    _ws.Range[_nomiDefiniti.GetRange(riga)].Value = giorno;
                 }
             });
         }
@@ -458,7 +458,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"])))
                     {
-                        Tuple<int, int>[] riga = _nomiDefiniti.Get(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"]), "GOTO");
+                        Tuple<int, int>[] riga = _nomiDefiniti["RIEPILOGO", e["siglaEntita"], Simboli.EXCLUDE, "GOTO"];
 
                         Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
                         rng.Value = "";

@@ -93,10 +93,11 @@ namespace Iren.ToolsExcel.Base
                     foreach (DataRowView entAzInfo in entitaAzioneInformazione)
                     {
                         object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
-
-                        Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(entita, entAzInfo["SiglaInformazione"], suffissoData)];
+                        
                         Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
-                        Excel.Range rng = ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
+                        Tuple<int, int>[] riga = nomiDefiniti[entita, entAzInfo["SiglaInformazione"], suffissoData];
+                        Excel.Range rng = ws.Range[nomiDefiniti.GetRange(riga)];
+
                         object[,] tmpVal = rng.Value;
                         object[] values = tmpVal.Cast<object>().ToArray();
 

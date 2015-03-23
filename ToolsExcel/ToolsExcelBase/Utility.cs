@@ -313,6 +313,10 @@ namespace Iren.ToolsExcel.Utility
             DateTime giornoSucc = giorno.AddDays(1);
             return (int)(giornoSucc.ToUniversalTime() - giorno.ToUniversalTime()).TotalHours;
         }
+        public static int GetOreGiorno(string suffissoData)
+        {
+            return GetOreGiorno(GetDataFromSuffisso(suffissoData));
+        }
         public static string GetSuffissoData(DateTime giorno)
         {
             return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
