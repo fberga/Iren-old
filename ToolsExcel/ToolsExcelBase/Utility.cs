@@ -72,6 +72,7 @@ namespace Iren.ToolsExcel.Utility
                 CALCOLOINFORMAZIONE = "CalcoloInformazione",
                 CATEGORIA = "Categoria",
                 CATEGORIAENTITA = "CategoriaEntita",
+                DATEDEFINITE = "DefinedDates",
                 ENTITAASSETTO = "EntitaAssetto",
                 ENTITAAZIONE = "EntitaAzione",
                 ENTITAAZIONEINFORMAZIONE = "EntitaAzioneInformazione",
@@ -85,9 +86,11 @@ namespace Iren.ToolsExcel.Utility
                 ENTITAPARAMETROH = "EntitaParametroH",
                 ENTITAPROPRIETA = "EntitaProprieta",
                 ENTITARAMPA = "EntitaRampa",
+                GOTODEFINITI = "DefinedGotos",
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMIDEFINITI = "DefinedNames",
+                NOMIDEFINITINEW = "DefinedNamesNew",
                 TIPOLOGIACHECK = "TipologiaCheck",
                 TIPOLOGIARAMPA = "TipologiaRampa",
                 UTENTE = "Utente";
@@ -375,6 +378,9 @@ namespace Iren.ToolsExcel.Utility
         public static void AggiornaStrutturaDati()
         {
             CreaTabellaNomi();
+            CreaTabellaNomiNew();
+            CreaTabellaDate();
+            CreaTabellaGOTO();
             CreaTabellaModifica();
             CaricaAzioni();
             CaricaCategorie();
@@ -416,6 +422,57 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
+
+        private static bool CreaTabellaNomiNew()
+        {
+            try
+            {
+                string name = Tab.NOMIDEFINITINEW;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultNameTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        private static bool CreaTabellaDate()
+        {
+            try
+            {
+                string name = Tab.DATEDEFINITE;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultDateTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static bool CreaTabellaGOTO()
+        {
+            try
+            {
+                string name = Tab.GOTODEFINITI;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultGOTOTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
         private static bool CreaTabellaModifica()
         {
             try

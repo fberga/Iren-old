@@ -16,7 +16,6 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Struct _struttura;
-        protected DefinedNames _nomiDefiniti;
 
         protected DateTime _dataInizio;
         protected DateTime _dataFine;
@@ -59,89 +58,6 @@ namespace Iren.ToolsExcel.Base
         protected void CicloGiorni(Action<int, string, DateTime> callback)
         {
             CicloGiorni(_dataInizio, _dataFine, callback);
-        }
-        protected string PreparaFormula(DataRowView info, string suffissoDataPrec, string suffissoData, int oreDataPrec, out int deltaNeg, out int deltaPos)
-        {
-            if (info["Formula"] != DBNull.Value || info["Funzione"] != DBNull.Value)
-            {
-                string formula = info["Formula"] is DBNull ? info["Funzione"].ToString() : info["Formula"].ToString();
-
-                string[] parametri = info["FormulaParametro"].ToString().Split(',');
-
-                int tmpdeltaNeg = 0;
-                int tmpdeltaPos = 0;
-
-                foreach (string par in parametri)
-                {
-                    if (Regex.IsMatch(par, @"\[[-+]?\d+\]"))
-                    {
-                        int deltaOre = int.Parse(par.Split('[')[1].Replace("]", ""));
-                        if (deltaOre > 0)
-                            tmpdeltaPos = Math.Max(tmpdeltaPos, deltaOre);
-                        else
-                            tmpdeltaNeg = Math.Min(tmpdeltaNeg, deltaOre);
-                    }
-                }
-
-                deltaNeg = Math.Abs(tmpdeltaNeg);
-                deltaPos = tmpdeltaPos;
-
-                formula = Regex.Replace(formula, @"%P\d+(E\d+)?%", delegate(Match m)
-                {
-                    string[] parametroEntita = m.Value.Split('E');
-                    int n = int.Parse(Regex.Match(parametroEntita[0], @"\d+").Value);
-
-                    string nome = "";
-                    if (parametroEntita.Length > 1)
-                    {
-                        int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
-                        DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
-                        nome = DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], parametri[n - 1]);
-                    }
-                    else
-                        nome = DefinedNames.GetName(info["SiglaEntita"], parametri[n - 1]);
-
-                    if (Regex.IsMatch(nome, @"\[[-+]?\d+\]"))
-                    {
-                        int deltaOre = int.Parse(nome.Split('[')[1].Replace("]", ""));
-
-                        if (suffissoData == "DATA1")
-                        {//traslo in avanti la formula di |deltaNeg| - |deltaOre|
-                            int ora = Math.Abs(tmpdeltaNeg) + deltaOre + (info["Data0H24"].Equals("1") ? 0 : 1);
-                            nome += Simboli.UNION + (ora == 0 ? DefinedNames.GetName("DATA0", "H24") : DefinedNames.GetName("DATA1", "H" + ora));
-                        }
-                        else
-                        {
-                            int ora = (deltaOre < 0 ? oreDataPrec + deltaOre + 1 : deltaOre + 1);
-                            nome += Simboli.UNION + DefinedNames.GetName(deltaOre < 0 ? suffissoDataPrec : suffissoData, "H" + ora);
-                        }
-                        nome = Regex.Replace(nome, @"\[[-+]?\d+\]", "");
-                    }
-                    else
-                    {
-                        if (suffissoData == "DATA1")
-                        {
-                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
-                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H" + ora);
-                        }
-                        else
-                        {
-                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H1");
-                        }
-                    }
-
-                    Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
-
-                    return R1C1toA1(coordinate.Item1, coordinate.Item2);
-                }, RegexOptions.IgnoreCase);
-                return formula;
-            }
-
-            deltaNeg = 0;
-            deltaPos = 0;
-
-            return "";
         }
 
         public abstract void LoadStructure();
@@ -330,6 +246,8 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Excel.Worksheet _ws;
+        protected DefinedNames _nomiDefiniti;
+        protected NewDefinedNames _newNomiDefiniti;
         protected object _siglaCategoria;
         protected int _colonnaInizio;
         protected int _intervalloOre;
@@ -377,6 +295,7 @@ namespace Iren.ToolsExcel.Base
             Struct.intervalloGiorni = paramApplicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione[0]["IntervalloGiorniEntita"];
 
             _nomiDefiniti = new DefinedNames(_ws.Name);
+            _newNomiDefiniti = new NewDefinedNames(_ws.Name);
         }
         ~Sheet()
         {
@@ -394,9 +313,23 @@ namespace Iren.ToolsExcel.Base
 
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
             _dataInizio = Utility.DataBase.DB.DataAttiva;
-            _dataFine = Utility.DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni);
 
+            //carico la massima datafine in maniera da creare la barra navigazione della dimensione giusta (compresa la definizione dei giorni se necessario)
+            int intervalloGiorniMax = 0;
+            if (Struct.tipoVisualizzazione == "O")
+            {
+                foreach (DataRowView entita in categoriaEntita)
+                {
+                    string siglaEntita = "" + entita["SiglaEntita"];
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    if (entitaProprieta.Count > 0)
+                        intervalloGiorniMax = Math.Max(intervalloGiorniMax, int.Parse("" + entitaProprieta[0]["Valore"]));
+                }
+            }
+            
+            _dataFine = Utility.DataBase.DB.DataAttiva.AddDays(intervalloGiorniMax);
 
+            _newNomiDefiniti.DefineDates(_dataInizio, _dataFine, _struttura.colBlock, _struttura.visData0H24);
 
             Clear();
             InitBarraNavigazione();
@@ -436,8 +369,51 @@ namespace Iren.ToolsExcel.Base
             InsertGrafici();
         }
 
+        protected void Clear()
+        {
+            _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
+
+            _ws.UsedRange.EntireColumn.Delete();
+            _ws.UsedRange.FormatConditions.Delete();
+            _ws.UsedRange.EntireRow.Hidden = false;
+            _ws.UsedRange.Font.Size = 10;
+            _ws.UsedRange.NumberFormat = "General";
+            _ws.UsedRange.Font.Name = "Verdana";
+            _ws.UsedRange.RowHeight = _cell.Height.normal;
+
+            _ws.Rows["1:" + (_struttura.rigaBlock - 1)].RowHeight = _cell.Height.empty;
+            _ws.Rows[_struttura.rigaGoto].RowHeight = _cell.Height.normal;
+
+            _ws.Columns[1].ColumnWidth = _cell.Width.empty;
+            _ws.Columns[2].ColumnWidth = _cell.Width.entita;
+
+            ((Excel._Worksheet)_ws).Activate();
+            _ws.Application.ActiveWindow.FreezePanes = false;
+            _ws.Cells[_struttura.rigaBlock, _struttura.colBlock].Select();
+            _ws.Application.ActiveWindow.ScrollColumn = 1;
+            _ws.Application.ActiveWindow.ScrollRow = 1;
+            _ws.Application.ActiveWindow.FreezePanes = true;
+
+            int infoCols = _struttura.colBlock - VisParametro;
+
+            _ws.Columns[infoCols].ColumnWidth = _cell.Width.informazione;
+            _ws.Columns[infoCols + 1].ColumnWidth = _cell.Width.unitaMisura;
+            if (_struttura.visParametro)
+                _ws.Columns[infoCols + 2].ColumnWidth = _cell.Width.parametro;
+        }
         protected void InitBarraNavigazione()
         {
+            //formatto la barra di navigazione
+            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            if (Struct.tipoVisualizzazione == "V")
+                dataOreTot = 25 + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+
+            string gotoBarRangeName = DefinedNames.GetName(_siglaCategoria, "GOTO_BAR");
+            Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
+            rng.Style = "gotoBarStyle";
+            rng.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
+
+            //vedo se e come dividere gli elementi per riga
             int numElementiMenu = 0;
 
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
@@ -462,6 +438,7 @@ namespace Iren.ToolsExcel.Base
             }
             
             double numEleRiga = numElementiMenu / Convert.ToDouble(numRighe);
+
 
             object[,] descrizioni = new object[numRighe, numElementiMenu / numRighe];
             int i = 0;
@@ -525,47 +502,8 @@ namespace Iren.ToolsExcel.Base
                     i++;
                 });
             }
-        }
-        protected void Clear()
-        {
-            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
-            if (Struct.tipoVisualizzazione == "V")
-                dataOreTot = 25;
 
-            _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
-
-            _ws.UsedRange.EntireColumn.Delete();
-            _ws.UsedRange.FormatConditions.Delete();
-            _ws.UsedRange.EntireRow.Hidden = false;
-            _ws.UsedRange.Font.Size = 10;
-            _ws.UsedRange.NumberFormat = "General";
-            _ws.UsedRange.Font.Name = "Verdana";
-            _ws.UsedRange.RowHeight = _cell.Height.normal;
-
-            _ws.Rows["1:" + (_struttura.rigaBlock - 1)].RowHeight = _cell.Height.empty;
-            _ws.Rows[_struttura.rigaGoto].RowHeight = _cell.Height.normal;
-
-            _ws.Columns[1].ColumnWidth = _cell.Width.empty;
-            _ws.Columns[2].ColumnWidth = _cell.Width.entita;
-
-            ((Excel._Worksheet)_ws).Activate();
-            _ws.Application.ActiveWindow.FreezePanes = false;
-            _ws.Cells[_struttura.rigaBlock, _struttura.colBlock].Select();
-            _ws.Application.ActiveWindow.ScrollColumn = 1;
-            _ws.Application.ActiveWindow.ScrollRow = 1;
-            _ws.Application.ActiveWindow.FreezePanes = true;
-
-            string gotoBarRangeName = DefinedNames.GetName(_siglaCategoria, "GOTO_BAR");
-            Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
-            rng.Style = "gotoBarStyle";
-            rng.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
-
-            int infoCols = _struttura.colBlock - VisParametro;
-
-            _ws.Columns[infoCols].ColumnWidth = _cell.Width.informazione;
-            _ws.Columns[infoCols + 1].ColumnWidth = _cell.Width.unitaMisura;
-            if (_struttura.visParametro)
-                _ws.Columns[infoCols + 2].ColumnWidth = _cell.Width.parametro;
+            _nomiDefiniti.DefineDates(_dataInizio, _dataFine, _struttura.colBlock, _struttura.visData0H24);
         }
         
         protected void InitBloccoEntita(DataRowView entita)
@@ -1236,6 +1174,90 @@ namespace Iren.ToolsExcel.Base
                 informazioni.Sort = "";
             }
 
+        }
+
+        protected string PreparaFormula(DataRowView info, string suffissoDataPrec, string suffissoData, int oreDataPrec, out int deltaNeg, out int deltaPos)
+        {
+            if (info["Formula"] != DBNull.Value || info["Funzione"] != DBNull.Value)
+            {
+                string formula = info["Formula"] is DBNull ? info["Funzione"].ToString() : info["Formula"].ToString();
+
+                string[] parametri = info["FormulaParametro"].ToString().Split(',');
+
+                int tmpdeltaNeg = 0;
+                int tmpdeltaPos = 0;
+
+                foreach (string par in parametri)
+                {
+                    if (Regex.IsMatch(par, @"\[[-+]?\d+\]"))
+                    {
+                        int deltaOre = int.Parse(par.Split('[')[1].Replace("]", ""));
+                        if (deltaOre > 0)
+                            tmpdeltaPos = Math.Max(tmpdeltaPos, deltaOre);
+                        else
+                            tmpdeltaNeg = Math.Min(tmpdeltaNeg, deltaOre);
+                    }
+                }
+
+                deltaNeg = Math.Abs(tmpdeltaNeg);
+                deltaPos = tmpdeltaPos;
+
+                formula = Regex.Replace(formula, @"%P\d+(E\d+)?%", delegate(Match m)
+                {
+                    string[] parametroEntita = m.Value.Split('E');
+                    int n = int.Parse(Regex.Match(parametroEntita[0], @"\d+").Value);
+
+                    string nome = "";
+                    if (parametroEntita.Length > 1)
+                    {
+                        int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
+                        DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
+                        nome = DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], parametri[n - 1]);
+                    }
+                    else
+                        nome = DefinedNames.GetName(info["SiglaEntita"], parametri[n - 1]);
+
+                    if (Regex.IsMatch(nome, @"\[[-+]?\d+\]"))
+                    {
+                        int deltaOre = int.Parse(nome.Split('[')[1].Replace("]", ""));
+
+                        if (suffissoData == "DATA1")
+                        {//traslo in avanti la formula di |deltaNeg| - |deltaOre|
+                            int ora = Math.Abs(tmpdeltaNeg) + deltaOre + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            nome += Simboli.UNION + (ora == 0 ? DefinedNames.GetName("DATA0", "H24") : DefinedNames.GetName("DATA1", "H" + ora));
+                        }
+                        else
+                        {
+                            int ora = (deltaOre < 0 ? oreDataPrec + deltaOre + 1 : deltaOre + 1);
+                            nome += Simboli.UNION + DefinedNames.GetName(deltaOre < 0 ? suffissoDataPrec : suffissoData, "H" + ora);
+                        }
+                        nome = Regex.Replace(nome, @"\[[-+]?\d+\]", "");
+                    }
+                    else
+                    {
+                        if (suffissoData == "DATA1")
+                        {
+                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H" + ora);
+                        }
+                        else
+                        {
+                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H1");
+                        }
+                    }
+
+                    Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
+
+                    return R1C1toA1(coordinate.Item1, coordinate.Item2);
+                }, RegexOptions.IgnoreCase);
+                return formula;
+            }
+
+            deltaNeg = 0;
+            deltaPos = 0;
+
+            return "";
         }
 
         public override void UpdateData(bool all = true)

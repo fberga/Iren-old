@@ -33,6 +33,44 @@ namespace Iren.ToolsExcel.Base
         protected DataView _definedNamesView;
         protected string _foglio;
 
+        protected Dictionary<string, int> _strIndexDefDates = new Dictionary<string,int>();
+        protected Dictionary<int, string> _intIndexDefDates = new Dictionary<int, string>();
+
+        protected Dictionary<string, int> _strIndexDefNames = new Dictionary<string, int>();
+        protected Dictionary<int, string> _intIndexDefNames = new Dictionary<int, string>();
+
+        public void DefineDates(DateTime dataInizio, DateTime dataFine, int colStart, bool data0H24)
+        {
+            if (data0H24)
+            {
+                string data = GetName(Date.GetSuffissoData(dataInizio.AddDays(-1)), Date.GetSuffissoOra(24));
+                _strIndexDefDates.Add(data, colStart);
+                _intIndexDefDates.Add(colStart, data);
+                colStart++;
+            }
+
+            for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
+            {
+                int oreGiorno = Struct.tipoVisualizzazione == "O" ? Date.GetOreGiorno(giorno) : 25;
+
+                for (int ora = 0; ora < oreGiorno; ora++)
+                {
+                    string data = GetName(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(ora + 1));
+                    _strIndexDefDates.Add(data, colStart);
+                    _intIndexDefDates.Add(colStart, data);
+                    colStart++;
+                }
+            }
+        }
+        
+        public void DefineName(object siglaEntita, object siglaInfo, int riga)
+        {
+            _strIndexDefNames.Add(GetName(siglaEntita, siglaInfo), riga);
+            _intIndexDefNames.Add(riga, GetName(siglaEntita, siglaInfo));
+        }
+
+
+
         #endregion
 
         #region Costruttori
@@ -542,5 +580,9 @@ namespace Iren.ToolsExcel.Base
             string o = DefinedNames.GetName(objSplit[0], objSplit[1], objSplit[2]);
             return o.GetHashCode();
         }
-    }    
+    }
+
+
+
+
 }
