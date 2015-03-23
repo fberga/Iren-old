@@ -6,7 +6,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class Style
+    public class Style : Utility.Workbook
     {
         public static void SetAllBorders(Excel.Style s, int colorIndex, Excel.XlBorderWeight weight)
         {
@@ -18,7 +18,7 @@ namespace Iren.ToolsExcel.Base
 
         public static void StdStyles()
         {
-            Workbook wb = CommonFunctions.WB;
+            Microsoft.Office.Tools.Excel.Workbook wb = WB;
             Excel.Style style;
             try
             {
@@ -130,7 +130,7 @@ namespace Iren.ToolsExcel.Base
 
         public static void RangeStyle(Excel.Range rng, string style)
         {
-            MatchCollection paramsList = Regex.Matches(style, @"\w+[=:]((\[.*\])|([^;:=]+))");
+            MatchCollection paramsList = Regex.Matches(style, @"\w+[=:]((\[[^\]]+\])|([^;:=]+))");
             foreach (Match par in paramsList)
             {
                 string[] keyVal;

@@ -12,11 +12,13 @@ using Office = Microsoft.Office.Core;
 using Microsoft.Office.Core;
 using System.Configuration;
 using System.IO;
-using Iren.ToolsExcel.Base;
 using System.Deployment.Application;
 using System.Reflection;
 using System.Globalization;
-using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Utility;
+using Iren.ToolsExcel.Base;
+
+// ************************************************************* SISTEMA COMANDI ************************************************************* //
 
 namespace Iren.ToolsExcel
 {
@@ -50,9 +52,10 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
-            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(BaseHandler.GotoClick);
+            this.WindowActivate += new Microsoft.Office.Interop.Excel.WorkbookEvents_WindowActivateEventHandler(this.ThisWorkbook_WindowActivate);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
             this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
+
         }
 
         #endregion
@@ -60,23 +63,30 @@ namespace Iren.ToolsExcel
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            CommonFunctions.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
+            bool emergenza = Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
 
             Sheet.Proteggi(false);
-            
+
+            Riepilogo r = new Riepilogo(this.Sheets["Main"]);
+
+            if (emergenza)
+                r.RiepilogoInEmergenza();
+
+            r.InitLabels();
+
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             Style.StdStyles();
-            //TODO riabilitare log!!
-            //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
             Sheet.Proteggi(true);
         }
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
-            //CommonFunctions.Close();
+            DataBase.SalvaModificheDB();
+            this.Save();
         }
 
         private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)
@@ -84,19 +94,31 @@ namespace Iren.ToolsExcel
 
         }
 
-        protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
+        private void ThisWorkbook_WindowActivate(Excel.Window Wn)
         {
-            return new Microsoft.Office.Tools.Ribbon.IRibbonExtension[] { new       
-        Iren.ToolsExcel.Ribbon.SharedRibbon(Globals.Factory.GetRibbonFactory()) };
+            try
+            {
+                Globals.Ribbons.ToolsExcelRibbon.RibbonUI.ActivateTab(Globals.Ribbons.ToolsExcelRibbon.FrontOffice.ControlId.CustomId);
+            }
+            catch (Exception)
+            {
+
+            }
         }
+
+        //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
+        //{
+        //    return new Microsoft.Office.Tools.Ribbon.IRibbonExtension[] { new       
+        //Iren.ToolsExcel.Ribbon.SharedRibbon(Globals.Factory.GetRibbonFactory()) };
+        //}
 
     }
 
-    partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonReadOnlyCollection
-    {
-        internal Iren.ToolsExcel.Ribbon.SharedRibbon SharedRibbon
-        {
-            get { return this.GetRibbon<Iren.ToolsExcel.Ribbon.SharedRibbon>(); }
-        }
-    }
+    //partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonReadOnlyCollection
+    //{
+    //    internal Iren.ToolsExcel.Ribbon.SharedRibbon SharedRibbon
+    //    {
+    //        get { return this.GetRibbon<Iren.ToolsExcel.Ribbon.SharedRibbon>(); }
+    //    }
+    //}
 }

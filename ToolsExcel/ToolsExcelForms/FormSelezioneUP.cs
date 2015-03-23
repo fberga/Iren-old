@@ -1,7 +1,9 @@
-﻿using Iren.ToolsExcel.Base;
+﻿using Iren.ToolsExcel.Utility;
+using Iren.ToolsExcel.Base;
 using System;
 using System.Data;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Forms
 {
@@ -41,7 +43,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void frmSELUP_Load(object sender, EventArgs e)
         {
-            DataView entitaInformazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
             entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "'";
 
             string rowFilter = "SiglaEntita IN (";
@@ -51,7 +53,7 @@ namespace Iren.ToolsExcel.Forms
             }
             rowFilter = rowFilter.Substring(0, rowFilter.Length - 1) + ")";
 
-            DataView categorieEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             categorieEntita.RowFilter = rowFilter;
 
             DataView groupedEntita = categorieEntita.ToTable(true, "SiglaEntita", "DesEntita").DefaultView;
@@ -63,13 +65,12 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            _isCanceld = true;
+            _siglaEntita = "";
             this.Close();
         }
 
         private void btnCarica_Click(object sender, EventArgs e)
         {
-            _hasSelection = true;
             this.Close();
         }
 
@@ -77,6 +78,20 @@ namespace Iren.ToolsExcel.Forms
         {
             _siglaEntita = ((DataRowView)comboUP.SelectedItem)["SiglaEntita"].ToString();
         }
+
+        /// <summary>
+        /// Sposta la selezione sul titolo dell'UP scelta e ritorna la sua sugla.
+        /// </summary>
+        /// <returns>Restituisce la sigla dell'UP scelta.</returns>
+        public new string ShowDialog()
+        {
+            base.ShowDialog();
+
+            if(_siglaEntita != "")
+                Handler.GOTO(_siglaEntita);            
+
+            return _siglaEntita;
+        } 
 
         #endregion
     }

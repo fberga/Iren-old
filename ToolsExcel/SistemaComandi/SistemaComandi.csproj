@@ -7,7 +7,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <RootNamespace>Iren.ToolsExcel.SistemaComandi</RootNamespace>
+    <RootNamespace>Iren.ToolsExcel</RootNamespace>
     <AssemblyName>SistemaComandi</AssemblyName>
     <VSTO_HostDocumentName>SistemaComandi.xlsm</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -144,30 +144,49 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
+      <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Log.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
+      <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
     </Compile>
     <Compile Include="Log.Designer.cs">
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ToolsExcelRibbon.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolsExcelRibbon.designer.cs">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
+    </Compile>
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.FrontOffice.Tools</CustomToolNamespace>
+      <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
     </Compile>
     <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolsExcelRibbon.resx">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ThisWorkbook.resx">
       <DependentUpon>ThisWorkbook.cs</DependentUpon>
@@ -205,10 +224,6 @@
       <Project>{f4c66fe5-1dc0-447b-b341-ff1960b78045}</Project>
       <Name>ToolsExcelForms</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ToolsExcelRibbon\ToolsExcelRibbon.csproj">
-      <Project>{c2bae5e5-f080-4352-b892-afb97f9d3606}</Project>
-      <Name>ToolsExcelRibbon</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ToolsExcelUserConfig\ToolsExcelUserConfig.csproj">
       <Project>{3e119690-1387-4fe3-89c1-756220fedeee}</Project>
       <Name>ToolsExcelUserConfig</Name>
@@ -224,7 +239,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.FrontOffice.Tools">
+        <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
           <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
           <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />

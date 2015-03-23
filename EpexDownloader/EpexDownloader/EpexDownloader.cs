@@ -46,7 +46,8 @@ namespace Iren.EpexDownloader
 
             if (!DateTime.TryParseExact(ConfigurationManager.AppSettings["endDate"], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _dataFine))
             {
-                _dataFine = DateTime.Now.AddDays(1);
+                _dataFine = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(1);
+                
             }
             if (!DateTime.TryParseExact(ConfigurationManager.AppSettings["startDate"], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _dataInizio))
             {

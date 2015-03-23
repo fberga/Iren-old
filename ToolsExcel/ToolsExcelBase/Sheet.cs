@@ -1,7 +1,8 @@
-﻿using Iren.ToolsExcel.Core;
+﻿using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -10,21 +11,333 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class Sheet : IDisposable
+    public abstract class ASheet
     {
         #region Variabili
 
-        Excel.Worksheet _ws;
-        object _siglaCategoria;
-        DateTime _dataInizio;
-        DateTime _dataFine;
-        int _colonnaInizio;
-        int _intervalloOre;
-        int _rigaAttiva;
-        bool _disposed = false;
-        DefinedNames _nomiDefiniti;
-        Cell _cell;
-        Struttura _struttura;
+        protected Struct _struttura;
+        protected DefinedNames _nomiDefiniti;
+
+        protected DateTime _dataInizio;
+        protected DateTime _dataFine;
+
+        #endregion
+
+        #region Parametri
+
+        protected int VisParametro
+        {
+            get
+            {
+                return _struttura.visParametro ? 3 : 2;
+            }
+        }
+
+        #endregion
+
+        protected void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
+        {
+            for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
+            {
+                int oreGiorno = Date.GetOreGiorno(giorno);
+                string suffissoData = Date.GetSuffissoData(_dataInizio, giorno);
+
+                if (Struct.tipoVisualizzazione == "V")
+                {
+                    oreGiorno = 25;
+                    suffissoData = Date.GetSuffissoData(DataBase.DataAttiva, giorno);
+                }
+
+                if (giorno == _dataInizio && _struttura.visData0H24)
+                {
+                    oreGiorno++;
+                }
+
+                callback(oreGiorno, suffissoData, giorno);
+            }
+        }
+        protected void CicloGiorni(Action<int, string, DateTime> callback)
+        {
+            CicloGiorni(_dataInizio, _dataFine, callback);
+        }
+        protected string PreparaFormula(DataRowView info, string suffissoDataPrec, string suffissoData, int oreDataPrec, out int deltaNeg, out int deltaPos)
+        {
+            if (info["Formula"] != DBNull.Value || info["Funzione"] != DBNull.Value)
+            {
+                string formula = info["Formula"] is DBNull ? info["Funzione"].ToString() : info["Formula"].ToString();
+
+                string[] parametri = info["FormulaParametro"].ToString().Split(',');
+
+                int tmpdeltaNeg = 0;
+                int tmpdeltaPos = 0;
+
+                foreach (string par in parametri)
+                {
+                    if (Regex.IsMatch(par, @"\[[-+]?\d+\]"))
+                    {
+                        int deltaOre = int.Parse(par.Split('[')[1].Replace("]", ""));
+                        if (deltaOre > 0)
+                            tmpdeltaPos = Math.Max(tmpdeltaPos, deltaOre);
+                        else
+                            tmpdeltaNeg = Math.Min(tmpdeltaNeg, deltaOre);
+                    }
+                }
+
+                deltaNeg = Math.Abs(tmpdeltaNeg);
+                deltaPos = tmpdeltaPos;
+
+                formula = Regex.Replace(formula, @"%P\d+(E\d+)?%", delegate(Match m)
+                {
+                    string[] parametroEntita = m.Value.Split('E');
+                    int n = int.Parse(Regex.Match(parametroEntita[0], @"\d+").Value);
+
+                    string nome = "";
+                    if (parametroEntita.Length > 1)
+                    {
+                        int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
+                        DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
+                        nome = DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], parametri[n - 1]);
+                    }
+                    else
+                        nome = DefinedNames.GetName(info["SiglaEntita"], parametri[n - 1]);
+
+                    if (Regex.IsMatch(nome, @"\[[-+]?\d+\]"))
+                    {
+                        int deltaOre = int.Parse(nome.Split('[')[1].Replace("]", ""));
+
+                        if (suffissoData == "DATA1")
+                        {//traslo in avanti la formula di |deltaNeg| - |deltaOre|
+                            int ora = Math.Abs(tmpdeltaNeg) + deltaOre + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            nome += Simboli.UNION + (ora == 0 ? DefinedNames.GetName("DATA0", "H24") : DefinedNames.GetName("DATA1", "H" + ora));
+                        }
+                        else
+                        {
+                            int ora = (deltaOre < 0 ? oreDataPrec + deltaOre + 1 : deltaOre + 1);
+                            nome += Simboli.UNION + DefinedNames.GetName(deltaOre < 0 ? suffissoDataPrec : suffissoData, "H" + ora);
+                        }
+                        nome = Regex.Replace(nome, @"\[[-+]?\d+\]", "");
+                    }
+                    else
+                    {
+                        if (suffissoData == "DATA1")
+                        {
+                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H" + ora);
+                        }
+                        else
+                        {
+                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H1");
+                        }
+                    }
+
+                    Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
+
+                    return R1C1toA1(coordinate.Item1, coordinate.Item2);
+                }, RegexOptions.IgnoreCase);
+                return formula;
+            }
+
+            deltaNeg = 0;
+            deltaPos = 0;
+
+            return "";
+        }
+
+        public abstract void LoadStructure();
+        public abstract void UpdateData(bool all = true);
+        public abstract void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false);
+        public abstract void AggiornaDateTitoli();
+        public abstract void AggiornaGrafici();
+        protected abstract void InsertPersonalizzazioni(object siglaEntita);
+
+        public abstract void CaricaInformazioni(bool all);
+
+        #region Metodi Statici
+
+        public static void Proteggi(bool proteggi)
+        {
+            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            {
+                if (proteggi)
+                    if (ws.Name == "Log")
+                        ws.Protect(Simboli.pwd, AllowSorting: true, AllowFiltering: true);
+                    else
+                        ws.Protect(Simboli.pwd);
+                else
+                    ws.Unprotect(Simboli.pwd);
+            }
+        }
+        public static void AbilitaModifica(bool abilita)
+        {
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            categorie.RowFilter = "Operativa = '1'";
+
+            Proteggi(false);
+            foreach (DataRowView categoria in categorie)
+            {
+                DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
+                Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
+
+                DataView informazioni = nomiDefiniti.GetEditable();
+                foreach (DataRowView info in informazioni)
+                {
+                    //se i giorni sono in verticale, devo disabilitare dove necessario l'ora 24 e la 25
+                    List<string> exclude = new List<string>();
+                    if (Struct.tipoVisualizzazione == "V")
+                    {
+                        int oreGiorno = Date.GetOreGiorno(Date.GetDataFromSuffisso(info["SuffissoData"]));
+                        if (oreGiorno == 23)
+                        {
+                            exclude.Add("H24");
+                            exclude.Add("H25");
+                        }
+                        else if (oreGiorno == 24)
+                            exclude.Add("H25");
+                    }
+                    Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(info["SiglaEntita"], info["SiglaInformazione"], info["SuffissoData"]), exclude.ToArray());
+                    ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
+                }
+            }
+            Proteggi(true);
+
+            //DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            //categorie.RowFilter = "Operativa = '1'";
+            //DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            //DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+
+            //foreach (DataRowView categoria in categorie)
+            //{
+            //    DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
+            //    Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
+
+            //    Proteggi(false);
+            //    entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
+            //    foreach (DataRowView e in entita)
+            //    {
+            //        informazioni.RowFilter = "SiglaEntita = '" + e["SiglaEntita"] + "' AND Editabile = '1'";
+            //        foreach (DataRowView info in informazioni)
+            //        {
+            //            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? e["SiglaEntita"] : info["SiglaEntitaRif"];
+            //            Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
+
+            //            ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
+            //        }
+            //    }
+            //    Proteggi(true);
+            //}
+        }
+        public static string R1C1toA1(int riga, int colonna)
+        {
+            string output = "";
+            while (colonna > 0)
+            {
+                int lettera = (colonna - 1) % 26;
+                output = Convert.ToChar(lettera + 65) + output;
+                colonna = (colonna - lettera) / 26;
+            }
+            output += riga;
+            return output;
+        }
+        public static string R1C1toA1(Tuple<int,int> cella)
+        {
+            return R1C1toA1(cella.Item1, cella.Item2);
+        }
+        public static Tuple<int, int> A1toR1C1(string address)
+        {
+            address = address.Replace("$", "");
+            string alpha = Regex.Match(address, @"\D+").Value;
+            int riga = int.Parse(Regex.Match(address, @"\d+").Value);
+
+            int colonna = 0;
+            int incremento = (alpha.Length == 1 ? 1 : 26 * (alpha.Length - 1));
+            for (int i = 0; i < alpha.Length; i++)
+            {
+                colonna += (char.ConvertToUtf32(alpha, i) - 64) * incremento;
+                incremento = incremento - 26 == 0 ? 1 : incremento - 26;
+            }
+
+            return Tuple.Create<int, int>(riga, colonna);
+        }
+
+        public static void SalvaModifiche(DateTime inizio, DateTime fine)
+        {
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+
+            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            {
+                if (ws.Name != "Main" && ws.Name != "Log")
+                {
+                    DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+                    categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
+                    categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+
+                    for (DateTime giorno = inizio; giorno <= fine; giorno = giorno.AddDays(1))
+                    {
+                        foreach (DataRowView entita in categoriaEntita)
+                        {
+                            entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                            foreach (DataRowView info in entitaInformazione)
+                            {
+                                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                                //Tuple<int, int>[] rngInfo = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno))];
+                                //Excel.Range rng = ws.Range[ws.Cells[rngInfo[0].Item1, rngInfo[0].Item2], ws.Cells[rngInfo[rngInfo.Length - 1].Item1, rngInfo[rngInfo.Length - 1].Item2]];
+                                //Handler.StoreEdit(ws, rng);
+
+                                Tuple<int,int>[] rngInfo = nomiDefiniti[siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno)];
+                                Handler.StoreEdit(ws, ws.Range[nomiDefiniti.GetRange(rngInfo)]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public static void SalvaModifiche()
+        {
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+
+            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            {
+                if (ws.Name != "Main" && ws.Name != "Log")
+                {
+                    DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+                    categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
+                    categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+
+                    foreach (DataRowView entita in categoriaEntita)
+                    {
+                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                        foreach (DataRowView info in entitaInformazione)
+                        {
+                            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                            Tuple<int, int>[] rngInfo = nomiDefiniti[info["Data0H24"].Equals("0"), siglaEntita, info["SiglaInformazione"]];
+                            Handler.StoreEdit(ws, ws.Range[nomiDefiniti.GetRange(rngInfo)]);
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+    }
+
+    public class Sheet : ASheet, IDisposable
+    {
+        #region Variabili
+
+        protected Excel.Worksheet _ws;
+        protected object _siglaCategoria;
+        protected int _colonnaInizio;
+        protected int _intervalloOre;
+        protected int _rigaAttiva;
+        protected bool _disposed = false;
+
+        protected Cell _cell;
+        
 
         #endregion
 
@@ -34,16 +347,16 @@ namespace Iren.ToolsExcel.Base
         {
             _ws = ws;
 
-            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
 
             _siglaCategoria = categorie[0]["SiglaCategoria"];            
 
             //dimensionamento celle in base ai parametri del DB
-            DataView paramApplicazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.APPLICAZIONE].DefaultView;
+            DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
             _cell = new Cell();
-            _struttura = new Struttura();
+            _struttura = new Struct();
 
             _cell.Width.empty = double.Parse(paramApplicazione[0]["ColVuotaWidth"].ToString());
             _cell.Width.dato = double.Parse(paramApplicazione[0]["ColDatoWidth"].ToString());
@@ -51,13 +364,17 @@ namespace Iren.ToolsExcel.Base
             _cell.Width.informazione = double.Parse(paramApplicazione[0]["ColInformazioneWidth"].ToString());
             _cell.Width.unitaMisura = double.Parse(paramApplicazione[0]["ColUMWidth"].ToString());
             _cell.Width.parametro = double.Parse(paramApplicazione[0]["ColParametroWidth"].ToString());
+            _cell.Width.jolly1 = double.Parse(paramApplicazione[0]["ColJolly1Width"].ToString());
             _cell.Height.normal = double.Parse(paramApplicazione[0]["RowHeight"].ToString());
             _cell.Height.empty = double.Parse(paramApplicazione[0]["RowVuotaHeight"].ToString());
-            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"];
+
+            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"] + (paramApplicazione[0]["TipoVisualizzazione"].Equals("O") ? 2 : 0);
             _struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
             _struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
             _struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
             _struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (_struttura.visParametro ? 1 : 0);
+            Struct.tipoVisualizzazione = paramApplicazione[0]["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione[0]["TipoVisualizzazione"].ToString();
+            Struct.intervalloGiorni = paramApplicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione[0]["IntervalloGiorniEntita"];
 
             _nomiDefiniti = new DefinedNames(_ws.Name);
         }
@@ -68,37 +385,152 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
-        #region Parametri
+        #region Metodi
 
-        private int VisParametro
+        public override void LoadStructure()
         {
-            get
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            _dataInizio = Utility.DataBase.DB.DataAttiva;
+            _dataFine = Utility.DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+
+
+            Clear();
+            InitBarraNavigazione();
+
+            _rigaAttiva = _struttura.rigaBlock + 1;
+
+            foreach (DataRowView entita in categoriaEntita)
             {
-                return _struttura.visParametro ? 3 : 2;
-            }
-        }
+                string siglaEntita = "" + entita["SiglaEntita"];
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
 
-        #endregion
-
-        private void CicloGiorni(Action<int, string, DateTime> callback)
-        {
-            for (DateTime giorno = _dataInizio; giorno <= _dataFine; giorno = giorno.AddDays(1))
-            {
-                int oreGiorno = CommonFunctions.GetOreGiorno(giorno);
-                string suffissoData = CommonFunctions.GetSuffissoData(_dataInizio, giorno);
-
-                if (giorno == _dataInizio && _struttura.visData0H24)
+                if (Struct.tipoVisualizzazione == "O")
                 {
-                    oreGiorno++;
-                }
+                    if (entitaProprieta.Count > 0)
+                        _dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));
+                    else
+                        _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
-                callback(oreGiorno, suffissoData, giorno);
+                    InitBloccoEntita(entita);
+                }
+                else if (Struct.tipoVisualizzazione == "V")
+                {
+                    CicloGiorni(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni), (oreGiorno, suffissoData, giorno) =>
+                    {
+                        _dataFine = _dataInizio = giorno;
+                        InitBloccoEntita(entita);
+                    });
+                }
             }
+
+            entitaProprieta.RowFilter = "";
+            categoriaEntita.RowFilter = "";
+
+            CaricaInformazioni(all: true);
+            CalcolaFormule();
+            Utilities.AggiornaFormule(_ws);
+            InsertGrafici();
         }
 
-        private void Clear()
+        protected void InitBarraNavigazione()
         {
-            int dataOreTot = CommonFunctions.GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Simboli.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int numElementiMenu = 0;
+
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+
+            if (Struct.tipoVisualizzazione == "O")
+                numElementiMenu = categoriaEntita.Count;
+            else if (Struct.tipoVisualizzazione == "V")
+                numElementiMenu = Struct.intervalloGiorni + 1;
+
+            int numRighe = 1;
+            if (numElementiMenu > 8)
+            {
+                int tmp = numElementiMenu;
+                while (tmp / 8 > 0)
+                {
+                    _ws.Rows[_struttura.rigaGoto + 1].Insert(Excel.XlInsertShiftDirection.xlShiftDown);
+                    _struttura.rigaBlock++;
+                    numRighe++;
+                    tmp /= 8;
+                }
+            }
+            
+            double numEleRiga = numElementiMenu / Convert.ToDouble(numRighe);
+
+            object[,] descrizioni = new object[numRighe, numElementiMenu / numRighe];
+            int i = 0;
+
+            if (Struct.tipoVisualizzazione == "O")
+            {
+                foreach (DataRowView e in categoriaEntita)
+                {
+                    int r = (i / (int)Math.Ceiling(numEleRiga));
+                    int c = (i % (int)Math.Ceiling(numEleRiga));
+                    _nomiDefiniti.Add(DefinedNames.GetName(e["siglaEntita"], "GOTO"), Tuple.Create(_struttura.rigaGoto + r, _struttura.colBlock + c));
+
+                    Excel.Range rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
+                    rng.Value = e["DesEntitaBreve"];
+                    rng.Style = "navBarStyle";
+
+                    i++;
+                }
+                
+                //inserisco le righe della data e delle ore
+                int colonnaInizio = _struttura.colBlock;
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    Excel.Range rngData = _ws.Range[_ws.Cells[_struttura.rigaBlock - 2, colonnaInizio], _ws.Cells[_struttura.rigaBlock - 2, colonnaInizio + oreGiorno - 1]];
+                    rngData.Merge();
+                    rngData.Style = "dateBarStyle";
+                    rngData.Value = giorno.ToString("MM/dd/yyyy");
+                    rngData.RowHeight = 20;
+
+                    InsertOre(_struttura.rigaBlock - 1, colonnaInizio, giorno, oreGiorno);
+                    colonnaInizio += oreGiorno;
+                });
+            }
+            else if (Struct.tipoVisualizzazione == "V")
+            {
+                int j = 0;
+                CicloGiorni((oreGiorno, suffissoData, giorno) => 
+                {
+                    int r = (i / (int)Math.Ceiling(numEleRiga));
+                    int c = (i % (int)Math.Ceiling(numEleRiga));
+                    
+                    Excel.Range rng;
+                    if(_cell.Width.dato < 8)
+                    {
+                        j = c == 0 ? 0 : j + 1;
+                        c += j;
+                        _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], suffissoData, "GOTO"), _struttura.rigaGoto + r, _struttura.colBlock + c, _struttura.rigaGoto + r, _struttura.colBlock + c + 1);
+                        rng = _ws.Range[_ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c], _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c + 1]];
+                        rng.Merge();
+                    }
+                    else
+                    {
+                        _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], suffissoData, "GOTO"), _struttura.rigaGoto + r, _struttura.colBlock + c);
+                        rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
+                    }
+                    rng.Value = giorno;
+                    rng.Style = "navBarStyle";
+                    rng.Font.Size = 10;
+                    rng.NumberFormat = "ddd d";
+
+                    i++;
+                });
+            }
+        }
+        protected void Clear()
+        {
+            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni)) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            if (Struct.tipoVisualizzazione == "V")
+                dataOreTot = 25;
 
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
 
@@ -124,7 +556,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.FreezePanes = true;
 
             string gotoBarRangeName = DefinedNames.GetName(_siglaCategoria, "GOTO_BAR");
-            Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaBlock - 2, _struttura.colBlock + dataOreTot - 1]];
+            Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
             rng.Style = "gotoBarStyle";
             rng.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
 
@@ -135,155 +567,42 @@ namespace Iren.ToolsExcel.Base
             if (_struttura.visParametro)
                 _ws.Columns[infoCols + 2].ColumnWidth = _cell.Width.parametro;
         }
-
-        public void LoadStructure()
+        
+        protected void InitBloccoEntita(DataRowView entita)
         {
-            //Stopwatch watch = Stopwatch.StartNew();
-
-            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = CommonFunctions.DB.DataAttiva;
-
-            Clear();
-            InitBarraNavigazione(dvCE);
-
-            _rigaAttiva = _struttura.rigaBlock;
-
-            foreach (DataRowView entita in dvCE)
-            {
-                string siglaEntita = "" + entita["SiglaEntita"];
-                dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                if (dvEP.Count > 0)
-                    _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
-                else
-                    _dataFine = _dataInizio.AddDays(Simboli.intervalloGiorni);
-
-                InitBloccoEntita(entita);
-            }
-            dvEP.RowFilter = "";
-            dvCE.RowFilter = "";
-            //watch.Stop();
-
-            //watch = Stopwatch.StartNew();
-            CaricaInformazioni(true);
-            //watch.Stop();
-            //watch = Stopwatch.StartNew();
-            CalcolaFormule();
-            //watch.Stop();
-            //watch = Stopwatch.StartNew();
-            CommonFunctions.AggiornaFormule(_ws);
-            //watch.Stop();
-            //watch = Stopwatch.StartNew();
-            InsertGrafici();
-            //watch.Stop();
-        }
-
-        public void UpdateData(bool all = true)
-        {
-            if(all)
-            {
-                CancellaDati();
-                AggiornaDateTitoli();
-                CaricaParametri();
-            }
-            CaricaInformazioni(all);
-            AggiornaGrafici();
-        }
-
-        private void InitBarraNavigazione(DataView entita)
-        {
-            object[] descrizioni = new object[entita.Count];
-            int i = -1;
-            foreach (DataRowView e in entita)
-            {
-                descrizioni[++i] = e["DesEntitaBreve"];
-                _nomiDefiniti.Add(DefinedNames.GetName(e["siglaEntita"], "GOTO"), Tuple.Create(_struttura.rigaGoto, _struttura.colBlock + i));
-            }
-
-            Excel.Range rng = _ws.Range[_ws.Cells[_struttura.rigaGoto, _struttura.colBlock],
-                _ws.Cells[_struttura.rigaGoto, _struttura.colBlock + i]];
-
-            rng.Value = descrizioni;
-            rng.Style = "navBarStyle";
-        }
-
-        private void InitBloccoEntita(DataRowView entita)
-        {
-            _rigaAttiva++;
-            DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
-            grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-
-            DataView graficiInfo = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
-            graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-
-            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            informazioni.Sort = "Ordine";
-
-            DataView parametriD = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROD].DefaultView;
-            DataView parametriH = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROH].DefaultView;
-
-            DataView formattazione = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONEFORMATTAZIONE].DefaultView;
 
             _colonnaInizio = _struttura.colBlock;
-            _intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
-            //titolo + data
-            //Stopwatch watch = Stopwatch.StartNew();
+            Stopwatch watch = Stopwatch.StartNew();
             InsertTitoloEntita(entita);
-            //watch.Stop();
-            //creazione range grafici
-            //watch = Stopwatch.StartNew();
-            InsertRangeGrafici(grafici);
-            //watch.Stop();
-            //ore
-            //watch = Stopwatch.StartNew();
+            InsertRangeGrafici(entita["SiglaEntita"]);
             InsertOre(entita["SiglaEntita"]);
-            //watch.Stop();
-            //titolo verticale
-            //watch = Stopwatch.StartNew();
             InsertTitoloVerticale(entita["SiglaEntita"], entita["DesEntitaBreve"], informazioni.Count);
-            //watch.Stop();
-            //formatta AllDati
-            //watch = Stopwatch.StartNew();
-            FormattaAllDati(informazioni);
-            //watch.Stop();
-            //informazioni
-            //watch = Stopwatch.StartNew();
-            InsertInformazioniEntita(entita["SiglaEntita"], informazioni);
-            //watch.Stop();
-            //nomi
-            //watch = Stopwatch.StartNew();
-            CreaNomiCelle(informazioni);
-            //watch.Stop();
-            //valori e formule
-            //watch = Stopwatch.StartNew();
-            informazioni.RowFilter += " AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1)";
-            InsertValoriCelle(informazioni);
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            //watch.Stop();
-            //parametri giornalieri/orari
-            //watch = Stopwatch.StartNew();
-            informazioni.RowFilter += " AND SiglaTipologiaParametro IS NOT NULL";
-            InsertParametri(informazioni, parametriD, parametriH);
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            //watch.Stop();
-            //formattazione condizionale
-            //watch = Stopwatch.StartNew();
-            CreaFormattazioneCondizionale(informazioni, formattazione);
-            //watch.Stop();
+            FormattaAllDati(entita["SiglaEntita"]);
+            InsertInformazioniEntita(entita["SiglaEntita"]);
+            CreaNomiCelle(entita["SiglaEntita"]);
+            watch.Stop();
+            watch = Stopwatch.StartNew();
+            InsertPersonalizzazioni(entita["SiglaEntita"]);
+            //InsertValoriCelle(entita["SiglaEntita"]);
+            watch.Stop();
+            watch = Stopwatch.StartNew();
+            InsertParametri(entita["SiglaEntita"]);
+            watch.Stop();
+            watch = Stopwatch.StartNew();
+            CreaFormattazioneCondizionale(entita["SiglaEntita"]);
+            watch.Stop();
 
             //due righe vuote tra un'entità e la successiva
-            _rigaAttiva += informazioni.Count + 1;
+            _rigaAttiva += informazioni.Count + 2;
         }
         #region Blocco entità
-
-        private void InsertTitoloEntita(DataRowView entita)
+        protected virtual void InsertTitoloEntita(DataRowView entita)
         {
-            int colonnaInizio = _colonnaInizio;
-
+            int colonnaInizio = _colonnaInizio;            
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
                 bool isVisibleData0H24 = giorno == _dataInizio && _struttura.visData0H24;
@@ -293,78 +612,103 @@ namespace Iren.ToolsExcel.Base
                     colonnaInizio++;
                     oreGiorno--;
                 }
-
-                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
+                Excel.Range rngTitolo = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]];
 
                 _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], "T", suffissoData), Tuple.Create(_rigaAttiva, colonnaInizio), Tuple.Create(_rigaAttiva, colonnaInizio + oreGiorno - 1));
 
-                rng.Merge();
-                rng.Style = "titleBarStyle";
-                rng.Value = entita["DesEntita"].ToString().ToUpperInvariant();
-                rng.RowHeight = 25;
+                rngTitolo.Merge();
+                rngTitolo.Style = "titleBarStyle";
+                if (Struct.tipoVisualizzazione == "O")
+                    rngTitolo.Value = entita["DesEntita"].ToString().ToUpperInvariant();
+                else if (Struct.tipoVisualizzazione == "V")
+                    rngTitolo.Value = giorno.ToString("MM/dd/yyyy");
 
-                rng = _ws.Range[_ws.Cells[_rigaAttiva + 1, colonnaInizio], _ws.Cells[_rigaAttiva + 1, colonnaInizio + oreGiorno - 1]];
-
-                _nomiDefiniti.Add(DefinedNames.GetName(entita["SiglaEntita"], suffissoData), Tuple.Create(_rigaAttiva + 1, colonnaInizio), Tuple.Create(_rigaAttiva + 1, colonnaInizio + oreGiorno - 1));
-
-                rng.Merge();
-                rng.Style = "dateBarStyle";
-                rng.Value = giorno.ToString("MM/dd/yyyy");
-                rng.RowHeight = 20;
+                rngTitolo.RowHeight = 25;
 
                 colonnaInizio += oreGiorno;
             });
             _rigaAttiva++;
         }
-        private void InsertRangeGrafici(DataView grafici)
+        protected virtual void InsertRangeGrafici(object siglaEntita, DateTime? giorno = null)
         {
+            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
+            grafici.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+
             int i = 1;
             foreach (DataRowView grafico in grafici)
             {
-                string graficoRange = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
+                string suffissoData = giorno == null ? "DATA1" : Date.GetSuffissoData(giorno.Value);
 
-                Excel.Range rng = _ws.Range[_ws.Cells[++_rigaAttiva, _colonnaInizio],
+                string graficoRange = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++, suffissoData);
+
+                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio],
                     _ws.Cells[_rigaAttiva, _colonnaInizio + _intervalloOre - 1]];
 
                 _nomiDefiniti.Add(graficoRange, Tuple.Create(_rigaAttiva, _colonnaInizio), Tuple.Create(_rigaAttiva, _colonnaInizio + _intervalloOre - 1));
                 rng.Merge();
                 rng.Style = "chartsBarStyle";
                 rng.RowHeight = 200;
+                _rigaAttiva++;
             }
-            _rigaAttiva++;
         }
-        private void InsertOre(object siglaEntita)
+        protected virtual void InsertOre(object siglaEntita)
         {
-            string style = "Align=center;Bold=true;FontSize=10;ForeColor=1;BackColor=15;Format=##;Borders=[InsideV:thin,Top:medium,Bottom:medium,Right:medium,Left:medium]";
-            _ws.Rows[_rigaAttiva].RowHeight = 20;
-            int colonnaInizio = _colonnaInizio;
-
-            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            if (Struct.tipoVisualizzazione == "V")
             {
-                Style.RangeStyle(_ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva, colonnaInizio + oreGiorno - 1]], style);
-                for (int i = colonnaInizio; i < colonnaInizio + oreGiorno; i++)
-                {
-                    int val = i - colonnaInizio + 1;
-                    if (giorno == _dataInizio && _struttura.visData0H24)
-                        val = i == colonnaInizio ? 24 : i - colonnaInizio;
-                    _ws.Cells[_rigaAttiva, i].Value = val;
-                }
-                colonnaInizio += oreGiorno;
-            });
-            _rigaAttiva++;
+                int colonnaInizio = _colonnaInizio;
+                
+                InsertOre(_rigaAttiva, colonnaInizio, _dataInizio, 25);
+                
+                _rigaAttiva++;
+            }
         }
-        private void InsertTitoloVerticale(object siglaEntita, object siglaEntitaBreve, int numInformazioni)
+        private void InsertOre(int rigaAttiva, int colonnaInizio, DateTime giorno, int oreGiorno)
+        {
+            Excel.Range rngOre = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + oreGiorno - 1]];
+            rngOre.Style = "dateBarStyle";
+            rngOre.NumberFormat = "00";
+            rngOre.Font.Size = 10;
+            rngOre.RowHeight = 20;
+
+            object[] valoriOre = new object[oreGiorno];
+            for (int ora = 0; ora < oreGiorno; ora++)
+            {
+                int val = ora + 1;
+                if (giorno == _dataInizio && _struttura.visData0H24)
+                    val = ora == 0 ? 24 : ora;
+
+                valoriOre[ora] = val;
+            }
+            rngOre.Value = valoriOre;
+        }
+        protected virtual void InsertTitoloVerticale(object siglaEntita, object siglaEntitaBreve, int numInformazioni)
         {
             int colonnaTitoloVert = _colonnaInizio - VisParametro - 1;
             Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaTitoloVert], _ws.Cells[_rigaAttiva + numInformazioni - 1, colonnaTitoloVert]];
             rng.Style = "titoloVertStyle";
             rng.Merge();
-            rng.Orientation = numInformazioni == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical;
-            rng.Font.Size = numInformazioni == 1 ? 6 : 9;
-            rng.Value = siglaEntitaBreve;
+
+            _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, "TITOLO_VERTICALE", Date.GetSuffissoData(_dataInizio)), _rigaAttiva, colonnaTitoloVert, _rigaAttiva + numInformazioni - 1, colonnaTitoloVert);
+
+            if (numInformazioni > 3) 
+            {
+                rng.Orientation = numInformazioni == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical;
+                rng.Font.Size = numInformazioni == 1 ? 6 : 9;
+                if (Struct.tipoVisualizzazione == "O")
+                    rng.Value = siglaEntitaBreve;
+                else if (Struct.tipoVisualizzazione == "V")
+                {
+                    rng.NumberFormat = "ddd d";
+                    rng.Value = _dataInizio;
+                }
+            }
         }
-        private void FormattaAllDati(DataView informazioni)
+        protected virtual void FormattaAllDati(object siglaEntita)
         {
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+            informazioni.Sort = "Ordine";
+
             int rigaAttiva = _rigaAttiva;
             int rigaInizioGruppo = rigaAttiva;
             int allDatiIndice = 1;
@@ -373,27 +717,40 @@ namespace Iren.ToolsExcel.Base
             int ultimaColonna = 0;
             foreach (DataRowView info in informazioni)
             {
-                bool primaRiga = informazioni[0] == info;
-                bool ultimaRiga = informazioni[informazioni.Count - 1] == info;
+                bool isPrimaRiga = informazioni[0] == info;
+                bool isUltimaRiga = informazioni[informazioni.Count - 1] == info;
 
                 //se non è la prima riga, se è l'ultima, se è un inizio gruppo e se prima non ho sistemato un TITOLO2, creo un range ALLDATI
-                if ((!primaRiga && info["InizioGruppo"].ToString() == "1" && rigaInizioGruppo < rigaAttiva) || ultimaRiga)
+                if ((!isPrimaRiga && info["InizioGruppo"].ToString() == "1" && rigaInizioGruppo < rigaAttiva) || isUltimaRiga)
                 {
                     int colonnaInizioAllDati = _colonnaInizio;
                     CicloGiorni((oreGiorno, suffissoData, giorno) =>
                     {
-                        Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[rigaAttiva - (ultimaRiga ? 0 : 1), colonnaInizioAllDati + oreGiorno - 1]];
+                        ultimaColonna = colonnaInizioAllDati + oreGiorno - 1;
+                        int ultimaRiga = rigaAttiva - (isUltimaRiga ? 0 : 1);
+                        Excel.Range allDati = _ws.Range[_ws.Cells[rigaInizioGruppo, colonnaInizioAllDati], _ws.Cells[ultimaRiga, ultimaColonna]];
                         allDati.Style = "allDatiStyle";
-                        //allDati.Name = GetName(info["SiglaEntita"], suffissoData, "ALLDATI" + allDatiIndice);
+                        if (isUltimaRiga && rigaAttiva - rigaInizioGruppo == 1)
+                            allDati.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlMedium;
                         allDati.EntireColumn.ColumnWidth = _cell.Width.dato;
                         allDati.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+
+                        if (Struct.tipoVisualizzazione == "V")
+                        {
+                            int deltaOre = 24 - Date.GetOreGiorno(giorno);
+                            if (deltaOre >= 0)
+                            {
+                                Excel.Range rngOre = _ws.Range[_ws.Cells[rigaInizioGruppo, ultimaColonna - deltaOre], _ws.Cells[ultimaRiga, ultimaColonna]];
+                                Style.RangeStyle(rngOre, "BackPattern:CrissCross");
+                            }
+                        }
                         colonnaInizioAllDati += oreGiorno;
-                        ultimaColonna = colonnaInizioAllDati + oreGiorno - 1;
                     });
+                    ultimaColonna = colonnaInizioAllDati - 1;
                     allDatiIndice++;
                     rigaInizioGruppo = rigaAttiva + (info["SiglaTipologiaInformazione"].ToString() == "TITOLO2" ? 1 : 0);
                 }
-                if (primaRiga && primaRigaTitolo2)
+                if (isPrimaRiga && primaRigaTitolo2)
                     rigaInizioGruppo++;
 
                 rigaAttiva++;
@@ -414,8 +771,12 @@ namespace Iren.ToolsExcel.Base
                 rigaAttiva++;
             }
         }
-        private void InsertInformazioniEntita(object siglaEntita, DataView informazioni)
+        protected virtual void InsertInformazioniEntita(object siglaEntita)
         {
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+            informazioni.Sort = "Ordine";
+
             int rigaAttiva = _rigaAttiva;
             int colonnaTitoloInfo = _colonnaInizio - VisParametro;
 
@@ -472,13 +833,17 @@ namespace Iren.ToolsExcel.Base
             }
             rigaAttiva++;
         }
-        private void CreaNomiCelle(DataView informazioni)
+        protected virtual void CreaNomiCelle(object siglaEntita)
         {
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+            informazioni.Sort = "Ordine";
+
             int rigaAttiva = _rigaAttiva;
             foreach (DataRowView info in informazioni)
             {
                 int oraAttiva = _colonnaInizio;
-                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
                     bool isVisibleData0H24 = giorno == _dataInizio && _struttura.visData0H24;
@@ -497,325 +862,166 @@ namespace Iren.ToolsExcel.Base
                 rigaAttiva++;
             }
         }
-        private void InsertValoriCelle(DataView informazioni)
+        protected override void InsertPersonalizzazioni(object siglaEntita) { }
+        protected virtual void InsertValoriCelle(object siglaEntita)
         {
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1)";
+
             //carico tutti i dati reperibili durante la creazione del foglio
-            int intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
 
             foreach (DataRowView info in informazioni)
             {
-                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Tuple<int, int>[] riga = _nomiDefiniti.Get(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-
+                siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                Tuple<int,int>[] riga = _nomiDefiniti[info["DATA0H24"].Equals("0"), siglaEntita, info["SiglaInformazione"]];
                 if (info["ValoreDefault"] != DBNull.Value)
                 {
-                    Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
+                    Excel.Range rng = _ws.Range[_nomiDefiniti.GetRange(riga)];
                     rng.Value = info["ValoreDefault"];
                 }
                 else if (info["FormulaInCella"].Equals("1"))
                 {
                     int deltaNeg;
                     int deltaPos;
+                    Stopwatch watch = Stopwatch.StartNew();
                     string formula = "=" + PreparaFormula(info, "DATA0", "DATA1", 24, out deltaNeg, out deltaPos);
+                    watch.Stop();
 
                     if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
                     {
-                        Tuple<int, int> cella = riga[0];
-
-                        Excel.Range cellRng = _ws.Cells[cella.Item1, cella.Item2];
-                        cellRng.Formula = "=SUM(" + Sheet.R1C1toA1(riga[1].Item1, riga[1].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2) + ")";
-
-                        Excel.Range rng = _ws.Range[_ws.Cells[riga[1].Item1, riga[1].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
-                        rng.Formula = formula;
+                        Excel.Range optRng = _ws.Cells[riga[0].Item1, riga[0].Item2];
+                        string rng = _nomiDefiniti.GetRange(riga[1], riga.Last());
+                        optRng.Formula = "=SUM(" + rng + ")";
+                        _ws.Range[rng].Formula = formula;
                     }
                     else
                     {
-                        Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2 + deltaNeg], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2 - deltaPos]];
-                        rng.Formula = formula;
+                        _ws.Range[_ws.Cells[riga.First().Item1, riga.First().Item2 + deltaNeg], _ws.Cells[riga.Last().Item1, riga.Last().Item2 - deltaPos]].Formula = formula;
                     }
                 }
             }
         }
-        //TODO controllare se funziona parametriH
-        private void InsertParametri(DataView informazioni, DataView parametriD, DataView parametriH)
+        protected virtual void InsertParametri(object siglaEntita)
         {
-            //carico tutti i dati reperibili durante la creazione del foglio
-            int intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaParametro IS NOT NULL";
+
+            DataView parametriD = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPARAMETROD].DefaultView;
+            DataView parametriH = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPARAMETROH].DefaultView;
 
             foreach (DataRowView info in informazioni)
             {
-                int colonnaInizio = !_struttura.visData0H24 ? _colonnaInizio : _colonnaInizio + 1;
-                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                int rigaAttiva = _nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])][0].Item1;
+                siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    oreGiorno = (giorno == _dataInizio && _struttura.visData0H24) ? oreGiorno - 1 : oreGiorno;
-
-                    Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + oreGiorno - 1]];
-                    parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + giorno.ToString("yyyyMMdd");
-
-                    if (parametriD.Count > 0)
-                        rng.Value = parametriD[0]["Valore"];
-                    else
+                    if (_nomiDefiniti.IsDefined(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])))
                     {
-                        parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + giorno.ToString("yyyyMMdd");
+                        Tuple<int, int>[] riga = _nomiDefiniti[siglaEntita, info["SiglaInformazione"], suffissoData];
+                        Excel.Range rng = _ws.Range[_nomiDefiniti.GetRange(riga)];
+                    
+                        parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + giorno.ToString("yyyyMMdd");
 
-                        parametriH.Sort = "Ora";
+                        if (parametriD.Count > 0)
+                            rng.Value = parametriD[0]["Valore"];
+                        else
+                        {
+                            parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + giorno.ToString("yyyyMMdd");
 
-                        object[] values = parametriH.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
-                        rng.Value = values;
+                            parametriH.Sort = "Ora";
+
+                            object[] values = parametriH.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
+                            rng.Value = values;
+                        }
                     }
-
-                    colonnaInizio += oreGiorno;
+                    
                 });
-                rigaAttiva++;
             }
         }
-        private string PreparaFormula(DataRowView info, string suffissoDataPrec, string suffissoData, int oreDataPrec, out int deltaNeg, out int deltaPos)
+        protected virtual void CreaFormattazioneCondizionale(object siglaEntita)
         {
-            if (info["Formula"] != DBNull.Value || info["Funzione"] != DBNull.Value)
-            {
-                string formula = info["Formula"] is DBNull ? info["Funzione"].ToString() : info["Formula"].ToString();
-
-                string[] parametri = info["FormulaParametro"].ToString().Split(',');
-
-                int tmpdeltaNeg = 0;
-                int tmpdeltaPos = 0;
-
-                foreach(string par in parametri) 
-                {
-                    if(Regex.IsMatch(par, @"\[[-+]?\d+\]"))
-                    {
-                        int deltaOre = int.Parse(par.Split('[')[1].Replace("]", ""));
-                        if(deltaOre > 0)
-                            tmpdeltaPos = Math.Max(tmpdeltaPos, deltaOre);
-                        else
-                            tmpdeltaNeg = Math.Min(tmpdeltaNeg, deltaOre);
-                    }
-                }
-                
-                deltaNeg = Math.Abs(tmpdeltaNeg);
-                deltaPos = tmpdeltaPos;
-
-                formula = Regex.Replace(formula, @"%P\d+(E\d+)?%", delegate(Match m)
-                {
-                    string[] parametroEntita = m.Value.Split('E');
-                    int n = int.Parse(Regex.Match(parametroEntita[0], @"\d+").Value);
-
-                    string nome = "";
-                    if (parametroEntita.Length > 1)
-                    {
-                        int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
-                        DataView categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
-                        nome = DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], parametri[n - 1]);
-                    }
-                    else
-                        nome = DefinedNames.GetName(info["SiglaEntita"], parametri[n - 1]);
-
-                    if(Regex.IsMatch(nome, @"\[[-+]?\d+\]"))
-                    {
-                        int deltaOre = int.Parse(nome.Split('[')[1].Replace("]", ""));
-
-                        if (suffissoData == "DATA1")
-                        {//traslo in avanti la formula di |deltaNeg| - |deltaOre|
-                            int ora = Math.Abs(tmpdeltaNeg) + deltaOre + (info["Data0H24"].Equals("1") ? 0 : 1);
-                            nome += Simboli.UNION + (ora  == 0 ? DefinedNames.GetName("DATA0", "H24") : DefinedNames.GetName("DATA1", "H" + ora));
-                        } 
-                        else 
-                        {
-                            int ora = (deltaOre < 0 ? oreDataPrec + deltaOre + 1 : deltaOre + 1);
-                            nome += Simboli.UNION + DefinedNames.GetName(deltaOre < 0 ? suffissoDataPrec : suffissoData, "H" + ora);
-                        }
-                        nome = Regex.Replace(nome, @"\[[-+]?\d+\]", "");
-                    }
-                    else
-                    {
-                        if (suffissoData == "DATA1")
-                        {
-                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
-                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H" + ora);
-                        }
-                        else
-                        {
-                            nome += Simboli.UNION + DefinedNames.GetName(suffissoData, "H1");
-                        }
-                    }
-
-                    Tuple<int, int> coordinate = _nomiDefiniti[nome][0];
-                        
-                    return R1C1toA1(coordinate.Item1, coordinate.Item2);
-                }, RegexOptions.IgnoreCase);
-                return formula;
-            }
-
-            deltaNeg = 0;
-            deltaPos = 0;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
             
-            return "";
-        }
-        private void CreaFormattazioneCondizionale(DataView informazioni, DataView formattazione)
-        {
-            int intervalloOre = CommonFunctions.GetOreIntervallo(_dataInizio, _dataFine);
-            int colonnaInizio = !_struttura.visData0H24 ? _colonnaInizio : _colonnaInizio + 1;
+            DataView formattazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONEFORMATTAZIONE].DefaultView;
 
             foreach (DataRowView info in informazioni)
             {
-                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 formattazione.RowFilter = (info["SiglaEntitaRif"] is DBNull ? "SiglaEntita" : "SiglaEntitaRif") + " = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "'";
 
                 foreach (DataRowView format in formattazione)
                 {
-                    int rigaAttiva = _nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])][0].Item1;
-                    Excel.Range rng = _ws.Range[_ws.Cells[rigaAttiva, colonnaInizio], _ws.Cells[rigaAttiva, colonnaInizio + intervalloOre - 1]];
-
-                    string[] valore = format["Valore"].ToString().Replace("\"", "").Split('|');
-                    if (format["NomeCella"] != DBNull.Value)
+                    CicloGiorni((oreGiorno, suffissoData, giorno) =>
                     {
-                        Tuple<int, int> coordinate = _nomiDefiniti[DefinedNames.GetName(siglaEntita, format["NomeCella"], "DATA1", "H1")][0];
-                        string address = R1C1toA1(coordinate.Item1, coordinate.Item2);
+                        Tuple<int, int>[] riga = _nomiDefiniti[siglaEntita, info["SiglaInformazione"], suffissoData];
+                        Excel.Range rng = _ws.Range[_nomiDefiniti.GetRange(riga)];
 
-                        string formula = "";
-                        switch ((int)format["Operatore"])
+                        string[] valore = format["Valore"].ToString().Replace("\"", "").Split('|');
+                        if (format["NomeCella"] != DBNull.Value)
                         {
-                            case 1:
-                                formula = "=E(" + address + ">=" + valore[0] + ";" + address + "<=" + valore[1] + ")";
-                                break;
-                            case 3:
-                                formula = "=" + address + "=" + valore[0];
-                                break;
-                            case 5:
-                                formula = "=" + address + ">" + valore[0];
-                                break;
-                            case 6:
-                                formula = "=" + address + "<" + valore[0];
-                                break;
-                        }
-                        Excel.FormatCondition cond = rng.FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: formula);
+                            Tuple<int,int> cella = _nomiDefiniti[siglaEntita, format["NomeCella"], suffissoData, "H1"][0];
+                            string address = R1C1toA1(cella);
 
-                        cond.Font.Color = format["ForeColor"];
-                        cond.Font.Bold = format["Grassetto"].Equals("1");
-                        if ((int)format["BackColor"] != 0)
-                            cond.Interior.Color = format["BackColor"];
-                        cond.Interior.Pattern = format["Pattern"];
-                    }
-                    else
-                    {
-                        string formula1;
-                        string formula2 = "";
-                        if ((int)format["Operatore"] == 1)
-                        {
-                            formula1 = valore[0];
-                            formula2 = valore[1];
+                            string formula = "";
+                            switch ((int)format["Operatore"])
+                            {
+                                case 1:
+                                    formula = "=E(" + address + ">=" + valore[0] + ";" + address + "<=" + valore[1] + ")";
+                                    break;
+                                case 3:
+                                    formula = "=" + address + "=" + valore[0];
+                                    break;
+                                case 5:
+                                    formula = "=" + address + ">" + valore[0];
+                                    break;
+                                case 6:
+                                    formula = "=" + address + "<" + valore[0];
+                                    break;
+                            }
+                            Excel.FormatCondition cond = rng.FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: formula);
+
+                            cond.Font.Color = format["ForeColor"];
+                            cond.Font.Bold = format["Grassetto"].Equals("1");
+                            if ((int)format["BackColor"] != 0)
+                                cond.Interior.Color = format["BackColor"];
+                            cond.Interior.Pattern = format["Pattern"];
                         }
                         else
                         {
-                            formula1 = valore[0];
+                            string formula1;
+                            string formula2 = "";
+                            if ((int)format["Operatore"] == 1)
+                            {
+                                formula1 = valore[0];
+                                formula2 = valore[1];
+                            }
+                            else
+                            {
+                                formula1 = valore[0];
+                            }
+
+                            Excel.FormatCondition cond = rng.FormatConditions.Add(Excel.XlFormatConditionType.xlCellValue, format["Operatore"], formula1, formula2);
+
+                            cond.Font.Color = format["ForeColor"];
+                            cond.Font.Bold = format["Grassetto"].Equals("1");
+                            if ((int)format["BackColor"] != 0)
+                                cond.Interior.Color = format["BackColor"];
+
+                            cond.Interior.Pattern = format["Pattern"];
                         }
-
-                        Excel.FormatCondition cond = rng.FormatConditions.Add(Excel.XlFormatConditionType.xlCellValue, format["Operatore"], formula1, formula2);
-
-                        cond.Font.Color = format["ForeColor"];
-                        cond.Font.Bold = format["Grassetto"].Equals("1");
-                        if ((int)format["BackColor"] != 0)
-                            cond.Interior.Color = format["BackColor"];
-
-                        cond.Interior.Pattern = format["Pattern"];
-                    }
+                    });
                 }
             }
         }
 
         #endregion
 
-        //cancella i dati di tutti i giorni o del giorno specificato (attenzione ad usare in caso di cambio data perché il prefisso viene calcolato da data inizio config)
-        private void CancellaDati(DateTime? giorno = null)
+        protected void InsertGrafici()
         {
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
-
-            string suffissoData = giorno == null ? null : CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, giorno.Value);
-
-            foreach (DataRowView entita in dvCE)
-            {
-                DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND ValoreDefault IS NULL";
-                
-                foreach (DataRowView info in informazioni)
-                {
-                    var siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-
-                    string nome = DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], suffissoData);
-                    //string nome = suffissoData == null ? DefinedNames.GetName(siglaEntita, info["SiglaInformazione"]) : DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], suffissoData);
-                    Tuple<int, int>[] riga = _nomiDefiniti[nome];
-
-                    Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]];
-                    rng.Value = "";
-                    rng.ClearComments();
-                    Style.RangeStyle(rng, "BackColor:" + info["BackColor"] + ";ForeColor:" + info["ForeColor"]);
-                }
-            }
-        }
-
-        public void AggiornaDateTitoli()
-        {
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND Gerarchia IS NULL";
-            _dataInizio = CommonFunctions.DB.DataAttiva;
-
-            foreach (DataRowView entita in dvCE)
-            {
-                dvEP.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                if (dvEP.Count > 0)
-                    _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
-                else
-                    _dataFine = _dataInizio.AddDays(Simboli.intervalloGiorni);
-
-                CicloGiorni((oreGiorno, suffissoData, giorno) =>
-                {
-                    Tuple<int, int>[] range = _nomiDefiniti.GetRange(DefinedNames.GetName(entita["SiglaEntita"], suffissoData));
-                    _ws.Range[_ws.Cells[range[0].Item1, range[0].Item2], _ws.Cells[range[1].Item1, range[1].Item2]].Value = giorno;
-                });
-            }
-        }
-
-        public void CaricaParametri()
-        {
-            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-
-            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
-
-            DataView parametriD = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROD].DefaultView;
-            DataView parametriH = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPARAMETROH].DefaultView;
-            
-
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
-            _dataInizio = CommonFunctions.DB.DataAttiva;
-
-            foreach (DataRowView entita in dvCE)
-            {
-                dvEP.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                if (dvEP.Count > 0)
-                    _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
-                else
-                    _dataFine = _dataInizio.AddDays(Simboli.intervalloGiorni);
-
-                informazioni.RowFilter += " AND SiglaTipologiaParametro IS NOT NULL";
-                InsertParametri(informazioni, parametriD, parametriH);
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            }
-        }
-
-        private void InsertGrafici()
-        {
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
-            DataView graficiInfo = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
+            DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
 
@@ -828,110 +1034,65 @@ namespace Iren.ToolsExcel.Base
                 foreach (DataRowView grafico in grafici)
                 {
                     string nome = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
-                    Tuple<int, int>[] rangeGrafico = _nomiDefiniti.GetRange(nome);
+                    List<Tuple<int, int>[]> rangeGrafici = _nomiDefiniti.GetRanges(nome);
 
-                    var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
-
-                    var rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
-                    Excel.Chart chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
-
-                    chart.Parent.Name = nome;
-
-                    chart.Axes(Excel.XlAxisType.xlCategory).TickLabelPosition = Excel.XlTickLabelPosition.xlTickLabelPositionNone;
-                    chart.Axes(Excel.XlAxisType.xlValue).HasMajorGridlines = false;
-                    chart.Axes(Excel.XlAxisType.xlValue).HasMinorGridlines = false;
-                    chart.Axes(Excel.XlAxisType.xlValue).MinorTickMark = Excel.XlTickMark.xlTickMarkOutside;
-                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name = "Verdana";
-                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size = 11;
-                    chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "general";
-
-                    chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionTop;
-                    chart.HasDataTable = false;
-                    chart.DisplayBlanksAs = Excel.XlDisplayBlanksAs.xlNotPlotted;
-                    chart.ChartGroups(1).GapWidth = 0;
-                    chart.ChartGroups(1).Overlap = 100;
-                    chart.ChartArea.Border.ColorIndex = 1;
-                    chart.ChartArea.Border.Weight = 3;
-                    chart.ChartArea.Border.LineStyle = 0;
-
-                    chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
-
-                    foreach (DataRowView info in graficiInfo)
+                    foreach (var rangeGrafico in rangeGrafici)
                     {
-                        Tuple<int, int>[] rangeDati = _nomiDefiniti[DefinedNames.GetName(grafico["SiglaEntita"], info["SiglaInformazione"])];
-                        var datiGrafico = _ws.Range[_ws.Cells[rangeDati[0].Item1, rangeDati[0].Item2], _ws.Cells[rangeDati[0].Item1, rangeDati[rangeDati.Length - 1].Item2]];
-                        var serie = chart.SeriesCollection().Add(datiGrafico);
-                        serie.Name = info["DesInformazione"].ToString();
-                        serie.ChartType = (Excel.XlChartType)info["ChartType"];
-                        serie.Interior.ColorIndex = info["InteriorColor"];
-                        serie.Border.ColorIndex = info["BorderColor"];
-                        serie.Border.Weight = info["BorderWeight"];
-                        serie.Border.LineStyle = info["BorderLineStyle"];
+                        var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
+
+                        var rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
+                        Excel.Chart chart = _ws.ChartObjects().Add(rigaGrafico.Left, rigaGrafico.Top + 1, rigaGrafico.Width, rigaGrafico.Height - 2).Chart;
+
+                        chart.Parent.Name = nome;
+
+                        chart.Axes(Excel.XlAxisType.xlCategory).TickLabelPosition = Excel.XlTickLabelPosition.xlTickLabelPositionNone;
+                        chart.Axes(Excel.XlAxisType.xlValue).HasMajorGridlines = false;
+                        chart.Axes(Excel.XlAxisType.xlValue).HasMinorGridlines = false;
+                        chart.Axes(Excel.XlAxisType.xlValue).MinorTickMark = Excel.XlTickMark.xlTickMarkOutside;
+                        chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name = "Verdana";
+                        chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size = 11;
+                        chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "general";
+
+                        chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionTop;
+                        chart.HasDataTable = false;
+                        chart.DisplayBlanksAs = Excel.XlDisplayBlanksAs.xlNotPlotted;
+                        chart.ChartGroups(1).GapWidth = 0;
+                        chart.ChartGroups(1).Overlap = 100;
+                        chart.ChartArea.Border.ColorIndex = 1;
+                        chart.ChartArea.Border.Weight = 3;
+                        chart.ChartArea.Border.LineStyle = 0;
+
+                        chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+
+                        foreach (DataRowView info in graficiInfo)
+                        {
+                            Tuple<int, int>[] rangeDati = _nomiDefiniti[grafico["SiglaEntita"], info["SiglaInformazione"]];
+                            Excel.Range datiGrafico = _ws.Range[_nomiDefiniti.GetRange(rangeDati)];
+
+                            var serie = chart.SeriesCollection().Add(datiGrafico);
+                            serie.Name = info["DesInformazione"].ToString();
+                            serie.ChartType = (Excel.XlChartType)info["ChartType"];
+                            serie.Interior.ColorIndex = info["InteriorColor"];
+                            serie.Border.ColorIndex = info["BorderColor"];
+                            serie.Border.Weight = info["BorderWeight"];
+                            serie.Border.LineStyle = info["BorderLineStyle"];
+                        }
+
+                        AggiornaGrafici(chart, rigaGrafico);
                     }
-
-                    AggiornaGrafici(chart, rigaGrafico);
                 }
             }
         }
 
-        private void AggiornaGrafici(Excel.Chart chart, Excel.Range rigaGrafico)
-        {
-            //resize dell'area del grafico per adattarla alle ore
-            string max = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale.ToString();
-            string min = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale.ToString();
-
-            max = max.Length > min.Length ? max : min;
-
-            Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
-            grfx.PageUnit = GraphicsUnit.Point;
-            SizeF sizeMax = grfx.MeasureString(max, new Font("Verdana", 11));
-
-            chart.ChartArea.Left = rigaGrafico.Left - sizeMax.Width - 7;
-            chart.ChartArea.Width = rigaGrafico.Width + sizeMax.Width + 4;
-            chart.PlotArea.InsideLeft = 0;
-            chart.PlotArea.Width = chart.ChartArea.Width + 3;
-        }
-
-        public void AggiornaGrafici()
-        {
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView grafici = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICO].DefaultView;
-            DataView graficiInfo = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
-
-            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
-
-            foreach (DataRowView entita in dvCE)
-            {
-                grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-                graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-
-                int i = 1;
-                foreach (DataRowView grafico in grafici)
-                {
-                    string nome = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
-
-                    Tuple<int, int>[] rangeGrafico = _nomiDefiniti.GetRange(nome);
-
-                    var cella = _ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2];
-                    Excel.Range rigaGrafico = _ws.Range[_ws.Cells[rangeGrafico[0].Item1, rangeGrafico[0].Item2], _ws.Cells[rangeGrafico[1].Item1, rangeGrafico[1].Item2]];
-                    var chart = _ws.ChartObjects(nome).Chart;
-                    //rigaGrafico.Locked = false;
-                    AggiornaGrafici(chart, rigaGrafico);
-                    chart.Refresh();
-                    //rigaGrafico.Locked = true;
-                }
-            }
-        }
-
-        public void CaricaInformazioni(bool all)
+        public override void CaricaInformazioni(bool all)
         {
             try
             {
-                DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-                DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+                DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
 
                 dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
-                _dataInizio = CommonFunctions.DB.DataAttiva;
+                _dataInizio = DataBase.DB.DataAttiva;
 
                 //calcolo tutte le date e mantengo anche la data max
                 DateTime dataFineMax = _dataInizio;
@@ -942,16 +1103,16 @@ namespace Iren.ToolsExcel.Base
                     if (dvEP.Count > 0)
                         dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"])));
                     else
-                        dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(Simboli.intervalloGiorni));
+                        dateFineUP.Add(entita["SiglaEntita"], _dataInizio.AddDays(Struct.intervalloGiorni));
 
                     dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
                 }
 
-                DataView datiApplicazione = CommonFunctions.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
+                DataView datiApplicazione = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
 
                 DataView insertManuali = new DataView();
                 if (all)
-                    insertManuali = CommonFunctions.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd")).DefaultView;
+                    insertManuali = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=1").DefaultView;
 
                 foreach (DataRowView entita in dvCE)
                 {
@@ -967,8 +1128,7 @@ namespace Iren.ToolsExcel.Base
             }
             catch (Exception e)
             {
-                CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni [all = " + all + "]: " + e.Message);
-
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni [all = " + all + "]: " + e.Message);
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
@@ -980,20 +1140,19 @@ namespace Iren.ToolsExcel.Base
             {
                 DateTime dataDato = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
                 //sono nel caso DATA0H24
-                if(dataDato < _dataInizio) 
+                if(dataDato < DataBase.DataAttiva) 
                 {
-                    Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], "DATA0", "H24")][0];
+                    Tuple<int,int> cella = _nomiDefiniti[dato["SiglaEntita"], dato["SiglaInformazione"], "DATA0", "H24"][0];
                     _ws.Cells[cella.Item1, cella.Item2].Value = dato["H24"];
                 } 
                 else 
                 {
-                    Tuple<int, int>[] riga = _nomiDefiniti[DefinedNames.GetName(dato["SiglaEntita"], dato["SiglaInformazione"], CommonFunctions.GetSuffissoData(_dataInizio, dataDato))];
+                    Tuple<int, int>[] riga = _nomiDefiniti[dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dataDato)];
 
                     List<object> o = new List<object>(dato.Row.ItemArray);
                     //elimino i campi inutili
                     o.RemoveRange(o.Count - 3, 3);
-
-                    _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = o.ToArray();
+                    _ws.Range[_nomiDefiniti.GetRange(riga)].Value = o.ToArray();
                 }
             }
         }
@@ -1002,7 +1161,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView commento in insertManuali)
             {
                 DateTime giorno = DateTime.ParseExact(commento["Data"].ToString().Substring(0, 8), "yyyyMMdd", CultureInfo.InvariantCulture);
-                Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(commento["SiglaEntita"], commento["SiglaInformazione"], CommonFunctions.GetSuffissoData(_dataInizio, giorno), CommonFunctions.GetSuffissoOra(commento["Data"]))][0];
+                Tuple<int, int> cella = _nomiDefiniti[commento["SiglaEntita"], commento["SiglaInformazione"], Date.GetSuffissoData(giorno), Date.GetSuffissoOra(commento["Data"])][0];
                 Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
                 rng.ClearComments();
                 rng.AddComment("Valore inserito manualmente");
@@ -1011,16 +1170,16 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
-        public void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false)
+        public override void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false)
         {
-            DataView dvCE = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
-            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");            
 
-            //_dataInizio = CommonFunctions.DB.DataAttiva;
-            //DateTime giorno = dataAttiva ?? CommonFunctions.DB.DataAttiva;
+            //_dataInizio = DB.DataAttiva;
+            //DateTime giorno = dataAttiva ?? DB.DataAttiva;
 
             bool all = giorno == null;
 
@@ -1041,26 +1200,26 @@ namespace Iren.ToolsExcel.Base
 
                     dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
                     if (dvEP.Count > 0)
-                        dataFine = CommonFunctions.DB.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
+                        dataFine = DataBase.DB.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                     else
-                        dataFine = CommonFunctions.DB.DataAttiva.AddDays(Simboli.intervalloGiorni);
+                        dataFine = DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni);
 
-                    string suffissoData = all ? "DATA1" : CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, giorno.Value);
-                    string suffissoDataPrec = all ? "DATA0" : CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, giorno.Value.AddDays(-1));
-                    string suffissoUltimoGiorno = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataFine);
+                    string suffissoData = all ? "DATA1" : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value);
+                    string suffissoDataPrec = all ? "DATA0" : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value.AddDays(-1));
+                    string suffissoUltimoGiorno = Date.GetSuffissoData(DataBase.DB.DataAttiva, dataFine);
 
                     foreach (DataRowView info in informazioni)
                     {
                         Tuple<int,int>[] riga;
                         if(all)
-                            riga = _nomiDefiniti.Get(DefinedNames.GetName(entita["SiglaEntita"], info["SiglaInformazione"]), info["Data0H24"].Equals("0"));
+                            riga = _nomiDefiniti[info["Data0H24"].Equals("0"), entita["SiglaEntita"], info["SiglaInformazione"]];
                         else
-                            riga = _nomiDefiniti[DefinedNames.GetName(entita["SiglaEntita"], info["SiglaInformazione"], suffissoData)];
+                            riga = _nomiDefiniti[entita["SiglaEntita"], info["SiglaInformazione"], suffissoData];
                         
 
                         int deltaNeg;
                         int deltaPos;
-                        int oreDataPrec = all ? 24 : CommonFunctions.GetOreGiorno(giorno.Value.AddDays(-1));
+                        int oreDataPrec = all ? 24 : Date.GetOreGiorno(giorno.Value.AddDays(-1));
                         
                         string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, oreDataPrec, out deltaNeg, out deltaPos);
 
@@ -1079,66 +1238,170 @@ namespace Iren.ToolsExcel.Base
 
         }
 
-        #region Metodi Statici
-
-        public static void Proteggi(bool proteggi)
+        public override void UpdateData(bool all = true)
         {
-            foreach (Excel.Worksheet ws in CommonFunctions.WB.Sheets)
+            if (all)
             {
-                if (proteggi)
-                    if(ws.Name == "Log")
-                        ws.Protect(Simboli.pwd, AllowSorting: true, AllowFiltering: true);
-                    else
-                        ws.Protect(Simboli.pwd);
+                CancellaDati();
+                AggiornaDateTitoli();
+                CaricaParametri();
+            }
+            CaricaInformazioni(all);
+            AggiornaGrafici();
+        }
+        #region UpdateData
+
+        //cancella i dati di tutti i giorni o del giorno specificato (attenzione ad usare in caso di cambio data perché il prefisso viene calcolato da data inizio config)
+        private void CancellaDati(DateTime? giorno = null)
+        {
+            DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
+
+            string suffissoData = giorno == null ? null : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value);
+
+            foreach (DataRowView entita in dvCE)
+            {
+                DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND ValoreDefault IS NULL";
+
+                foreach (DataRowView info in informazioni)
+                {
+                    if (Struct.tipoVisualizzazione == "O" || suffissoData != null)
+                    {
+                        var siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                        Tuple<int, int>[] riga = _nomiDefiniti[siglaEntita, info["SiglaInformazione"], suffissoData];
+
+                        Excel.Range rng = _ws.Range[_nomiDefiniti.GetRange(riga)];
+                        rng.Value = "";
+                        rng.ClearComments();
+                        Style.RangeStyle(rng, "BackColor:" + info["BackColor"] + ";ForeColor:" + info["ForeColor"]);
+                    }
+                    else if (Struct.tipoVisualizzazione == "V")
+                    {
+                        CicloGiorni(DataBase.DataAttiva, DataBase.DataAttiva.AddDays(Struct.intervalloGiorni), (oreGiorno, suffData, g) => 
+                        {
+                            var siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                            Tuple<int, int>[] riga = _nomiDefiniti[siglaEntita, info["SiglaInformazione"], suffData];
+
+                            Excel.Range rng = _ws.Range[_nomiDefiniti.GetRange(riga)];
+                            rng.Value = "";
+                            rng.ClearComments();
+                            Style.RangeStyle(rng, "BackColor:" + info["BackColor"] + ";ForeColor:" + info["ForeColor"]);
+                        });
+                    }
+                    
+                }
+            }
+        }
+        public override void AggiornaDateTitoli()
+        {
+            DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+
+            dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND Gerarchia IS NULL";
+            _dataInizio = DataBase.DB.DataAttiva;
+
+            foreach (DataRowView entita in dvCE)
+            {
+                dvEP.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                if (dvEP.Count > 0)
+                    _dataFine = _dataInizio.AddDays(double.Parse("" + dvEP[0]["Valore"]));
                 else
-                    ws.Unprotect(Simboli.pwd);
+                    _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
+
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    if (Struct.tipoVisualizzazione == "O")
+                    {
+                        Tuple<int, int>[] range = _nomiDefiniti.GetRanges(DefinedNames.GetName(entita["SiglaEntita"], suffissoData))[0];
+                        _ws.Range[_nomiDefiniti.GetRange(range)].Value = giorno;
+                    }
+                    else if (Struct.tipoVisualizzazione == "V")
+                    {
+                        Tuple<int, int>[] range = _nomiDefiniti.GetRanges(DefinedNames.GetName(entita["SiglaEntita"], "T", suffissoData))[0];
+                        _ws.Range[_nomiDefiniti.GetRange(range)].Value = giorno;
+
+                        range = _nomiDefiniti.GetRanges(DefinedNames.GetName(entita["SiglaEntita"], "TITOLO_VERTICALE", suffissoData))[0];
+                        if(range[1].Item1 - range[0].Item1 > 3)
+                            _ws.Range[_nomiDefiniti.GetRange(range)].Value = giorno;
+
+                        range = _nomiDefiniti[DefinedNames.GetName(entita["SiglaEntita"], suffissoData, "GOTO")];
+                        _ws.Cells[range[0].Item1, range[0].Item2].Value = giorno;
+                    }
+                    
+                });
             }
         }
 
-        public static void AbilitaModifica(bool abilita)
+        protected void CaricaParametri()
         {
-            DataView categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "Operativa = '1'";
-            DataView entita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
-            DataView informazioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
 
-            foreach (DataRowView categoria in categorie)
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            _dataInizio = DataBase.DB.DataAttiva;
+
+            foreach (DataRowView entita in categoriaEntita)
             {
-                DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
-                Excel.Worksheet ws = CommonFunctions.WB.Sheets[categoria["DesCategoria"].ToString()];
+                entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                if (entitaProprieta.Count > 0)
+                    _dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));
+                else
+                    _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
-                Proteggi(false);
-                entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
-                foreach (DataRowView e in entita)
+                InsertParametri(entita["SiglaEntita"]);
+            }
+        }
+
+        public override void AggiornaGrafici()
+        {
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
+
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";                
+
+                int i = 1;
+                foreach (DataRowView grafico in grafici)
                 {
-                    informazioni.RowFilter = "SiglaEntita = '" + e["SiglaEntita"] + "' AND Editabile = '1'";
-                    foreach (DataRowView info in informazioni)
-                    {
-                        object siglaEntita = info["SiglaEntitaRif"] is DBNull ? e["SiglaEntita"] : info["SiglaEntitaRif"];
-                        Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
+                    string nome = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++);
 
-                        ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
+                    List<Tuple<int, int>[]> rangeGrafici = _nomiDefiniti.GetRanges(nome);
+
+                    foreach (var rangeGrafico in rangeGrafici)
+                    {
+                        Excel.Range rigaGrafico = _ws.Range[_nomiDefiniti.GetRange(rangeGrafico)];
+                        var chart = _ws.ChartObjects(nome).Chart;
+                        AggiornaGrafici(chart, rigaGrafico);
+                        chart.Refresh();
                     }
                 }
-                Proteggi(true);
             }
         }
-
-        public static string R1C1toA1(int riga, int colonna)
+        private void AggiornaGrafici(Excel.Chart chart, Excel.Range rigaGrafico)
         {
-            string output = "";
-            while (colonna > 0)
-            {
-                int lettera = (colonna % 26 == 0 ? 26 : colonna % 26);
-                output = char.ConvertFromUtf32(lettera + 64) + output;
-                colonna = colonna / 26;
-            }
-            output += riga;
-            return output;
+            //resize dell'area del grafico per adattarla alle ore
+            string max = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale.ToString();
+            string min = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale.ToString();
+
+            max = max.Length > min.Length ? max : min;
+
+            Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
+            grfx.PageUnit = GraphicsUnit.Point;
+            SizeF sizeMax = grfx.MeasureString(max, new Font("Verdana", 11));
+
+            chart.ChartArea.Left = rigaGrafico.Left - sizeMax.Width - 7;
+            chart.ChartArea.Width = rigaGrafico.Width + sizeMax.Width + 4;
+            chart.PlotArea.InsideLeft = 0;
+            chart.PlotArea.Width = chart.ChartArea.Width + 3;
         }
 
         #endregion
-
 
         public void Dispose()
         {
@@ -1148,5 +1411,7 @@ namespace Iren.ToolsExcel.Base
                 _disposed = true;
             }
         }
+
+        #endregion
     }
 }

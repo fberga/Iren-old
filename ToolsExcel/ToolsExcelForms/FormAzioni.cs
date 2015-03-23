@@ -1,5 +1,5 @@
 ﻿using Iren.ToolsExcel.Base;
-using Iren.ToolsExcel.Core;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -21,26 +21,36 @@ namespace Iren.ToolsExcel.Forms
         DataView _azioniCategorie;
         DataView _entitaAzioni;
         DataView _entitaProprieta;
+        AEsporta _esporta;
+        ARiepilogo _r;
+
+        bool _categorieVisible = true;
+        bool _mercatiDaEsportareVisible = true;
+        bool _meteoVisible = true;
+        bool _giorniVisible = true;
 
         #endregion
 
         #region Costruttori
 
-        public FormAzioni()
+        public FormAzioni(AEsporta esporta, ARiepilogo riepilogo)
         {
             InitializeComponent();
 
-            _categorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIA].DefaultView;
+            _esporta = esporta;
+            _r = riepilogo;
+
+            _categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
-            _categoriaEntita = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.CATEGORIAENTITA].DefaultView;
+            _categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             _categoriaEntita.RowFilter = "";
-            _azioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONE].DefaultView;
+            _azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1";
-            _azioniCategorie = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.AZIONECATEGORIA].DefaultView;
+            _azioniCategorie = DataBase.LocalDB.Tables[DataBase.Tab.AZIONECATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "";
-            _entitaAzioni = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAAZIONE].DefaultView;
+            _entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE].DefaultView;
             _entitaAzioni.RowFilter = "";
-            _entitaProprieta = CommonFunctions.LocalDB.Tables[CommonFunctions.Tab.ENTITAPROPRIETA].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
             _entitaProprieta.RowFilter = "";
 
             System.Data.DataTable dt = new System.Data.DataTable()
@@ -52,11 +62,11 @@ namespace Iren.ToolsExcel.Forms
                 }
             };
 
-            for (int i = 0; i <= Simboli.intervalloGiorni; i++ )
+            for (int i = 0; i <= Struct.intervalloGiorni; i++ )
             {
                 DataRow r = dt.NewRow();
-                r["DescData"] = (i + 1) + "° - " + CommonFunctions.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
-                r["Data"] = CommonFunctions.DB.DataAttiva.AddDays(i);
+                r["DescData"] = (i + 1) + "° - " + DataBase.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
+                r["Data"] = DataBase.DB.DataAttiva.AddDays(i);
 
                 dt.Rows.Add(r);
             }
@@ -90,18 +100,22 @@ namespace Iren.ToolsExcel.Forms
             {
                 panelCategorie.Hide();
                 Width -= panelCategorie.Width;
+                _categorieVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()))
             {
                 groupDate.Hide();
+                _giorniVisible = false;
             }
             if (settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
             {
                 groupMercati.Hide();
+                _mercatiDaEsportareVisible = false;
             }
             if (settings.Contains("MeteoVisible") && falseMatch.IsMatch(settings["MeteoVisible"].ToString()))
             {
                 groupMercati.Hide();
+                _meteoVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()) &&
                 settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
@@ -119,17 +133,14 @@ namespace Iren.ToolsExcel.Forms
 
         private void CaricaAzioni()
         {
-            //CommonFunctions.DB.OpenConnection();
-            //var stato = CommonFunctions.StatoDB();
-            //CommonFunctions.DB.CloseConnection();
-            var stato = CommonFunctions.DB.StatoDB;
+            var stato = DataBase.DB.StatoDB;
 
             foreach (DataRowView azione in _azioni)
             {
                 bool aggiungi = true;
                 if (azione["IdFonte"] != DBNull.Value)
                 {
-                    var fonte = (DataBase.NomiDB)Enum.Parse(typeof(DataBase.NomiDB), azione["IdFonte"].ToString());
+                    var fonte = (Core.DataBase.NomiDB)Enum.Parse(typeof(Core.DataBase.NomiDB), azione["IdFonte"].ToString());
                     aggiungi = stato[fonte] == ConnectionState.Open;
                 }
 
@@ -139,7 +150,8 @@ namespace Iren.ToolsExcel.Forms
                 }
                 else if (aggiungi)
                 {
-                    treeViewAzioni.Nodes[azione["Gerarchia"].ToString()].Nodes.Add(azione["SiglaAzione"].ToString(), azione["DesAzione"].ToString());
+                    if(treeViewAzioni.Nodes.ContainsKey(azione["Gerarchia"].ToString()))
+                        treeViewAzioni.Nodes[azione["Gerarchia"].ToString()].Nodes.Add(azione["SiglaAzione"].ToString(), azione["DesAzione"].ToString());
                 }
             }
             treeViewAzioni.ExpandAll();
@@ -155,7 +167,10 @@ namespace Iren.ToolsExcel.Forms
                 }
                 else
                 {
-                    treeViewCategorie.Nodes[categoria["Gerarchia"].ToString()].Nodes.Add(categoria["SiglaCategoria"].ToString(), categoria["DesCategoriaBreve"].ToString());
+                    if (categoria["Gerarchia"] is DBNull)
+                        treeViewCategorie.Nodes.Add(categoria["SiglaCategoria"].ToString(), categoria["DesCategoriaBreve"].ToString());
+                    else
+                        treeViewCategorie.Nodes[categoria["Gerarchia"].ToString()].Nodes.Add(categoria["SiglaCategoria"].ToString(), categoria["DesCategoriaBreve"].ToString());
                 }
             }
             treeViewCategorie.ExpandAll();
@@ -266,10 +281,8 @@ namespace Iren.ToolsExcel.Forms
         private void frmAZIONI_Load(object sender, EventArgs e)
         {
             this.Text = Simboli.nomeApplicazione + " - Azioni";
-            Sheet.Proteggi(false);
             CaricaAzioni();
             CaricaCategorie();
-            Sheet.Proteggi(true);
         }
         
         private void treeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
@@ -423,7 +436,18 @@ namespace Iren.ToolsExcel.Forms
 
         private void treeViewUP_AfterCheck(object sender, TreeViewEventArgs e)
         {
+            checkTutte.CheckedChanged -= checkTutte_CheckedChanged;
+            
             Evidenzia(e.Node, e.Node.Checked);
+
+            bool check = true;
+            foreach (TreeNode node in treeViewUP.Nodes)
+            {
+                check = check && node.Checked;
+            }
+            checkTutte.Checked = check;
+
+            checkTutte.CheckedChanged += checkTutte_CheckedChanged;
         }
 
         private void btnMeteo_Click(object sender, EventArgs e)
@@ -443,13 +467,19 @@ namespace Iren.ToolsExcel.Forms
             btnAnnulla.Enabled = false;
             btnMeteo.Enabled = false;
 
-            if (comboGiorni.SelectedIndex == -1)
+            if (_giorniVisible && comboGiorni.SelectedIndex == -1)
                 MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (treeViewUP.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
                 MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
-                DateTime dataRif = (DateTime)((DataRowView)comboGiorni.SelectedItem)["Data"];
+                
+                DateTime dataRif;
+                if (_giorniVisible)
+                    dataRif = (DateTime)((DataRowView)comboGiorni.SelectedItem)["Data"];
+                else
+                    dataRif = DataBase.DataAttiva;
+
                 bool calcola = false;
                 int count = 0;
                 ThroughAllNodes(treeViewAzioni.Nodes, n =>
@@ -475,9 +505,9 @@ namespace Iren.ToolsExcel.Forms
                     });
                 }
 
-                if (CommonFunctions.DB.OpenConnection())
+                if (DataBase.OpenConnection())
                 {
-                    string suffissoData = CommonFunctions.GetSuffissoData(CommonFunctions.DB.DataAttiva, dataRif);
+                    string suffissoData = Date.GetSuffissoData(DataBase.DB.DataAttiva, dataRif);
 
                     bool[] statoAzione = new bool[4] { false, false, false, false };
 
@@ -486,25 +516,6 @@ namespace Iren.ToolsExcel.Forms
                         if (n.Checked && n.Nodes.Count == 0)
                         {
                             TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                            if (statoAzione[0] && !statoAzione[3] && n.Parent.Name == "GENERA")
-                            {
-                                statoAzione[3] = true;
-                                ThroughAllNodes(treeViewUP.Nodes, n1 =>
-                                {
-                                    if (n1.Checked && n1.Nodes.Count == 0)
-                                    {
-                                        string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                        Sheet s = new Sheet(CommonFunctions.WB.Sheets[nomeFoglio]);
-                                        s.CalcolaFormule(n1.Name, dataRif);
-
-                                        _categoriaEntita.RowFilter = "SiglaEntita = '" + n1.Name + "' AND Gerarchia IS NOT NULL";
-                                        if (_categoriaEntita.Count > 0)
-                                            s.CalcolaFormule(_categoriaEntita[0]["Gerarchia"].ToString(), dataRif);
-                                    }
-                                });
-
-                                //TODO SALVA MODIFICA
-                            }
                             _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
 
                             ThroughAllNodes(treeViewUP.Nodes, n1 =>
@@ -512,23 +523,22 @@ namespace Iren.ToolsExcel.Forms
                                 if (n1.Checked && n1.Nodes.Count == 0)
                                 {
                                     string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                    Riepilogo r = new Riepilogo(CommonFunctions.WB.Sheets["Main"]);
                                     bool presente;
                                     switch (n.Parent.Name)
                                     {
                                         case "CARICA":
-                                            presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                            r.AggiornaRiepilogo(n1.Name, n.Name, presente);
+                                            presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[0] = true;
                                             break;
                                         case "GENERA":
-                                            presente = CommonFunctions.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                            r.AggiornaRiepilogo(n1.Name, n.Name, presente);
+                                            presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
+                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[1] = true;
                                             break;
                                         case "ESPORTA":
-                                            IEsporta esporta = new Esporta();
-                                            esporta.EsportaAzioneInformazione(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            presente = _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, dataRif);
+                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
                                             statoAzione[2] = true;
                                             break;
                                     }
@@ -545,7 +555,7 @@ namespace Iren.ToolsExcel.Forms
                                                 DefinedNames nomiDefiniti = new DefinedNames("Main");
                                                 Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
 
-                                                Excel.Worksheet ws = CommonFunctions.WB.Sheets["Main"];
+                                                Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
                                                 if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
                                                 {
                                                     ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
@@ -560,22 +570,25 @@ namespace Iren.ToolsExcel.Forms
                             switch (n.Parent.Name)
                             {
                                 case "CARICA":
-                                    //TODO riabilitare log!!
-                                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
                                     break;
                                 case "GENERA":
-                                    //TODO riabilitare log!!
-                                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
                                     break;
                                 case "ESPORTA":
-                                    //TODO riabilitare log!!
-                                    //CommonFunctions.InsertLog(DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
                                     break;
                             }
                         }
                     });
 
-                    CommonFunctions.DB.CloseConnection();
+                    if (statoAzione[0] || statoAzione[1])
+                    {
+                        Sheet.SalvaModifiche();
+                        DataBase.SalvaModificheDB();
+                    }
+
+                    DataBase.DB.CloseConnection();
                 }
             }
 
@@ -585,5 +598,16 @@ namespace Iren.ToolsExcel.Forms
         }
 
         #endregion
+
+        private void checkTutte_CheckedChanged(object sender, EventArgs e)
+        {
+            treeViewUP.AfterCheck -= treeViewUP_AfterCheck;
+            foreach (TreeNode node in treeViewUP.Nodes)
+            {
+                node.Checked = checkTutte.Checked;
+                Evidenzia(node, checkTutte.Checked);
+            }
+            treeViewUP.AfterCheck += treeViewUP_AfterCheck;
+        }
     }
 }
