@@ -447,10 +447,8 @@ namespace Iren.ToolsExcel
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
-                    using (Sheet s = new Sheet(ws))
-                    {
-                        s.LoadStructure();
-                    }
+                    Sheet s = new Sheet(ws);
+                    s.LoadStructure();
                 }
             }
 

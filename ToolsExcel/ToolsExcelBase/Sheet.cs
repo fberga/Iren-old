@@ -367,8 +367,6 @@ namespace Iren.ToolsExcel.Base
             CalcolaFormule();
             Utilities.AggiornaFormule(_ws);
             InsertGrafici();
-
-            //_newNomiDefiniti.DumpToDataSet();
         }
 
         protected void Clear()
@@ -405,28 +403,27 @@ namespace Iren.ToolsExcel.Base
         }
         protected void InitBarraNavigazione()
         {
+            //formatto la barra di navigazione
+            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            if (Struct.tipoVisualizzazione == "V")
+                dataOreTot = 25 + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+
+            string gotoBarRangeName = DefinedNames.GetName(_siglaCategoria, "GOTO_BAR");
+            Excel.Range rng = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
+            rng.Style = "gotoBarStyle";
+            rng.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
+
+            //vedo se e come dividere gli elementi per riga
+            int numElementiMenu = 0;
+
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
-            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataFine);
-            int numElementiMenu = 0;
-
             if (Struct.tipoVisualizzazione == "O")
-            {
                 numElementiMenu = categoriaEntita.Count;
-            }
             else if (Struct.tipoVisualizzazione == "V")
-            {
                 numElementiMenu = Struct.intervalloGiorni + 1;
-                dataOreTot = 25;
-            }
-            dataOreTot += (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
-                
-            Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
-            gotoBar.Style = "gotoBarStyle";
-            gotoBar.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
 
-            //vedo se e come dividere gli elementi per riga
             int numRighe = 1;
             if (numElementiMenu > 8)
             {
@@ -442,6 +439,7 @@ namespace Iren.ToolsExcel.Base
             
             double numEleRiga = numElementiMenu / Convert.ToDouble(numRighe);
 
+
             object[,] descrizioni = new object[numRighe, numElementiMenu / numRighe];
             int i = 0;
 
@@ -452,7 +450,6 @@ namespace Iren.ToolsExcel.Base
                     int r = (i / (int)Math.Ceiling(numEleRiga));
                     int c = (i % (int)Math.Ceiling(numEleRiga));
                     _nomiDefiniti.Add(DefinedNames.GetName(e["siglaEntita"], "GOTO"), Tuple.Create(_struttura.rigaGoto + r, _struttura.colBlock + c));
-                    _newNomiDefiniti.AddGOTO(e["SiglaEntita"], _struttura.rigaGoto + r, _struttura.colBlock + c);
 
                     Excel.Range rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
                     rng.Value = e["DesEntitaBreve"];
@@ -489,9 +486,6 @@ namespace Iren.ToolsExcel.Base
                         j = c == 0 ? 0 : j + 1;
                         c += j;
                         _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], suffissoData, "GOTO"), _struttura.rigaGoto + r, _struttura.colBlock + c, _struttura.rigaGoto + r, _struttura.colBlock + c + 1);
-
-                        _newNomiDefiniti.AddGOTO(categoriaEntita[0]["SiglaEntita"], _struttura.rigaGoto + r, _struttura.colBlock + c);
-
                         rng = _ws.Range[_ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c], _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c + 1]];
                         rng.Merge();
                     }
@@ -508,6 +502,8 @@ namespace Iren.ToolsExcel.Base
                     i++;
                 });
             }
+
+            _nomiDefiniti.DefineDates(_dataInizio, _dataFine, _struttura.colBlock, _struttura.visData0H24);
         }
         
         protected void InitBloccoEntita(DataRowView entita)
@@ -1429,8 +1425,6 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
-        #endregion
-
         public void Dispose()
         {
             if (!_disposed)
@@ -1439,5 +1433,7 @@ namespace Iren.ToolsExcel.Base
                 _disposed = true;
             }
         }
+
+        #endregion
     }
 }
