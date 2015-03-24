@@ -53,8 +53,8 @@ namespace Iren.ToolsExcel
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
             this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.GotoClick);
+            this.WindowActivate += new Microsoft.Office.Interop.Excel.WorkbookEvents_WindowActivateEventHandler(this.ThisWorkbook_WindowActivate);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
-            this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
         }
 
         #endregion
@@ -88,9 +88,16 @@ namespace Iren.ToolsExcel
             this.Save();
         }
 
-        private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)
+        private void ThisWorkbook_WindowActivate(Excel.Window Wn)
         {
+            try
+            {
+                Globals.Ribbons.ToolsExcelRibbon.RibbonUI.ActivateTab(Globals.Ribbons.ToolsExcelRibbon.FrontOffice.ControlId.CustomId);
+            }
+            catch (Exception)
+            {
 
+            }
         }
 
         //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()

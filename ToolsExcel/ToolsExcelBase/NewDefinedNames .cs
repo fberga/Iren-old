@@ -10,16 +10,6 @@ namespace Iren.ToolsExcel.Base
 {
     public class NewDefinedNames
     {
-        #region Strutture
-
-        protected struct GotoObject
-        {
-            public int row, column;
-            public string addressTo;
-        }
-
-        #endregion
-
         #region Variabili
 
         string _sheet;
@@ -63,12 +53,15 @@ namespace Iren.ToolsExcel.Base
             _definedGotos =
                (from DataRow r in definedGotos.AsEnumerable()
                 where r["Sheet"].Equals(sheet)
-                select r).ToDictionary(r => r["Name"].ToString(), r => new GotoObject() 
-                                                                           { 
-                                                                               row = (int)r["Row"],
-                                                                               column = (int)r["Column"],
-                                                                               addressTo = r["AddressTo"].ToString()
-                                                                           });
+                select r).ToDictionary(
+                    r => r["Name"].ToString(), 
+                    r => new GotoObject() 
+                    { 
+                        row = (int)r["Row"],
+                        column = (int)r["Column"],
+                        addressTo = r["AddressTo"].ToString()
+                    }
+                );
         }
 
         #endregion
@@ -98,10 +91,10 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-        public void Add(object siglaEntita, object siglaInfo, int riga)
+        public void AddName(int riga, params object[] parts)
         {
-            _defNamesIndexByName.Add(GetName(siglaEntita, siglaInfo), riga);
-            _defNamesIndexByRow.Add(riga, GetName(siglaEntita, siglaInfo));
+            _defNamesIndexByName.Add(GetName(parts), riga);
+            _defNamesIndexByRow.Add(riga, GetName(parts));
         }
         public void AddGOTO(object siglaEntita, int row, int column, string addressTo = "")
         {
@@ -113,6 +106,21 @@ namespace Iren.ToolsExcel.Base
             };
 
             _definedGotos.Add(siglaEntita.ToString(), obj);
+        }
+        public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
+        {
+            _definedGotos[siglaEntita.ToString()].addressTo = addressTo;
+        }
+
+        public int GetColFromDate(string suffissoData, string suffissoOra = "H1")
+        {
+            string name = GetName(suffissoData, suffissoOra);
+            return _defDatesIndexByName[name];
+        }
+
+        public int GetRowByName(params object[] parts)
+        {
+            return _defNamesIndexByName[GetName(parts)];
         }
 
         #endregion
@@ -299,4 +307,14 @@ namespace Iren.ToolsExcel.Base
             }
         }
     }
+
+    #region Classi supporto
+
+    public class GotoObject
+    {
+        public int row, column;
+        public string addressTo;
+    }
+
+    #endregion
 }

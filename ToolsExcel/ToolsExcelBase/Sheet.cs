@@ -47,6 +47,7 @@ namespace Iren.ToolsExcel.Base
                     suffissoData = Date.GetSuffissoData(DataBase.DataAttiva, giorno);
                 }
 
+                //TODO rimuovere
                 if (giorno == _dataInizio && _struttura.visData0H24)
                 {
                     oreGiorno++;
@@ -174,6 +175,14 @@ namespace Iren.ToolsExcel.Base
             }
 
             return Tuple.Create<int, int>(riga, colonna);
+        }
+
+        public static string GetRange(int startRow, int startCol, int rowOffset = 0, int colOffset = 0)
+        {
+            if (rowOffset == 0 && colOffset == 0)
+                return R1C1toA1(startRow, startCol);
+
+            return R1C1toA1(startRow, startCol) + ":" + R1C1toA1(startRow + rowOffset, startCol + colOffset);
         }
 
         public static void SalvaModifiche(DateTime inizio, DateTime fine)
@@ -368,7 +377,7 @@ namespace Iren.ToolsExcel.Base
             Utilities.AggiornaFormule(_ws);
             InsertGrafici();
 
-            //_newNomiDefiniti.DumpToDataSet();
+            _newNomiDefiniti.DumpToDataSet();
         }
 
         protected void Clear()
@@ -408,19 +417,8 @@ namespace Iren.ToolsExcel.Base
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
-            int dataOreTot = Date.GetOreIntervallo(_dataInizio, _dataFine);
-            int numElementiMenu = 0;
-
-            if (Struct.tipoVisualizzazione == "O")
-            {
-                numElementiMenu = categoriaEntita.Count;
-            }
-            else if (Struct.tipoVisualizzazione == "V")
-            {
-                numElementiMenu = Struct.intervalloGiorni + 1;
-                dataOreTot = 25;
-            }
-            dataOreTot += (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int numElementiMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
                 
             Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
             gotoBar.Style = "gotoBarStyle";
@@ -439,29 +437,36 @@ namespace Iren.ToolsExcel.Base
                     tmp /= 8;
                 }
             }
-            
             double numEleRiga = numElementiMenu / Convert.ToDouble(numRighe);
 
-            object[,] descrizioni = new object[numRighe, numElementiMenu / numRighe];
-            int i = 0;
+            int j = 0;
+            for (int i = 0; i < numElementiMenu; i++)
+            {
+                int r = (i / (int)Math.Ceiling(numEleRiga));
+                int c = (i % (int)Math.Ceiling(numEleRiga));
 
+                object nome = Struct.tipoVisualizzazione == "O" ? categoriaEntita[i]["SiglaEntita"] : DataBase.DataAttiva.AddDays(i);
+                _newNomiDefiniti.AddGOTO(nome, _struttura.rigaGoto + r, _struttura.colBlock + c);
+
+                Excel.Range rng;
+                if (_cell.Width.dato < 8)
+                {
+                    j = c == 0 ? 0 : j + 1;
+                    c += j;
+                    rng = _ws.Range[_ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c], _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c + 1]];
+                    rng.Merge();
+                }
+                else
+                {
+                    rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
+                }
+                rng.Value = Struct.tipoVisualizzazione == "O" ? categoriaEntita[i]["DesEntitaBreve"] : nome;
+                rng.Style = Struct.tipoVisualizzazione == "O" ? "navBarStyleHorizontal" : "navBarStyleVertical";
+            }
+
+            //inserisco la data e le ore
             if (Struct.tipoVisualizzazione == "O")
             {
-                foreach (DataRowView e in categoriaEntita)
-                {
-                    int r = (i / (int)Math.Ceiling(numEleRiga));
-                    int c = (i % (int)Math.Ceiling(numEleRiga));
-                    _nomiDefiniti.Add(DefinedNames.GetName(e["siglaEntita"], "GOTO"), Tuple.Create(_struttura.rigaGoto + r, _struttura.colBlock + c));
-                    _newNomiDefiniti.AddGOTO(e["SiglaEntita"], _struttura.rigaGoto + r, _struttura.colBlock + c);
-
-                    Excel.Range rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
-                    rng.Value = e["DesEntitaBreve"];
-                    rng.Style = "navBarStyle";
-
-                    i++;
-                }
-                
-                //inserisco le righe della data e delle ore
                 int colonnaInizio = _struttura.colBlock;
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
@@ -475,39 +480,6 @@ namespace Iren.ToolsExcel.Base
                     colonnaInizio += oreGiorno;
                 });
             }
-            else if (Struct.tipoVisualizzazione == "V")
-            {
-                int j = 0;
-                CicloGiorni((oreGiorno, suffissoData, giorno) => 
-                {
-                    int r = (i / (int)Math.Ceiling(numEleRiga));
-                    int c = (i % (int)Math.Ceiling(numEleRiga));
-                    
-                    Excel.Range rng;
-                    if(_cell.Width.dato < 8)
-                    {
-                        j = c == 0 ? 0 : j + 1;
-                        c += j;
-                        _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], suffissoData, "GOTO"), _struttura.rigaGoto + r, _struttura.colBlock + c, _struttura.rigaGoto + r, _struttura.colBlock + c + 1);
-
-                        _newNomiDefiniti.AddGOTO(categoriaEntita[0]["SiglaEntita"], _struttura.rigaGoto + r, _struttura.colBlock + c);
-
-                        rng = _ws.Range[_ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c], _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c + 1]];
-                        rng.Merge();
-                    }
-                    else
-                    {
-                        _nomiDefiniti.Add(DefinedNames.GetName(categoriaEntita[0]["SiglaEntita"], suffissoData, "GOTO"), _struttura.rigaGoto + r, _struttura.colBlock + c);
-                        rng = _ws.Cells[_struttura.rigaGoto + r, _struttura.colBlock + c];
-                    }
-                    rng.Value = giorno;
-                    rng.Style = "navBarStyle";
-                    rng.Font.Size = 10;
-                    rng.NumberFormat = "ddd d";
-
-                    i++;
-                });
-            }
         }
         
         protected void InitBloccoEntita(DataRowView entita)
@@ -518,30 +490,78 @@ namespace Iren.ToolsExcel.Base
             _colonnaInizio = _struttura.colBlock;
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
-            Stopwatch watch = Stopwatch.StartNew();
-            InsertTitoloEntita(entita);
+            CreaNomiCelle2(entita["SiglaEntita"]);
+            InsertTitoloEntita2(entita["SiglaEntita"], entita["DesEntita"]);
+            //InsertTitoloEntita(entita);
             InsertRangeGrafici(entita["SiglaEntita"]);
             InsertOre(entita["SiglaEntita"]);
             InsertTitoloVerticale(entita["SiglaEntita"], entita["DesEntitaBreve"], informazioni.Count);
             FormattaAllDati(entita["SiglaEntita"]);
             InsertInformazioniEntita(entita["SiglaEntita"]);
             CreaNomiCelle(entita["SiglaEntita"]);
-            watch.Stop();
-            watch = Stopwatch.StartNew();
             InsertPersonalizzazioni(entita["SiglaEntita"]);
-            //InsertValoriCelle(entita["SiglaEntita"]);
-            watch.Stop();
-            watch = Stopwatch.StartNew();
+            InsertValoriCelle(entita["SiglaEntita"]);
             InsertParametri(entita["SiglaEntita"]);
-            watch.Stop();
-            watch = Stopwatch.StartNew();
             CreaFormattazioneCondizionale(entita["SiglaEntita"]);
-            watch.Stop();
 
             //due righe vuote tra un'entità e la successiva
             _rigaAttiva += informazioni.Count + 2;
         }
         #region Blocco entità
+
+        protected virtual void CreaNomiCelle2(object siglaEntita)
+        {
+            //inserisco titoli
+            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            {
+                _newNomiDefiniti.AddName(_rigaAttiva, siglaEntita, "T", suffissoData);
+                //sistema l'indirizzamento dei GOTO
+                int col = _newNomiDefiniti.GetColFromDate(suffissoData);
+                object name = Struct.tipoVisualizzazione == "O" ? siglaEntita : giorno;
+                _newNomiDefiniti.ChangeGOTOAddressTo(name, Sheet.R1C1toA1(_rigaAttiva, col));
+            });
+
+            //aggiungo la riga delle ore
+            _rigaAttiva += Struct.tipoVisualizzazione == "V" ? 2 : 1;
+
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+            informazioni.Sort = "Ordine";
+
+            //int rigaAttiva = _rigaAttiva;
+            foreach (DataRowView info in informazioni)
+            {
+            //    int oraAttiva = _colonnaInizio;
+                object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    _newNomiDefiniti.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], suffissoData);
+                });
+                _rigaAttiva++;
+            }
+        }
+        protected virtual void InsertTitoloEntita2(object siglaEntita, object desEntita)
+        {
+            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            {
+                int col = _newNomiDefiniti.GetColFromDate(suffissoData);
+                int row = _newNomiDefiniti.GetRowByName(siglaEntita, "T", suffissoData);
+                //TODO usare oreGiorno (senza modifica) una volta che tolgo la condizione che aggiunge uno se sono nel primo giorno e ho data0h24
+                oreGiorno = Date.GetOreGiorno(giorno);
+                //string rangeTitolo = GetRange(row, col, 0, oreGiorno);
+                Excel.Range rngTitolo = _ws.Range[GetRange(row, col, 0, oreGiorno)];
+                rngTitolo.Merge();
+                rngTitolo.Style = "titleBarStyle";
+                if (Struct.tipoVisualizzazione == "O")
+                    rngTitolo.Value = desEntita.ToString().ToUpperInvariant();
+                else if (Struct.tipoVisualizzazione == "V")
+                    rngTitolo.Value = giorno.ToString("MM/dd/yyyy");
+
+                rngTitolo.RowHeight = 25;
+            });
+        }
+
         protected virtual void InsertTitoloEntita(DataRowView entita)
         {
             int colonnaInizio = _colonnaInizio;            
@@ -786,10 +806,10 @@ namespace Iren.ToolsExcel.Base
             {
                 int oraAttiva = _colonnaInizio;
                 siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
                     bool isVisibleData0H24 = giorno == _dataInizio && _struttura.visData0H24;
-
                     if (isVisibleData0H24)
                     {
                         _nomiDefiniti.Add(DefinedNames.GetName(siglaEntita, info["SiglaInformazione"], "DATA0", "H24"), rigaAttiva, oraAttiva++, info["Editabile"].Equals("1"), info["SalvaDB"].Equals("1"), info["AnnotaModifica"].Equals("1"));

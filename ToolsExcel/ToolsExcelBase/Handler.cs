@@ -15,13 +15,17 @@ namespace Iren.ToolsExcel.Base
     {
         public static void GotoClick(object Sh, Excel.Range Target)
         {
+
             DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name);
 
             string[] names = definedNames.Get(Target.Row, Target.Column) ?? new string[0];
+
             bool isGOTO = false;
             int i = 0;
             while(!isGOTO && i < names.Length ) 
             {
+                System.Windows.Forms.MessageBox.Show(names[i]);
+
                 isGOTO = Regex.IsMatch(names[i], "GOTO");
                 i++;
             }

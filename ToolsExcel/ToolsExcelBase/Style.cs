@@ -34,7 +34,17 @@ namespace Iren.ToolsExcel.Base
                 style.Interior.ColorIndex = 15;
 
 
-                style = wb.Styles.Add("navBarStyle");
+                style = wb.Styles.Add("navBarStyleVertical");
+                style.Font.Bold = true;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 9;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                style.Interior.ColorIndex = 2;
+                style.NumberFormat = "ddd d";
+                SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
+
+                style = wb.Styles.Add("navBarStyleHorizontal");
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
                 style.Font.Size = 7;

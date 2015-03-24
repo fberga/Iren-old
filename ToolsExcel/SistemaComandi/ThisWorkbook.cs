@@ -52,9 +52,9 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
+            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.GotoClick);
             this.WindowActivate += new Microsoft.Office.Interop.Excel.WorkbookEvents_WindowActivateEventHandler(this.ThisWorkbook_WindowActivate);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
-            this.Shutdown += new System.EventHandler(this.ThisWorkbook_Shutdown);
 
         }
 
@@ -89,11 +89,6 @@ namespace Iren.ToolsExcel
             this.Save();
         }
 
-        private void ThisWorkbook_Shutdown(object sender, System.EventArgs e)
-        {
-
-        }
-
         private void ThisWorkbook_WindowActivate(Excel.Window Wn)
         {
             try
@@ -106,19 +101,5 @@ namespace Iren.ToolsExcel
             }
         }
 
-        //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
-        //{
-        //    return new Microsoft.Office.Tools.Ribbon.IRibbonExtension[] { new       
-        //Iren.ToolsExcel.Ribbon.SharedRibbon(Globals.Factory.GetRibbonFactory()) };
-        //}
-
     }
-
-    //partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonReadOnlyCollection
-    //{
-    //    internal Iren.ToolsExcel.Ribbon.SharedRibbon SharedRibbon
-    //    {
-    //        get { return this.GetRibbon<Iren.ToolsExcel.Ribbon.SharedRibbon>(); }
-    //    }
-    //}
 }
