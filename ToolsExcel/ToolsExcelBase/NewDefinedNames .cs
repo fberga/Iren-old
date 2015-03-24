@@ -10,8 +10,18 @@ namespace Iren.ToolsExcel.Base
 {
     public class NewDefinedNames
     {
+        #region Strutture
+
+        protected struct GotoObject
+        {
+            public int row, column;
+            public string addressTo;
+        }
+
+        #endregion
+
         #region Variabili
-        
+
         string _sheet;
 
         protected Dictionary<string, int> _defDatesIndexByName = new Dictionary<string,int>();
@@ -20,7 +30,7 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<string, int> _defNamesIndexByName = new Dictionary<string, int>();
         protected Dictionary<int, string> _defNamesIndexByRow = new Dictionary<int, string>();
 
-        protected List<string> _definedGotos = new List<string>();
+        protected Dictionary<string, GotoObject> _definedGotos = new Dictionary<string, GotoObject>();
 
         #endregion
 
@@ -51,8 +61,14 @@ namespace Iren.ToolsExcel.Base
             _defDatesIndexByCol = names.ToDictionary(r => (int)r["Column"], r => r["Name"].ToString());
 
             _definedGotos =
-                (from DataRow r in definedGotos.AsEnumerable()
-                select r["Name"].ToString()).ToList();
+               (from DataRow r in definedGotos.AsEnumerable()
+                where r["Sheet"].Equals(sheet)
+                select r).ToDictionary(r => r["Name"].ToString(), r => new GotoObject() 
+                                                                           { 
+                                                                               row = (int)r["Row"],
+                                                                               column = (int)r["Column"],
+                                                                               addressTo = r["AddressTo"].ToString()
+                                                                           });
         }
 
         #endregion
@@ -87,11 +103,16 @@ namespace Iren.ToolsExcel.Base
             _defNamesIndexByName.Add(GetName(siglaEntita, siglaInfo), riga);
             _defNamesIndexByRow.Add(riga, GetName(siglaEntita, siglaInfo));
         }
-        
-        public void AddGOTO(object siglaEntita)
+        public void AddGOTO(object siglaEntita, int row, int column, string addressTo = "")
         {
-            _definedGotos.Add(GetName(siglaEntita, siglaInfo), riga);
-            _defNamesIndexByRow.Add(riga, GetName(siglaEntita, siglaInfo));
+            GotoObject obj = new GotoObject() 
+            {
+                row = row,
+                column = column,
+                addressTo = addressTo
+            };
+
+            _definedGotos.Add(siglaEntita.ToString(), obj);
         }
 
         #endregion
@@ -170,17 +191,112 @@ namespace Iren.ToolsExcel.Base
             {
                 Columns =
                     {
-                        {"Sheet", typeof(String)},
-                        {"Name", typeof(String)}
+                        {"Sheet", typeof(string)},
+                        {"Name", typeof(string)},
+                        {"Row", typeof(int)},
+                        {"Column", typeof(int)},
+                        {"AddressTo", typeof(string)}
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Column"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Name"] };
             dt.TableName = name;
             return dt;
         }
 
 
         #endregion
+
+        public void DumpToDataSet()
+        {
+            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
+            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
+            DataTable definedGotos = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GOTODEFINITI];
+
+            ///////// nomi
+            IEnumerable<DataRow> definedNamesRows =
+                from r in definedNames.AsEnumerable()
+                where r["Sheet"].Equals(_sheet)
+                select r;
+
+            foreach (var row in definedNamesRows)
+            {
+                if (_defNamesIndexByName.ContainsKey(row["Name"].ToString()))
+                {
+                    row["Row"] = _defNamesIndexByName[row["Name"].ToString()];
+                    _defNamesIndexByName.Remove(row["Name"].ToString());
+                }
+            }
+
+            if (_defNamesIndexByName.Count > 0) 
+            {
+                foreach(var ele in _defNamesIndexByName) 
+                {
+                    DataRow r = definedNames.NewRow();
+                    r["Sheet"] = _sheet;
+                    r["Name"] = ele.Key;
+                    r["Row"] = ele.Value;
+                    definedNames.Rows.Add(r);
+                }
+            }
+
+            ///////// date
+            IEnumerable<DataRow> definedDatesRows =
+                from r in definedDates.AsEnumerable()
+                where r["Sheet"].Equals(_sheet)
+                select r;
+
+            foreach (var row in definedDatesRows)
+            {
+                if (_defDatesIndexByName.ContainsKey(row["Name"].ToString()))
+                {
+                    row["Column"] = _defDatesIndexByName[row["Name"].ToString()];
+                    _defDatesIndexByName.Remove(row["Name"].ToString());
+                }
+            }
+
+            if (_defDatesIndexByName.Count > 0)
+            {
+                foreach (var ele in _defDatesIndexByName)
+                {
+                    DataRow r = definedDates.NewRow();
+                    r["Sheet"] = _sheet;
+                    r["Name"] = ele.Key;
+                    r["Column"] = ele.Value;
+                    definedDates.Rows.Add(r);
+                }
+            }
+
+            ///////// goto
+            IEnumerable<DataRow> definedGotosRows =
+                from r in definedGotos.AsEnumerable()
+                where r["Sheet"].Equals(_sheet)
+                select r;
+
+            foreach (var row in definedGotosRows)
+            {
+                if (_definedGotos.ContainsKey(row["Name"].ToString()))
+                {
+                    row["Row"] = _definedGotos[row["Name"].ToString()].row;
+                    row["Column"] = _definedGotos[row["Name"].ToString()].column;
+                    row["AddressTo"] = _definedGotos[row["Name"].ToString()].addressTo;
+                    _definedGotos.Remove(row["Name"].ToString());
+                }
+            }
+
+            if (_definedGotos.Count > 0)
+            {
+                foreach (var ele in _definedGotos)
+                {
+                    DataRow r = definedGotos.NewRow();
+                    r["Sheet"] = _sheet;
+                    r["Name"] = ele.Key;
+                    r["Row"] = ele.Value.row;
+                    r["Column"] = ele.Value.column;
+                    r["AddressTo"] = ele.Value.addressTo;
+                    definedGotos.Rows.Add(r);
+                }
+            }
+        }
     }
 }
