@@ -91,8 +91,7 @@ namespace Iren.ToolsExcel.Base
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
-                SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
-
+                SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);                
 
                 style = wb.Styles.Add("titoloVertStyle");
                 style.Font.Bold = true;

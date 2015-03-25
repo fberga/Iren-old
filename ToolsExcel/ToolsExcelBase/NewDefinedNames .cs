@@ -18,7 +18,7 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<int, string> _defDatesIndexByCol = new Dictionary<int, string>();
 
         protected Dictionary<string, int> _defNamesIndexByName = new Dictionary<string, int>();
-        protected Dictionary<int, string> _defNamesIndexByRow = new Dictionary<int, string>();
+        protected ILookup<int, string> _defNamesIndexByRow;
 
         protected Dictionary<string, GotoObject> _definedGotos = new Dictionary<string, GotoObject>();
 
@@ -40,7 +40,7 @@ namespace Iren.ToolsExcel.Base
                 select r;
 
             _defDatesIndexByName = names.ToDictionary(r => r["Name"].ToString(), r => (int)r["Row"]);
-            _defNamesIndexByRow = names.ToDictionary(r => (int)r["Row"], r => r["Name"].ToString());
+            _defNamesIndexByRow = names.ToLookup(r => (int)r["Row"], r => r["Name"].ToString());
 
             IEnumerable<DataRow> dates =
                 from DataRow r in definedDates.AsEnumerable()
@@ -94,7 +94,7 @@ namespace Iren.ToolsExcel.Base
         public void AddName(int riga, params object[] parts)
         {
             _defNamesIndexByName.Add(GetName(parts), riga);
-            _defNamesIndexByRow.Add(riga, GetName(parts));
+            //_defNamesIndexByRow(riga, GetName(parts));
         }
         public void AddGOTO(object siglaEntita, int row, int column, string addressTo = "")
         {
@@ -112,10 +112,37 @@ namespace Iren.ToolsExcel.Base
             _definedGotos[siglaEntita.ToString()].addressTo = addressTo;
         }
 
+        public int GetFirstCol()
+        {
+            return _defDatesIndexByCol.ElementAt(0).Key;
+        }
+        public int GetColFromDate()
+        {
+            return GetColFromDate(Date.GetSuffissoData(DataBase.DataAttiva));
+        }
         public int GetColFromDate(string suffissoData, string suffissoOra = "H1")
         {
+            if (Struct.tipoVisualizzazione == "V")
+                suffissoData = Date.GetSuffissoData(DataBase.DataAttiva);
+
             string name = GetName(suffissoData, suffissoOra);
             return _defDatesIndexByName[name];
+        }
+        public int GetColOffset()
+        {
+            if (Struct.tipoVisualizzazione == "O")
+                return _defDatesIndexByName.Count;
+
+            return 25;
+        }
+        public int GetColOffset(string suffissoData)
+        {
+            var date =
+                from kv in _defDatesIndexByName
+                where kv.Key.StartsWith(suffissoData)
+                select kv;
+
+            return date.Count();
         }
 
         public int GetRowByName(params object[] parts)
