@@ -37,7 +37,7 @@ namespace Iren.ToolsExcel.Base
                 style = wb.Styles.Add("navBarStyleVertical");
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
-                style.Font.Size = 9;
+                style.Font.Size = 8;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
@@ -47,7 +47,7 @@ namespace Iren.ToolsExcel.Base
                 style = wb.Styles.Add("navBarStyleHorizontal");
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
-                style.Font.Size = 7;
+                style.Font.Size = 8;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
@@ -63,17 +63,15 @@ namespace Iren.ToolsExcel.Base
                 style.Interior.ColorIndex = 37;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
 
-
                 style = wb.Styles.Add("dateBarStyle");
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
-                style.Font.Size = 10;
+                style.Font.Size = 12;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.NumberFormat = "dddd d mmmm yyyy";
                 style.Interior.ColorIndex = 15;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
-
 
                 style = wb.Styles.Add("chartsBarStyle");
                 style.Font.Size = 10;
@@ -83,7 +81,6 @@ namespace Iren.ToolsExcel.Base
                 style.NumberFormat = "dddd d mmmm yyyy";
                 style.Interior.ColorIndex = 2;
                 style.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
-
 
                 style = wb.Styles.Add("allDatiStyle");
                 style.Font.Size = 10;
@@ -205,7 +202,7 @@ namespace Iren.ToolsExcel.Base
                         break;
                     case "borders":
                         MatchCollection borders = Regex.Matches(keyVal[1], @"(Top|Left|Bottom|Right|InsideH|InsideV)([:=]\w*)?", RegexOptions.IgnoreCase);
-                        rng.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+                        //rng.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
                         foreach (Match border in borders)
                         {
                             string[] b = Regex.Split(border.Value, @"[:=]\s*");

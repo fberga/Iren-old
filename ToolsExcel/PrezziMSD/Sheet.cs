@@ -22,7 +22,7 @@ namespace Iren.ToolsExcel
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
             entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
 
-            int colonnaTitoloInfo = _colonnaInizio - VisParametro;
+            int colonnaTitoloInfo = _colonnaInizio - _visParametro;
 
             if (entitaProprieta.Count > 0)
             {

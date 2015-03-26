@@ -14,6 +14,8 @@ namespace Iren.ToolsExcel.Base
 
         string _sheet;
 
+        protected Dictionary<string, int> _giorniStruttura = new Dictionary<string, int>();
+
         protected Dictionary<string, int> _defDatesIndexByName = new Dictionary<string,int>();
         protected Dictionary<int, string> _defDatesIndexByCol = new Dictionary<int, string>();
 
@@ -33,6 +35,7 @@ namespace Iren.ToolsExcel.Base
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
             DataTable definedGotos = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GOTODEFINITI];
+            DataTable definedStrucDays = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GIORNISTRUTTURADEFINITI];
 
             IEnumerable<DataRow> names =
                 from DataRow r in definedNames.AsEnumerable()
@@ -47,8 +50,13 @@ namespace Iren.ToolsExcel.Base
                 where r["Sheet"].Equals(sheet)
                 select r;
 
-            _defDatesIndexByName = names.ToDictionary(r => r["Name"].ToString(), r => (int)r["Column"]);
-            _defDatesIndexByCol = names.ToDictionary(r => (int)r["Column"], r => r["Name"].ToString());
+            _defDatesIndexByName = dates.ToDictionary(r => r["Name"].ToString(), r => (int)r["Column"]);
+            _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => r["Name"].ToString());
+
+            IEnumerable<DataRow> StructDays =
+                from DataRow r in definedStrucDays.AsEnumerable()
+                where r["Sheet"].Equals(sheet)
+                select r;
 
             _definedGotos =
                (from DataRow r in definedGotos.AsEnumerable()
@@ -111,6 +119,13 @@ namespace Iren.ToolsExcel.Base
         {
             _definedGotos[siglaEntita.ToString()].addressTo = addressTo;
         }
+        public void AddStructDays(object siglaEntita, int days)
+        {
+            if (_giorniStruttura.ContainsKey(siglaEntita.ToString()))
+                _giorniStruttura[siglaEntita.ToString()] = days;
+            else
+                _giorniStruttura.Add(siglaEntita.ToString(), days);
+        }
 
         public int GetFirstCol()
         {
@@ -135,7 +150,20 @@ namespace Iren.ToolsExcel.Base
 
             return 25;
         }
+        public int GetColOffset(DateTime data)
+        {
+            return GetColOffset(Date.GetSuffissoData(data));
+        }
         public int GetColOffset(string suffissoData)
+        {
+            var date =
+                from kv in _defDatesIndexByName
+                where kv.Key.Substring(0, suffissoData.Length).CompareTo(suffissoData) <= 0
+                select kv;
+
+            return date.Count();
+        }
+        public int GetDayOffset(string suffissoData)
         {
             var date =
                 from kv in _defDatesIndexByName
@@ -149,16 +177,15 @@ namespace Iren.ToolsExcel.Base
         {
             return _defNamesIndexByName[GetName(parts)];
         }
+        public int GetRowByName(string name)
+        {
+            return _defNamesIndexByName[name];
+        }
 
         #endregion
 
         #region Metodi Statici
 
-        /// <summary>
-        /// Da una lista di oggetti in input, compone il nome con il simbolo di unione.
-        /// </summary>
-        /// <param name="parts">Lista di stringhe che andranno a comporre il nome in output</param>
-        /// <returns>Restituisce la stringa che rappresenta il nome</returns>
         public static string GetName(params object[] parts)
         {
             string o = "";
@@ -173,11 +200,6 @@ namespace Iren.ToolsExcel.Base
             }
             return o;
         }
-        /// <summary>
-        /// Inizializza la tabella dei nomi assegnandole un nome e la restituisce.
-        /// </summary>
-        /// <param name="name">Il nome da assegnare alla tabella per la serializzazione.</param>
-        /// <returns>Ritorna una nuova istanza della tabella dei nomi.</returns>
         public static DataTable GetDefaultNameTable(string name)
         {
             DataTable dt = new DataTable()
@@ -194,11 +216,6 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
-        /// <summary>
-        /// Inizializza la tabella delle date definite assegnandole un nome e la restituisce.
-        /// </summary>
-        /// <param name="name">Il nome da assegnare alla tabella per la serializzazione.</param>
-        /// <returns>Ritorna una nuova istanza della tabella dei nomi.</returns>
         public static DataTable GetDefaultDateTable(string name)
         {
             DataTable dt = new DataTable()
@@ -211,15 +228,10 @@ namespace Iren.ToolsExcel.Base
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Column"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Name"] };
             dt.TableName = name;
             return dt;
         }
-        /// <summary>
-        /// Inizializza la tabella delle date definite assegnandole un nome e la restituisce.
-        /// </summary>
-        /// <param name="name">Il nome da assegnare alla tabella per la serializzazione.</param>
-        /// <returns>Ritorna una nuova istanza della tabella dei nomi.</returns>
         public static DataTable GetDefaultGOTOTable(string name)
         {
             DataTable dt = new DataTable()
@@ -238,7 +250,22 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        public static DataTable GetDefaultStructDaysTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Sheet", typeof(String)},
+                        {"SiglaEntita", typeof(String)},
+                        {"Days", typeof(int)}
+                    }
+            };
 
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["SiglaEntita"] };
+            dt.TableName = name;
+            return dt;
+        }
 
         #endregion
 
