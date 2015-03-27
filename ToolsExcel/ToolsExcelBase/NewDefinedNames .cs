@@ -14,8 +14,6 @@ namespace Iren.ToolsExcel.Base
 
         string _sheet;
 
-        protected Dictionary<string, int> _giorniStruttura = new Dictionary<string, int>();
-
         protected Dictionary<string, int> _defDatesIndexByName = new Dictionary<string,int>();
         protected Dictionary<int, string> _defDatesIndexByCol = new Dictionary<int, string>();
 
@@ -35,7 +33,6 @@ namespace Iren.ToolsExcel.Base
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
             DataTable definedGotos = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GOTODEFINITI];
-            DataTable definedStrucDays = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GIORNISTRUTTURADEFINITI];
 
             IEnumerable<DataRow> names =
                 from DataRow r in definedNames.AsEnumerable()
@@ -52,11 +49,6 @@ namespace Iren.ToolsExcel.Base
 
             _defDatesIndexByName = dates.ToDictionary(r => r["Name"].ToString(), r => (int)r["Column"]);
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => r["Name"].ToString());
-
-            IEnumerable<DataRow> StructDays =
-                from DataRow r in definedStrucDays.AsEnumerable()
-                where r["Sheet"].Equals(sheet)
-                select r;
 
             _definedGotos =
                (from DataRow r in definedGotos.AsEnumerable()
@@ -118,13 +110,6 @@ namespace Iren.ToolsExcel.Base
         public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
         {
             _definedGotos[siglaEntita.ToString()].addressTo = addressTo;
-        }
-        public void AddStructDays(object siglaEntita, int days)
-        {
-            if (_giorniStruttura.ContainsKey(siglaEntita.ToString()))
-                _giorniStruttura[siglaEntita.ToString()] = days;
-            else
-                _giorniStruttura.Add(siglaEntita.ToString(), days);
         }
 
         public int GetFirstCol()
@@ -247,22 +232,6 @@ namespace Iren.ToolsExcel.Base
             };
 
             dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Name"] };
-            dt.TableName = name;
-            return dt;
-        }
-        public static DataTable GetDefaultStructDaysTable(string name)
-        {
-            DataTable dt = new DataTable()
-            {
-                Columns =
-                    {
-                        {"Sheet", typeof(String)},
-                        {"SiglaEntita", typeof(String)},
-                        {"Days", typeof(int)}
-                    }
-            };
-
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["SiglaEntita"] };
             dt.TableName = name;
             return dt;
         }

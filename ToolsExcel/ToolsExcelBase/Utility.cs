@@ -91,7 +91,6 @@ namespace Iren.ToolsExcel.Utility
                 MODIFICA = "Modifica",
                 NOMIDEFINITI = "DefinedNames",
                 NOMIDEFINITINEW = "DefinedNamesNew",
-                GIORNISTRUTTURADEFINITI = "DefinedStructDays",
                 TIPOLOGIACHECK = "TipologiaCheck",
                 TIPOLOGIARAMPA = "TipologiaRampa",
                 UTENTE = "Utente";
@@ -382,7 +381,6 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaNomiNew();
             CreaTabellaDate();
             CreaTabellaGOTO();
-            CreaTabellaGiorniStruttura();
             CreaTabellaModifica();
             CaricaAzioni();
             CaricaCategorie();
@@ -468,22 +466,6 @@ namespace Iren.ToolsExcel.Utility
                 string name = Tab.GOTODEFINITI;
                 ResetTable(name);
                 DataTable dt = NewDefinedNames.GetDefaultGOTOTable(name);
-                _localDB.Tables.Add(dt);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        private static bool CreaTabellaGiorniStruttura()
-        {
-            try
-            {
-                string name = Tab.GIORNISTRUTTURADEFINITI;
-                ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultStructDaysTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
