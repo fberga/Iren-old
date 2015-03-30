@@ -17,32 +17,30 @@ namespace Iren.ToolsExcel
         public Sheet(Excel.Worksheet ws)
             : base(ws) { }
 
-        protected override void InsertPersonalizzazioni(object siglaEntita)
+        protected override void InsertPersonalizzazioni()
         {
-            //DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            //informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
-            //informazioni.Sort = "Ordine";
+            //da classe base il filtro è corretto
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
 
-            //_ws.Columns[3].Font.Size = 9;
+            _ws.Columns[3].Font.Size = 9;
 
-            ////da classe base _dataInizio e _dataFine sono corretti
-            //CicloGiorni((oreGiorno, suffissoData, giorno) => 
-            //{   
-            //    object siglaInfo = DefinedNames.GetName(informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"]);
-            //    Tuple<int, int> primaRiga = _nomiDefiniti[DefinedNames.GetName(siglaInfo, informazioni[0]["SiglaInformazione"], suffissoData)].Last();
-            //    Excel.Range rng = _ws.Range[_ws.Cells[primaRiga.Item1, primaRiga.Item2 + 1], _ws.Cells[primaRiga.Item1 + informazioni.Count - 1, primaRiga.Item2 + 1]];
-            //    rng.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
-            //    rng.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-            //    rng.Columns[1].ColumnWidth = _cell.Width.jolly1;
-            //    int r = 0;
-            //    foreach (DataRowView info in informazioni)
-            //    {
-            //        siglaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-            //        _nomiDefiniti.Add(DefinedNames.GetName(siglaInfo, "NOTE", suffissoData), primaRiga.Item1 + r, primaRiga.Item2 + 1, true, true, false);
-            //        r++;
-            //    }
+            int col = _newNomiDefiniti.GetFirstCol();
+            object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
+            int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
-            //});
+            Excel.Range rngPersonalizzazioni = _ws.Range[GetRange(row, col + 25, informazioni.Count - 1, 0)];
+
+            rngPersonalizzazioni.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
+            rngPersonalizzazioni.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+            rngPersonalizzazioni.Columns[1].ColumnWidth = _cell.Width.jolly1;
+
+            //da classe base _dataInizio e _dataFine sono corretti
+            int i = 0;
+            foreach (DataRowView info in informazioni)
+            {
+                siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                _newNomiDefiniti.AddName(row + i++, siglaEntita, "NOTE", Date.GetSuffissoData(_dataInizio));
+            }
         }
         public override void CaricaInformazioni(bool all)
         {
@@ -59,10 +57,9 @@ namespace Iren.ToolsExcel
 
                     foreach (DataRowView nota in note)
                     {
-                        Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()))][0];
-                        Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
-
-                        rng.Value = nota["Note"];
+                        int row = _newNomiDefiniti.GetRowByName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
+                        int col = _newNomiDefiniti.GetFirstCol();
+                        _ws.Range[GetRange(row, col + 25)].Value = nota["Note"];
                     }
 
                     DataBase.CloseConnection();
