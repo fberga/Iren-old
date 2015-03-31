@@ -1582,7 +1582,7 @@ namespace Iren.ToolsExcel.Utility
         {
             StringWriter strWriter = new StringWriter();
             XmlWriter xmlWriter = XmlWriter.Create(strWriter);
-            Utility.DataBase.LocalDB.WriteXml(xmlWriter);
+            Utility.DataBase.LocalDB.WriteXml(xmlWriter, XmlWriteMode.WriteSchema);
 
             XElement root = XElement.Parse(strWriter.ToString());
             XNamespace ns = Simboli.NameSpace;
@@ -1634,7 +1634,10 @@ namespace Iren.ToolsExcel.Utility
         {
             DataTable dtLog = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_LOG);
             dtLog.TableName = DataBase.Tab.LOG;
-            DataBase.LocalDB.Tables.Add(dtLog);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.LOG))
+                DataBase.LocalDB.Tables[DataBase.Tab.LOG].Merge(dtLog);
+            else
+                DataBase.LocalDB.Tables.Add(dtLog);
 
             DataView dv = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
             dv.Sort = "Data DESC";
@@ -1704,7 +1707,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 localDBNotPresent = true;
                 DataBase.LocalDB.Namespace = Simboli.NameSpace;
-                DataBase.LocalDB.Prefix = DataBase.NAME;
+                //DataBase.LocalDB.Prefix = DataBase.NAME;
             }
 
             if (DataBase.OpenConnection())

@@ -13,6 +13,7 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         string _sheet;
+        List<string> _days;
 
         protected Dictionary<string, int> _defDatesIndexByName = new Dictionary<string,int>();
         protected Dictionary<int, string> _defDatesIndexByCol = new Dictionary<int, string>();
@@ -21,6 +22,18 @@ namespace Iren.ToolsExcel.Base
         protected ILookup<int, string> _defNamesIndexByRow;
 
         protected Dictionary<string, GotoObject> _definedGotos = new Dictionary<string, GotoObject>();
+
+        #endregion
+
+        #region Proprietà
+
+        public string[] DaySuffx
+        {
+            get
+            {
+                return _days.ToArray();
+            }
+        }
 
         #endregion
 
@@ -39,7 +52,7 @@ namespace Iren.ToolsExcel.Base
                 where r["Sheet"].Equals(sheet)
                 select r;
 
-            _defDatesIndexByName = names.ToDictionary(r => r["Name"].ToString(), r => (int)r["Row"]);
+            _defNamesIndexByName = names.ToDictionary(r => r["Name"].ToString(), r => (int)r["Row"]);
             _defNamesIndexByRow = names.ToLookup(r => (int)r["Row"], r => r["Name"].ToString());
 
             IEnumerable<DataRow> dates =
@@ -47,8 +60,14 @@ namespace Iren.ToolsExcel.Base
                 where r["Sheet"].Equals(sheet)
                 select r;
 
-            _defDatesIndexByName = dates.ToDictionary(r => r["Name"].ToString(), r => (int)r["Column"]);
-            _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => r["Name"].ToString());
+            DataView distinctDays = new DataView(definedDates);
+            distinctDays.RowFilter = "Sheet = '" + _sheet + "'";
+            _days = 
+                (from r in distinctDays.ToTable(true, "Date").AsEnumerable()
+                 select r["Date"].ToString()).ToList();
+
+            _defDatesIndexByName = dates.ToDictionary(r => GetName(r["Date"].ToString(), r["Hour"].ToString()), r => (int)r["Column"]);
+            _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
 
             _definedGotos =
                (from DataRow r in definedGotos.AsEnumerable()
@@ -56,7 +75,7 @@ namespace Iren.ToolsExcel.Base
                 select r).ToDictionary(
                     r => r["Name"].ToString(), 
                     r => new GotoObject() 
-                    { 
+                    {
                         row = (int)r["Row"],
                         column = (int)r["Column"],
                         addressTo = r["AddressTo"].ToString()
@@ -82,13 +101,15 @@ namespace Iren.ToolsExcel.Base
             {
                 int oreGiorno = Struct.tipoVisualizzazione == "O" ? Date.GetOreGiorno(giorno) : 25;
 
+                string suffissoData = Date.GetSuffissoData(giorno);
                 for (int ora = 0; ora < oreGiorno; ora++)
                 {
-                    string data = GetName(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(ora + 1));
+                    string data = GetName(suffissoData, Date.GetSuffissoOra(ora + 1));
                     _defDatesIndexByName.Add(data, colStart);
                     _defDatesIndexByCol.Add(colStart, data);
                     colStart++;
                 }
+                _days.Add(suffissoData);
             }
         }
         public void AddName(int riga, params object[] parts)
@@ -119,6 +140,10 @@ namespace Iren.ToolsExcel.Base
         public int GetColFromDate()
         {
             return GetColFromDate(Date.GetSuffissoData(DataBase.DataAttiva));
+        }
+        public int GetColFromDate(DateTime giorno)
+        {
+            return GetColFromDate(Date.GetSuffissoData(giorno));
         }
         public int GetColFromDate(string suffissoData, string suffissoOra = "H1")
         {
@@ -156,6 +181,10 @@ namespace Iren.ToolsExcel.Base
                 select kv;
 
             return date.Count();
+        }
+        public int GetDayOffset(DateTime giorno)
+        {
+            return GetDayOffset(Date.GetSuffissoData(giorno));
         }
 
         public int GetRowByName(params object[] parts)
@@ -208,12 +237,13 @@ namespace Iren.ToolsExcel.Base
                 Columns =
                     {
                         {"Sheet", typeof(String)},
-                        {"Name", typeof(String)},
+                        {"Date", typeof(String)},
+                        {"Hour", typeof(String)},
                         {"Column", typeof(int)}
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Name"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Date"], dt.Columns["Hour"] };
             dt.TableName = name;
             return dt;
         }
@@ -292,7 +322,8 @@ namespace Iren.ToolsExcel.Base
                 {
                     DataRow r = definedDates.NewRow();
                     r["Sheet"] = _sheet;
-                    r["Name"] = ele.Key;
+                    r["Date"] = ele.Key.Split(Simboli.UNION[0])[0];
+                    r["Hour"] = ele.Key.Split(Simboli.UNION[0])[1];
                     r["Column"] = ele.Value;
                     definedDates.Rows.Add(r);
                 }
