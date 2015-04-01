@@ -175,6 +175,9 @@ namespace Iren.ToolsExcel.Base
         }
         public int GetDayOffset(string suffissoData)
         {
+            if (Struct.tipoVisualizzazione == "V")
+                return 25;
+
             var date =
                 from kv in _defDatesIndexByName
                 where kv.Key.StartsWith(suffissoData)
@@ -195,6 +198,34 @@ namespace Iren.ToolsExcel.Base
         {
             return _defNamesIndexByName[name];
         }
+        public int GetRowByName(object siglaEntita, object siglaInformazione, string suffissoData)
+        {
+            string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
+            return GetRowByName(name);
+        }
+
+        public Range Get(object siglaEntita, object siglaInformazione)
+        {
+            int row = GetRowByName(siglaEntita, siglaInformazione);
+            int col = GetFirstCol();
+
+            return new Range(row, col);
+        }
+        public Range Get(object siglaEntita, object siglaInformazione, string suffissoData)
+        {
+            return Get(siglaEntita, siglaInformazione, suffissoData, "H1");
+        }
+        public Range Get(object siglaEntita, object siglaInformazione, string suffissoData, string suffissoOra)
+        {
+            string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
+            //string suffData = Struct.tipoVisualizzazione == "O" ? suffissoData : Date.GetSuffissoData(DataBase.DataAttiva);
+
+            int row = GetRowByName(name);
+            int col = GetColFromDate(suffissoData, suffissoOra);
+
+            return new Range(row, col);
+        }
+
 
         #endregion
 

@@ -70,6 +70,7 @@ namespace Iren.ToolsExcel.Base
 
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio);
 
             switch (siglaAzione.ToString())
             {
@@ -90,13 +91,14 @@ namespace Iren.ToolsExcel.Base
                     };
 
                     string suffissoData = Utility.Date.GetSuffissoData(_db.DataAttiva, dataRif);
-                    foreach (DataRowView entAzInfo in entitaAzioneInformazione)
+                    foreach (DataRowView info in entitaAzioneInformazione)
                     {
-                        object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
+                        object entita = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]);
                         
                         Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
-                        Tuple<int, int>[] riga = nomiDefiniti[entita, entAzInfo["SiglaInformazione"], suffissoData];
-                        Excel.Range rng = ws.Range[nomiDefiniti.GetRange(riga)];
+                        Range range = newNomiDefiniti.Get(entita, info["SiglaInformazione"], suffissoData);
+                        range.Extend(0, newNomiDefiniti.GetDayOffset(suffissoData) - 1);
+                        Excel.Range rng = ws.Range[range.ToString()];
 
                         object[,] tmpVal = rng.Value;
                         object[] values = tmpVal.Cast<object>().ToArray();
@@ -114,7 +116,7 @@ namespace Iren.ToolsExcel.Base
                                 row["Campo3"] = "NA";
                             row["Data"] = dataRif.ToString("yyyy/MM/dd");
                             row["Ora"] = i + 1;
-                            row["Informazione"] = entAzInfo["SiglaInformazione"].Equals("PMAX") ? "Pmax" : "Pmin";
+                            row["Informazione"] = info["SiglaInformazione"].Equals("PMAX") ? "Pmax" : "Pmin";
                             row["Valore"] = values[i] ?? 0;
 
                             dt.Rows.Add(row);

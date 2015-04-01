@@ -67,7 +67,7 @@
   <ItemGroup>
     <Compile Include="NewDefinedNames .cs" />
     <Compile Include="Handler.cs" />
-    <Compile Include="Cell.cs" />
+    <Compile Include="Range.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="DefinedNames.cs" />
     <Compile Include="Esporta.cs" />

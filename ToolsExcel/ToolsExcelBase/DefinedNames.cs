@@ -244,14 +244,14 @@ namespace Iren.ToolsExcel.Base
         //    return Sheet.R1C1toA1(rng[0].Item1, rng[0].Item2) + ":" + Sheet.R1C1toA1(rng[1].Item1, rng[1].Item2);
         //}
 
-        public string GetRange(Tuple<int, int> first, Tuple<int, int> last)
-        {
-            return Sheet.R1C1toA1(first) + ":" + Sheet.R1C1toA1(last);
-        }
-        public string GetRange(Tuple<int,int>[] range)
-        {
-            return GetRange(range.First(), range.Last());
-        }
+        //public string GetRange(Tuple<int, int> first, Tuple<int, int> last)
+        //{
+        //    return Sheet.R1C1toA1(first) + ":" + Sheet.R1C1toA1(last);
+        //}
+        //public string GetRange(Tuple<int,int>[] range)
+        //{
+        //    return GetRange(range.First(), range.Last());
+        //}
 
         public void ApplySort(string sortCondition)
         {

@@ -28,11 +28,11 @@ namespace Iren.ToolsExcel
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
-            Excel.Range rngPersonalizzazioni = _ws.Range[GetRange(row, col + 25, informazioni.Count - 1, 0)];
+            Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row, col + 25, informazioni.Count - 1, 0)];
 
             rngPersonalizzazioni.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
             rngPersonalizzazioni.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-            rngPersonalizzazioni.Columns[1].ColumnWidth = _cell.Width.jolly1;
+            rngPersonalizzazioni.Columns[1].ColumnWidth = Struct.cell.width.jolly1;
 
             //da classe base _dataInizio e _dataFine sono corretti
             int i = 0;
@@ -59,7 +59,7 @@ namespace Iren.ToolsExcel
                     {
                         int row = _newNomiDefiniti.GetRowByName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
                         int col = _newNomiDefiniti.GetFirstCol();
-                        _ws.Range[GetRange(row, col + 25)].Value = nota["Note"];
+                        _ws.Range[Range.GetRange(row, col + 25)].Value = nota["Note"];
                     }
 
                     DataBase.CloseConnection();

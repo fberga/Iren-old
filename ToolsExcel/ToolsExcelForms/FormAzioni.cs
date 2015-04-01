@@ -24,9 +24,9 @@ namespace Iren.ToolsExcel.Forms
         AEsporta _esporta;
         ARiepilogo _r;
 
-        bool _categorieVisible = true;
-        bool _mercatiDaEsportareVisible = true;
-        bool _meteoVisible = true;
+        //bool _categorieVisible = true;
+        //bool _mercatiDaEsportareVisible = true;
+        //bool _meteoVisible = true;
         bool _giorniVisible = true;
 
         #endregion
@@ -100,7 +100,7 @@ namespace Iren.ToolsExcel.Forms
             {
                 panelCategorie.Hide();
                 Width -= panelCategorie.Width;
-                _categorieVisible = false;
+                //_categorieVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()))
             {
@@ -110,12 +110,12 @@ namespace Iren.ToolsExcel.Forms
             if (settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
             {
                 groupMercati.Hide();
-                _mercatiDaEsportareVisible = false;
+                //_mercatiDaEsportareVisible = false;
             }
             if (settings.Contains("MeteoVisible") && falseMatch.IsMatch(settings["MeteoVisible"].ToString()))
             {
                 groupMercati.Hide();
-                _meteoVisible = false;
+                //_meteoVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()) &&
                 settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))

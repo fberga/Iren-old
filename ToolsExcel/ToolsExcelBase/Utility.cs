@@ -375,6 +375,43 @@ namespace Iren.ToolsExcel.Utility
     {
         #region Metodi
 
+        public static void AggiornaParametriApplicazione(object appID)
+        {
+            DataTable dt = CaricaApplicazione(appID);
+            if (dt.Rows.Count == 0)
+                throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
+
+            Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
+            Struct.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
+            Struct.tipoVisualizzazione = dt.Rows[0]["TipoVisualizzazione"] is DBNull ? "O" : dt.Rows[0]["TipoVisualizzazione"].ToString();
+
+            Struct.cell.width.empty = double.Parse(dt.Rows[0]["ColVuotaWidth"].ToString());
+            Struct.cell.width.dato = double.Parse(dt.Rows[0]["ColDatoWidth"].ToString());
+            Struct.cell.width.entita = double.Parse(dt.Rows[0]["ColEntitaWidth"].ToString());
+            Struct.cell.width.informazione = double.Parse(dt.Rows[0]["ColInformazioneWidth"].ToString());
+            Struct.cell.width.unitaMisura = double.Parse(dt.Rows[0]["ColUMWidth"].ToString());
+            Struct.cell.width.parametro = double.Parse(dt.Rows[0]["ColParametroWidth"].ToString());
+            Struct.cell.width.jolly1 = double.Parse(dt.Rows[0]["ColJolly1Width"].ToString());
+            Struct.cell.height.normal = double.Parse(dt.Rows[0]["RowHeight"].ToString());
+            Struct.cell.height.empty = double.Parse(dt.Rows[0]["RowVuotaHeight"].ToString());
+
+            DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
+            DataBase.LocalDB.Tables.Add(dt);
+        }
+        private static DataTable CaricaApplicazione(object idApplicazione)
+        {
+            string name = DataBase.Tab.APPLICAZIONE;
+            DataBase.ResetTable(name);
+            QryParams parameters = new QryParams() 
+            {
+                {"@IdApplicazione", idApplicazione},
+
+            };
+            DataTable dt = DataBase.DB.Select(DataBase.SP.APPLICAZIONE, parameters);
+            dt.TableName = name;
+            return dt;
+        }
+
         public static void AggiornaStrutturaDati()
         {
             CreaTabellaNomi();
@@ -1671,19 +1708,6 @@ namespace Iren.ToolsExcel.Utility
                 return -1;
             }
         }
-        private static DataTable CaricaApplicazione(object idApplicazione) 
-        {
-            string name = DataBase.Tab.APPLICAZIONE;
-            DataBase.ResetTable(name);
-            QryParams parameters = new QryParams() 
-            {
-                {"@IdApplicazione", idApplicazione},
-
-            };
-            DataTable dt = DataBase.DB.Select(DataBase.SP.APPLICAZIONE, parameters);
-            dt.TableName = name;
-            return dt;
-        }
         public static bool Init(string dbName, object appID, DateTime dataAttiva, Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion) 
         {
             Core.CryptHelper.CryptSection("connectionStrings", "appSettings");
@@ -1712,16 +1736,7 @@ namespace Iren.ToolsExcel.Utility
 
             if (DataBase.OpenConnection())
             {
-                DataTable dt = CaricaApplicazione(appID);
-                if (dt.Rows.Count == 0)
-                    throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
-
-                Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-                Struct.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
-                Struct.tipoVisualizzazione = dt.Rows[0]["TipoVisualizzazione"] is DBNull ? "O" : dt.Rows[0]["TipoVisualizzazione"].ToString();
-
-                DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
-                DataBase.LocalDB.Tables.Add(dt);
+                Struttura.AggiornaParametriApplicazione(appID);
 
                 int usr = InitUser();
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));

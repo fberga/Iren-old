@@ -17,7 +17,7 @@ namespace Iren.ToolsExcel
         public Sheet(Excel.Worksheet ws)
             : base(ws) { }
 
-        protected override void InsertTitoloEntita2(object siglaEntita, object desEntita)
+        protected override void InsertTitoloEntita(object siglaEntita, object desEntita)
         {
             //DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
             //entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
@@ -51,7 +51,7 @@ namespace Iren.ToolsExcel
             //}
 
 
-            base.InsertTitoloEntita2(siglaEntita, desEntita);
+            base.InsertTitoloEntita(siglaEntita, desEntita);
         }
     }
 }

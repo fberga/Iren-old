@@ -39,7 +39,7 @@ namespace Iren.ToolsExcel.Base
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
                 Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                 Workbook.WB.Application.Run("wbAdjust", strRiga, "Reset");
                 if (info["WB"].Equals("2"))
@@ -64,7 +64,7 @@ namespace Iren.ToolsExcel.Base
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
                 Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                 Workbook.WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), strRiga);
             }
@@ -83,7 +83,7 @@ namespace Iren.ToolsExcel.Base
 
                 
                 Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                 Workbook.WB.Application.Run("wbAdjust", strRiga);
                 if (info["WB"].Equals("2"))
@@ -102,7 +102,7 @@ namespace Iren.ToolsExcel.Base
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
                 Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                 Workbook.WB.Names.Item("WBOMIT" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
             }
@@ -119,7 +119,7 @@ namespace Iren.ToolsExcel.Base
                 DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
 
                 Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"])][0];
-                string strCella = "'" + nomeFoglio + "'!" + Sheet.R1C1toA1(cella.Item1, cella.Item2);
+                string strCella = "'" + nomeFoglio + "'!" + Range.R1C1toA1(cella.Item1, cella.Item2);
 
                 try { Workbook.WB.Names.Item("WBMAX").Delete(); }
                 catch { }

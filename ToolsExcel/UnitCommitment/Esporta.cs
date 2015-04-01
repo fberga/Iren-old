@@ -61,7 +61,7 @@ namespace Iren.ToolsExcel
 
                         Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(entita, entAzInfo["SiglaInformazione"], suffissoData)];
 
-                        string range = Sheet.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Sheet.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                        string range = Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
 
                         Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
                         Excel.Range rng = ws.Range[range];

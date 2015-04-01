@@ -62,7 +62,6 @@ namespace Iren.ToolsExcel.Base
 
         protected Excel.Worksheet _ws;
         protected DefinedNames _nomiDefiniti;
-        protected Cell _cell;
         protected int _rigaAttiva;
         protected int _colonnaInizio;
         protected int _nAzioni;
@@ -81,19 +80,7 @@ namespace Iren.ToolsExcel.Base
             //dimensionamento celle in base ai parametri del DB
             DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
-            _cell = new Cell();
             _struttura = new Struct();
-
-            //prendo i valori di default
-            _cell.Width.empty = double.Parse(paramApplicazione[0]["ColVuotaWidth"].ToString());
-            _cell.Width.dato = double.Parse(paramApplicazione[0]["ColDatoWidth"].ToString());
-            _cell.Width.entita = double.Parse(paramApplicazione[0]["ColEntitaWidth"].ToString());
-            _cell.Width.informazione = double.Parse(paramApplicazione[0]["ColInformazioneWidth"].ToString());
-            _cell.Width.unitaMisura = double.Parse(paramApplicazione[0]["ColUMWidth"].ToString());
-            _cell.Width.parametro = double.Parse(paramApplicazione[0]["ColParametroWidth"].ToString());
-            _cell.Width.jolly1 = double.Parse(paramApplicazione[0]["ColJolly1Width"].ToString());
-            _cell.Height.normal = double.Parse(paramApplicazione[0]["RowHeight"].ToString());
-            _cell.Height.empty = double.Parse(paramApplicazione[0]["RowVuotaHeight"].ToString());
 
             _struttura.rigaBlock = 5;
             _struttura.colBlock = 59;
@@ -152,8 +139,8 @@ namespace Iren.ToolsExcel.Base
             _ws.UsedRange.NumberFormat = "General";
             _ws.UsedRange.Font.Name = "Verdana";
 
-            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = _cell.Width.empty;            
-            _ws.Rows[1].RowHeight = _cell.Height.empty;
+            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = Struct.cell.width.empty;            
+            _ws.Rows[1].RowHeight = Struct.cell.height.empty;
 
             ((Excel._Worksheet)_ws).Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
@@ -432,7 +419,8 @@ namespace Iren.ToolsExcel.Base
                 if (_nomiDefiniti.IsDefined(DefinedNames.GetName("RIEPILOGO", "T", suffissoData)))
                 {
                     Tuple<int, int>[] riga = _nomiDefiniti.GetRanges(DefinedNames.GetName("RIEPILOGO", "T", suffissoData))[0];
-                    _ws.Range[_nomiDefiniti.GetRange(riga)].Value = giorno;
+                    //TODO Sistemare
+                    //_ws.Range[_nomiDefiniti.GetRange(riga)].Value = giorno;
                 }
             });
         }
