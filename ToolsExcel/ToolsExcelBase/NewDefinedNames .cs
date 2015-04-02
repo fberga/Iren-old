@@ -117,6 +117,11 @@ namespace Iren.ToolsExcel.Base
             _defNamesIndexByName.Add(GetName(parts), riga);
             //_defNamesIndexByRow(riga, GetName(parts));
         }
+        public void AddDate(int col, params object[] parts)
+        {
+            _defDatesIndexByName.Add(GetName(parts), col);
+            _defDatesIndexByCol.Add(col, GetName(parts));
+        }
         public void AddGOTO(object siglaEntita, int row, int column, string addressTo = "")
         {
             GotoObject obj = new GotoObject() 
@@ -152,6 +157,10 @@ namespace Iren.ToolsExcel.Base
 
             string name = GetName(suffissoData, suffissoOra);
             return _defDatesIndexByName[name];
+        }
+        public int GetColFromName(params object[] parts)
+        {
+            return _defDatesIndexByName[GetName(parts)];
         }
         public int GetColOffset()
         {

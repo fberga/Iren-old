@@ -9,8 +9,8 @@ namespace Iren.ToolsExcel.Base
 
         private int _startRow;
         private int _startColumn;
-        private int _rowOffset = 0;
-        private int _colOffset = 0;
+        private int _rowOffset = 1;
+        private int _colOffset = 1;
 
         #endregion
 
@@ -29,10 +29,12 @@ namespace Iren.ToolsExcel.Base
         public int RowOffset
         {
             get { return _rowOffset; }
+            set { _rowOffset = value < 1 ? 1 : value; }
         }
         public int ColOffset
         {
             get { return _colOffset; }
+            set { _colOffset = value < 1 ? 1 : value; }
         }
 
         #endregion
@@ -70,10 +72,19 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
-        public void Extend(int rowOffset, int colOffset = 0) 
+        public Range Extend(int rowOffset, int colOffset = 1) 
         {
-            _rowOffset = rowOffset;
-            _colOffset = colOffset;
+            RowOffset = rowOffset;
+            ColOffset = colOffset;
+            
+            return this;
+        }
+        public Range ExtendOf(int rowOffset, int colOffset = 0)
+        {
+            _rowOffset += rowOffset;
+            _colOffset += colOffset;
+
+            return this;
         }
         public override string ToString()
         {
@@ -116,12 +127,12 @@ namespace Iren.ToolsExcel.Base
 
             return Tuple.Create<int, int>(riga, colonna);
         }
-        public static string GetRange(int row, int column, int rowOffset = 0, int colOffset = 0)
+        public static string GetRange(int row, int column, int rowOffset = 1, int colOffset = 1)
         {
-            if (rowOffset == 0 && colOffset == 0)
+            if ((rowOffset == 1 && colOffset == 1))
                 return R1C1toA1(row, column);
 
-            return R1C1toA1(row, column) + ":" + R1C1toA1(row + rowOffset, column + colOffset);
+            return R1C1toA1(row, column) + ":" + R1C1toA1(row + rowOffset - 1, column + colOffset - 1);
         }
 
         #endregion
