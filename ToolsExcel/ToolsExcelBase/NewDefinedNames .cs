@@ -142,6 +142,10 @@ namespace Iren.ToolsExcel.Base
         {
             return _defDatesIndexByCol.ElementAt(0).Key;
         }
+        public int GetFirstRow()
+        {
+            return _defNamesIndexByName.ElementAt(0).Value;
+        }
         public int GetColFromDate()
         {
             return GetColFromDate(Date.GetSuffissoData(DataBase.DataAttiva));
@@ -168,6 +172,14 @@ namespace Iren.ToolsExcel.Base
                 return _defDatesIndexByName.Count;
 
             return 25;
+        }
+        public int GetColOffsetRiepilogo()
+        {
+            return _defDatesIndexByName.Count;
+        }
+        public int GetRowOffset()
+        {
+            return _defNamesIndexByName.Count;
         }
         public int GetColOffset(DateTime data)
         {

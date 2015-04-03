@@ -12,6 +12,10 @@ namespace Iren.ToolsExcel.Base
         private int _rowOffset = 1;
         private int _colOffset = 1;
 
+        private RowsCollection _rows;
+        private ColumnsCollection _cols;
+        private CellsCollection _cells;
+
         #endregion
 
         #region Proprietà
@@ -37,12 +41,31 @@ namespace Iren.ToolsExcel.Base
             set { _colOffset = value < 1 ? 1 : value; }
         }
 
+        public RowsCollection Rows
+        {
+            get { return _rows; }
+        }
+        public ColumnsCollection Columns
+        {
+            get { return _cols; }
+        }
+        public CellsCollection Cells
+        {
+            get { return _cells; }
+        }
+
         #endregion
 
         #region Costruttori
 
-        public Range() { }
-        public Range(Range oth)
+        public Range() 
+        {
+            _rows = new RowsCollection(this);
+            _cols = new ColumnsCollection(this);
+            _cells = new CellsCollection(this);
+        }
+        public Range(Range oth) 
+            : this()
         {
             _startRow = oth.StartRow;
             _startColumn = oth.StartColumn;
@@ -50,17 +73,20 @@ namespace Iren.ToolsExcel.Base
             _colOffset = oth.ColOffset;
         }
         public Range(int row, int column)
+            : this()
         {
             _startRow = row;
             _startColumn = column;
         }
         public Range(int row, int column, int rowOffset)
+            : this()
         {
             _startRow = row;
             _startColumn = column;
             _rowOffset = rowOffset;
         }
         public Range(int row, int column, int rowOffset, int colOffset)
+            : this()
         {
             _startRow = row;
             _startColumn = column;
@@ -133,6 +159,90 @@ namespace Iren.ToolsExcel.Base
                 return R1C1toA1(row, column);
 
             return R1C1toA1(row, column) + ":" + R1C1toA1(row + rowOffset - 1, column + colOffset - 1);
+        }
+
+        #endregion
+
+        #region Classi Interne
+
+        public class RowsCollection
+        {
+            private Range _r;
+
+            internal RowsCollection(Range r)
+            {
+                _r = r;
+            }
+
+            public Range this[int row]
+            {
+                get
+                {
+                    return new Range(_r.StartRow + row, _r.StartColumn, 1, _r.ColOffset);
+                }
+            }
+            public Range this[int row1, int row2]
+            {
+                get
+                {
+                    return new Range(_r.StartRow + row1, _r.StartColumn, row2 - row1, _r.ColOffset);
+                }
+            }
+            public int Count
+            {
+                get
+                {
+                    return _r.RowOffset;
+                }
+            }
+        }
+        public class ColumnsCollection
+        {
+            private Range _r;
+
+            internal ColumnsCollection(Range r)
+            {
+                _r = r;
+            }
+
+            public Range this[int column]
+            {
+                get
+                {
+                    return new Range(_r.StartRow, _r.StartColumn + column, _r.RowOffset, 1);
+                }
+            }
+            public Range this[int col1, int col2]
+            {
+                get
+                {
+                    return new Range(_r.StartRow, _r.StartColumn + col1, _r.RowOffset, col2 - col1);
+                }
+            }
+            public int Count
+            {
+                get
+                {
+                    return _r.ColOffset;
+                }
+            }
+        }
+        public class CellsCollection
+        {
+            private Range _r;
+
+            internal CellsCollection(Range r)
+            {
+                _r = r;
+            }
+
+            public Range this[int row, int column]
+            {
+                get
+                {
+                    return new Range(_r.StartRow + row, _r.StartColumn + column);
+                }
+            }
         }
 
         #endregion

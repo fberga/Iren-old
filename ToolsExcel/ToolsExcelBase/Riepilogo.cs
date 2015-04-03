@@ -175,7 +175,9 @@ namespace Iren.ToolsExcel.Base
             _ws.UsedRange.NumberFormat = "General";
             _ws.UsedRange.Font.Name = "Verdana";
 
-            _ws.Range[_ws.Cells[1, 1], _ws.Cells[1, _struttura.colRecap - 1]].EntireColumn.ColumnWidth = Struct.cell.width.empty;            
+            _ws.Columns.ColumnWidth = 9;
+
+            _ws.Range[Range.GetRange(1, 1, 1, _struttura.colRecap - 1)].EntireColumn.ColumnWidth = Struct.cell.width.empty;            
             _ws.Rows[1].RowHeight = Struct.cell.height.empty;
 
             ((Excel._Worksheet)_ws).Activate();
@@ -198,7 +200,7 @@ namespace Iren.ToolsExcel.Base
 
             foreach (DataRowView categoria in categorie)
             {
-                _newNomiDefiniti.AddName(_rigaAttiva++, categoria["SiglaCategoria"], "TITOLO");
+                _newNomiDefiniti.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
                 entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
                 foreach (DataRowView e in entita)
                 {
@@ -214,7 +216,7 @@ namespace Iren.ToolsExcel.Base
                 foreach (DataRowView azione in azioni)
                 {
                     if (azione["Gerarchia"] != DBNull.Value)
-                        _newNomiDefiniti.AddDate(_colonnaInizio++, azione["Gerarchia"], azione["SiglaAzione"], suffissoData);
+                        _newNomiDefiniti.AddDate(_colonnaInizio++, azione["SiglaAzione"], suffissoData);
                 }
             });
         }
@@ -223,99 +225,43 @@ namespace Iren.ToolsExcel.Base
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
             DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
 
-            Range rngTitleBar = new Range(_newNomiDefiniti.GetRowByName("DATA"), _newNomiDefiniti.GetColFromName(azioni[0]["Gerarchia"], azioni[0]["SiglaAzione"], Date.GetSuffissoData(DataBase.DataAttiva)), 3, azioni.Count);
-            Range rngData = new Range(rngTitleBar.StartRow, rngTitleBar.StartColumn);
-            Range rngAzioniPadre = new Range(_newNomiDefiniti.GetRowByName("AZIONI_PADRE"), rngTitleBar.StartColumn);
-            Range rngAzioni = new Range(_newNomiDefiniti.GetRowByName("AZIONI"), rngTitleBar.StartColumn);
+            Range rngTitleBar = new Range(_newNomiDefiniti.GetFirstRow(), _newNomiDefiniti.GetFirstCol() + 1, 3, azioni.Count);
+            Range rngData = rngTitleBar.Cells[0, 0];
+            Range rngAzioniPadre = rngTitleBar.Cells[1, 0];
+            Range rngAzioni = rngTitleBar.Cells[2, 0];
 
             string azionePadre = "";
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
+                rngTitleBar.StartColumn = rngAzioni.StartColumn;
+                _ws.Range[rngTitleBar.ToString()].Style = "recapTitleBarStyle";
+                _ws.Range[rngTitleBar.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+
                 foreach (DataRowView azione in azioni)
                 {
                     if (!azione["Gerarchia"].Equals(azionePadre))
                     {
                         rngAzioniPadre.ColOffset = rngAzioni.StartColumn - rngAzioniPadre.StartColumn;
-                        _ws.Range[rngAzioniPadre.ToString()].Merge();
+                        Style.RangeStyle(_ws.Range[rngAzioniPadre.ToString()], "Merge:true;FontSize:9");
                         _ws.Range[rngAzioniPadre.ToString()].Value = azionePadre;
                         azionePadre = azione["Gerarchia"].ToString();
                         rngAzioniPadre.StartColumn = rngAzioni.StartColumn;
                     }
                     _ws.Range[rngAzioni.ToString()].Value = azione["DesAzioneBreve"];
+                    Style.RangeStyle(_ws.Range[rngAzioni.ToString()], "FontSize:7");
                     rngAzioni.StartColumn++;
                 }
                 rngAzioniPadre.ColOffset = rngAzioni.StartColumn - rngAzioniPadre.StartColumn;
-                _ws.Range[rngAzioniPadre.ToString()].Merge();
+                Style.RangeStyle(_ws.Range[rngAzioniPadre.ToString()], "Merge:true;FontSize:9");
                 _ws.Range[rngAzioniPadre.ToString()].Value = azionePadre;
                 azionePadre = "";
                 rngAzioniPadre.StartColumn = rngAzioni.StartColumn;
 
                 rngData.ColOffset = rngAzioni.StartColumn - rngData.StartColumn;
-                _ws.Range[rngData.ToString()].Merge();
+                Style.RangeStyle(_ws.Range[rngData.ToString()], "Merge:true;FontSize:10;NumberFormat:[ddd d mmm yyyy]");
                 _ws.Range[rngData.ToString()].Value = giorno;
                 rngData.StartColumn = rngAzioni.StartColumn;
-
-                _ws.Range[rngTitleBar.ToString()].Style = "recapTitleBarStyle";
-                Style.RangeStyle(_ws.Range[rngTitleBar.ToString()], "FontSize:10;NumberFormat:[ddd d mmm yyyy]");
-                rngTitleBar.StartColumn = rngAzioni.StartColumn;
             });
-            
-
-
-            //_nAzioni = 0;
-            //Dictionary<object, List<object>> valAzioni = new Dictionary<object, List<object>>();
-            //foreach (DataRowView azione in azioni)
-            //{
-            //    if (!valAzioni.ContainsKey(azione["Gerarchia"]))
-            //    {
-            //        valAzioni.Add(azione["Gerarchia"], new List<object>() { azione["DesAzioneBreve"] });
-            //    }
-            //    else
-            //    {
-            //        valAzioni[azione["Gerarchia"]].Add(azione["DesAzioneBreve"]);
-            //    }
-            //    _nAzioni++;
-            //}            
-            //int nAzioniPadre = valAzioni.Count;
-
-            ////numero totale di celle della barra del titolo
-            //object[,] values = new object[3, _nAzioni];
-            ////la prima libera per mettere la data successivamente
-            //int[] azioniPerPadre = new int[valAzioni.Count];
-            //int ipadre = 0;
-            //int iazioni = 0;
-            //int j = 0;
-            //foreach (KeyValuePair<object, List<object>> keyVal in valAzioni)
-            //{
-            //    azioniPerPadre[j++] = keyVal.Value.Count;
-            //    values[1, ipadre] = keyVal.Key.ToString().ToUpperInvariant();
-            //    ipadre += keyVal.Value.Count;
-            //    foreach (object nomeAzione in keyVal.Value) 
-            //        values[2, iazioni++] = nomeAzione.ToString().ToUpperInvariant();
-            //}
-
-            //int colonnaInizio = _colonnaInizio + 1;
-            //CicloGiorni((oreGiorno, suffissoData, giorno) =>
-            //{
-            //    values[0, 0] = giorno;
-            //    Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva + 2, colonnaInizio + _nAzioni - 1]];
-
-            //    _nomiDefiniti.Add(DefinedNames.GetName("RIEPILOGO", "T", suffissoData), _rigaAttiva, colonnaInizio, _rigaAttiva, colonnaInizio + _nAzioni - 1);
-
-            //    rng.Style = "recapTitleBarStyle";
-            //    rng.Rows[1].Merge();
-            //    Style.RangeStyle(rng.Rows[1], "FontSize:10;NumberFormat:[ddd d mmm yyyy]");
-            //    int i = 1;
-            //    foreach (int numAzioniPerPadre in azioniPerPadre)
-            //    {
-            //        _ws.Range[rng.Cells[2, i], rng.Cells[2, i + numAzioniPerPadre - 1]].Merge();
-            //        Style.RangeStyle(_ws.Range[rng.Cells[3, i], rng.Cells[3, i + numAzioniPerPadre - 1]], "FontSize:7;Borders:[left:medium, bottom:medium, right:medium, insidev:thin]");
-            //        i += numAzioniPerPadre;
-            //    }
-            //    rng.Value = values;
-
-            //    colonnaInizio += _nAzioni;
-            //});
         }
         protected void FormattaAllDati()
         {
@@ -323,81 +269,77 @@ namespace Iren.ToolsExcel.Base
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
 
-            azioni.RowFilter = "Gerarchia IS NOT NULL";
-            categorie.RowFilter = "Operativa = 1";
-            entita.RowFilter = "";
+            Range rngAll = new Range(_newNomiDefiniti.GetFirstRow(), _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset(), _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
+            Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol(), _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo());
+            
+            _ws.Range[rngData.ToString()].Style = "recapAllDatiStyle";
+            _ws.Range[rngData.Columns[0].ToString()].Style = "recapEntityBarStyle";
+            _ws.Range[rngData.Columns[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
-            int numRighe = categorie.Count + entita.Count - 1;
-            int colonnaInizio = _colonnaInizio + 1;
-
-            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            Excel.Range xlrng = _ws.Range[rngAll.Rows[1, rngAll.Rows.Count].ToString()];
+            //trovo tutte le aree unite e creo il blocco col bordo grosso
+            int i = 0;
+            int colspan = 0;
+            while (i < xlrng.Columns.Count)
             {
-                Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, colonnaInizio], _ws.Cells[_rigaAttiva + numRighe, colonnaInizio + _nAzioni - 1]];
-                rng.Style = "recapAllDatiStyle";
-                rng.BorderAround2(Type.Missing, Excel.XlBorderWeight.xlMedium);
-                rng.ColumnWidth = 9;
-
-                int j = 0;
-                string gerarchia = azioni[0]["Gerarchia"].ToString();
-                foreach(DataRowView azione in azioni) 
-                {
-                    if (!gerarchia.Equals(azione["Gerarchia"]))
-                    {
-                        gerarchia = azione["Gerarchia"].ToString();
-                        rng.Columns[j].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
-                    }
-
-                    int i = 0;
-                    foreach (DataRowView categoria in categorie)
-                    {
-                        i++;
-                        entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
-                        foreach (DataRowView e in entita)
-                        {
-                            _nomiDefiniti.Add(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"], azione["SiglaAzione"], suffissoData), Tuple.Create(_rigaAttiva + i++, colonnaInizio + j));
-                        }
-                    }
-                    j++;
-                }
-                colonnaInizio += _nAzioni;
-            });
+                colspan = xlrng.Cells[1, i + 1].MergeArea().Columns.Count;
+                _ws.Range[rngAll.Columns[i, i + colspan].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+                _ws.Range[rngAll.Columns[i, i + colspan].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
+                i += colspan;
+            }
         }
         protected void InitBarraEntita()
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
 
-            categorie.RowFilter = "Operativa = 1";
-            entita.RowFilter = "";
-
-            object[,] values = new object[categorie.Count + entita.Count, 1];
-            Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio], _ws.Cells[_rigaAttiva + values.Length - 1, _colonnaInizio]];
-            rng.Style = "recapEntityBarStyle";
-            Style.RangeStyle(rng, "borders:[top:medium,right:medium,bottom:medium,left:medium,insideh:thin]");
-            int i = 0;
             foreach (DataRowView categoria in categorie)
             {
-                Excel.Range titoloCategoria = _ws.Range[_ws.Cells[_rigaAttiva + i, _colonnaInizio], _ws.Cells[_rigaAttiva + i, _colonnaInizio + ((Struct.intervalloGiorni + 1) * _nAzioni)]];
-                titoloCategoria.Merge();
-                titoloCategoria.Style = "recapCategoryTitle";
-                Style.RangeStyle(titoloCategoria, "Borders:[left:medium, top:medium, right:medium]");
-
-                values[i++, 0] = categoria["DesCategoria"];
+                Range rng = new Range(_newNomiDefiniti.GetRowByName(categoria["SiglaCategoria"]), _newNomiDefiniti.GetFirstCol(), 1, _newNomiDefiniti.GetColOffsetRiepilogo());
+                Style.RangeStyle(_ws.Range[rng.ToString()], "Style:recapCategoryTitle;Borders:[left:medium,top:medium,right:medium]");
+                _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
                 entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
+                foreach (DataRowView e in entita)
+                {
+                    rng.StartRow++;
+                    _ws.Range[rng.Columns[0].ToString()].Value = (e["Gerarchia"] is DBNull ? "" : "     ") + e["DesEntita"];
+                    _ws.Range[rng.Columns[0].ToString()].Borders[Excel.XlBordersIndex.xlEdgeTop].Weight = Excel.XlBorderWeight.xlThin;
+                }
+            }
+            
+            _ws.Columns[_struttura.colRecap].EntireColumn.AutoFit();
+
+            //categorie.RowFilter = "Operativa = 1";
+            //entita.RowFilter = "";
+
+            //object[,] values = new object[categorie.Count + entita.Count, 1];
+            //Excel.Range rng = _ws.Range[_ws.Cells[_rigaAttiva, _colonnaInizio], _ws.Cells[_rigaAttiva + values.Length - 1, _colonnaInizio]];
+            //rng.Style = "recapEntityBarStyle";
+            //Style.RangeStyle(rng, "borders:[top:medium,right:medium,bottom:medium,left:medium,insideh:thin]");
+            //int i = 0;
+            //foreach (DataRowView categoria in categorie)
+            //{
+            //    Excel.Range titoloCategoria = _ws.Range[_ws.Cells[_rigaAttiva + i, _colonnaInizio], _ws.Cells[_rigaAttiva + i, _colonnaInizio + ((Struct.intervalloGiorni + 1) * _nAzioni)]];
+            //    titoloCategoria.Merge();
+            //    titoloCategoria.Style = "recapCategoryTitle";
+            //    Style.RangeStyle(titoloCategoria, "Borders:[left:medium, top:medium, right:medium]");
+
+            //    values[i++, 0] = categoria["DesCategoria"];
+            //    entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
 
                 
 
-                foreach (DataRowView e in entita)
-                {
-                    _nomiDefiniti.Add(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"], "GOTO"), Tuple.Create(_rigaAttiva + i, _colonnaInizio));
-                    values[i++, 0] = (e["Gerarchia"] is DBNull ? "" : "     ") + e["DesEntita"];
-                }
-            }
-            rng.Value = values;
+            //    foreach (DataRowView e in entita)
+            //    {
+            //        _nomiDefiniti.Add(DefinedNames.GetName("RIEPILOGO", e["siglaEntita"], "GOTO"), Tuple.Create(_rigaAttiva + i, _colonnaInizio));
+            //        values[i++, 0] = (e["Gerarchia"] is DBNull ? "" : "     ") + e["DesEntita"];
+            //    }
+            //}
+            //rng.Value = values;
 
-            categorie.RowFilter = "";
-            entita.RowFilter = "";
-            rng.EntireColumn.AutoFit();
+            //categorie.RowFilter = "";
+            //entita.RowFilter = "";
+            //rng.EntireColumn.AutoFit();
         }
         protected void AbilitaAzioni()
         {
@@ -406,18 +348,10 @@ namespace Iren.ToolsExcel.Base
 
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
-                foreach (DataRowView entitaAzione in entitaAzioni)
-                {
-                    string nome = DefinedNames.GetName("RIEPILOGO", entitaAzione["SiglaEntita"], entitaAzione["SiglaAzione"]);
-                    if (_nomiDefiniti.IsDefined(nome))
-                    {
-                        Tuple<int, int>[] celleAzione = _nomiDefiniti[nome];
-
-                        foreach (Tuple<int, int> cella in celleAzione)
-                        {
-                            Style.RangeStyle(_ws.Cells[cella.Item1, cella.Item2], "BackPattern: none");
-                        }
-                    }
+                foreach (DataRowView azione in entitaAzioni)
+                {                    
+                    Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(azione["SiglaEntita"]), _newNomiDefiniti.GetColFromName(azione["SiglaAzione"], suffissoData));
+                    _ws.Range[cellaAzione.ToString()].Interior.Pattern = Excel.XlPattern.xlPatternNone;
                 }
             });
         }
@@ -430,23 +364,25 @@ namespace Iren.ToolsExcel.Base
                     DataView datiRiepilogo = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                     foreach (DataRowView valore in datiRiepilogo)
                     {
-                        string nome = DefinedNames.GetName("RIEPILOGO", valore["SiglaEntita"], valore["SiglaAzione"], suffissoData);
-                        if (_nomiDefiniti.IsDefined(nome))
+                        Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(valore["SiglaEntita"]), _newNomiDefiniti.GetColFromName(valore["SiglaAzione"], suffissoData));                        
+                        string commento = "";
+
+                        Excel.Range rng = _ws.Range[cellaAzione.ToString()];
+
+                        if (valore["Presente"].Equals("1"))
                         {
-                            Tuple<int, int> cella = _nomiDefiniti[nome][0];
-                            string commento = "";
-
-                            Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
-
-                            if (valore["Presente"].Equals("1"))
-                            {
-                                rng.ClearComments();
-                                DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
-                                commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
-                                rng.AddComment(commento);
-                                rng.Value = "OK";
-                                Style.RangeStyle(rng, "BackColor:4;Align:Center");
-                            }
+                            rng.ClearComments();
+                            DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
+                            commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
+                            rng.AddComment(commento);
+                            rng.Value = "OK";
+                            Style.RangeStyle(rng, "BackColor:4;Align:Center");
+                        }
+                        else
+                        {
+                            rng.ClearComments();
+                            rng.Value = "Non presente";
+                            Style.RangeStyle(rng, "ForeColor:3;Bold:False;Align:Center;FontSize:7");
                         }
                     }
                 });

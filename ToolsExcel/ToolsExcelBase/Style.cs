@@ -101,7 +101,6 @@ namespace Iren.ToolsExcel.Base
                 style = wb.Styles.Add("recapTitleBarStyle");
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
-                style.Font.Size = 9;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 37;
@@ -113,7 +112,8 @@ namespace Iren.ToolsExcel.Base
                 style.Font.Size = 9;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
+                style.Borders[Excel.XlBordersIndex.xlEdgeBottom].Weight = Excel.XlBorderWeight.xlThin;
+                //SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
 
                 style = wb.Styles.Add("recapAllDatiStyle");
                 style.Font.Bold = true;
