@@ -15,6 +15,13 @@ namespace Iren.ToolsExcel.Base
     {
         public static void GotoClick(object Sh, Excel.Range Target)
         {
+            NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name);
+
+            string address = newDefinedNames.GetGOTO(Target.Row, Target.Column);
+            if (address != "")
+            {
+
+            }
 
             DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name);
 

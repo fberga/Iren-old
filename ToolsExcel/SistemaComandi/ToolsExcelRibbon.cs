@@ -127,7 +127,7 @@ namespace Iren.ToolsExcel
                         DataBase.ConvertiParametriInformazioni();
 
                         DataView stato = DataBase.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
-                        if (stato.Count > 0 && stato[0]["Stato"].Equals("1"))
+                        if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
                         {
                             Struttura.AggiornaStrutturaDati();
                             AggiornaStruttura();
@@ -332,7 +332,31 @@ namespace Iren.ToolsExcel
         }
         private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
         {
+            Workbook.WB.SheetChange -= Handler.StoreEdit;
+            Workbook.WB.Application.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+
             Simboli.EmergenzaForzata = btnForzaEmergenza.Checked;
+
+            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
+            if (btnForzaEmergenza.Checked)
+            {
+                main.RiepilogoInEmergenza();
+            }
+            else
+            {
+                if (DataBase.OpenConnection())
+                {
+                    main.UpdateRiepilogo();
+                    DataBase.DB.CloseConnection();
+                }
+            }
+
+            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            Sheet.Proteggi(true);
+            Workbook.WB.Application.ScreenUpdating = true;
+            Workbook.WB.SheetChange += Handler.StoreEdit;
         }
         #endregion
 

@@ -669,8 +669,10 @@ namespace Iren.ToolsExcel.Base
 
                     if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
                     {
+                        rngData.Cells[1].Formula = "=SUM(" + rng.Columns[1, rng.Columns.Count] + ")"; //Range.GetRange(rng.StartRow, rng.StartColumn + 1, 1, rng.ColOffset) + ")";
                         deltaNeg = 1;
                     }
+                    _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - deltaPos].ToString()].Formula = formula;//Range.GetRange(rng.StartRow, rng.StartColumn + deltaNeg, 1, rng.ColOffset - deltaNeg - deltaPos)].Formula = formula;
                     _ws.Application.ScreenUpdating = false;
 
                 }

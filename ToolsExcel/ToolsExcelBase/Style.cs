@@ -131,6 +131,119 @@ namespace Iren.ToolsExcel.Base
                 style.Interior.ColorIndex = 44;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+
+                style = wb.Styles.Add("recapOKCell");
+                style.Font.ColorIndex = 1;
+                style.Font.Bold = true;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 9;
+                style.Interior.ColorIndex = 4;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+
+                style = wb.Styles.Add("recapNPCell");
+                style.Font.ColorIndex = 3;
+                style.Font.Bold = false;
+                style.Font.Name = "Verdana";
+                style.Font.Size = 7;
+                style.Interior.ColorIndex = 2;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+            }
+        }
+
+        public static void RangeStyle(Excel.Range rng, object fontName = null, object style = null, object merge = null, object bold = null, object fontSize = null, object align = null, object numberFormat = null, object foreColor = null, object backColor = null, object pattern = null, object borders = null, object orientation = null, object visible = null)
+        {
+            if(fontName != null)
+                rng.Font.Name = (string)fontName;
+            
+            if(bold != null)
+                rng.Font.Bold = (bool)bold;
+            
+            if(fontSize != null)
+                rng.Font.Size = (int)fontSize;
+            
+            if(foreColor != null)
+                rng.Font.ColorIndex = (int)foreColor;
+            
+            if(style != null)
+                rng.Style = (string)style;
+            
+            if(merge != null)
+                rng.MergeCells = (bool)merge;
+
+            if (align != null)
+            {
+                rng.HorizontalAlignment = (Excel.XlHAlign)align;
+                rng.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+            }
+
+            if(numberFormat != null)
+                rng.NumberFormat = (string)numberFormat;
+
+            if(backColor != null)
+                rng.Interior.ColorIndex = (int)backColor;
+            
+            if(pattern != null)
+                rng.Interior.Pattern = (Excel.XlPattern)pattern;
+
+            if(orientation != null)
+                rng.Orientation = (Excel.XlOrientation)orientation;
+
+            if(visible != null)
+                rng.EntireRow.Hidden = (bool)visible;
+
+            if (borders != null)
+            {
+                MatchCollection borderString = Regex.Matches((string)borders, @"(Top|Left|Bottom|Right|InsideH|InsideV)([:=]\w*)?", RegexOptions.IgnoreCase);
+                foreach (Match border in borderString)
+                {
+                    string[] b = Regex.Split(border.Value, @"[:=]\s*");
+
+                    Excel.XlBordersIndex index = Excel.XlBordersIndex.xlEdgeTop;
+                    Excel.XlBorderWeight weight = Excel.XlBorderWeight.xlThin;
+                    switch (b[0].ToLowerInvariant())
+                    {
+                        case "top":
+                            index = Excel.XlBordersIndex.xlEdgeTop;
+                            break;
+                        case "left":
+                            index = Excel.XlBordersIndex.xlEdgeLeft;
+                            break;
+                        case "bottom":
+                            index = Excel.XlBordersIndex.xlEdgeBottom;
+                            break;
+                        case "right":
+                            index = Excel.XlBordersIndex.xlEdgeRight;
+                            break;
+                        case "insideh":
+                            index = Excel.XlBordersIndex.xlInsideHorizontal;
+                            break;
+                        case "insidev":
+                            index = Excel.XlBordersIndex.xlInsideVertical;
+                            break;
+                    }
+                    if (b.Length == 2)
+                    {
+                        switch (b[1].ToLowerInvariant())
+                        {
+                            case "thick":
+                                weight = Excel.XlBorderWeight.xlThick;
+                                break;
+                            case "thin":
+                                weight = Excel.XlBorderWeight.xlThin;
+                                break;
+                            case "medium":
+                                weight = Excel.XlBorderWeight.xlMedium;
+                                break;
+                            case "hairline":
+                                weight = Excel.XlBorderWeight.xlHairline;
+                                break;
+                        }
+                    }
+                    rng.Borders[index].LineStyle = Excel.XlLineStyle.xlContinuous;
+                    rng.Borders[index].Weight = weight;
+                }
             }
         }
 

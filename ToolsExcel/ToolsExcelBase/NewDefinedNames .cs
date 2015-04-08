@@ -21,7 +21,8 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<string, int> _defNamesIndexByName = new Dictionary<string, int>();
         protected ILookup<int, string> _defNamesIndexByRow;
 
-        protected Dictionary<string, GotoObject> _definedGotos = new Dictionary<string, GotoObject>();
+        protected Dictionary<string, string> _siglaEntitaAddress = new Dictionary<string, string>();
+        protected Dictionary<string, GotoObject> _siglaEntitaGotos = new Dictionary<string, GotoObject>();
 
         #endregion
 
@@ -69,9 +70,9 @@ namespace Iren.ToolsExcel.Base
             _defDatesIndexByName = dates.ToDictionary(r => GetName(r["Date"].ToString(), r["Hour"].ToString()), r => (int)r["Column"]);
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
 
-            _definedGotos =
+            _siglaEntitaGotos =
                (from DataRow r in definedGotos.AsEnumerable()
-                where r["Sheet"].Equals(sheet)
+                //where r["Sheet"].Equals(sheet)
                 select r).ToDictionary(
                     r => r["Name"].ToString(), 
                     r => new GotoObject() 
@@ -124,18 +125,23 @@ namespace Iren.ToolsExcel.Base
         }
         public void AddGOTO(object siglaEntita, int row, int column, string addressTo = "")
         {
-            GotoObject obj = new GotoObject() 
-            {
-                row = row,
-                column = column,
-                addressTo = addressTo
-            };
+            GotoObject obj;
+            if(addressTo == "")
+                obj = new GotoObject(_sheet, row, column);
+            else
+                obj = new GotoObject(_sheet, row, column, addressTo);
 
-            _definedGotos.Add(siglaEntita.ToString(), obj);
+            if (!_siglaEntitaGotos.ContainsKey(siglaEntita.ToString()))
+            {
+                _siglaEntitaGotos.Add(siglaEntita.ToString(), obj);
+                _siglaEntitaAddress.Add(siglaEntita.ToString(), obj.Address);
+            }
+
+            _siglaEntitaGotos.Add(siglaEntita.ToString(), obj);
         }
         public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
         {
-            _definedGotos[siglaEntita.ToString()].addressTo = addressTo;
+            _siglaEntitaGotos[siglaEntita.ToString()].addressTo = "'" + _sheet + "'!" + addressTo;
         }
 
         public int GetFirstCol()
@@ -247,6 +253,15 @@ namespace Iren.ToolsExcel.Base
             return new Range(row, col);
         }
 
+        public string GetGOTO(int row, int column)
+        {
+            if(_siglaEntitaGotos.ContainsValue(new GotoObject() {row = row, column = column}))
+            {
+                return _siglaEntitaGotos.Where(kv => kv.Value == new GotoObject() { row = row, column = column }).First().Value.addressTo;
+            }
+
+            return "";
+        }
 
         #endregion
 
@@ -372,10 +387,12 @@ namespace Iren.ToolsExcel.Base
             {
                 foreach (var ele in _defDatesIndexByName)
                 {
+                    string[] dateTime = ele.Key.Split(Simboli.UNION[0]);
+
                     DataRow r = definedDates.NewRow();
                     r["Sheet"] = _sheet;
-                    r["Date"] = ele.Key.Split(Simboli.UNION[0])[0];
-                    r["Hour"] = ele.Key.Split(Simboli.UNION[0])[1];
+                    r["Date"] = dateTime[0];
+                    r["Hour"] = dateTime.Length == 2 ? ele.Key.Split(Simboli.UNION[0])[1] : "";
                     r["Column"] = ele.Value;
                     definedDates.Rows.Add(r);
                 }
@@ -389,18 +406,18 @@ namespace Iren.ToolsExcel.Base
 
             foreach (var row in definedGotosRows)
             {
-                if (_definedGotos.ContainsKey(row["Name"].ToString()))
+                if (_siglaEntitaGotos.ContainsKey(row["Name"].ToString()))
                 {
-                    row["Row"] = _definedGotos[row["Name"].ToString()].row;
-                    row["Column"] = _definedGotos[row["Name"].ToString()].column;
-                    row["AddressTo"] = _definedGotos[row["Name"].ToString()].addressTo;
-                    _definedGotos.Remove(row["Name"].ToString());
+                    row["Row"] = _siglaEntitaGotos[row["Name"].ToString()].row;
+                    row["Column"] = _siglaEntitaGotos[row["Name"].ToString()].column;
+                    row["AddressTo"] = _siglaEntitaGotos[row["Name"].ToString()].addressTo;
+                    _siglaEntitaGotos.Remove(row["Name"].ToString());
                 }
             }
 
-            if (_definedGotos.Count > 0)
+            if (_siglaEntitaGotos.Count > 0)
             {
-                foreach (var ele in _definedGotos)
+                foreach (var ele in _siglaEntitaGotos)
                 {
                     DataRow r = definedGotos.NewRow();
                     r["Sheet"] = _sheet;
@@ -416,10 +433,64 @@ namespace Iren.ToolsExcel.Base
 
     #region Classi supporto
 
-    public class GotoObject
+    public class GotoObject : IEqualityComparer
     {
-        public int row, column;
-        public string addressTo;
+        private string _sheet;
+        private int _row, _column;
+        private string _address;
+        private string _addressTo;
+
+        public string Sheet
+        {
+            get { return _sheet; }
+        }
+
+        public int Row
+        {
+            get { return _row; }
+        }
+
+        public int Column
+        {
+            get { return _column; }
+        }
+
+        public string Address
+        {
+            get { return _address; }
+        }
+
+        public string AddressTo
+        {
+            get { return _addressTo; }
+        }
+
+        public GotoObject(string sheet, int row, int column)
+        {
+            _sheet = sheet;
+            _row = row;
+            _column = column;
+            _address = "'" + _sheet + "'!" + Range.GetRange(_row, _column);
+        }
+        public GotoObject(string sheet, int row, int column, string addressTo) 
+            : this(sheet, row, column)
+        {
+            _addressTo = addressTo;
+        }
+
+        public bool Equals(object x, object y)
+        {
+            GotoObject obj1 = (GotoObject)x;
+            GotoObject obj2 = (GotoObject)y;
+
+            return obj1.Address == obj2.Address;
+        }
+
+        public int GetHashCode(object obj)
+        {
+            GotoObject obj1 = (GotoObject)obj;
+            return obj1.Address.GetHashCode();
+        }
     }
 
     #endregion
