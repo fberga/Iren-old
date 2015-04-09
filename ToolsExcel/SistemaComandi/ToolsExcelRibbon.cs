@@ -282,7 +282,7 @@ namespace Iren.ToolsExcel
 
             if (nomiDefiniti.IsDefined(rng.Row, rng.Column))
             {
-                string siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
+                object siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
 
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
@@ -292,7 +292,7 @@ namespace Iren.ToolsExcel
                     if(System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
                     {
                         siglaEntita = selUP.ShowDialog();
-                        if(siglaEntita != "")
+                        if (siglaEntita != null)
                             opt.EseguiOttimizzazione(siglaEntita);
                     }
                 }
@@ -303,8 +303,8 @@ namespace Iren.ToolsExcel
             }
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
             {
-                string siglaEntita = selUP.ShowDialog();
-                if (siglaEntita != "")
+                object siglaEntita = selUP.ShowDialog();
+                if (siglaEntita != null)
                     opt.EseguiOttimizzazione(siglaEntita);
             }
 

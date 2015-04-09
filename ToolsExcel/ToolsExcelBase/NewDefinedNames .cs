@@ -21,8 +21,13 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<string, int> _defNamesIndexByName = new Dictionary<string, int>();
         protected ILookup<int, string> _defNamesIndexByRow;
 
-        protected Dictionary<string, string> _siglaEntitaAddress = new Dictionary<string, string>();
-        protected Dictionary<string, GotoObject> _siglaEntitaGotos = new Dictionary<string, GotoObject>();
+        protected Dictionary<string, object> _addressFrom = new Dictionary<string, object>();
+        protected Dictionary<object, string> _addressTo = new Dictionary<object, string>();
+
+        public enum InitType
+        {
+            All, OnlyNaming, OnlyGOTOs
+        }
 
         #endregion
 
@@ -40,17 +45,15 @@ namespace Iren.ToolsExcel.Base
 
         #region Costruttori
 
-        public NewDefinedNames(string sheet)
+        private void InitNaming()
         {
-            _sheet = sheet;
-
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
-            DataTable definedGotos = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GOTODEFINITI];
+
 
             IEnumerable<DataRow> names =
                 from DataRow r in definedNames.AsEnumerable()
-                where r["Sheet"].Equals(sheet)
+                where r["Sheet"].Equals(_sheet)
                 select r;
 
             _defNamesIndexByName = names.ToDictionary(r => r["Name"].ToString(), r => (int)r["Row"]);
@@ -58,30 +61,55 @@ namespace Iren.ToolsExcel.Base
 
             IEnumerable<DataRow> dates =
                 from DataRow r in definedDates.AsEnumerable()
-                where r["Sheet"].Equals(sheet)
+                where r["Sheet"].Equals(_sheet)
                 select r;
 
             DataView distinctDays = new DataView(definedDates);
             distinctDays.RowFilter = "Sheet = '" + _sheet + "'";
-            _days = 
+            _days =
                 (from r in distinctDays.ToTable(true, "Date").AsEnumerable()
                  select r["Date"].ToString()).ToList();
 
             _defDatesIndexByName = dates.ToDictionary(r => GetName(r["Date"].ToString(), r["Hour"].ToString()), r => (int)r["Column"]);
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
+        }
+        private void InitGOTOs()
+        {
+            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSFROM];
+            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSTO];
 
-            _siglaEntitaGotos =
-               (from DataRow r in definedGotos.AsEnumerable()
-                //where r["Sheet"].Equals(sheet)
+            _addressFrom =
+               (from DataRow r in addressFromTable.AsEnumerable()
                 select r).ToDictionary(
-                    r => r["Name"].ToString(), 
-                    r => new GotoObject() 
-                    {
-                        row = (int)r["Row"],
-                        column = (int)r["Column"],
-                        addressTo = r["AddressTo"].ToString()
-                    }
+                    r => r["AddressFrom"].ToString(),
+                    r => r["SiglaEntita"]
                 );
+
+            _addressTo =
+               (from DataRow r in addressToTable.AsEnumerable()
+                select r).ToDictionary(
+                    r => r["SiglaEntita"],
+                    r => r["AddressTo"].ToString()
+                );
+        }
+
+        public NewDefinedNames(string sheet, InitType type = InitType.OnlyNaming)
+        {
+            _sheet = sheet;
+
+            switch (type)
+            {
+                case InitType.All:
+                    InitNaming();
+                    InitGOTOs();
+                    break;
+                case InitType.OnlyNaming:
+                    InitNaming();
+                    break;
+                case InitType.OnlyGOTOs:
+                    InitGOTOs();
+                    break;
+            }
         }
 
         #endregion
@@ -123,25 +151,18 @@ namespace Iren.ToolsExcel.Base
             _defDatesIndexByName.Add(GetName(parts), col);
             _defDatesIndexByCol.Add(col, GetName(parts));
         }
-        public void AddGOTO(object siglaEntita, int row, int column, string addressTo = "")
+        public void AddGOTO(object siglaEntita, string addressFrom)
         {
-            GotoObject obj;
-            if(addressTo == "")
-                obj = new GotoObject(_sheet, row, column);
-            else
-                obj = new GotoObject(_sheet, row, column, addressTo);
-
-            if (!_siglaEntitaGotos.ContainsKey(siglaEntita.ToString()))
-            {
-                _siglaEntitaGotos.Add(siglaEntita.ToString(), obj);
-                _siglaEntitaAddress.Add(siglaEntita.ToString(), obj.Address);
-            }
-
-            _siglaEntitaGotos.Add(siglaEntita.ToString(), obj);
+            _addressFrom.Add("'" + _sheet + "'!" + addressFrom, siglaEntita);
+        }
+        public void AddGOTO(object siglaEntita, string addressFrom, string addressTo)
+        {
+            AddGOTO(siglaEntita, addressFrom);
+            _addressTo.Add(siglaEntita, "'" + _sheet + "'!" + addressTo);
         }
         public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
         {
-            _siglaEntitaGotos[siglaEntita.ToString()].addressTo = "'" + _sheet + "'!" + addressTo;
+            _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
         }
 
         public int GetFirstCol()
@@ -253,12 +274,17 @@ namespace Iren.ToolsExcel.Base
             return new Range(row, col);
         }
 
-        public string GetGOTO(int row, int column)
+        public string GetGOTO(string addressFrom)
         {
-            if(_siglaEntitaGotos.ContainsValue(new GotoObject() {row = row, column = column}))
-            {
-                return _siglaEntitaGotos.Where(kv => kv.Value == new GotoObject() { row = row, column = column }).First().Value.addressTo;
-            }
+            if (_addressFrom.ContainsKey("'" + _sheet + "'!" + addressFrom))
+                return GetGOTO(_addressFrom["'" + _sheet + "'!" + addressFrom]);
+
+            return "";
+        }
+        public string GetGOTO(object siglaEntita)
+        {
+            if (_addressTo.ContainsKey(siglaEntita))
+                return _addressTo[siglaEntita];
 
             return "";
         }
@@ -314,21 +340,33 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
-        public static DataTable GetDefaultGOTOTable(string name)
+        public static DataTable GetDefaultAddressFromTable(string name)
         {
             DataTable dt = new DataTable()
             {
                 Columns =
                     {
-                        {"Sheet", typeof(string)},
-                        {"Name", typeof(string)},
-                        {"Row", typeof(int)},
-                        {"Column", typeof(int)},
+                        {"AddressFrom", typeof(string)},
+                        {"SiglaEntita", typeof(string)}
+                    }
+            };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["AddressFrom"] };
+            dt.TableName = name;
+            return dt;
+        }
+        public static DataTable GetDefaultAddressToTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"SiglaEntita", typeof(string)},
                         {"AddressTo", typeof(string)}
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Name"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"] };
             dt.TableName = name;
             return dt;
         }
@@ -339,25 +377,26 @@ namespace Iren.ToolsExcel.Base
         {
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
-            DataTable definedGotos = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.GOTODEFINITI];
+            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSFROM];
+            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSTO];
 
             ///////// nomi
-            IEnumerable<DataRow> definedNamesRows =
-                from r in definedNames.AsEnumerable()
-                where r["Sheet"].Equals(_sheet)
-                select r;
+            //IEnumerable<DataRow> definedNamesRows =
+            //    from r in definedNames.AsEnumerable()
+            //    where r["Sheet"].Equals(_sheet)
+            //    select r;
 
-            foreach (var row in definedNamesRows)
-            {
-                if (_defNamesIndexByName.ContainsKey(row["Name"].ToString()))
-                {
-                    row["Row"] = _defNamesIndexByName[row["Name"].ToString()];
-                    _defNamesIndexByName.Remove(row["Name"].ToString());
-                }
-            }
+            //foreach (var row in definedNamesRows)
+            //{
+            //    if (_defNamesIndexByName.ContainsKey(row["Name"].ToString()))
+            //    {
+            //        row["Row"] = _defNamesIndexByName[row["Name"].ToString()];
+            //        _defNamesIndexByName.Remove(row["Name"].ToString());
+            //    }
+            //}
 
-            if (_defNamesIndexByName.Count > 0) 
-            {
+            //if (_defNamesIndexByName.Count > 0) 
+            //{
                 foreach(var ele in _defNamesIndexByName) 
                 {
                     DataRow r = definedNames.NewRow();
@@ -366,25 +405,25 @@ namespace Iren.ToolsExcel.Base
                     r["Row"] = ele.Value;
                     definedNames.Rows.Add(r);
                 }
-            }
+            //}
 
             ///////// date
-            IEnumerable<DataRow> definedDatesRows =
-                from r in definedDates.AsEnumerable()
-                where r["Sheet"].Equals(_sheet)
-                select r;
+            //IEnumerable<DataRow> definedDatesRows =
+            //    from r in definedDates.AsEnumerable()
+            //    where r["Sheet"].Equals(_sheet)
+            //    select r;
 
-            foreach (var row in definedDatesRows)
-            {
-                if (_defDatesIndexByName.ContainsKey(row["Name"].ToString()))
-                {
-                    row["Column"] = _defDatesIndexByName[row["Name"].ToString()];
-                    _defDatesIndexByName.Remove(row["Name"].ToString());
-                }
-            }
+            //foreach (var row in definedDatesRows)
+            //{
+            //    if (_defDatesIndexByName.ContainsKey(row["Name"].ToString()))
+            //    {
+            //        row["Column"] = _defDatesIndexByName[row["Name"].ToString()];
+            //        _defDatesIndexByName.Remove(row["Name"].ToString());
+            //    }
+            //}
 
-            if (_defDatesIndexByName.Count > 0)
-            {
+            //if (_defDatesIndexByName.Count > 0)
+            //{
                 foreach (var ele in _defDatesIndexByName)
                 {
                     string[] dateTime = ele.Key.Split(Simboli.UNION[0]);
@@ -396,102 +435,95 @@ namespace Iren.ToolsExcel.Base
                     r["Column"] = ele.Value;
                     definedDates.Rows.Add(r);
                 }
-            }
+            //}
 
             ///////// goto
-            IEnumerable<DataRow> definedGotosRows =
-                from r in definedGotos.AsEnumerable()
-                where r["Sheet"].Equals(_sheet)
-                select r;
-
-            foreach (var row in definedGotosRows)
+            IEnumerable<KeyValuePair<string, object>> defAddressFrom =
+                from kv in _addressFrom
+                where kv.Key.StartsWith("'" + _sheet + "'!")
+                select kv;
+            foreach (var ele in defAddressFrom)
             {
-                if (_siglaEntitaGotos.ContainsKey(row["Name"].ToString()))
-                {
-                    row["Row"] = _siglaEntitaGotos[row["Name"].ToString()].row;
-                    row["Column"] = _siglaEntitaGotos[row["Name"].ToString()].column;
-                    row["AddressTo"] = _siglaEntitaGotos[row["Name"].ToString()].addressTo;
-                    _siglaEntitaGotos.Remove(row["Name"].ToString());
-                }
+                DataRow r = addressFromTable.NewRow();
+                r["AddressFrom"] = ele.Key;
+                r["SiglaEntita"] = ele.Value;
+                addressFromTable.Rows.Add(r);
             }
-
-            if (_siglaEntitaGotos.Count > 0)
+            IEnumerable<KeyValuePair<object, string>> defAddressTo =
+                from kv in _addressTo
+                where kv.Value.StartsWith("'" + _sheet + "'!")
+                select kv;
+            foreach (var ele in defAddressTo)
             {
-                foreach (var ele in _siglaEntitaGotos)
-                {
-                    DataRow r = definedGotos.NewRow();
-                    r["Sheet"] = _sheet;
-                    r["Name"] = ele.Key;
-                    r["Row"] = ele.Value.row;
-                    r["Column"] = ele.Value.column;
-                    r["AddressTo"] = ele.Value.addressTo;
-                    definedGotos.Rows.Add(r);
-                }
+                DataRow r = addressToTable.NewRow();
+                r["SiglaEntita"] = ele.Key;
+                r["AddressTo"] = ele.Value;
+                addressToTable.Rows.Add(r);
             }
         }
     }
 
     #region Classi supporto
 
-    public class GotoObject : IEqualityComparer
-    {
-        private string _sheet;
-        private int _row, _column;
-        private string _address;
-        private string _addressTo;
+    //public class GotoObject : IEqualityComparer
+    //{
+    //    private string _sheet;
+    //    private int _row, _column;
+    //    private string _address;
+    //    private string _addressTo;
 
-        public string Sheet
-        {
-            get { return _sheet; }
-        }
+    //    public string Sheet
+    //    {
+    //        get { return _sheet; }
+    //    }
 
-        public int Row
-        {
-            get { return _row; }
-        }
+    //    public int Row
+    //    {
+    //        get { return _row; }
+    //    }
 
-        public int Column
-        {
-            get { return _column; }
-        }
+    //    public int Column
+    //    {
+    //        get { return _column; }
+    //    }
 
-        public string Address
-        {
-            get { return _address; }
-        }
+    //    public string Address
+    //    {
+    //        get { return _address; }
+    //    }
 
-        public string AddressTo
-        {
-            get { return _addressTo; }
-        }
+    //    public string AddressTo
+    //    {
+    //        get { return _addressTo; }
+    //    }
 
-        public GotoObject(string sheet, int row, int column)
-        {
-            _sheet = sheet;
-            _row = row;
-            _column = column;
-            _address = "'" + _sheet + "'!" + Range.GetRange(_row, _column);
-        }
-        public GotoObject(string sheet, int row, int column, string addressTo) 
-            : this(sheet, row, column)
-        {
-            _addressTo = addressTo;
-        }
+    //    public GotoObject(string sheet, int row, int column)
+    //    {
+    //        _sheet = sheet;
+    //        _row = row;
+    //        _column = column;
+    //        _address = "'" + _sheet + "'!" + Range.GetRange(_row, _column);
+    //    }
+    //    public GotoObject(string sheet, int row, int column, string addressTo) 
+    //        : this(sheet, row, column)
+    //    {
+    //        _addressTo = addressTo;
+    //    }
 
-        public bool Equals(object x, object y)
-        {
-            GotoObject obj1 = (GotoObject)x;
-            GotoObject obj2 = (GotoObject)y;
+    //    public bool Equals(object x, object y)
+    //    {
+    //        GotoObject obj1 = (GotoObject)x;
+    //        GotoObject obj2 = (GotoObject)y;
 
-            return obj1.Address == obj2.Address;
-        }
+    //        return obj1.Address == obj2.Address;
+    //    }
 
-        public int GetHashCode(object obj)
-        {
-            GotoObject obj1 = (GotoObject)obj;
-            return obj1.Address.GetHashCode();
-        }
-    }
+    //    public int GetHashCode(object obj)
+    //    {
+    //        GotoObject obj1 = (GotoObject)obj;
+    //        return obj1.Address.GetHashCode();
+    //    }
+    //}
 
     #endregion
 }

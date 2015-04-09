@@ -17,7 +17,7 @@ namespace Iren.ToolsExcel
         public Sheet(Excel.Worksheet ws)
             : base(ws) { }
 
-        protected override void InsertPersonalizzazioni()
+        protected override void InsertPersonalizzazioni(object siglaEntita)
         {
             //da classe base il filtro è corretto
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
@@ -25,7 +25,7 @@ namespace Iren.ToolsExcel
             _ws.Columns[3].Font.Size = 9;
 
             int col = _newNomiDefiniti.GetFirstCol();
-            object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
+            siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
             Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row, col + 25, informazioni.Count - 1, 0)];

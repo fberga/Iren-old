@@ -115,22 +115,25 @@ namespace Iren.ToolsExcel.Base
             InitLabels();
             Clear();
 
-            _categorie.RowFilter = "Operativa = 1";
-            _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
-            _entita.RowFilter = "";
-
-            CreaNomiCelle();
-            InitBarraTitolo();
-            _rigaAttiva += 3;
-            FormattaAllDati();
-            InitBarraEntita();
-            AbilitaAzioni();
-            CaricaDatiRiepilogo();
-
-            //Se sono in multiscreen lascio il riepilogo alla fine, altrimenti lo riporto all'inizio
-            if (Screen.AllScreens.Length == 1)
+            if (Struct.visualizzaRiepilogo)
             {
-                _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
+                _categorie.RowFilter = "Operativa = 1";
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+                _entita.RowFilter = "";
+
+                CreaNomiCelle();
+                InitBarraTitolo();
+                _rigaAttiva += 3;
+                FormattaAllDati();
+                InitBarraEntita();
+                AbilitaAzioni();
+                CaricaDatiRiepilogo();
+
+                //Se sono in multiscreen lascio il riepilogo alla fine, altrimenti lo riporto all'inizio
+                if (Screen.AllScreens.Length == 1)
+                {
+                    _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
+                }
             }
         }
 
@@ -205,7 +208,7 @@ namespace Iren.ToolsExcel.Base
                 foreach (DataRowView e in _entita)
                 {
                     _newNomiDefiniti.AddName(_rigaAttiva, e["SiglaEntita"]);
-                    _newNomiDefiniti.AddGOTO(e["SiglaEntita"], _rigaAttiva++, _colonnaInizio);
+                    _newNomiDefiniti.AddGOTO(e["SiglaEntita"], Range.R1C1toA1(_rigaAttiva++, _colonnaInizio));
                 }
             }
             
@@ -353,21 +356,24 @@ namespace Iren.ToolsExcel.Base
 
         public override void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif)
         {
-            Range cell = _newNomiDefiniti.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
-            Excel.Range rng = _ws.Cells[cell.ToString()];
-            if (presente)
+            if (Struct.visualizzaRiepilogo)
             {
-                string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
-                rng.ClearComments();
-                rng.AddComment(commento).Visible = false;
-                rng.Value = "OK";
-                Style.RangeStyle(rng, foreColor: 1, bold: true, fontSize: 9, backColor: 4, align: Excel.XlHAlign.xlHAlignCenter);
-            }
-            else
-            {
-                rng.ClearComments();
-                rng.Value = "Non presente";
-                Style.RangeStyle(rng, foreColor: 3, bold: false, fontSize: 7, backColor: 2, align: Excel.XlHAlign.xlHAlignCenter);
+                Range cell = _newNomiDefiniti.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
+                Excel.Range rng = _ws.Cells[cell.ToString()];
+                if (presente)
+                {
+                    string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                    rng.ClearComments();
+                    rng.AddComment(commento).Visible = false;
+                    rng.Value = "OK";
+                    Style.RangeStyle(rng, foreColor: 1, bold: true, fontSize: 9, backColor: 4, align: Excel.XlHAlign.xlHAlignCenter);
+                }
+                else
+                {
+                    rng.ClearComments();
+                    rng.Value = "Non presente";
+                    Style.RangeStyle(rng, foreColor: 3, bold: false, fontSize: 7, backColor: 2, align: Excel.XlHAlign.xlHAlignCenter);
+                }
             }
         }
 
@@ -375,20 +381,28 @@ namespace Iren.ToolsExcel.Base
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
-            _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND Gerarchia IS NOT NULL";
-
-            CicloGiorni((oreGiorno, suffissoData, giorno) => 
+            
+            if (Struct.visualizzaRiepilogo)
             {
-                Range cell = new Range(_newNomiDefiniti.GetRowByName("DATA"), _newNomiDefiniti.GetColFromName(_azioni[0]["SiglaAzione"], suffissoData));
-                _ws.Range[cell.ToString()].Value = giorno;
-            });
-            _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND Gerarchia IS NOT NULL";
+            
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    Range cell = new Range(_newNomiDefiniti.GetRowByName("DATA"), _newNomiDefiniti.GetColFromName(_azioni[0]["SiglaAzione"], suffissoData));
+                    _ws.Range[cell.ToString()].Value = giorno;
+                });
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+            }
         }
         public override void UpdateRiepilogo()
         {
             AggiornaDate();
-            AbilitaAzioni();
-            CaricaDatiRiepilogo();
+
+            if (Struct.visualizzaRiepilogo)
+            {
+                AbilitaAzioni();
+                CaricaDatiRiepilogo();
+            }
         }
 
         protected void DisabilitaTutto()
@@ -403,8 +417,11 @@ namespace Iren.ToolsExcel.Base
         }
         public override void RiepilogoInEmergenza()
         {
-            AggiornaDate();
-            DisabilitaTutto();
+            if (Struct.visualizzaRiepilogo)
+            {
+                AggiornaDate();
+                DisabilitaTutto();
+            }
         }
 
         #endregion

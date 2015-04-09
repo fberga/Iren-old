@@ -27,6 +27,7 @@ namespace Iren.ToolsExcel.Utility
         public struct SP
         {
             public const string APPLICAZIONE = "spApplicazioneProprieta",
+                APPLICAZIONE_INFORMAZIONE_D = "spApplicazioneInformazioneD",
                 APPLICAZIONE_INFORMAZIONE_H = "spApplicazioneInformazioneH",
                 APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
                 APPLICAZIONE_INIT = "spApplicazioneInit",
@@ -65,7 +66,9 @@ namespace Iren.ToolsExcel.Utility
         }
         public struct Tab
         {
-            public const string APPLICAZIONE = "Applicazione",
+            public const string ADDRESSFROM = "AddressFrom",
+                ADDRESSTO = "AddressTo",
+                APPLICAZIONE = "Applicazione",
                 AZIONE = "Azione",
                 AZIONECATEGORIA = "AzioneCategoria",
                 CALCOLO = "Calcolo",
@@ -85,8 +88,7 @@ namespace Iren.ToolsExcel.Utility
                 ENTITAPARAMETROD = "EntitaParametroD",
                 ENTITAPARAMETROH = "EntitaParametroH",
                 ENTITAPROPRIETA = "EntitaProprieta",
-                ENTITARAMPA = "EntitaRampa",
-                GOTODEFINITI = "DefinedGotos",
+                ENTITARAMPA = "EntitaRampa",                
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMIDEFINITI = "DefinedNames",
@@ -384,6 +386,7 @@ namespace Iren.ToolsExcel.Utility
             Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
             Struct.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
             Struct.tipoVisualizzazione = dt.Rows[0]["TipoVisualizzazione"] is DBNull ? "O" : dt.Rows[0]["TipoVisualizzazione"].ToString();
+            Struct.visualizzaRiepilogo = dt.Rows[0]["VisRiepilogo"] is DBNull ? true : dt.Rows[0]["VisRiepilogo"].Equals("1");
 
             Struct.cell.width.empty = double.Parse(dt.Rows[0]["ColVuotaWidth"].ToString());
             Struct.cell.width.dato = double.Parse(dt.Rows[0]["ColDatoWidth"].ToString());
@@ -417,7 +420,8 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaNomi();
             CreaTabellaNomiNew();
             CreaTabellaDate();
-            CreaTabellaGOTO();
+            CreaTabellaAddressFrom();
+            CreaTabellaAddressTo();
             CreaTabellaModifica();
             CaricaAzioni();
             CaricaCategorie();
@@ -496,13 +500,28 @@ namespace Iren.ToolsExcel.Utility
             }
         }
 
-        private static bool CreaTabellaGOTO()
+        private static bool CreaTabellaAddressFrom()
         {
             try
             {
-                string name = Tab.GOTODEFINITI;
+                string name = Tab.ADDRESSFROM;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultGOTOTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultAddressFromTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CreaTabellaAddressTo()
+        {
+            try
+            {
+                string name = Tab.ADDRESSTO;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultAddressToTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -1758,7 +1777,8 @@ namespace Iren.ToolsExcel.Utility
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
                 DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
                 Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
-                Struct.intervalloGiorni = (applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString()));
+                Struct.intervalloGiorni = applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString());
+                Struct.visualizzaRiepilogo = applicazione[0]["VisRiepilogo"] is DBNull ? true : applicazione[0]["VisRiepilogo"].Equals("1");
 
                 return true;
             }

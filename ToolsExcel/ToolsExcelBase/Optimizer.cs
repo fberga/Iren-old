@@ -161,14 +161,14 @@ namespace Iren.ToolsExcel.Base
         }
         public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
-            Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
+            //Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
 
-            DeleteExistingAdjust();
-            OmitConstraints();
-            AddAdjust(siglaEntita);
-            AddConstraints(siglaEntita);
-            AddOpt(siglaEntita);
-            Execute(siglaEntita);
+            //DeleteExistingAdjust();
+            //OmitConstraints();
+            //AddAdjust(siglaEntita);
+            //AddConstraints(siglaEntita);
+            //AddOpt(siglaEntita);
+            //Execute(siglaEntita);
 
 
         }

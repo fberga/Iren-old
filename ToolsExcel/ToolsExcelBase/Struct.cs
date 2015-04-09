@@ -34,6 +34,7 @@ namespace Iren.ToolsExcel.Base
 
         public static string tipoVisualizzazione = "O";
         public static int intervalloGiorni = 0;
+        public static bool visualizzaRiepilogo = true;
         public static Cella cell;
 
         public int colBlock = 5,

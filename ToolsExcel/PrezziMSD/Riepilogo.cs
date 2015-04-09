@@ -23,10 +23,10 @@ namespace Iren.ToolsExcel
 
         }
 
-        public override void LoadStructure()
-        {
-            InitLabels();
-        }
+        //public override void LoadStructure()
+        //{
+        //    InitLabels();
+        //}
 
         public override void InitLabels()
         {
@@ -62,20 +62,5 @@ namespace Iren.ToolsExcel
             _ws.Shapes.Item("sfondo").Height = (float)(12.5 * _ws.Rows[5].Height);
             _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoTrue;
         }
-
-        //public override void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif)
-        //{
-            
-        //}
-
-        //public override void UpdateRiepilogo()
-        //{
-            
-        //}
-
-        //public override void RiepilogoInEmergenza()
-        //{
-            
-        //}
     }
 }

@@ -11,7 +11,7 @@ namespace Iren.ToolsExcel.Forms
     {
         #region Variabili
         
-        private string _siglaEntita = "";
+        private object _siglaEntita;
         private bool _isCanceld = false;
         private bool _hasSelection = false;
         private string _siglaInformazione = "";
@@ -22,7 +22,7 @@ namespace Iren.ToolsExcel.Forms
 
         public bool IsCanceld { get { return _isCanceld; } }
         public bool HasSelection { get { return _hasSelection; } }
-        public string SiglaEntita { get { return _siglaEntita; } }
+        public object SiglaEntita { get { return _siglaEntita; } }
         
         #endregion
 
@@ -65,7 +65,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            _siglaEntita = "";
+            _siglaEntita = null;
             this.Close();
         }
 
@@ -83,12 +83,17 @@ namespace Iren.ToolsExcel.Forms
         /// Sposta la selezione sul titolo dell'UP scelta e ritorna la sua sugla.
         /// </summary>
         /// <returns>Restituisce la sigla dell'UP scelta.</returns>
-        public new string ShowDialog()
+        public new object ShowDialog()
         {
             base.ShowDialog();
 
-            if(_siglaEntita != "")
-                Handler.GOTO(_siglaEntita);            
+            if(_siglaEntita != null) 
+            {
+                //non mi serve il nome del foglio perché lavoro direttamente con la siglaEntita
+                NewDefinedNames n = new NewDefinedNames("", NewDefinedNames.InitType.OnlyGOTOs);
+                string address = n.GetGOTO(_siglaEntita);
+                Handler.Goto(address);
+            }
 
             return _siglaEntita;
         } 
