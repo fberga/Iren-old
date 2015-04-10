@@ -1029,15 +1029,17 @@ namespace Iren.ToolsExcel.Utility
         {
             ws.Application.CalculateFull();
         }
-        public static bool CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime? dataRif = null, object parametro = null)
+        public static bool CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null)
         {
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(NewDefinedNames.GetSheetName(siglaEntita));
+
             try
             {
                 DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
                 azioni.RowFilter = "SiglaAzione = '" + siglaAzione + "'";
 
-                if (dataRif == null)
-                    dataRif = DataBase.DataAttiva;
+                //if (dataRif == null)
+                //    dataRif = DataBase.DataAttiva;
 
                 bool procedi = true;
                 if (azioni[0]["Visibile"].Equals("1"))
@@ -1053,38 +1055,40 @@ namespace Iren.ToolsExcel.Utility
 
                 if (procedi)
                 {
-                    AzzeraInformazione(siglaEntita, siglaAzione, dataRif);
+                    AzzeraInformazione2(siglaEntita, siglaAzione, newNomiDefiniti, giorno);
+
+                    //AzzeraInformazione(siglaEntita, siglaAzione, dataRif);
 
                     if (DataBase.OpenConnection())
                     {
-                        if (azionePadre.Equals("GENERA"))
-                        {
-                            ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
-                            if (azioni[0]["Visibile"].Equals("1"))
-                                DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
-                        }
-                        else
-                        {
-                            DataView azioneInformazione = DataBase.DB.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + dataRif.Value.ToString("yyyyMMdd")).DefaultView;
+                    //    if (azionePadre.Equals("GENERA"))
+                    //    {
+                    //        ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
+                    //        if (azioni[0]["Visibile"].Equals("1"))
+                    //            DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                    //    }
+                    //    else
+                    //    {
+                            DataView azioneInformazione = DataBase.DB.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                             if (azioneInformazione.Count == 0)
                             {
-                                if (azioni[0]["Visibile"].Equals("1"))
-                                    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif, false);
+                    //            if (azioni[0]["Visibile"].Equals("1"))
+                    //                DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif, false);
                             }
                             else
                             {
-                                ScriviInformazione(siglaEntita, azioneInformazione);
+                                ScriviInformazione2(siglaEntita, azioneInformazione, newNomiDefiniti);
 
-                                if (azioni[0]["Visibile"].Equals("1"))
-                                    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                                //if (azioni[0]["Visibile"].Equals("1"))
+                                //    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
                             }
-                        }
+                    //    }
                     }
-                    else
-                    {
-                        if (azionePadre.Equals("GENERA"))
-                            ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
-                    }
+                    //else
+                    //{
+                    //    if (azionePadre.Equals("GENERA"))
+                    //        ElaborazioneInformazione(siglaEntita, dataRif.Value, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
+                    //}
                 }
                 return true;
             }
@@ -1096,6 +1100,69 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
+
+        public static void AzzeraInformazione2(object siglaEntita, object siglaAzione, NewDefinedNames newNomiDefiniti, DateTime giorno)
+        {
+            Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+
+            DataView azioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
+            azioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+
+            foreach (DataRowView info in azioneInformazione)
+            {
+                if (info["FormulaInCella"].Equals("0"))
+                {
+                    siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                    Range rng;
+                    if(info["Selezione"].Equals(0))
+                        rng = newNomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    else
+                        rng = newNomiDefiniti.Get(siglaEntita, "SEL", info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+
+                    Excel.Range xlRng = ws.Range[rng.ToString()];
+                    xlRng.Value = null;
+                    Style.RangeStyle(xlRng, backColor: info["BackColor"], foreColor: info["ForeColor"]);
+                    xlRng.ClearComments();
+                }
+            }
+        }
+        public static void ScriviInformazione2(object siglaEntita, DataView azioneInformazione, NewDefinedNames newNomiDefiniti)
+        {
+            Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
+
+            foreach (DataRowView azione in azioneInformazione)
+            {
+                string suffissoData;
+                string suffissoOra;
+                if (azione["SiglaEntita"].Equals("UP_BUS") && azione["SiglaInformazione"].Equals("VOL_INVASO")) 
+                {
+                    suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1));
+                    suffissoOra = Date.GetSuffissoOra(24);
+                }
+                else
+                {
+                    suffissoData = Date.GetSuffissoData(DataBase.DataAttiva, azione["Data"]);
+                    suffissoOra = Date.GetSuffissoOra(azione["Data"]);
+                }
+
+                Range rng = newNomiDefiniti.Get(siglaEntita, azione["SiglaInformazione"], suffissoData, suffissoOra);
+
+                Excel.Range xlRng = ws.Range[rng.ToString()];
+                xlRng.Value = azione["Valore"];
+                if (azione["BackColor"] != DBNull.Value)
+                    xlRng.Interior.ColorIndex = azione["BackColor"];
+                if (azione["BackColor"] != DBNull.Value)
+                    xlRng.Font.ColorIndex = azione["ForeColor"];
+
+                xlRng.ClearComments();
+
+                if (azione["Commento"] != DBNull.Value)
+                    xlRng.AddComment(azione["Commento"]).Visible = false;
+            }
+        }
+
         public static void AzzeraInformazione(object siglaEntita, object siglaAzione, DateTime? dataRif = null, object valore = null)
         {
             string foglio = DefinedNames.GetSheetName(siglaEntita);

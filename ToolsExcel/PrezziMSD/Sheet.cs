@@ -24,7 +24,7 @@ namespace Iren.ToolsExcel
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
             entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
 
-            int colonnaTitoloInfo = _colonnaInizio - _visParametro;
+            int colonnaTitoloInfo = _newNomiDefiniti.GetFirstCol() - _visParametro;
 
             if (entitaProprieta.Count > 0)
             {
@@ -62,30 +62,64 @@ namespace Iren.ToolsExcel
         {
             base.CaricaInformazioni(all);
 
-            //carico le informazioni giornaliere
-            DataView datiApplicazioneD = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
-
-            foreach (DataRowView dato in datiApplicazioneD)
+            if (DataBase.OpenConnection())
             {
-                //DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
-                //sono nel caso DATA0H24
-                //if (giorno < DataBase.DataAttiva)
-                //{
-                //    Range rng = _newNomiDefiniti.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24));
-                //    _ws.Range[rng.ToString()].Value = dato["H24"];
-                //}
-                //else
-                //{
+                //carico le informazioni giornaliere
+                DataView datiApplicazioneD = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
+
+                foreach (DataRowView dato in datiApplicazioneD)
+                {
+                    //DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                    //sono nel caso DATA0H24
+                    //if (giorno < DataBase.DataAttiva)
+                    //{
+                    //    Range rng = _newNomiDefiniti.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24));
+                    //    _ws.Range[rng.ToString()].Value = dato["H24"];
+                    //}
+                    //else
+                    //{
                     //int col = Struct.tipoVisualizzazione == "O" ? _newNomiDefiniti.GetColFromDate(giorno) : _newNomiDefiniti.GetFirstCol();
                     //int dayOffset = Struct.tipoVisualizzazione == "O" ? _newNomiDefiniti.GetDayOffset(giorno) : _newNomiDefiniti.GetColOffset();
                     //int row = _newNomiDefiniti.GetRowByName(dato["SiglaEntita"], dato["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(giorno));
 
-                Range rng = new Range(_newNomiDefiniti.GetRowByName(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _newNomiDefiniti.GetFirstCol() - 1);
+                    Range rng = new Range(_newNomiDefiniti.GetRowByName(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _newNomiDefiniti.GetFirstCol() - 1);
 
                     _ws.Range[rng.ToString()].Value = dato["Valore"];
-                //}
+                    //}
+                }
             }
 
+        }
+
+        public override void UpdateData(bool all = true)
+        {
+            //cancello i dati giornalieri
+            if (all)
+            {
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+
+                DateTime dataInizio = DataBase.DataAttiva;
+                DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+                int col = _newNomiDefiniti.GetFirstCol() - _visParametro + 1;
+
+                foreach (DataRowView entita in categoriaEntita)
+                {
+                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
+                    if (entitaProprieta.Count > 0)
+                    {
+                        CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
+                        {
+                            Range rng = new Range(_newNomiDefiniti.GetRowByName(entita["SiglaEntita"], "ACCENSIONE", suffData), col, 2);
+                            _ws.Range[rng.ToString()].Value = "";
+                        });
+                    }
+                }
+            }
+
+            base.UpdateData(all);
         }
     }
 }

@@ -320,30 +320,34 @@ namespace Iren.ToolsExcel.Base
             {
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    DataView datiRiepilogo = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
-                    foreach (DataRowView valore in datiRiepilogo)
+                    if (DataBase.OpenConnection())
                     {
-                        Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(valore["SiglaEntita"]), _newNomiDefiniti.GetColFromName(valore["SiglaAzione"], suffissoData));                        
-                        string commento = "";
-
-                        Excel.Range rng = _ws.Range[cellaAzione.ToString()];
-
-                        if (valore["Presente"].Equals("1"))
+                        DataView datiRiepilogo = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                        foreach (DataRowView valore in datiRiepilogo)
                         {
-                            rng.ClearComments();
-                            DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
-                            commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
-                            rng.AddComment(commento);
-                            rng.Value = "OK";
-                            Style.RangeStyle(rng, foreColor:1, bold:true, fontSize:9, backColor:4, align: Excel.XlHAlign.xlHAlignCenter);
-                        }
-                        else
-                        {
-                            rng.ClearComments();
-                            rng.Value = "Non presente";
-                            Style.RangeStyle(rng, foreColor: 3, bold: false, fontSize: 7, backColor: 2, align: Excel.XlHAlign.xlHAlignCenter);
+                            Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(valore["SiglaEntita"]), _newNomiDefiniti.GetColFromName(valore["SiglaAzione"], suffissoData));
+                            string commento = "";
+
+                            Excel.Range rng = _ws.Range[cellaAzione.ToString()];
+
+                            if (valore["Presente"].Equals("1"))
+                            {
+                                rng.ClearComments();
+                                DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
+                                commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
+                                rng.AddComment(commento);
+                                rng.Value = "OK";
+                                Style.RangeStyle(rng, foreColor: 1, bold: true, fontSize: 9, backColor: 4, align: Excel.XlHAlign.xlHAlignCenter);
+                            }
+                            else
+                            {
+                                rng.ClearComments();
+                                rng.Value = "Non presente";
+                                Style.RangeStyle(rng, foreColor: 3, bold: false, fontSize: 7, backColor: 2, align: Excel.XlHAlign.xlHAlignCenter);
+                            }
                         }
                     }
+                    
                 });
             }
             catch (Exception e)
@@ -377,6 +381,12 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
+        private void CancellaDati()
+        {
+            Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
+            _ws.Range[rngData.ToString()].Value = null;
+            _ws.Range[rngData.ToString()].ClearComments();
+        }
         protected void AggiornaDate()
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
@@ -400,6 +410,7 @@ namespace Iren.ToolsExcel.Base
 
             if (Struct.visualizzaRiepilogo)
             {
+                CancellaDati();
                 AbilitaAzioni();
                 CaricaDatiRiepilogo();
             }

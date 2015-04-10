@@ -98,14 +98,14 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
-        public Range Extend(int rowOffset, int colOffset = 1) 
+        public Range Extend(int rowOffset = 1, int colOffset = 1) 
         {
             RowOffset = rowOffset;
             ColOffset = colOffset;
             
             return this;
         }
-        public Range ExtendOf(int rowOffset, int colOffset = 0)
+        public Range ExtendOf(int rowOffset = 0, int colOffset = 0)
         {
             _rowOffset += rowOffset;
             _colOffset += colOffset;
@@ -181,11 +181,11 @@ namespace Iren.ToolsExcel.Base
                     return new Range(_r.StartRow + row, _r.StartColumn, 1, _r.ColOffset);
                 }
             }
-            public Range this[int row1, int row2]
+            public Range this[int row1, int offset]
             {
                 get
                 {
-                    return new Range(_r.StartRow + row1, _r.StartColumn, row2 - row1, _r.ColOffset);
+                    return new Range(_r.StartRow + row1, _r.StartColumn, offset - row1, _r.ColOffset);
                 }
             }
             public int Count
@@ -212,11 +212,11 @@ namespace Iren.ToolsExcel.Base
                     return new Range(_r.StartRow, _r.StartColumn + column, _r.RowOffset, 1);
                 }
             }
-            public Range this[int col1, int col2]
+            public Range this[int col1, int offset]
             {
                 get
                 {
-                    return new Range(_r.StartRow, _r.StartColumn + col1, _r.RowOffset, col2 - col1);
+                    return new Range(_r.StartRow, _r.StartColumn + col1, _r.RowOffset, offset - col1);
                 }
             }
             public int Count

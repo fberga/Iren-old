@@ -26,7 +26,7 @@ namespace Iren.ToolsExcel.Base
 
         public enum InitType
         {
-            All, OnlyNaming, OnlyGOTOs
+            All, AllThisSheet, OnlyNaming, OnlyGOTOs, OnlyGOTOsThisSheet
         }
 
         #endregion
@@ -39,6 +39,10 @@ namespace Iren.ToolsExcel.Base
             {
                 return _days.ToArray();
             }
+        }
+        public string Sheet
+        {
+            get { return _sheet; }
         }
 
         #endregion
@@ -73,13 +77,14 @@ namespace Iren.ToolsExcel.Base
             _defDatesIndexByName = dates.ToDictionary(r => GetName(r["Date"].ToString(), r["Hour"].ToString()), r => (int)r["Column"]);
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
         }
-        private void InitGOTOs()
+        private void InitGOTOs(bool thisSheet = false)
         {
             DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSFROM];
             DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSTO];
 
             _addressFrom =
                (from DataRow r in addressFromTable.AsEnumerable()
+                where !thisSheet || r["Sheet"].Equals(_sheet)
                 select r).ToDictionary(
                     r => r["AddressFrom"].ToString(),
                     r => r["SiglaEntita"]
@@ -87,6 +92,7 @@ namespace Iren.ToolsExcel.Base
 
             _addressTo =
                (from DataRow r in addressToTable.AsEnumerable()
+                where !thisSheet || r["Sheet"].Equals(_sheet)
                 select r).ToDictionary(
                     r => r["SiglaEntita"],
                     r => r["AddressTo"].ToString()
@@ -108,6 +114,9 @@ namespace Iren.ToolsExcel.Base
                     break;
                 case InitType.OnlyGOTOs:
                     InitGOTOs();
+                    break;
+                case InitType.OnlyGOTOsThisSheet:
+                    InitGOTOs(true);
                     break;
             }
         }
@@ -252,27 +261,59 @@ namespace Iren.ToolsExcel.Base
             return GetRowByName(name);
         }
 
-        public Range Get(object siglaEntita, object siglaInformazione)
+        public Range Get(params object[] parts)
         {
-            int row = GetRowByName(siglaEntita, siglaInformazione);
-            int col = GetFirstCol();
+            if (parts.Length == 2)
+                return new Range(GetRowByName(GetName(parts)), GetFirstCol());
+
+            List<string> nameParts = new List<string>();
+            List<string> dateParts = new List<string>();
+            bool date = false;
+            foreach (var part in parts)
+            {
+                date = date || Regex.IsMatch(part.ToString(), @"DATA\d+");
+                if (!date)
+                    nameParts.Add(part.ToString());
+                else
+                    dateParts.Add(part.ToString());
+            }
+
+            if (!date)
+                return new Range(GetRowByName(GetName(nameParts)), GetFirstCol());
+
+            if(dateParts[0].Contains(Simboli.UNION)) 
+            {
+                string[] suffissoDataOra = dateParts[0].Split(Simboli.UNION[0]);
+                dateParts = new List<string>() { suffissoDataOra[0], suffissoDataOra[1] };
+            }
+            else if (dateParts.Count == 1)
+                dateParts.Add(Date.GetSuffissoOra(1));
+            
+            int row = GetRowByName(GetName(nameParts, Struct.tipoVisualizzazione == "O" ? "" : dateParts[0]));
+            int col = GetColFromDate(dateParts[0], dateParts[1]);
 
             return new Range(row, col);
-        }
-        public Range Get(object siglaEntita, object siglaInformazione, string suffissoData)
-        {
-            return Get(siglaEntita, siglaInformazione, suffissoData, "H1");
-        }
-        public Range Get(object siglaEntita, object siglaInformazione, string suffissoData, string suffissoOra)
-        {
-            string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
-            //string suffData = Struct.tipoVisualizzazione == "O" ? suffissoData : Date.GetSuffissoData(DataBase.DataAttiva);
 
-            int row = GetRowByName(name);
-            int col = GetColFromDate(suffissoData, suffissoOra);
-
-            return new Range(row, col);
         }
+        //public Range Get(object siglaEntita, object siglaInformazione)
+        //{
+        //    int row = GetRowByName(siglaEntita, siglaInformazione);
+        //    int col = GetFirstCol();
+
+        //    return new Range(row, col);
+        //}
+        //public Range Get(object siglaEntita, object siglaInformazione, string suffissoData)
+        //{
+        //    return Get(siglaEntita, siglaInformazione, suffissoData, "H1");
+        //}
+        //public Range Get(object siglaEntita, object siglaInformazione, string suffissoData, string suffissoOra)
+        //{
+        //    string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
+        //    int row = GetRowByName(name);
+        //    int col = GetColFromDate(suffissoData, suffissoOra);
+
+        //    return new Range(row, col);
+        //}
 
         public string GetGOTO(string addressFrom)
         {
@@ -288,24 +329,65 @@ namespace Iren.ToolsExcel.Base
 
             return "";
         }
+        public string GetAddressFromGOTO(int i)
+        {
+            return _addressFrom.ElementAt(i).Key;
+        }
 
         #endregion
 
         #region Metodi Statici
 
-        public static string GetName(params object[] parts)
+        public static string GetName(List<string> parts, string name)
+        {            
+            parts.Add(name);
+            return GetName(parts);
+        }
+        public static string GetName(string name, List<string> parts)
+        {
+            List<string> list = new List<string>();
+            list.Add(name);
+            list.AddRange(parts);
+
+            return GetName(list);
+        }
+        public static string GetName(params List<string>[] parts)
         {
             string o = "";
             bool first = true;
-            foreach (object part in parts)
+            foreach (List<string> part in parts)
             {
-                if (part != null && part.ToString() != "")
+                foreach (string part1 in part)
                 {
-                    o += (!first ? Simboli.UNION : "") + part;
-                    first = false;
+                    if(part1 != null && part1 != "")
+                    {
+                        o += (!first ? Simboli.UNION : "") + part1;
+                        first = false;
+                    }
                 }
             }
             return o;
+        }
+        public static string GetName(params object[] parts)
+        {
+            List<string> list = new List<string>();
+            foreach (object part in parts)
+                if(part.GetType() == typeof(string))
+                    list.Add(part.ToString());
+
+            return GetName(list);
+
+            //string o = "";
+            //bool first = true;
+            //foreach (object part in parts)
+            //{
+            //    if (part != null && part.ToString() != "")
+            //    {
+            //        o += (!first ? Simboli.UNION : "") + part;
+            //        first = false;
+            //    }
+            //}
+            //return o;
         }
         public static DataTable GetDefaultNameTable(string name)
         {
@@ -346,6 +428,7 @@ namespace Iren.ToolsExcel.Base
             {
                 Columns =
                     {
+                        {"Sheet", typeof(string)},
                         {"AddressFrom", typeof(string)},
                         {"SiglaEntita", typeof(string)}
                     }
@@ -361,6 +444,7 @@ namespace Iren.ToolsExcel.Base
             {
                 Columns =
                     {
+                        {"Sheet", typeof(string)},
                         {"SiglaEntita", typeof(string)},
                         {"AddressTo", typeof(string)}
                     }
@@ -369,6 +453,18 @@ namespace Iren.ToolsExcel.Base
             dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"] };
             dt.TableName = name;
             return dt;
+        }
+
+        public static string GetSheetName(object siglaEntita)
+        {
+            DataTable dt = DataBase.LocalDB.Tables[DataBase.Tab.NOMIDEFINITINEW];
+
+            string s =
+                (from r in dt.AsEnumerable()
+                 where r["Name"].ToString().Contains(siglaEntita.ToString()) && !r["Sheet"].Equals("Main")
+                 select r["Sheet"].ToString()).First();
+
+            return s ?? "";
         }
 
         #endregion
@@ -438,24 +534,26 @@ namespace Iren.ToolsExcel.Base
             //}
 
             ///////// goto
-            IEnumerable<KeyValuePair<string, object>> defAddressFrom =
-                from kv in _addressFrom
-                where kv.Key.StartsWith("'" + _sheet + "'!")
-                select kv;
-            foreach (var ele in defAddressFrom)
+            //IEnumerable<KeyValuePair<string, object>> defAddressFrom =
+            //    from kv in _addressFrom
+            //    where kv.Key.StartsWith("'" + _sheet + "'!")
+            //    select kv;
+            foreach (var ele in _addressFrom)
             {
                 DataRow r = addressFromTable.NewRow();
+                r["Sheet"] = _sheet;
                 r["AddressFrom"] = ele.Key;
                 r["SiglaEntita"] = ele.Value;
                 addressFromTable.Rows.Add(r);
             }
-            IEnumerable<KeyValuePair<object, string>> defAddressTo =
-                from kv in _addressTo
-                where kv.Value.StartsWith("'" + _sheet + "'!")
-                select kv;
-            foreach (var ele in defAddressTo)
+            //IEnumerable<KeyValuePair<object, string>> defAddressTo =
+            //    from kv in _addressTo
+            //    where kv.Value.StartsWith("'" + _sheet + "'!")
+            //    select kv;
+            foreach (var ele in _addressTo)
             {
                 DataRow r = addressToTable.NewRow();
+                r["Sheet"] = _sheet;
                 r["SiglaEntita"] = ele.Key;
                 r["AddressTo"] = ele.Value;
                 addressToTable.Rows.Add(r);

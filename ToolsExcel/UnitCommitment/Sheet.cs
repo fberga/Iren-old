@@ -28,7 +28,7 @@ namespace Iren.ToolsExcel
             siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
-            Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row, col + 25, informazioni.Count - 1, 0)];
+            Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row, col + 25, informazioni.Count)];
 
             rngPersonalizzazioni.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
             rngPersonalizzazioni.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
@@ -61,8 +61,6 @@ namespace Iren.ToolsExcel
                         int col = _newNomiDefiniti.GetFirstCol();
                         _ws.Range[Range.GetRange(row, col + 25)].Value = nota["Note"];
                     }
-
-                    DataBase.CloseConnection();
                 } 
             }
             catch (Exception e)
@@ -71,6 +69,33 @@ namespace Iren.ToolsExcel
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
+        public override void UpdateData(bool all = true)
+        {
+            //cancello tutte le NOTE
+            if (all)
+            {
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
+                DateTime dataInizio = DataBase.DataAttiva;
+                DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+                int col = _newNomiDefiniti.GetFirstCol() + 25;
+
+                foreach (DataRowView entita in categoriaEntita)
+                {
+                    DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                    object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
+
+                    CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
+                    {
+                        int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
+                        _ws.Range[Range.GetRange(row, col, informazioni.Count)].Value = "";
+                    });
+                }
+            }
+            base.UpdateData(all);
+        }
     }
 }

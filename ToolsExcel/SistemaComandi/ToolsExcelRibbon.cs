@@ -136,7 +136,6 @@ namespace Iren.ToolsExcel
                         {
                             AggiornaDati(all: true);
                         }
-                        DataBase.DB.CloseConnection();
                     }
                     else  //emergenza
                     {
@@ -190,7 +189,7 @@ namespace Iren.ToolsExcel
                 if (entitaInformazioni.Count == 0)
                 {
                     if (System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                        && selUP.ShowDialog() != "")
+                        && selUP.ShowDialog().ToString() != "")
                     {
                         Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
                         rampe.ShowDialog();
@@ -205,7 +204,7 @@ namespace Iren.ToolsExcel
                 }
             }
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
-                && selUP.ShowDialog() != "")
+                && selUP.ShowDialog().ToString() != "")
             {
                 Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
                 rampe.ShowDialog();
