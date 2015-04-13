@@ -15,7 +15,7 @@ namespace Iren.ToolsExcel
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITAAZIONE].DefaultView;
+            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
             if (entitaAzione.Count == 0)
                 return false;
@@ -23,7 +23,7 @@ namespace Iren.ToolsExcel
             switch (siglaAzione.ToString())
             {
                 case "E_VDT":
-                    DataView entitaAssetto = _localDB.Tables[Utility.DataBase.Tab.ENTITAASSETTO].DefaultView;
+                    DataView entitaAssetto = _localDB.Tables[Utility.DataBase.Tab.ENTITA_ASSETTO].DefaultView;
                     entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
 
                     Dictionary<string,int> assettoFasce = new Dictionary<string,int>();
@@ -62,7 +62,7 @@ namespace Iren.ToolsExcel
                 DateTime data = Utility.DataBase.DataAttiva;
                 int oreData = Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");

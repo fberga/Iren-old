@@ -18,8 +18,8 @@ namespace Iren.ToolsExcel.Forms
         {
             InitializeComponent();
 
-            _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
 
             labelData.Text = "Data Riferimento: " + _dataRif.ToString("dd/MM/yyyy");

@@ -42,15 +42,15 @@ namespace Iren.ToolsExcel.Forms
 
             _categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
-            _categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            _categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             _categoriaEntita.RowFilter = "";
             _azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1";
-            _azioniCategorie = DataBase.LocalDB.Tables[DataBase.Tab.AZIONECATEGORIA].DefaultView;
+            _azioniCategorie = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE_CATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "";
-            _entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE].DefaultView;
+            _entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             _entitaAzioni.RowFilter = "";
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             _entitaProprieta.RowFilter = "";
 
             System.Data.DataTable dt = new System.Data.DataTable()

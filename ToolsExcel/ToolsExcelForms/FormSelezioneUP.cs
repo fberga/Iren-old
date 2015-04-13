@@ -43,7 +43,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void frmSELUP_Load(object sender, EventArgs e)
         {
-            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "'";
 
             string rowFilter = "SiglaEntita IN (";
@@ -53,7 +53,7 @@ namespace Iren.ToolsExcel.Forms
             }
             rowFilter = rowFilter.Substring(0, rowFilter.Length - 1) + ")";
 
-            DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categorieEntita.RowFilter = rowFilter;
 
             DataView groupedEntita = categorieEntita.ToTable(true, "SiglaEntita", "DesEntita").DefaultView;

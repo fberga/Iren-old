@@ -24,7 +24,7 @@ namespace Iren.ToolsExcel.Base
         public Optimizer() 
         {
             _localDB = Utility.DataBase.LocalDB;
-            _entitaInformazioni = _localDB.Tables[Utility.DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            _entitaInformazioni = _localDB.Tables[Utility.DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
         }
 
         protected virtual void DeleteExistingAdjust() 

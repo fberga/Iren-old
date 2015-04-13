@@ -40,7 +40,7 @@ namespace Iren.ToolsExcel.Base
         public DefinedNames(string foglio)
         {
             _foglio = foglio;
-            _definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI];
+            _definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI];
             _definedNamesView = new DataView(_definedNames);
         }
 
@@ -460,7 +460,7 @@ namespace Iren.ToolsExcel.Base
         /// <returns>Ritorna il nome del foglio a cui appartiene la cella o null se non esiste.</returns>
         public static string GetSheetName(object name)
         {
-            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI].DefaultView;
+            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI].DefaultView;
             string filter = "Nome LIKE'" + name + "%'";
             if (definedNamesView.RowFilter != filter)
                 definedNamesView.RowFilter = filter;
@@ -479,7 +479,7 @@ namespace Iren.ToolsExcel.Base
         public static bool IsDefined(string sheetName, string cellName)
         {
             cellName = PrepareName(cellName);
-            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI].DefaultView;
+            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI].DefaultView;
             string filter = "Foglio = '" + sheetName + "' AND Nome LIKE '" + cellName + "%'";
             if (definedNamesView.RowFilter != filter)
                 definedNamesView.RowFilter = filter;
@@ -495,7 +495,7 @@ namespace Iren.ToolsExcel.Base
         /// <returns>Ritorna true se esiste un match per la coppia foglio - indirizzo, false altrimenti.</returns>
         public static bool IsDefined(string sheetName, int row, int column)
         {
-            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITI].DefaultView;
+            DataView definedNamesView = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI].DefaultView;
             string filter = "Foglio = '" + sheetName + "' AND R1 = " + row + " AND C1 = " + column;
             if (definedNamesView.RowFilter != filter)
                 definedNamesView.RowFilter = filter;

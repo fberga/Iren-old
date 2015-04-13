@@ -22,8 +22,8 @@ namespace Iren.ToolsExcel.Base
         protected Struct _struttura;
         protected DataView _azioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.AZIONE]);
         protected DataView _categorie = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA]);
-        protected DataView _entita = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA]);
-        protected DataView _entitaAzioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITAAZIONE]);
+        protected DataView _entita = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA]);
+        protected DataView _entitaAzioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
 
         #endregion
 

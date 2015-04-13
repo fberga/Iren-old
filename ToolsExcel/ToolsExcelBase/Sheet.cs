@@ -139,9 +139,9 @@ namespace Iren.ToolsExcel.Base
 
         public static void SalvaModifiche(DateTime inizio, DateTime fine)
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
@@ -174,9 +174,9 @@ namespace Iren.ToolsExcel.Base
         }
         public static void SalvaModifiche()
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
@@ -265,8 +265,8 @@ namespace Iren.ToolsExcel.Base
 
         public override void LoadStructure()
         {
-            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
 
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
             _dataInizio = Utility.DataBase.DB.DataAttiva;
@@ -365,7 +365,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected void InitBarraNavigazione()
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
             int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
@@ -442,9 +442,9 @@ namespace Iren.ToolsExcel.Base
         }
         protected void InitBloccoEntita(DataRowView entita)
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
-            DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
+            DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
 
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
             informazioni.Sort = "Ordine";
@@ -490,7 +490,7 @@ namespace Iren.ToolsExcel.Base
             _rigaAttiva += Struct.tipoVisualizzazione == "V" ? 2 : 1;
 
             //aggiungo i grafici
-            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
+            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
 
             int i = 1;
             foreach (DataRowView grafico in grafici)
@@ -501,7 +501,7 @@ namespace Iren.ToolsExcel.Base
             }
 
             //aggiungo informazioni
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             _newNomiDefiniti.AddName(_rigaAttiva, Struct.tipoVisualizzazione == "O" ? siglaEntita : suffissoData, "TITOLO_VERTICALE");
             foreach (DataRowView info in informazioni)
             {
@@ -554,7 +554,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void InsertTitoloVerticale(object desEntita)
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             Range rngTitolo = new Range(_newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visParametro - 1, informazioni.Count);
@@ -573,7 +573,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void FormattaBloccoEntita()
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             Range rng = new Range(_newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _newNomiDefiniti.GetFirstCol() - _visParametro, informazioni.Count, _newNomiDefiniti.GetColOffset(_dataFine) + _visParametro);
 
@@ -595,7 +595,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void InsertInformazioniEntita()
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             int col = _newNomiDefiniti.GetFirstCol();
             int colOffset = _newNomiDefiniti.GetColOffset(_dataFine);
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
@@ -657,7 +657,7 @@ namespace Iren.ToolsExcel.Base
         protected override void InsertPersonalizzazioni(object siglaEntita) { }
         protected virtual void InsertFormuleValoriDefault()
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             int colOffset = _newNomiDefiniti.GetColOffset(_dataFine);
             foreach (DataRowView info in informazioni)
             {
@@ -693,9 +693,9 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void InsertParametri()
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            DataView parametriD = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPARAMETROD].DefaultView;
-            DataView parametriH = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPARAMETROH].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            DataView parametriD = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+            DataView parametriH = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PARAMETRO_H].DefaultView;
 
             foreach (DataRowView info in informazioni)
             {
@@ -728,8 +728,8 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void FormattazioneCondizionale()
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            DataView formattazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONEFORMATTAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            DataView formattazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE_FORMATTAZIONE].DefaultView;
             int colOffset = _newNomiDefiniti.GetColOffset(_dataFine);
             foreach (DataRowView info in informazioni)
             {
@@ -804,8 +804,8 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void InsertGrafici()
         {
-            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICO].DefaultView;
-            DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAGRAFICOINFORMAZIONE].DefaultView;
+            DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
+            DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
 
             int i = 1;
             int col = _newNomiDefiniti.GetFirstCol() + (_struttura.visData0H24 ? 1 : 0);
@@ -905,8 +905,8 @@ namespace Iren.ToolsExcel.Base
             {
                 if (DataBase.OpenConnection())
                 {
-                    DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+                    DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                     categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
 
                     _dataInizio = DataBase.DB.DataAttiva;
@@ -1000,9 +1000,9 @@ namespace Iren.ToolsExcel.Base
         //TODO
         public override void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false)
         {
-            DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");
 
@@ -1104,7 +1104,7 @@ namespace Iren.ToolsExcel.Base
                     if (parametroEntita.Length > 1)
                     {
                         int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
-                        DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                        DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                         categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
                         siglaEntita = categoriaEntita[0]["SiglaEntita"];
                     }
@@ -1175,7 +1175,7 @@ namespace Iren.ToolsExcel.Base
         }
         private void CancellaDati(DateTime giorno, bool all = false)
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
             string suffissoData = Date.GetSuffissoData(giorno);
@@ -1185,7 +1185,7 @@ namespace Iren.ToolsExcel.Base
 
             foreach (DataRowView entita in categoriaEntita)
             {
-                DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+                DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND ValoreDefault IS NULL";
 
                 foreach (DataRowView info in informazioni)
@@ -1291,9 +1291,9 @@ namespace Iren.ToolsExcel.Base
         }
         protected void CaricaParametri()
         {
-            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
             _dataInizio = DataBase.DB.DataAttiva;

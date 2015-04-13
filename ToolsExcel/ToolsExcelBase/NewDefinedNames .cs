@@ -51,8 +51,8 @@ namespace Iren.ToolsExcel.Base
 
         private void InitNaming()
         {
-            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
-            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
+            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI_NEW];
+            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
 
 
             IEnumerable<DataRow> names =
@@ -79,8 +79,8 @@ namespace Iren.ToolsExcel.Base
         }
         private void InitGOTOs(bool thisSheet = false)
         {
-            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSFROM];
-            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSTO];
+            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
+            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_TO];
 
             _addressFrom =
                (from DataRow r in addressFromTable.AsEnumerable()
@@ -259,6 +259,18 @@ namespace Iren.ToolsExcel.Base
         {
             string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
             return GetRowByName(name);
+        }
+
+        public bool IsDefined(params object[] parts)
+        {
+            string name = GetName(parts);
+
+            IEnumerable<string> names =
+                from kv in _defNamesIndexByName
+                where kv.Key.StartsWith(name)
+                select kv.Key;
+
+            return names.Count() > 0;
         }
 
         public Range Get(params object[] parts)
@@ -457,7 +469,7 @@ namespace Iren.ToolsExcel.Base
 
         public static string GetSheetName(object siglaEntita)
         {
-            DataTable dt = DataBase.LocalDB.Tables[DataBase.Tab.NOMIDEFINITINEW];
+            DataTable dt = DataBase.LocalDB.Tables[DataBase.Tab.NOMI_DEFINITI_NEW];
 
             string s =
                 (from r in dt.AsEnumerable()
@@ -471,10 +483,10 @@ namespace Iren.ToolsExcel.Base
 
         public void DumpToDataSet()
         {
-            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMIDEFINITINEW];
-            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATEDEFINITE];
-            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSFROM];
-            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESSTO];
+            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI_NEW];
+            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
+            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
+            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_TO];
 
             ///////// nomi
             //IEnumerable<DataRow> definedNamesRows =

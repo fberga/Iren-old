@@ -49,17 +49,17 @@ namespace Iren.ToolsExcel.Forms
                 _suffissoData = Regex.Match(nome, @"DATA\d+").Value;
                 _suffissoData = _suffissoData == "" ? "DATA1" : _suffissoData;
 
-                DataView proprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+                DataView proprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                 proprieta.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_PRIF'";
                 _pRif = 0;
                 if (proprieta.Count > 0)
                     _pRif = Double.Parse(proprieta[0]["Valore"].ToString());
 
-                _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITARAMPA].DefaultView;
+                _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_RAMPA].DefaultView;
                 _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
                 _sigleRampa = _entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
 
-                DataView assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAASSETTO].DefaultView;
+                DataView assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].DefaultView;
                 assetti.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
 
                 _profiloPQNR = _nomiDefiniti[DefinedNames.GetName(_siglaEntita, "PQNR_PROFILO", _suffissoData)];
@@ -138,7 +138,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void frmRAMPE_Load(object sender, EventArgs e)
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
 
             lbDesEntita.Text = categoriaEntita[0]["DesEntita"].ToString() + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + _oreFermata;

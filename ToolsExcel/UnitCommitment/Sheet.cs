@@ -20,7 +20,7 @@ namespace Iren.ToolsExcel
         protected override void InsertPersonalizzazioni(object siglaEntita)
         {
             //da classe base il filtro è corretto
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             _ws.Columns[3].Font.Size = 9;
 
@@ -74,7 +74,7 @@ namespace Iren.ToolsExcel
             //cancello tutte le NOTE
             if (all)
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
                 DateTime dataInizio = DataBase.DataAttiva;
@@ -84,7 +84,7 @@ namespace Iren.ToolsExcel
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+                    DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                     informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
                     object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
 

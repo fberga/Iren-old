@@ -183,7 +183,7 @@ namespace Iren.ToolsExcel
                 string nome = nomiDefiniti[rng.Row, rng.Column][0];
                 string siglaEntita = nome.Split(char.Parse(Simboli.UNION))[0];
 
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
 
                 if (entitaInformazioni.Count == 0)
@@ -283,7 +283,7 @@ namespace Iren.ToolsExcel
             {
                 object siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
 
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
 
                 if (entitaInformazioni.Count == 0)

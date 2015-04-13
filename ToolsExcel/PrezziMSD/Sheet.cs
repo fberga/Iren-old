@@ -21,7 +21,7 @@ namespace Iren.ToolsExcel
         {
             int rigaAttiva = _rigaAttiva;
             //sono alla prima riga vuota dopo le informazioni
-            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
 
             int colonnaTitoloInfo = _newNomiDefiniti.GetFirstCol() - _visParametro;
@@ -96,7 +96,7 @@ namespace Iren.ToolsExcel
             //cancello i dati giornalieri
             if (all)
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
                 DateTime dataInizio = DataBase.DataAttiva;
@@ -106,7 +106,7 @@ namespace Iren.ToolsExcel
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                     entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'MSD_ACCENSIONE'";
                     if (entitaProprieta.Count > 0)
                     {
