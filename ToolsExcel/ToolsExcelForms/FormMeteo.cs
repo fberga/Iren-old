@@ -22,7 +22,7 @@ namespace Iren.ToolsExcel.Forms
             _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
 
-            labelData.Text = "Data Riferimento: " + _dataRif.ToString("dd/MM/yyyy");
+            labelData.Text = "Data Riferimento:   " + _dataRif.ToString("dddd dd MMMM yyyy");
             this.Text = Simboli.nomeApplicazione + " - Meteo";
         }
 

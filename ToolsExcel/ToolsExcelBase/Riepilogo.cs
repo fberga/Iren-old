@@ -55,7 +55,7 @@ namespace Iren.ToolsExcel.Base
         public abstract void LoadStructure();
         public void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente)
         {
-            AggiornaRiepilogo(siglaEntita, siglaAzione, presente);
+            AggiornaRiepilogo(siglaEntita, siglaAzione, presente, DataBase.DataAttiva);
         }
         public abstract void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif);
         public abstract void UpdateRiepilogo();
@@ -363,7 +363,7 @@ namespace Iren.ToolsExcel.Base
             if (Struct.visualizzaRiepilogo)
             {
                 Range cell = _newNomiDefiniti.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
-                Excel.Range rng = _ws.Cells[cell.ToString()];
+                Excel.Range rng = _ws.Range[cell.ToString()];
                 if (presente)
                 {
                     string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");

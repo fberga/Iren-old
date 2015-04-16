@@ -275,37 +275,46 @@ namespace Iren.ToolsExcel.Base
 
         public Range Get(params object[] parts)
         {
-            if (parts.Length == 2)
-                return new Range(GetRowByName(GetName(parts)), GetFirstCol());
-
-            List<string> nameParts = new List<string>();
-            List<string> dateParts = new List<string>();
-            bool date = false;
-            foreach (var part in parts)
+            if (_sheet == "Main")
             {
-                date = date || Regex.IsMatch(part.ToString(), @"DATA\d+");
+                int row = GetRowByName(GetName(parts[0]));
+                int col = GetColFromName(parts[1], parts[2]);
+
+                return new Range(row, col);
+            }
+            else
+            {
+                if (parts.Length == 2)
+                    return new Range(GetRowByName(GetName(parts)), GetFirstCol());
+
+                List<string> nameParts = new List<string>();
+                List<string> dateParts = new List<string>();
+                bool date = false;
+                foreach (var part in parts)
+                {
+                    date = date || Regex.IsMatch(part.ToString(), @"DATA\d+");
+                    if (!date)
+                        nameParts.Add(part.ToString());
+                    else
+                        dateParts.Add(part.ToString());
+                }
+
                 if (!date)
-                    nameParts.Add(part.ToString());
-                else
-                    dateParts.Add(part.ToString());
+                    return new Range(GetRowByName(GetName(nameParts)), GetFirstCol());
+
+                if (dateParts[0].Contains(Simboli.UNION))
+                {
+                    string[] suffissoDataOra = dateParts[0].Split(Simboli.UNION[0]);
+                    dateParts = new List<string>() { suffissoDataOra[0], suffissoDataOra[1] };
+                }
+                else if (dateParts.Count == 1)
+                    dateParts.Add(Date.GetSuffissoOra(1));
+
+                int row = GetRowByName(GetName(nameParts, Struct.tipoVisualizzazione == "O" ? "" : dateParts[0]));
+                int col = GetColFromDate(dateParts[0], dateParts[1]);
+                
+                return new Range(row, col);
             }
-
-            if (!date)
-                return new Range(GetRowByName(GetName(nameParts)), GetFirstCol());
-
-            if(dateParts[0].Contains(Simboli.UNION)) 
-            {
-                string[] suffissoDataOra = dateParts[0].Split(Simboli.UNION[0]);
-                dateParts = new List<string>() { suffissoDataOra[0], suffissoDataOra[1] };
-            }
-            else if (dateParts.Count == 1)
-                dateParts.Add(Date.GetSuffissoOra(1));
-            
-            int row = GetRowByName(GetName(nameParts, Struct.tipoVisualizzazione == "O" ? "" : dateParts[0]));
-            int col = GetColFromDate(dateParts[0], dateParts[1]);
-
-            return new Range(row, col);
-
         }
         //public Range Get(object siglaEntita, object siglaInformazione)
         //{
@@ -388,18 +397,6 @@ namespace Iren.ToolsExcel.Base
                     list.Add(part.ToString());
 
             return GetName(list);
-
-            //string o = "";
-            //bool first = true;
-            //foreach (object part in parts)
-            //{
-            //    if (part != null && part.ToString() != "")
-            //    {
-            //        o += (!first ? Simboli.UNION : "") + part;
-            //        first = false;
-            //    }
-            //}
-            //return o;
         }
         public static DataTable GetDefaultNameTable(string name)
         {

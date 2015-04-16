@@ -33,17 +33,17 @@
             this.btnApplica = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
-            this.groupMercati = new System.Windows.Forms.GroupBox();
+            this.groupGiorniAggiuntivi = new System.Windows.Forms.GroupBox();
             this.groupDate = new System.Windows.Forms.GroupBox();
-            this.comboGiorni = new System.Windows.Forms.ComboBox();
+            this.comboGiorni = new System.Windows.Forms.Button();
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
+            this.checkTutte = new System.Windows.Forms.CheckBox();
             this.treeViewUP = new System.Windows.Forms.TreeView();
             this.panelCategorie = new System.Windows.Forms.Panel();
             this.treeViewCategorie = new System.Windows.Forms.TreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
             this.treeViewAzioni = new System.Windows.Forms.TreeView();
-            this.checkTutte = new System.Windows.Forms.CheckBox();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.groupDate.SuspendLayout();
@@ -106,7 +106,7 @@
             // 
             // panelTop
             // 
-            this.panelTop.Controls.Add(this.groupMercati);
+            this.panelTop.Controls.Add(this.groupGiorniAggiuntivi);
             this.panelTop.Controls.Add(this.groupDate);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(5, 5);
@@ -114,17 +114,16 @@
             this.panelTop.Size = new System.Drawing.Size(1050, 53);
             this.panelTop.TabIndex = 13;
             // 
-            // groupMercati
+            // groupGiorniAggiuntivi
             // 
-            this.groupMercati.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupMercati.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupMercati.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupMercati.Location = new System.Drawing.Point(350, 0);
-            this.groupMercati.Name = "groupMercati";
-            this.groupMercati.Size = new System.Drawing.Size(700, 53);
-            this.groupMercati.TabIndex = 2;
-            this.groupMercati.TabStop = false;
-            this.groupMercati.Text = "Mercato da esportare (dopo topico per Elsag)";
+            this.groupGiorniAggiuntivi.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupGiorniAggiuntivi.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupGiorniAggiuntivi.Location = new System.Drawing.Point(350, 0);
+            this.groupGiorniAggiuntivi.Name = "groupGiorniAggiuntivi";
+            this.groupGiorniAggiuntivi.Size = new System.Drawing.Size(700, 53);
+            this.groupGiorniAggiuntivi.TabIndex = 2;
+            this.groupGiorniAggiuntivi.TabStop = false;
+            this.groupGiorniAggiuntivi.Text = "Estendi intervallo giorni";
             // 
             // groupDate
             // 
@@ -141,12 +140,17 @@
             // 
             // comboGiorni
             // 
-            this.comboGiorni.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboGiorni.FormattingEnabled = true;
+            this.comboGiorni.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboGiorni.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.comboGiorni.Location = new System.Drawing.Point(6, 19);
             this.comboGiorni.Name = "comboGiorni";
             this.comboGiorni.Size = new System.Drawing.Size(338, 28);
             this.comboGiorni.TabIndex = 0;
+            this.comboGiorni.Text = "- Click per selezionare le date -";
+            this.comboGiorni.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.comboGiorni.UseVisualStyleBackColor = true;
+            this.comboGiorni.TextChanged += new System.EventHandler(this.comboGiorni_TextChanged);
+            this.comboGiorni.Click += new System.EventHandler(this.comboGiorni_MouseClick);
             // 
             // panelCentrale
             // 
@@ -170,6 +174,21 @@
             this.panelUP.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
             this.panelUP.Size = new System.Drawing.Size(350, 372);
             this.panelUP.TabIndex = 6;
+            // 
+            // checkTutte
+            // 
+            this.checkTutte.AutoSize = true;
+            this.checkTutte.BackColor = System.Drawing.SystemColors.Window;
+            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkTutte.Location = new System.Drawing.Point(279, 1);
+            this.checkTutte.Name = "checkTutte";
+            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.checkTutte.Size = new System.Drawing.Size(65, 24);
+            this.checkTutte.TabIndex = 2;
+            this.checkTutte.Text = "Tutte";
+            this.checkTutte.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkTutte.UseVisualStyleBackColor = false;
+            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
             // 
             // treeViewUP
             // 
@@ -235,21 +254,6 @@
             this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
-            // checkTutte
-            // 
-            this.checkTutte.AutoSize = true;
-            this.checkTutte.BackColor = System.Drawing.SystemColors.Window;
-            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkTutte.Location = new System.Drawing.Point(279, 1);
-            this.checkTutte.Name = "checkTutte";
-            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.checkTutte.Size = new System.Drawing.Size(65, 24);
-            this.checkTutte.TabIndex = 2;
-            this.checkTutte.Text = "Tutte";
-            this.checkTutte.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkTutte.UseVisualStyleBackColor = false;
-            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
-            // 
             // FormAzioni
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -263,6 +267,7 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Azioni";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormAzioni_FormClosing);
             this.Load += new System.EventHandler(this.frmAZIONI_Load);
             this.panelButtons.ResumeLayout(false);
             this.panelTop.ResumeLayout(false);
@@ -289,10 +294,10 @@
         private System.Windows.Forms.TreeView treeViewUP;
         private System.Windows.Forms.TreeView treeViewCategorie;
         private System.Windows.Forms.TreeView treeViewAzioni;
-        private System.Windows.Forms.GroupBox groupMercati;
         private System.Windows.Forms.GroupBox groupDate;
         private System.Windows.Forms.Button btnMeteo;
-        private System.Windows.Forms.ComboBox comboGiorni;
         private System.Windows.Forms.CheckBox checkTutte;
+        private System.Windows.Forms.GroupBox groupGiorniAggiuntivi;
+        private System.Windows.Forms.Button comboGiorni;
     }
 }

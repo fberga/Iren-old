@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -20,13 +21,12 @@ namespace Iren.ToolsExcel.Forms
         DataView _categoriaEntita;
         DataView _azioniCategorie;
         DataView _entitaAzioni;
-        DataView _entitaProprieta;
         AEsporta _esporta;
         ARiepilogo _r;
+        List<DateTime> _toProcessDates = new List<DateTime>();
 
-        //bool _categorieVisible = true;
-        //bool _mercatiDaEsportareVisible = true;
-        //bool _meteoVisible = true;
+        FormSelezioneDate selDate = new FormSelezioneDate();
+
         bool _giorniVisible = true;
 
         #endregion
@@ -43,47 +43,44 @@ namespace Iren.ToolsExcel.Forms
             _categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
             _categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            _categoriaEntita.RowFilter = "";
+            _categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
             _azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1";
             _azioniCategorie = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE_CATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "";
             _entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             _entitaAzioni.RowFilter = "";
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-            _entitaProprieta.RowFilter = "";
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            entitaProprieta.RowFilter = "";
 
-            System.Data.DataTable dt = new System.Data.DataTable()
+            ConfigStructure();
+
+            if (Struct.intervalloGiorni == 0 || !_giorniVisible)
             {
-                Columns =
-                {
-                    {"DescData", typeof(string)},
-                    {"Data", typeof(DateTime)}
-                }
-            };
-
-            for (int i = 0; i <= Struct.intervalloGiorni; i++ )
-            {
-                DataRow r = dt.NewRow();
-                r["DescData"] = (i + 1) + "° - " + DataBase.DB.DataAttiva.AddDays(i).ToString("dd/MM/yyyy");
-                r["Data"] = DataBase.DB.DataAttiva.AddDays(i);
-
-                dt.Rows.Add(r);
-            }
-            comboGiorni.DataSource = dt;
-            comboGiorni.DisplayMember = "DescData";            
-
-            if (comboGiorni.Items.Count == 1)
-            {
-                comboGiorni.SelectedIndex = 0;
+                comboGiorni.Text = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
+                _toProcessDates.Add(DataBase.DataAttiva);
                 comboGiorni.Enabled = false;
             }
             else
             {
-                comboGiorni.SelectedIndex = -1;
+                selDate.VisibleChanged += selDate_VisibleChanged;
             }
+        }
 
-            ConfigStructure();
+        void selDate_VisibleChanged(object sender, EventArgs e)
+        {
+            if (!_toProcessDates.SequenceEqual(selDate.SelectedDates))
+            {
+                _toProcessDates = new List<DateTime>(selDate.SelectedDates);                
+
+                comboGiorni.Text = "";
+                if (_toProcessDates.Count == 1)
+                    comboGiorni.Text = _toProcessDates[0].ToString("ddd dd MMM yyyy");
+                else if (_toProcessDates.Count > 0)
+                    comboGiorni.Text = _toProcessDates.Count + " giorni";
+                else
+                    comboGiorni.Text = "";
+            }
         }
 
         #endregion
@@ -100,22 +97,11 @@ namespace Iren.ToolsExcel.Forms
             {
                 panelCategorie.Hide();
                 Width -= panelCategorie.Width;
-                //_categorieVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()))
             {
                 groupDate.Hide();
                 _giorniVisible = false;
-            }
-            if (settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
-            {
-                groupMercati.Hide();
-                //_mercatiDaEsportareVisible = false;
-            }
-            if (settings.Contains("MeteoVisible") && falseMatch.IsMatch(settings["MeteoVisible"].ToString()))
-            {
-                groupMercati.Hide();
-                //_meteoVisible = false;
             }
             if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()) &&
                 settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
@@ -127,8 +113,6 @@ namespace Iren.ToolsExcel.Forms
             {
                 btnMeteo.Hide();
             }
-
-
         }
 
         private void CaricaAzioni()
@@ -452,10 +436,13 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnMeteo_Click(object sender, EventArgs e)
         {
-            if (comboGiorni.SelectedIndex != -1)
+            if (_toProcessDates.Count > 0)
             {
-                FormMeteo meteo = new FormMeteo(((DataRowView)comboGiorni.SelectedItem)["Data"]);
-                meteo.ShowDialog();
+                if ((_toProcessDates.Count > 1 && MessageBox.Show("Ci sono più date selezionate. Procedere con la prima?", Simboli.nomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes) || _toProcessDates.Count == 1)
+                {
+                    FormMeteo meteo = new FormMeteo(_toProcessDates[0]);
+                    meteo.ShowDialog();
+                }
             }
             else
                 MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -467,128 +454,124 @@ namespace Iren.ToolsExcel.Forms
             btnAnnulla.Enabled = false;
             btnMeteo.Enabled = false;
 
-            if (_giorniVisible && comboGiorni.SelectedIndex == -1)
+            if (_toProcessDates.Count == 0)
                 MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (treeViewUP.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
                 MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
-                
-                DateTime dataRif;
-                if (_giorniVisible)
-                    dataRif = (DateTime)((DataRowView)comboGiorni.SelectedItem)["Data"];
-                else
-                    dataRif = DataBase.DataAttiva;
-
-                bool calcola = false;
-                int count = 0;
-                ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                foreach (DateTime date in _toProcessDates)
                 {
-                    if (n.Nodes.Count == 0 && n.Checked)
-                    {
-                        ThroughAllNodes(treeViewUP.Nodes, n1 =>
-                        {
-                            if (n1.Checked)
-                                count += (n1.Name == "UP_BUS" ? 2 : 1);
-                        });
-                        if (n.Parent.Name == "CARICA")
-                            calcola = true;
-                    }
-                });
-
-                if (calcola)
-                {
-                    ThroughAllNodes(treeViewUP.Nodes, n =>
-                    {
-                        if (n.Checked)
-                            count++;
-                    });
-                }
-
-                if (DataBase.OpenConnection())
-                {
-                    string suffissoData = Date.GetSuffissoData(DataBase.DB.DataAttiva, dataRif);
-
-                    bool[] statoAzione = new bool[4] { false, false, false, false };
-
+                    bool calcola = false;
+                    int count = 0;
                     ThroughAllNodes(treeViewAzioni.Nodes, n =>
                     {
-                        if (n.Checked && n.Nodes.Count == 0)
+                        if (n.Nodes.Count == 0 && n.Checked)
                         {
-                            TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                            _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
-
                             ThroughAllNodes(treeViewUP.Nodes, n1 =>
                             {
-                                if (n1.Checked && n1.Nodes.Count == 0)
-                                {
-                                    string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
-                                    bool presente;
-                                    switch (n.Parent.Name)
-                                    {
-                                        case "CARICA":
-                                            presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
-                                            statoAzione[0] = true;
-                                            break;
-                                        case "GENERA":
-                                            presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, dataRif);
-                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
-                                            statoAzione[1] = true;
-                                            break;
-                                        case "ESPORTA":
-                                            presente = _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, dataRif);
-                                            _r.AggiornaRiepilogo(n1.Name, n.Name, presente);
-                                            statoAzione[2] = true;
-                                            break;
-                                    }
-
-                                    if (_azioni[0]["Relazione"] != DBNull.Value)
-                                    {
-                                        string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
-                                        foreach (string relazione in azioneRelazione)
-                                        {
-                                            _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
-
-                                            if (DefinedNames.IsDefined("Main", DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
-                                            {
-                                                DefinedNames nomiDefiniti = new DefinedNames("Main");
-                                                Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
-
-                                                Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
-                                                if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
-                                                {
-                                                    ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                    Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
-                                                }
-                                            }
-                                        }
-                                        _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
-                                    }
-                                }
+                                if (n1.Checked)
+                                    count += (n1.Name == "UP_BUS" ? 2 : 1);
                             });
-                            switch (n.Parent.Name)
-                            {
-                                case "CARICA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
-                                    break;
-                                case "GENERA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
-                                    break;
-                                case "ESPORTA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
-                                    break;
-                            }
+                            if (n.Parent.Name == "CARICA")
+                                calcola = true;
                         }
                     });
 
-                    if (statoAzione[0] || statoAzione[1])
+                    if (calcola)
                     {
-                        Sheet.SalvaModifiche();
-                        DataBase.SalvaModificheDB();
+                        ThroughAllNodes(treeViewUP.Nodes, n =>
+                        {
+                            if (n.Checked)
+                                count++;
+                        });
                     }
 
-                    DataBase.DB.CloseConnection();
+                    if (DataBase.OpenConnection())
+                    {
+                        string suffissoData = Date.GetSuffissoData(date);
+
+                        bool[] statoAzione = new bool[4] { false, false, false, false };
+
+                        ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                        {
+                            if (n.Checked && n.Nodes.Count == 0)
+                            {
+                                TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
+                                _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
+
+                                ThroughAllNodes(treeViewUP.Nodes, n1 =>
+                                {
+                                    if (n1.Checked && n1.Nodes.Count == 0)
+                                    {
+                                        string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
+                                        bool presente;
+                                        switch (n.Parent.Name)
+                                        {
+                                            case "CARICA":
+                                                presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, date);
+                                                _r.AggiornaRiepilogo(n1.Name, n.Name, presente, date);
+                                                statoAzione[0] = true;
+                                                break;
+                                            case "GENERA":
+                                                presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, date);
+                                                _r.AggiornaRiepilogo(n1.Name, n.Name, presente, date);
+                                                statoAzione[1] = true;
+                                                break;
+                                            case "ESPORTA":
+                                                presente = _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, date);
+                                                _r.AggiornaRiepilogo(n1.Name, n.Name, presente, date);
+                                                statoAzione[2] = true;
+                                                break;
+                                        }
+
+                                        if (_azioni[0]["Relazione"] != DBNull.Value)
+                                        {
+                                            string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
+                                            foreach (string relazione in azioneRelazione)
+                                            {
+                                                _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
+
+                                                if (DefinedNames.IsDefined("Main", DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
+                                                {
+                                                    DefinedNames nomiDefiniti = new DefinedNames("Main");
+                                                    Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
+
+                                                    Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+                                                    if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
+                                                    {
+                                                        ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                        Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
+                                                    }
+                                                }
+                                            }
+                                            _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                                        }
+                                    }
+                                });
+                                switch (n.Parent.Name)
+                                {
+                                    case "CARICA":
+                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                        break;
+                                    case "GENERA":
+                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                        break;
+                                    case "ESPORTA":
+                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                        break;
+                                }
+                            }
+                        });
+
+                        if (statoAzione[0] || statoAzione[1])
+                        {
+                            Sheet.SalvaModifiche();
+                            DataBase.SalvaModificheDB();
+                        }
+
+                        DataBase.DB.CloseConnection();
+                    }
                 }
             }
 
@@ -608,6 +591,37 @@ namespace Iren.ToolsExcel.Forms
                 Evidenzia(node, checkTutte.Checked);
             }
             treeViewUP.AfterCheck += treeViewUP_AfterCheck;
+        }
+
+        private void FormAzioni_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            selDate.Close();
+        }
+
+        private void comboGiorni_MouseClick(object sender, EventArgs e)
+        {
+            selDate.BringToFront();
+            selDate.Top = comboGiorni.PointToScreen(Point.Empty).Y + comboGiorni.Height;
+            selDate.Left = comboGiorni.PointToScreen(Point.Empty).X;
+            selDate.Width = comboGiorni.Width;
+            selDate.Show();
+        }
+
+        private void comboGiorni_TextChanged(object sender, EventArgs e)
+        {
+            comboGiorni.TextChanged -= comboGiorni_TextChanged;
+            if (comboGiorni.Text == "" || comboGiorni.Text == "- Click per selezionare le date -")
+            {
+                comboGiorni.Text = "- Click per selezionare le date -";
+                comboGiorni.Font = new Font(comboGiorni.Font, FontStyle.Italic);
+                comboGiorni.ForeColor = SystemColors.ControlDarkDark;
+            }
+            else
+            {
+                comboGiorni.Font = new Font(comboGiorni.Font, FontStyle.Regular);
+                comboGiorni.ForeColor = SystemColors.ControlText;
+            }
+            comboGiorni.TextChanged += comboGiorni_TextChanged;
         }
     }
 }

@@ -71,6 +71,12 @@
     <Compile Include="FormConfig.Designer.cs">
       <DependentUpon>FormConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormSelezioneDate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSelezioneDate.Designer.cs">
+      <DependentUpon>FormSelezioneDate.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormSelezioneUP.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +116,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormConfig.resx">
       <DependentUpon>FormConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSelezioneDate.resx">
+      <DependentUpon>FormSelezioneDate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormSelezioneUP.resx">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>

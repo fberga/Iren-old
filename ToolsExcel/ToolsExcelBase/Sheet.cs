@@ -17,7 +17,6 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Struct _struttura;
-
         protected DateTime _dataInizio;
         protected DateTime _dataFine;
         protected int _visParametro;
@@ -38,13 +37,6 @@ namespace Iren.ToolsExcel.Base
                     oreGiorno = 25;
                     suffissoData = Date.GetSuffissoData(DataBase.DataAttiva, giorno);
                 }
-
-                //TODO rimuovere
-                //if (giorno == _dataInizio && _struttura.visData0H24)
-                //{
-                //    oreGiorno++;
-                //}
-
                 callback(oreGiorno, suffissoData, giorno);
             }
         }
@@ -77,6 +69,7 @@ namespace Iren.ToolsExcel.Base
                     ws.Unprotect(Simboli.pwd);
             }
         }
+        //TODO
         public static void AbilitaModifica(bool abilita)
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
@@ -136,7 +129,8 @@ namespace Iren.ToolsExcel.Base
             //    Proteggi(true);
             //}
         }
-
+        
+        //TODO
         public static void SalvaModifiche(DateTime inizio, DateTime fine)
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -172,6 +166,8 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        
+        //TODO
         public static void SalvaModifiche()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -209,13 +205,12 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Excel.Worksheet _ws;
+        protected object _siglaCategoria;
         protected DefinedNames _nomiDefiniti;
         protected NewDefinedNames _newNomiDefiniti;
-        protected object _siglaCategoria;
         protected int _intervalloOre;
         protected int _rigaAttiva;
         protected bool _disposed = false;
-        
 
         #endregion
 
@@ -228,30 +223,9 @@ namespace Iren.ToolsExcel.Base
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
 
-            _siglaCategoria = categorie[0]["SiglaCategoria"];            
+            _siglaCategoria = categorie[0]["SiglaCategoria"];
 
-            //dimensionamento celle in base ai parametri del DB
-            if (DataBase.OpenConnection())
-            {
-                Struttura.AggiornaParametriApplicazione(ConfigurationManager.AppSettings["AppID"]);
-                //DataBase.CloseConnection();
-            }
-
-            DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
-
-            _struttura = new Struct();
-
-            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"] + (paramApplicazione[0]["TipoVisualizzazione"].Equals("O") ? 2 : 0);
-            _struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
-            _struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
-            _struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
-            _struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (_struttura.visParametro ? 1 : 0);
-            Struct.tipoVisualizzazione = paramApplicazione[0]["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione[0]["TipoVisualizzazione"].ToString();
-            Struct.intervalloGiorni = paramApplicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione[0]["IntervalloGiorniEntita"];
-            Struct.visualizzaRiepilogo = paramApplicazione[0]["VisRiepilogo"] is DBNull ? true : paramApplicazione[0]["VisRiepilogo"].Equals("1");
-
-            _visParametro = _struttura.visParametro ? 3 : 2;
-            _nomiDefiniti = new DefinedNames(_ws.Name);
+            AggiornaParametriApplicazione();
             _newNomiDefiniti = new NewDefinedNames(_ws.Name);            
         }
         ~Sheet()
@@ -263,12 +237,51 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        protected void AggiornaParametriApplicazione()
+        {
+            DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
+
+            _struttura = new Struct();
+
+            //cerco selezioni
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+
+            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            bool visSelezione = false;
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Selezione > 0";
+                if(entitaInformazioni.Count > 0)
+                {
+                    visSelezione = true;
+                    break;
+                }
+            }
+
+            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"] + (paramApplicazione[0]["TipoVisualizzazione"].Equals("O") ? 2 : 0);
+            _struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
+            _struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
+            _struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
+            _struttura.visSelezione = visSelezione;
+            _struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (_struttura.visParametro ? 1 : 0) + (visSelezione ? 1 : 0);
+            Struct.tipoVisualizzazione = paramApplicazione[0]["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione[0]["TipoVisualizzazione"].ToString();
+            Struct.intervalloGiorni = paramApplicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione[0]["IntervalloGiorniEntita"];
+            Struct.visualizzaRiepilogo = paramApplicazione[0]["VisRiepilogo"] is DBNull ? true : paramApplicazione[0]["VisRiepilogo"].Equals("1");
+
+            _visParametro = _struttura.visParametro ? 3 : 2 + (visSelezione ? 1 : 0);
+        }
+
         public override void LoadStructure()
         {
+            //dimensionamento celle in base ai parametri del DB
+            Struttura.AggiornaParametriApplicazione(ConfigurationManager.AppSettings["AppID"]);
+            AggiornaParametriApplicazione();
+
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
 
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL)";
             _dataInizio = Utility.DataBase.DB.DataAttiva;
 
             //carico la massima datafine in maniera da creare la barra navigazione della dimensione giusta (compresa la definizione dei giorni se necessario)
@@ -277,8 +290,7 @@ namespace Iren.ToolsExcel.Base
             {
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    string siglaEntita = "" + entita["SiglaEntita"];
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
                     if (entitaProprieta.Count > 0)
                     {
                         intervalloGiorniMax = Math.Max(intervalloGiorniMax, int.Parse("" + entitaProprieta[0]["Valore"]));
@@ -505,7 +517,12 @@ namespace Iren.ToolsExcel.Base
             _newNomiDefiniti.AddName(_rigaAttiva, Struct.tipoVisualizzazione == "O" ? siglaEntita : suffissoData, "TITOLO_VERTICALE");
             foreach (DataRowView info in informazioni)
             {
-                object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];                
+                if ((int)info["Selezione"] > 0)
+                {
+                    Excel.Range rng = _ws.Range[new Range(_rigaAttiva, _struttura.colBlock - 1).ToString()];
+                    _ws.OptionButtons().Add(rng.Left, rng.Top, rng.Width, rng.Height);
+                }
+                object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
                 _rigaAttiva++;
             }
