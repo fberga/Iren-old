@@ -24,6 +24,8 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<string, object> _addressFrom = new Dictionary<string, object>();
         protected Dictionary<object, string> _addressTo = new Dictionary<object, string>();
 
+        protected List<int> _editabili = new List<int>();
+
         public enum InitType
         {
             All, AllThisSheet, OnlyNaming, OnlyGOTOs, OnlyGOTOsThisSheet
@@ -54,7 +56,6 @@ namespace Iren.ToolsExcel.Base
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI_NEW];
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
 
-
             IEnumerable<DataRow> names =
                 from DataRow r in definedNames.AsEnumerable()
                 where r["Sheet"].Equals(_sheet)
@@ -76,6 +77,14 @@ namespace Iren.ToolsExcel.Base
 
             _defDatesIndexByName = dates.ToDictionary(r => GetName(r["Date"].ToString(), r["Hour"].ToString()), r => (int)r["Column"]);
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
+
+            DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
+
+            _editabili =
+                (from r in editabili.AsEnumerable()
+                 where r["Sheet"].Equals(_sheet)
+                 select (int)r["Row"]).ToList();
+
         }
         private void InitGOTOs(bool thisSheet = false)
         {
@@ -172,6 +181,11 @@ namespace Iren.ToolsExcel.Base
         public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
         {
             _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
+        }
+        public void SetEditabile(int row)
+        {
+            if (!_editabili.Contains(row))
+                _editabili.Add(row);
         }
 
         public int GetFirstCol()
@@ -463,6 +477,21 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        public static DataTable GetDefaultEditabileTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Sheet", typeof(string)},
+                        {"Row", typeof(int)}
+                    }
+            };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Row"] };
+            dt.TableName = name;
+            return dt;
+        }
 
         public static string GetSheetName(object siglaEntita)
         {
@@ -484,6 +513,7 @@ namespace Iren.ToolsExcel.Base
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
             DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
             DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_TO];
+            DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
 
             ///////// nomi
             //IEnumerable<DataRow> definedNamesRows =
@@ -567,70 +597,14 @@ namespace Iren.ToolsExcel.Base
                 r["AddressTo"] = ele.Value;
                 addressToTable.Rows.Add(r);
             }
+
+            foreach (var ele in _editabili)
+            {
+                DataRow r = editabili.NewRow();
+                r["Sheet"] = _sheet;
+                r["Row"] = ele;
+                editabili.Rows.Add(r);
+            }
         }
     }
-
-    #region Classi supporto
-
-    //public class GotoObject : IEqualityComparer
-    //{
-    //    private string _sheet;
-    //    private int _row, _column;
-    //    private string _address;
-    //    private string _addressTo;
-
-    //    public string Sheet
-    //    {
-    //        get { return _sheet; }
-    //    }
-
-    //    public int Row
-    //    {
-    //        get { return _row; }
-    //    }
-
-    //    public int Column
-    //    {
-    //        get { return _column; }
-    //    }
-
-    //    public string Address
-    //    {
-    //        get { return _address; }
-    //    }
-
-    //    public string AddressTo
-    //    {
-    //        get { return _addressTo; }
-    //    }
-
-    //    public GotoObject(string sheet, int row, int column)
-    //    {
-    //        _sheet = sheet;
-    //        _row = row;
-    //        _column = column;
-    //        _address = "'" + _sheet + "'!" + Range.GetRange(_row, _column);
-    //    }
-    //    public GotoObject(string sheet, int row, int column, string addressTo) 
-    //        : this(sheet, row, column)
-    //    {
-    //        _addressTo = addressTo;
-    //    }
-
-    //    public bool Equals(object x, object y)
-    //    {
-    //        GotoObject obj1 = (GotoObject)x;
-    //        GotoObject obj2 = (GotoObject)y;
-
-    //        return obj1.Address == obj2.Address;
-    //    }
-
-    //    public int GetHashCode(object obj)
-    //    {
-    //        GotoObject obj1 = (GotoObject)obj;
-    //        return obj1.Address.GetHashCode();
-    //    }
-    //}
-
-    #endregion
 }

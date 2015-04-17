@@ -77,6 +77,7 @@ namespace Iren.ToolsExcel.Utility
                 CATEGORIA = "Categoria",
                 CATEGORIA_ENTITA = "CategoriaEntita",
                 DATE_DEFINITE = "DefinedDates",
+                EDITABILI = "Editabili",
                 ENTITA_ASSETTO = "EntitaAssetto",
                 ENTITA_AZIONE = "EntitaAzione",
                 ENTITA_AZIONE_CALCOLO = "EntitaAzioneCalcolo",
@@ -425,6 +426,7 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaAddressFrom();
             CreaTabellaAddressTo();
             CreaTabellaModifica();
+            CreaTabellaEditabili();
             CaricaAzioni();
             CaricaCategorie();
             CaricaAzioneCategoria();
@@ -525,6 +527,22 @@ namespace Iren.ToolsExcel.Utility
                 string name = Tab.ADDRESS_TO;
                 ResetTable(name);
                 DataTable dt = NewDefinedNames.GetDefaultAddressToTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static bool CreaTabellaEditabili()
+        {
+            try
+            {
+                string name = Tab.EDITABILI;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultEditabileTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }

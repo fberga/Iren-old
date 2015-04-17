@@ -102,32 +102,6 @@ namespace Iren.ToolsExcel.Base
                 }
             }
             Proteggi(true);
-
-            //DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            //categorie.RowFilter = "Operativa = '1'";
-            //DataView entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            //DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-
-            //foreach (DataRowView categoria in categorie)
-            //{
-            //    DefinedNames nomiDefiniti = new DefinedNames(categoria["DesCategoria"].ToString());
-            //    Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
-
-            //    Proteggi(false);
-            //    entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
-            //    foreach (DataRowView e in entita)
-            //    {
-            //        informazioni.RowFilter = "SiglaEntita = '" + e["SiglaEntita"] + "' AND Editabile = '1'";
-            //        foreach (DataRowView info in informazioni)
-            //        {
-            //            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? e["SiglaEntita"] : info["SiglaEntitaRif"];
-            //            Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(siglaEntita, info["SiglaInformazione"])];
-
-            //            ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Locked = !abilita;
-            //        }
-            //    }
-            //    Proteggi(true);
-            //}
         }
         
         //TODO
@@ -346,6 +320,12 @@ namespace Iren.ToolsExcel.Base
             if (_ws.ChartObjects().Count > 0)
                 _ws.ChartObjects().Delete();
 
+            if (_ws.GroupBoxes().Count > 0)
+                _ws.GroupBoxes().Delete();
+
+            if (_ws.OptionButtons().Count > 0)
+                _ws.OptionButtons().Delete();
+
             _ws.UsedRange.EntireColumn.Delete();
             _ws.UsedRange.FormatConditions.Delete();
             _ws.UsedRange.EntireRow.Hidden = false;
@@ -372,8 +352,10 @@ namespace Iren.ToolsExcel.Base
             int colInfo = _struttura.colBlock - _visParametro;
             _ws.Columns[colInfo].ColumnWidth = Struct.cell.width.informazione;
             _ws.Columns[colInfo + 1].ColumnWidth = Struct.cell.width.unitaMisura;
+            if (_struttura.visSelezione)
+                _ws.Columns[colInfo + 2].ColumnWidth = 2.5;
             if (_struttura.visParametro)
-                _ws.Columns[colInfo + 2].ColumnWidth = Struct.cell.width.parametro;
+                _ws.Columns[colInfo + _visParametro].ColumnWidth = Struct.cell.width.parametro;
         }
         protected void InitBarraNavigazione()
         {
@@ -474,7 +456,7 @@ namespace Iren.ToolsExcel.Base
             InsertInformazioniEntita();
             InsertPersonalizzazioni(entita["SiglaEntita"]);
             InsertGrafici();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1)";
+            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1 OR Selezione = 10)";
             InsertFormuleValoriDefault();
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL";
             InsertParametri();
@@ -517,11 +499,6 @@ namespace Iren.ToolsExcel.Base
             _newNomiDefiniti.AddName(_rigaAttiva, Struct.tipoVisualizzazione == "O" ? siglaEntita : suffissoData, "TITOLO_VERTICALE");
             foreach (DataRowView info in informazioni)
             {
-                if ((int)info["Selezione"] > 0)
-                {
-                    Excel.Range rng = _ws.Range[new Range(_rigaAttiva, _struttura.colBlock - 1).ToString()];
-                    _ws.OptionButtons().Add(rng.Left, rng.Top, rng.Width, rng.Height);
-                }
                 object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
                 _rigaAttiva++;
@@ -600,6 +577,8 @@ namespace Iren.ToolsExcel.Base
             bloccoEntita.Columns[1].HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
             bloccoEntita.Columns[2].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
             bloccoEntita.Columns[_visParametro].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+            if (_struttura.visSelezione)
+                bloccoEntita.Columns[3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
             if (_struttura.visParametro)
                 bloccoEntita.Columns[3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
@@ -631,13 +610,70 @@ namespace Iren.ToolsExcel.Base
                     rngData.Columns[rngData.Columns.Count].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
             }
 
+            //inserisco groupBox per l'entita
             int i = 1;
+            if (_struttura.visSelezione)
+            {
+                //cerco inizio e fine della selezione
+                List<int> starts = new List<int>();
+                //List<string> names = new List<string>();
+                List<int> ends = new List<int>();
+                foreach (DataRowView info in informazioni)
+                {
+                    if (info["Selezione"].Equals(10))
+                    {
+                        starts.Add(i + 1);
+                        //names.Add(info["SiglaInformazione"].ToString());
+                    }
+                    i++;
+                }
+
+                foreach (int pos in starts)
+                {
+                    int j = pos;
+                    while (j < informazioni.Count && (int)informazioni[j++]["Selezione"] > 0) ;
+                    ends.Add(j - 1);
+                }
+
+                //aggiungo i groupbox
+                for (i = 0; i < starts.Count; i++)
+                {
+                    Range rng = new Range(row + starts[i] - 1, col - _visParametro + 2, ends[i] - starts[i] + 1);
+                    Excel.Range xlrng = _ws.Range[rng.ToString()];
+                    Excel.GroupBox grpBox = _ws.GroupBoxes().Add(xlrng.Left - xlrng.Width / 2, xlrng.Top - 1, xlrng.Width * 2, xlrng.Height + 2);
+                    grpBox.Caption = "";
+                    grpBox.Visible = false;
+                    //grpBox.Name = NewDefinedNames.GetName(siglaEntita, names[i]);
+                }
+            }
+
+            i = 1;
+            int selLinkRangeRow = 1;
             foreach (DataRowView info in informazioni)
             {
                 rngInfo.Rows[i].Value = new object[2] { info["DesInformazione"], info["DesInformazioneBreve"] };
 
                 int backColor = (info["BackColor"] is DBNull ? 0 : (int)info["BackColor"]);
                 backColor = backColor == 0 || backColor == 2 ? (info["Editabile"].ToString() == "1" ? 15 : 48) : backColor;
+
+                if (info["Selezione"].Equals(10))
+                {
+                    selLinkRangeRow = i;
+                    rngRow.Rows[i].Cells[3].Locked = false;
+                }
+
+                if ((int)info["Selezione"] > 0 && !info["Selezione"].Equals(10))
+                {
+                    Excel.Range rng = rngRow.Rows[i].Cells[3];
+                    Excel.OptionButton optBtn = _ws.OptionButtons().Add(rng.Left, rng.Top, rng.Width, rng.Height);
+                    optBtn.Caption = "";
+                    optBtn.Name = NewDefinedNames.GetName(info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"], "SEL" + info["Selezione"]);
+                    optBtn.LinkedCell = rngRow.Rows[selLinkRangeRow].Cells[3].Address;
+                }
+                else if(_struttura.visSelezione)
+                {
+                    rngRow.Rows[i].Cells[3].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                }
 
                 string styleInfo =
                     "FontSize:" + info["FontSize"] + ";" +
@@ -701,7 +737,10 @@ namespace Iren.ToolsExcel.Base
                     }
                     _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - deltaPos].ToString()].Formula = formula;//Range.GetRange(rng.StartRow, rng.StartColumn + deltaNeg, 1, rng.ColOffset - deltaNeg - deltaPos)].Formula = formula;
                     _ws.Application.ScreenUpdating = false;
-
+                }
+                else if(info["Selezione"].Equals(10))
+                {
+                    rngData.Formula = "=" + _ws.Cells[rng.StartRow, _newNomiDefiniti.GetFirstCol() - _visParametro + 2].Address;
                 }
 
                 if (info["ValoreData0H24"] != DBNull.Value)
@@ -951,7 +990,6 @@ namespace Iren.ToolsExcel.Base
                     {
                         foreach (DataRowView entita in categoriaEntita)
                         {
-
                             datiApplicazioneH.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
 
                             //_dataFine = dateFineUP[entita["SiglaEntita"]];
@@ -993,12 +1031,21 @@ namespace Iren.ToolsExcel.Base
                 else
                 {
                     Range rng = _newNomiDefiniti.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno));
-                    rng.Extend(1, Date.GetOreGiorno(giorno));//_newNomiDefiniti.GetDayOffset(giorno));
+                    rng.Extend(1, Date.GetOreGiorno(giorno));
 
-                    List<object> o = new List<object>(dato.Row.ItemArray);
-                    //elimino i campi inutili
-                    o.RemoveRange(o.Count - 3, 3);
-                    _ws.Range[rng.ToString()].Value = o.ToArray();
+                    //TODO sentire Domenico se va bene così
+                    if (Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
+                    {
+                        string sel = dato["H1"].ToString().Substring(0, dato["H1"].ToString().IndexOf('.'));
+                        _ws.OptionButtons(NewDefinedNames.GetName(dato["SiglaEntita"], "SEL" + sel)).Value = true;
+                    }
+                    else
+                    {
+                        List<object> o = new List<object>(dato.Row.ItemArray);
+                        //elimino i campi inutili
+                        o.RemoveRange(o.Count - 3, 3);
+                        _ws.Range[rng.ToString()].Value = o.ToArray();
+                    }
                 }
             }
         }
