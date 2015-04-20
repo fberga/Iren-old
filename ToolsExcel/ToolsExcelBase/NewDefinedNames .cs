@@ -24,11 +24,13 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<string, object> _addressFrom = new Dictionary<string, object>();
         protected Dictionary<object, string> _addressTo = new Dictionary<object, string>();
 
-        protected List<int> _editabili = new List<int>();
+        protected List<string> _editable = new List<string>();
+        protected List<int> _saveDB = new List<int>();
+        protected List<int> _toNote = new List<int>();
 
         public enum InitType
         {
-            All, AllThisSheet, OnlyNaming, OnlyGOTOs, OnlyGOTOsThisSheet
+            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB
         }
 
         #endregion
@@ -45,6 +47,14 @@ namespace Iren.ToolsExcel.Base
         public string Sheet
         {
             get { return _sheet; }
+        }
+        public List<string> Editable
+        {
+            get { return _editable; }
+        }
+        public bool HasData0H24
+        {
+            get { return _defDatesIndexByName.First().Key == GetName(Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24)); }
         }
 
         #endregion
@@ -78,13 +88,6 @@ namespace Iren.ToolsExcel.Base
             _defDatesIndexByName = dates.ToDictionary(r => GetName(r["Date"].ToString(), r["Hour"].ToString()), r => (int)r["Column"]);
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
 
-            DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
-
-            _editabili =
-                (from r in editabili.AsEnumerable()
-                 where r["Sheet"].Equals(_sheet)
-                 select (int)r["Row"]).ToList();
-
         }
         private void InitGOTOs(bool thisSheet = false)
         {
@@ -107,8 +110,35 @@ namespace Iren.ToolsExcel.Base
                     r => r["AddressTo"].ToString()
                 );
         }
+        private void InitEditable()
+        {
+            DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
 
-        public NewDefinedNames(string sheet, InitType type = InitType.OnlyNaming)
+            _editable =
+                (from r in editabili.AsEnumerable()
+                 where r["Sheet"].Equals(_sheet)
+                 select (string)r["Range"]).ToList();
+        }
+        private void InitSaveDB()
+        {
+            DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
+
+            _saveDB =
+                (from r in saveDB.AsEnumerable()
+                 where r["Sheet"].Equals(_sheet)
+                 select (int)r["Row"]).ToList();
+        }
+        private void InitToNote()
+        {
+            DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
+
+            _toNote =
+                (from r in toNote.AsEnumerable()
+                 where r["Sheet"].Equals(_sheet)
+                 select (int)r["Row"]).ToList();
+        }
+
+        public NewDefinedNames(string sheet, InitType type = InitType.NamingOnly)
         {
             _sheet = sheet;
 
@@ -117,15 +147,26 @@ namespace Iren.ToolsExcel.Base
                 case InitType.All:
                     InitNaming();
                     InitGOTOs();
+                    InitEditable();
+                    InitSaveDB();
                     break;
-                case InitType.OnlyNaming:
+                case InitType.NamingOnly:
                     InitNaming();
+                    //InitEditabili();
                     break;
-                case InitType.OnlyGOTOs:
+                case InitType.GOTOsOnly:
                     InitGOTOs();
                     break;
-                case InitType.OnlyGOTOsThisSheet:
+                case InitType.GOTOsThisSheetOnly:
                     InitGOTOs(true);
+                    break;
+                case InitType.EditableOnly:
+                    InitEditable();
+                    break;
+                case InitType.SaveDB:
+                    InitNaming();
+                    InitSaveDB();
+                    InitToNote();
                     break;
             }
         }
@@ -182,10 +223,30 @@ namespace Iren.ToolsExcel.Base
         {
             _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
         }
-        public void SetEditabile(int row)
+        public void SetEditable(Range rng)
         {
-            if (!_editabili.Contains(row))
-                _editabili.Add(row);
+            if (!_editable.Contains(rng.ToString()))
+                _editable.Add(rng.ToString());
+        }
+        public void SetSaveDB(int row)
+        {
+            if (!_saveDB.Contains(row))
+                _saveDB.Add(row);
+        }
+        public void SetToNote(int row)
+        {
+            if (!_toNote.Contains(row))
+                _toNote.Add(row);
+        }
+
+
+        public bool SaveDB(int row)
+        {
+            return _saveDB.Contains(row);
+        }
+        public bool ToNote(int row)
+        {
+            return _toNote.Contains(row);
         }
 
         public int GetFirstCol()
@@ -273,6 +334,29 @@ namespace Iren.ToolsExcel.Base
         {
             string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
             return GetRowByName(name);
+        }
+
+        public string GetNameByRow(int row)
+        {
+            return _defNamesIndexByRow[row].First();
+        }
+        public string GetDateByCol(int column)
+        {
+            if (column >= GetFirstCol())
+                return _defDatesIndexByCol[column];
+            else
+                return Date.GetSuffissoData(DataBase.DataAttiva);
+        }
+        public string GetNameByAddress(int row, int column)
+        {
+            if(Struct.tipoVisualizzazione == "O")
+                return GetName(GetNameByRow(row), GetDateByCol(column));
+
+            string[] parts = GetDateByCol(column).Split(Simboli.UNION[0]);
+            if (parts.Length > 1)
+                return GetName(GetNameByRow(row), parts.Last());
+
+            return GetNameByRow(row);
         }
 
         public bool IsDefined(params object[] parts)
@@ -477,7 +561,37 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
-        public static DataTable GetDefaultEditabileTable(string name)
+        public static DataTable GetDefaultEditableTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Sheet", typeof(string)},
+                        {"Range", typeof(string)}
+                    }
+            };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Range"] };
+            dt.TableName = name;
+            return dt;
+        }
+        public static DataTable GetDefaultSaveTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Sheet", typeof(string)},
+                        {"Row", typeof(int)}
+                    }
+            };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Row"] };
+            dt.TableName = name;
+            return dt;
+        }
+        public static DataTable GetDefaultToNote(string name)
         {
             DataTable dt = new DataTable()
             {
@@ -513,70 +627,34 @@ namespace Iren.ToolsExcel.Base
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
             DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
             DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_TO];
-            DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
+            DataTable editable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
+            DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
+            DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
 
             ///////// nomi
-            //IEnumerable<DataRow> definedNamesRows =
-            //    from r in definedNames.AsEnumerable()
-            //    where r["Sheet"].Equals(_sheet)
-            //    select r;
-
-            //foreach (var row in definedNamesRows)
-            //{
-            //    if (_defNamesIndexByName.ContainsKey(row["Name"].ToString()))
-            //    {
-            //        row["Row"] = _defNamesIndexByName[row["Name"].ToString()];
-            //        _defNamesIndexByName.Remove(row["Name"].ToString());
-            //    }
-            //}
-
-            //if (_defNamesIndexByName.Count > 0) 
-            //{
-                foreach(var ele in _defNamesIndexByName) 
-                {
-                    DataRow r = definedNames.NewRow();
-                    r["Sheet"] = _sheet;
-                    r["Name"] = ele.Key;
-                    r["Row"] = ele.Value;
-                    definedNames.Rows.Add(r);
-                }
-            //}
-
+            foreach(var ele in _defNamesIndexByName) 
+            {
+                DataRow r = definedNames.NewRow();
+                r["Sheet"] = _sheet;
+                r["Name"] = ele.Key;
+                r["Row"] = ele.Value;
+                definedNames.Rows.Add(r);
+            }
+            
             ///////// date
-            //IEnumerable<DataRow> definedDatesRows =
-            //    from r in definedDates.AsEnumerable()
-            //    where r["Sheet"].Equals(_sheet)
-            //    select r;
+            foreach (var ele in _defDatesIndexByName)
+            {
+                string[] dateTime = ele.Key.Split(Simboli.UNION[0]);
 
-            //foreach (var row in definedDatesRows)
-            //{
-            //    if (_defDatesIndexByName.ContainsKey(row["Name"].ToString()))
-            //    {
-            //        row["Column"] = _defDatesIndexByName[row["Name"].ToString()];
-            //        _defDatesIndexByName.Remove(row["Name"].ToString());
-            //    }
-            //}
+                DataRow r = definedDates.NewRow();
+                r["Sheet"] = _sheet;
+                r["Date"] = dateTime[0];
+                r["Hour"] = dateTime.Length == 2 ? ele.Key.Split(Simboli.UNION[0])[1] : "";
+                r["Column"] = ele.Value;
+                definedDates.Rows.Add(r);
+            }
+            
 
-            //if (_defDatesIndexByName.Count > 0)
-            //{
-                foreach (var ele in _defDatesIndexByName)
-                {
-                    string[] dateTime = ele.Key.Split(Simboli.UNION[0]);
-
-                    DataRow r = definedDates.NewRow();
-                    r["Sheet"] = _sheet;
-                    r["Date"] = dateTime[0];
-                    r["Hour"] = dateTime.Length == 2 ? ele.Key.Split(Simboli.UNION[0])[1] : "";
-                    r["Column"] = ele.Value;
-                    definedDates.Rows.Add(r);
-                }
-            //}
-
-            ///////// goto
-            //IEnumerable<KeyValuePair<string, object>> defAddressFrom =
-            //    from kv in _addressFrom
-            //    where kv.Key.StartsWith("'" + _sheet + "'!")
-            //    select kv;
             foreach (var ele in _addressFrom)
             {
                 DataRow r = addressFromTable.NewRow();
@@ -585,10 +663,6 @@ namespace Iren.ToolsExcel.Base
                 r["SiglaEntita"] = ele.Value;
                 addressFromTable.Rows.Add(r);
             }
-            //IEnumerable<KeyValuePair<object, string>> defAddressTo =
-            //    from kv in _addressTo
-            //    where kv.Value.StartsWith("'" + _sheet + "'!")
-            //    select kv;
             foreach (var ele in _addressTo)
             {
                 DataRow r = addressToTable.NewRow();
@@ -598,12 +672,31 @@ namespace Iren.ToolsExcel.Base
                 addressToTable.Rows.Add(r);
             }
 
-            foreach (var ele in _editabili)
+
+            foreach (var ele in _editable)
             {
-                DataRow r = editabili.NewRow();
+                DataRow r = editable.NewRow();
+                r["Sheet"] = _sheet;
+                r["Range"] = ele;
+                editable.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _saveDB)
+            {
+                DataRow r = saveDB.NewRow();
                 r["Sheet"] = _sheet;
                 r["Row"] = ele;
-                editabili.Rows.Add(r);
+                saveDB.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _toNote)
+            {
+                DataRow r = toNote.NewRow();
+                r["Sheet"] = _sheet;
+                r["Row"] = ele;
+                toNote.Rows.Add(r);
             }
         }
     }

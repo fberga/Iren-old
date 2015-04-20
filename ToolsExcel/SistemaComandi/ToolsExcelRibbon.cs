@@ -51,6 +51,11 @@ namespace Iren.ToolsExcel
             if (ConfigurationManager.AppSettings["RampeVisible"] != null && ConfigurationManager.AppSettings["RampeVisible"].ToLowerInvariant() == "false")
                 btnRampe.Visible = false;
 
+            //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
+            btnModifica.Checked = false;
+            btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
+            btnModifica.Label = "Modifica NO";
+
         }
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
@@ -255,12 +260,17 @@ namespace Iren.ToolsExcel
 
             Sheet.AbilitaModifica(btnModifica.Checked);
             if (btnModifica.Checked) 
+            {
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_icon;
+                btnModifica.Label = "Modifica SI";
+            }
             else
             {
                 //Salva modifiche su db
+                Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
+                btnModifica.Label = "Modifica NO";
             }
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;

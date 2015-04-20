@@ -69,6 +69,7 @@ namespace Iren.ToolsExcel.Utility
         {
             public const string ADDRESS_FROM = "AddressFrom",
                 ADDRESS_TO = "AddressTo",
+                ANNOTA = "AnnotaModifica",
                 APPLICAZIONE = "Applicazione",
                 AZIONE = "Azione",
                 AZIONE_CATEGORIA = "AzioneCategoria",
@@ -96,6 +97,7 @@ namespace Iren.ToolsExcel.Utility
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
                 NOMI_DEFINITI_NEW = "DefinedNamesNew",
+                SALVADB = "SaveDB",
                 TIPOLOGIA_CHECK = "TipologiaCheck",
                 TIPOLOGIA_RAMPA = "TipologiaRampa",
                 UTENTE = "Utente";
@@ -359,16 +361,15 @@ namespace Iren.ToolsExcel.Utility
 
             return GetSuffissoOra(int.Parse(dtO.Substring(dtO.Length - 2, 2)));
         }
-        public static string GetDataFromSuffisso(object data, object ora = null)
+        public static string GetDataFromSuffisso(string data, string ora)
         {
             DateTime outDate = GetDataFromSuffisso(data);
-
-            ora = ora ?? "0";
-            int outOra = int.Parse(Regex.Match(ora.ToString(), @"\d+").Value);
+            ora = ora == "" ? "0" : ora;
+            int outOra = int.Parse(Regex.Match(ora, @"\d+").Value);
 
             return outDate.ToString("yyyyMMdd") + (outOra != 0 ? outOra.ToString("D2") : "");
         }
-        public static DateTime GetDataFromSuffisso(object data)
+        public static DateTime GetDataFromSuffisso(string data)
         {
             int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
             return DataBase.DB.DataAttiva.AddDays(giorno - 1);
@@ -427,6 +428,8 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaAddressTo();
             CreaTabellaModifica();
             CreaTabellaEditabili();
+            CreaTabellaSalvaDB();
+            CreaTabellaAnnotaModifica();
             CaricaAzioni();
             CaricaCategorie();
             CaricaAzioneCategoria();
@@ -542,7 +545,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.EDITABILI;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultEditabileTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultEditableTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -551,8 +554,37 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
-
-
+        private static bool CreaTabellaSalvaDB()
+        {
+            try
+            {
+                string name = Tab.SALVADB;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultSaveTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CreaTabellaAnnotaModifica()
+        {
+            try
+            {
+                string name = Tab.ANNOTA;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultToNote(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
         private static bool CreaTabellaModifica()
         {
             try
@@ -573,7 +605,7 @@ namespace Iren.ToolsExcel.Utility
                     }
                 };
 
-                dt.PrimaryKey = new DataColumn[] { dt.Columns["Entita"], dt.Columns["Informazione"], dt.Columns["Data"] };
+                dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
 
                 _localDB.Tables.Add(dt);
                 return true;

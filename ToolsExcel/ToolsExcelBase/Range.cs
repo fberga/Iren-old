@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Text.RegularExpressions;
 
 namespace Iren.ToolsExcel.Base
@@ -93,6 +94,16 @@ namespace Iren.ToolsExcel.Base
             _rowOffset = rowOffset;
             _colOffset = colOffset;
         }
+        public Range(string range)
+            : this()
+        {
+            Range rng = A1toRange(range);
+
+            _startRow = rng.StartRow;
+            _startColumn = rng.StartColumn;
+            _rowOffset = rng.RowOffset;
+            _colOffset = rng.ColOffset;
+        }
 
         #endregion
 
@@ -137,21 +148,40 @@ namespace Iren.ToolsExcel.Base
         {
             return R1C1toA1(cella.StartRow, cella.StartColumn);
         }
-        public static Tuple<int, int> A1toR1C1(string address)
+        public static Range A1toRange(string address)
         {
-            address = address.Replace("$", "");
-            string alpha = Regex.Match(address, @"\D+").Value;
-            int riga = int.Parse(Regex.Match(address, @"\d+").Value);
+            string[] parts = address.Split(':');
 
-            int colonna = 0;
-            int incremento = (alpha.Length == 1 ? 1 : 26 * (alpha.Length - 1));
-            for (int i = 0; i < alpha.Length; i++)
+            int[] rows = new int[parts.Length];
+            int[] cols = new int[parts.Length];
+            int j = 0;
+            foreach (string part in parts)
             {
-                colonna += (char.ConvertToUtf32(alpha, i) - 64) * incremento;
-                incremento = incremento - 26 == 0 ? 1 : incremento - 26;
+                string tmp = part.Replace("$", "");
+                string alpha = Regex.Match(tmp, @"\D+").Value;
+                rows[j] = int.Parse(Regex.Match(tmp, @"\d+").Value);
+
+                cols[j] = 0;
+                int incremento = (alpha.Length == 1 ? 1 : 26 * (alpha.Length - 1));
+                for (int i = 0; i < alpha.Length; i++)
+                {
+                    cols[j] += (char.ConvertToUtf32(alpha, i) - 64) * incremento;
+                    incremento = incremento - 26 == 0 ? 1 : incremento - 26;
+                }
+                j++;
             }
 
-            return Tuple.Create<int, int>(riga, colonna);
+            Range rng = new Range();
+            rng.StartRow = rows[0];
+            rng.StartColumn = cols[0];
+            
+            if (rows.Length == 2)
+            {
+                rng.RowOffset = rows[1] - rows[0] + 1;
+                rng.ColOffset = cols[1] - cols[0] + 1;
+            }
+
+            return rng;
         }
         public static string GetRange(int row, int column, int rowOffset = 1, int colOffset = 1)
         {
@@ -165,7 +195,7 @@ namespace Iren.ToolsExcel.Base
 
         #region Classi Interne
 
-        public class RowsCollection
+        public class RowsCollection : IEnumerable
         {
             private Range _r;
 
@@ -195,8 +225,12 @@ namespace Iren.ToolsExcel.Base
                     return _r.RowOffset;
                 }
             }
+            public IEnumerator GetEnumerator()
+            {
+                return new RowsEnum(_r);
+            }
         }
-        public class ColumnsCollection
+        public class ColumnsCollection : IEnumerable
         {
             private Range _r;
 
@@ -226,6 +260,10 @@ namespace Iren.ToolsExcel.Base
                     return _r.ColOffset;
                 }
             }
+            public IEnumerator GetEnumerator()
+            {
+                return new ColumnsEnum(_r);
+            }
         }
         public class CellsCollection
         {
@@ -242,6 +280,65 @@ namespace Iren.ToolsExcel.Base
                 {
                     return new Range(_r.StartRow + row, _r.StartColumn + column);
                 }
+            }
+        }
+
+        public class RowsEnum : IEnumerator
+        {
+            Range _r;
+            int _position = -1;
+            int _maxOffset = -1;
+
+            public RowsEnum(Range r)
+            {
+                _r = r;
+                _maxOffset = _r.RowOffset;
+                
+            }
+
+            public object Current
+            {
+                get { return _r.Rows[_position]; }
+            }
+
+            public bool MoveNext()
+            {
+                _position++;
+                return _position < _maxOffset;
+            }
+
+            public void Reset()
+            {
+                _position = -1;
+            }
+        }
+        public class ColumnsEnum : IEnumerator
+        {
+            Range _r;
+            int _position = -1;
+            int _maxOffset = -1;
+
+            public ColumnsEnum(Range r)
+            {
+                _r = r;
+                _maxOffset = _r.ColOffset;
+
+            }
+
+            public object Current
+            {
+                get { return _r.Columns[_position]; }
+            }
+
+            public bool MoveNext()
+            {
+                _position++;
+                return _position < _maxOffset;
+            }
+
+            public void Reset()
+            {
+                _position = -1;
             }
         }
 

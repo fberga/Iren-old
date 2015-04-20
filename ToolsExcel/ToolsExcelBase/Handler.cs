@@ -17,7 +17,7 @@ namespace Iren.ToolsExcel.Base
         {
             try
             {
-                NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.OnlyGOTOs);
+                NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.GOTOsOnly);
                 string address = newDefinedNames.GetGOTO(Range.R1C1toA1(Target.Row, Target.Column));
                 Goto(address);
             }
@@ -41,66 +41,77 @@ namespace Iren.ToolsExcel.Base
 
         public static void StoreEdit(object Sh, Excel.Range Target)
         {
-            //NewDefinedNames newNomiDefiniti = new NewDefinedNames(Target.Worksheet.Name);
-            //Sheet s = new Sheet(Target.Worksheet);
-            //Target.Worksheet.Unprotect(Simboli.pwd);
-            //s.AggiornaGrafici();
+            bool wasProtected = Target.Worksheet.ProtectContents;
+            bool screenUpdating = Target.Application.ScreenUpdating;
+            if (wasProtected)
+                Target.Worksheet.Unprotect(Simboli.pwd);
+            
+            if (screenUpdating)
+                Target.Application.ScreenUpdating = false;
 
-            //newNomiDefiniti
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.SaveDB);
+            DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
+            
 
-            //DefinedNames nomiDefiniti = new DefinedNames(Target.Worksheet.Name);
+            Excel.Worksheet ws = (Excel.Worksheet)Sh;
+            if (ws.ChartObjects().Count > 0)
+            {
+                Sheet s = new Sheet(ws);
+                s.AggiornaGrafici();
+            }
 
-            //if (nomiDefiniti.SalvaDB(Target.Row, Target.Column))
-            //{
-            //    object[,] values;
-            //    if (Target.Value == null)   //caso in cui cancello il valore di una cella
-            //    {
-            //        values = new object[1, 1];
-            //        values[0, 0] = null;
-            //    }
-            //    else if (Target.Value.GetType() != typeof(object[,]))   //caso in cui modifico il valore di una cella
-            //    {
-            //        values = new object[1, 1];
-            //        values[0, 0] = Target.Value;
-            //    }
-            //    else    //caso in cui modifico un range di celle
-            //    {
-            //        values = new object[Target.Value.GetLength(0), Target.Value.GetLength(1)];
-            //        Array.Copy(Target.Value, 1, values, 0, values.Length);
-            //    }
+            string[] ranges = Target.Address.Split(',');
+            
+            foreach (string range in ranges)
+            {
+                Range rng = new Range(range);
+                foreach (Range row in rng.Rows)
+                {
+                    if (newNomiDefiniti.SaveDB(row.StartRow))
+                    {
+                        bool annota = newNomiDefiniti.ToNote(row.StartRow);
+                        foreach (Range column in row.Columns)
+                        {
+                            string[] parts = newNomiDefiniti.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
+                            string data;
+                            if(parts.Length == 4)
+                                data = Date.GetDataFromSuffisso(parts[2], parts[3]);
+                            else
+                                data = Date.GetDataFromSuffisso(parts[2], "");
 
-            //    DataView modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA].DefaultView;
+                            DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data});
+                            if (r != null)
+                                r["Valore"] = ws.Range[column.ToString()].Value;
+                            else
+                            {
+                                DataRow newRow = modifiche.NewRow();
 
-            //    for (int i = 0, rowLen = values.GetLength(0); i < rowLen; i++)
-            //    {
-            //        for (int j = 0, colLen = values.GetLength(1); j < colLen; j++)
-            //        {
-            //            if (values[i, j] != null)
-            //            {
-            //                if (nomiDefiniti.SalvaDB(i + Target.Row, j + Target.Column))
-            //                {
-            //                    string[] nomi = nomiDefiniti.Get(i + Target.Row, j + Target.Column);
+                                newRow["SiglaEntita"] = parts[0];
+                                newRow["SiglaInformazione"] = parts[1];
+                                newRow["Data"] = data;
+                                newRow["Valore"] = ws.Range[column.ToString()].Value;
+                                newRow["AnnotaModifica"] = annota ? "1" : "0";
+                                newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
+                                newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
 
-            //                    string[] info = nomi[0].Split(Simboli.UNION[0]);
-            //                    string data = Utility.Date.GetDataFromSuffisso(info[2], info.Length == 4 ? info[3] : null);
+                                modifiche.Rows.Add(newRow);
+                            }
 
-            //                    modifiche.RowFilter = "SiglaEntita = '" + info[0] + "' AND SiglaInformazione = '" + info[1] + "' AND Data = '" + data + "'";
-            //                    if (modifiche.Count == 0)
-            //                        modifiche.Table.Rows.Add(info[0], info[1], data, values[i, j].ToString(), nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column), DataBase.DB.IdApplicazione, DataBase.DB.IdUtenteAttivo);
-            //                    else
-            //                        modifiche[0]["Valore"] = values[i, j];
-            //                }
-            //                if (nomiDefiniti.AnnotaModifica(i + Target.Row, j + Target.Column))
-            //                {
-            //                    Excel.Range rng = Target.Worksheet.Cells[i + Target.Row, j + Target.Column];
-            //                    rng.ClearComments();
-            //                    rng.AddComment("Valore inserito manualmente").Visible = false;
-            //                }
-            //            }
-            //        }
-            //    } 
-            //}
-            //Target.Worksheet.Protect(Simboli.pwd);
+                            if (annota)
+                            {
+                                ws.Range[column.ToString()].ClearComments();
+                                ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (wasProtected)
+                Target.Worksheet.Protect(Simboli.pwd);
+            
+           if (screenUpdating)
+                Target.Application.ScreenUpdating = true;
         }
 
         public static void ChangeModificaDati(bool modifica)

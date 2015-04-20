@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel.Forms
             if(_siglaEntita != null) 
             {
                 //non mi serve il nome del foglio perché lavoro direttamente con la siglaEntita
-                NewDefinedNames n = new NewDefinedNames("", NewDefinedNames.InitType.OnlyGOTOs);
+                NewDefinedNames n = new NewDefinedNames("", NewDefinedNames.InitType.GOTOsOnly);
                 string address = n.GetGOTO(_siglaEntita);
                 Handler.Goto(address);
             }
