@@ -69,7 +69,7 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Excel.Worksheet _ws;
-        protected DefinedNames _nomiDefiniti;
+        //protected DefinedNames _nomiDefiniti;
         protected NewDefinedNames _newNomiDefiniti;
         protected int _rigaAttiva;
         protected int _colonnaInizio;
@@ -92,7 +92,7 @@ namespace Iren.ToolsExcel.Base
             _struttura = new Struct();
             _struttura.rigaBlock = 5;
             _struttura.colBlock = 59;
-            _nomiDefiniti = new DefinedNames(_ws.Name);
+            //_nomiDefiniti = new DefinedNames(_ws.Name);
             try
             {
                 _newNomiDefiniti = new NewDefinedNames(_ws.Name);

@@ -359,16 +359,14 @@ namespace Iren.ToolsExcel.Base
             return GetNameByRow(row);
         }
 
+        public bool IsDefined(int row)
+        {
+            return _defNamesIndexByRow.Contains(row);
+        }
         public bool IsDefined(params object[] parts)
         {
             string name = GetName(parts);
-
-            IEnumerable<string> names =
-                from kv in _defNamesIndexByName
-                where kv.Key.StartsWith(name)
-                select kv.Key;
-
-            return names.Count() > 0;
+            return _defNamesIndexByName.Count(kv => kv.Key.StartsWith(name)) > 0;
         }
 
         public Range Get(params object[] parts)
@@ -493,6 +491,11 @@ namespace Iren.ToolsExcel.Base
             foreach (object part in parts)
                 if(part.GetType() == typeof(string))
                     list.Add(part.ToString());
+                else if(part.GetType() == typeof(List<string>))
+                {
+                    foreach (var ele in (List<string>)part)
+                        list.Add(ele);
+                }
 
             return GetName(list);
         }

@@ -85,6 +85,16 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
+            if (Simboli.ModificaDati)
+            {
+                Application.ScreenUpdating = false;
+                Sheet.Proteggi(false);
+                Simboli.ModificaDati = false;
+                Sheet.AbilitaModifica(false);
+                Sheet.SalvaModifiche();
+                Sheet.Proteggi(true);
+                Application.ScreenUpdating = true;
+            }
             DataBase.SalvaModificheDB();
             this.Save();
         }

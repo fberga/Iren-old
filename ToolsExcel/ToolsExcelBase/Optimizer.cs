@@ -20,140 +20,162 @@ namespace Iren.ToolsExcel.Base
     {
         DataSet _localDB;
         DataView _entitaInformazioni;
+        DataView _entitaProprieta;
+        string _sheet;
+        NewDefinedNames _newNomiDefiniti;
+        DateTime _dataFine;
+        
 
         public Optimizer() 
         {
             _localDB = Utility.DataBase.LocalDB;
             _entitaInformazioni = _localDB.Tables[Utility.DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+        }
+
+        private void Helper(DataRowView info, ref string siglaEntita, ref string nomeFoglio, ref DateTime dataFine, ref NewDefinedNames newNomiDefiniti)
+        {
+            if (!info["SiglaEntita"].Equals(siglaEntita))
+            {
+                siglaEntita = info["SiglaEntita"].ToString();
+                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                if (_entitaProprieta.Count > 0)
+                    dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+                else
+                    dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+                nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+            }
         }
 
         protected virtual void DeleteExistingAdjust() 
         {
-            
             _entitaInformazioni.RowFilter = "WB <> '0'";
 
+            string siglaEntita = "";
+            string nomeFoglio = "";
+            DateTime dataFine = new DateTime();
+            NewDefinedNames newNomiDefiniti = null;
+            
             foreach (DataRowView info in _entitaInformazioni)
             {
-                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
+                //if (!info["SiglaEntita"].Equals(siglaEntita))
+                //{
+                //    siglaEntita = info["SiglaEntita"].ToString();
+                //    _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                //    if (_entitaProprieta.Count > 0)
+                //        dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+                //    else
+                //        dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                //    nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                //    newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+                //}
 
-                Workbook.WB.Application.Run("wbAdjust", strRiga, "Reset");
+                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
+                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
                 if (info["WB"].Equals("2"))
                 {
                     try
                     {
-                        Workbook.WB.Names.Item("WBFREE" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                        Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
                     }
                     catch { }
                 }
             }
         }
+
         protected virtual void OmitConstraints() 
         {
-            
             _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO'";
+
+            string siglaEntita = "";
+            string nomeFoglio = "";
+            DateTime dataFine = new DateTime();
+            NewDefinedNames newNomiDefiniti = null;
 
             foreach (DataRowView info in _entitaInformazioni)
             {
+                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
+
+                //if (!info["SiglaEntita"].Equals(siglaEntita))
+                //{
+                //    siglaEntita = info["SiglaEntita"].ToString();
+                //    _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                //    if (_entitaProprieta.Count > 0)
+                //        dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+                //    else
+                //        dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+                //    nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                //    newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+                //}
+
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
 
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
-
-                Workbook.WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), strRiga);
+                Workbook.WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
             }
         }
         protected virtual void AddAdjust(object siglaEntita) 
         {
-            
             _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0'";
-
-            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-
-                
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
-
-                Workbook.WB.Application.Run("wbAdjust", strRiga);
+                Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+                Workbook.WB.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
                 if (info["WB"].Equals("2"))
-                    Workbook.WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), strRiga);
+                    Workbook.WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
             }
         }
         protected virtual void AddConstraints(object siglaEntita) 
         {
-            
             _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO'";
 
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), info["DATA0H24"].Equals("0"));
-                string strRiga = "'" + nomeFoglio + "'!" + Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
-
                 Workbook.WB.Names.Item("WBOMIT" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
             }
         }
         protected virtual void AddOpt(object siglaEntita) 
         {
-            
             _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO'";
 
             if (_entitaInformazioni.Count > 0)
             {
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-
-                Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"])][0];
-                string strCella = "'" + nomeFoglio + "'!" + Range.R1C1toA1(cella.Item1, cella.Item2);
-
+                Range rng = new Range(_newNomiDefiniti.GetRowByName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"]), _newNomiDefiniti.GetFirstCol());
                 try { Workbook.WB.Names.Item("WBMAX").Delete(); }
                 catch { }
-
-                Workbook.WB.Application.Run("wbBest", strCella, "Maximize");
+                Workbook.WB.Application.Run("wbBest", "'" + _sheet + "'!" + rng.ToString(), "Maximize");
             }
         }
         protected virtual void Execute(object siglaEntita) 
         {
             //mantengo il filtro applicato in AddOpt
-                        
-
             if (_entitaInformazioni.Count > 0)
             {
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
-
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntitaInfo);
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
+                Excel.Worksheet ws = Workbook.WB.Sheets[_sheet];
 
-                Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
+                Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
-                Tuple<int, int>[] riga = nomiDefiniti.Get(DefinedNames.GetName(siglaEntitaInfo, "TEMP_PROG15"), true);
-                
                 //eseguo con prezzi a 0
-                ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = 1;
+                ws.Range[rng.ToString()].Value = 1;
                 Workbook.WB.Application.Run("wbsolve", Arg3: "1");
 
                 //eseguo con prezzi a 500
-                ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = 2;
+                ws.Range[rng.ToString()].Value = 2;
                 Workbook.WB.Application.Run("wbsolve", Arg3: "1");
 
                 //eseguo con previsione prezzi
-                ws.Range[ws.Cells[riga[0].Item1, riga[0].Item2], ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2]].Value = 3;
+                ws.Range[rng.ToString()].Value = 3;
                 Workbook.WB.Application.Run("wbsolve", Arg3: "1");
 
                 Workbook.WB.SheetChange += Handler.StoreEdit;
@@ -161,16 +183,29 @@ namespace Iren.ToolsExcel.Base
         }
         public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
-            //Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
+            Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
 
-            //DeleteExistingAdjust();
-            //OmitConstraints();
-            //AddAdjust(siglaEntita);
-            //AddConstraints(siglaEntita);
-            //AddOpt(siglaEntita);
-            //Execute(siglaEntita);
+            _sheet = NewDefinedNames.GetSheetName(siglaEntita);
+            _newNomiDefiniti = new NewDefinedNames(_sheet);
 
+            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+            if (_entitaProprieta.Count > 0)
+                _dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+            else
+                _dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
+            DeleteExistingAdjust();
+            OmitConstraints();
+            AddAdjust(siglaEntita);
+
+            Excel.Style style = Workbook.WB.Styles["Adjustable"];
+            
+
+            AddConstraints(siglaEntita);
+            AddOpt(siglaEntita);
+            Execute(siglaEntita);
+
+            style = Workbook.WB.Styles["Adjustable"];
         }
     }
 }

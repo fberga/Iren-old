@@ -310,10 +310,22 @@ namespace Iren.ToolsExcel.Utility
         #endregion
     }
 
-    public class Date 
+    public class Date
     {
-        #region Metodi
+        #region Proprietà
 
+        public static string GetSuffissoDATA1
+        {
+            get { return GetSuffissoData(DataBase.DataAttiva); }
+        }
+
+        #endregion
+
+        #region Metodi
+        public static int GetOreIntervallo(DateTime fine)
+        {
+            return GetOreIntervallo(DataBase.DataAttiva, fine);
+        }
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)
         {
             return (int)(fine.AddDays(1).ToUniversalTime() - inizio.ToUniversalTime()).TotalHours;
@@ -421,7 +433,7 @@ namespace Iren.ToolsExcel.Utility
 
         public static void AggiornaStrutturaDati()
         {
-            CreaTabellaNomi();
+            //CreaTabellaNomi();
             CreaTabellaNomiNew();
             CreaTabellaDate();
             CreaTabellaAddressFrom();
@@ -456,21 +468,21 @@ namespace Iren.ToolsExcel.Utility
         }
         #region Aggiorna Struttura Dati
 
-        private static bool CreaTabellaNomi()
-        {
-            try
-            {
-                string name = Tab.NOMI_DEFINITI;
-                ResetTable(name);
-                DataTable dt = DefinedNames.GetDefaultTable(name);
-                _localDB.Tables.Add(dt);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        //private static bool CreaTabellaNomi()
+        //{
+        //    try
+        //    {
+        //        string name = Tab.NOMI_DEFINITI;
+        //        ResetTable(name);
+        //        DataTable dt = DefinedNames.GetDefaultTable(name);
+        //        _localDB.Tables.Add(dt);
+        //        return true;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return false;
+        //    }
+        //}
 
         private static bool CreaTabellaNomiNew()
         {

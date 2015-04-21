@@ -15,13 +15,34 @@ namespace Iren.ToolsExcel.Base
     {
         public static void GotoClick(object Sh, Excel.Range Target)
         {
-            try
+            //controllo che la selezione non sia multi-linea con in mezzo delle righe nascoste - nel caso avverto l'utente che non può effettuare modifiche
+            if (Target.Rows.Count > 1)
             {
-                NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.GOTOsOnly);
-                string address = newDefinedNames.GetGOTO(Range.R1C1toA1(Target.Row, Target.Column));
-                Goto(address);
+                if(Simboli.ModificaDati)
+                {
+                    foreach (Excel.Range r in Target.Rows)
+                    {
+                        if (r.EntireRow.Hidden)
+                        {
+                            System.Windows.Forms.MessageBox.Show("Nella selezione sono incluse righe nascoste. Non si può procedere con la modifica...", Simboli.nomeApplicazione + " - ATTENZIONE", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
+
+                            Target.Cells[1, 1].Select();
+
+                            break;
+                        }
+                    }
+                }    
             }
-            catch { }
+            else
+            {
+                try
+                {
+                    NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.GOTOsOnly);
+                    string address = newDefinedNames.GetGOTO(Range.R1C1toA1(Target.Row, Target.Column));
+                    Goto(address);
+                }
+                catch { }
+            }
         }
 
         /// <summary>

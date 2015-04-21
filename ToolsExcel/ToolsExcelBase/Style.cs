@@ -149,6 +149,14 @@ namespace Iren.ToolsExcel.Base
                 style.Interior.ColorIndex = 2;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+
+                style = wb.Styles.Add("Adjustable");
+                style.Font.ColorIndex = 26;
+                style.Font.Size = 10;
+                style.Interior.ColorIndex = 2;
+                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                
             }
         }
 

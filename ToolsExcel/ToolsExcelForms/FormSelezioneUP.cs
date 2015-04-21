@@ -11,7 +11,7 @@ namespace Iren.ToolsExcel.Forms
     {
         #region Variabili
         
-        private object _siglaEntita;
+        private string _siglaEntita;
         private bool _isCanceld = false;
         private bool _hasSelection = false;
         private string _siglaInformazione = "";
@@ -83,7 +83,7 @@ namespace Iren.ToolsExcel.Forms
         /// Sposta la selezione sul titolo dell'UP scelta e ritorna la sua sugla.
         /// </summary>
         /// <returns>Restituisce la sigla dell'UP scelta.</returns>
-        public new object ShowDialog()
+        public new string ShowDialog()
         {
             base.ShowDialog();
 

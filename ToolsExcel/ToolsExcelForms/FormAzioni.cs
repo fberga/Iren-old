@@ -504,7 +504,7 @@ namespace Iren.ToolsExcel.Forms
                                 {
                                     if (n1.Checked && n1.Nodes.Count == 0)
                                     {
-                                        string nomeFoglio = DefinedNames.GetSheetName(n1.Name);
+                                        string nomeFoglio = NewDefinedNames.GetSheetName(n1.Name);
                                         bool presente;
                                         switch (n.Parent.Name)
                                         {
@@ -528,22 +528,37 @@ namespace Iren.ToolsExcel.Forms
                                         if (_azioni[0]["Relazione"] != DBNull.Value)
                                         {
                                             string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
+                                            
+                                            NewDefinedNames newNomiDefiniti = new NewDefinedNames("Main");
+                                            
                                             foreach (string relazione in azioneRelazione)
                                             {
                                                 _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
 
-                                                if (DefinedNames.IsDefined("Main", DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
+                                                if (Struct.visualizzaRiepilogo)
                                                 {
-                                                    DefinedNames nomiDefiniti = new DefinedNames("Main");
-                                                    Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
-
+                                                    Range rng = new Range(newNomiDefiniti.GetRowByName(n1.Name), newNomiDefiniti.GetColFromName(relazione, suffissoData));
                                                     Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
-                                                    if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
+                                                    if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
                                                     {
-                                                        ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                        Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
+                                                        ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                        Style.RangeStyle(ws.Range[rng.ToString()], bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
                                                     }
                                                 }
+
+
+                                                //if (DefinedNames.IsDefined("Main", DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
+                                                //{
+                                                //    DefinedNames nomiDefiniti = new DefinedNames("Main");
+                                                //    Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
+
+                                                //    Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+                                                //    if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
+                                                //    {
+                                                //        ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                //        Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
+                                                //    }
+                                                //}
                                             }
                                             _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
                                         }

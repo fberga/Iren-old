@@ -176,24 +176,23 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(false);
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
-            Excel.Worksheet ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
+            string sheet = Workbook.WB.ActiveSheet.Name;
             Excel.Range rng = Workbook.WB.Application.Selection;
             
-            DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
-
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(sheet, NewDefinedNames.InitType.NamingOnly);
             FormSelezioneUP selUP = new FormSelezioneUP("PQNR_PROFILO");
 
-            if (ws.Name == "Iren Termo" && nomiDefiniti.IsDefined(rng.Row, rng.Column))
+            if (sheet == "Iren Termo" && newNomiDefiniti.IsDefined(rng.Row))
             {
-                string nome = nomiDefiniti[rng.Row, rng.Column][0];
-                string siglaEntita = nome.Split(char.Parse(Simboli.UNION))[0];
+                string nome = newNomiDefiniti.GetNameByAddress(rng.Row, rng.Column);
+                string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
 
                 if (entitaInformazioni.Count == 0)
                 {
-                    if (System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
+                    if (System.Windows.Forms.MessageBox.Show("L'operazione selezionata non è disponibile per l'UP selezionata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                         && selUP.ShowDialog().ToString() != "")
                     {
                         Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
@@ -280,18 +279,17 @@ namespace Iren.ToolsExcel
             Workbook.WB.Application.ScreenUpdating = false;
             Sheet.Proteggi(false);
 
-            Excel.Worksheet ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
             Excel.Range rng = Workbook.WB.Application.Selection;
 
-            DefinedNames nomiDefiniti = new DefinedNames(ws.Name);
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(Workbook.WB.ActiveSheet.Name, NewDefinedNames.InitType.NamingOnly);
 
             Optimizer opt = new Optimizer();
-
             FormSelezioneUP selUP = new FormSelezioneUP("OTTIMO");
 
-            if (nomiDefiniti.IsDefined(rng.Row, rng.Column))
+            if (newNomiDefiniti.IsDefined(rng.Row))
             {
-                object siglaEntita = nomiDefiniti[rng.Row, rng.Column][0].Split(char.Parse(Simboli.UNION))[0];
+                string nome = newNomiDefiniti.GetNameByAddress(rng.Row, rng.Column);
+                string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
