@@ -7,12 +7,6 @@ namespace Iren.ToolsExcel.Base
 {
     public interface IOptimizer
     {
-        //void DeleteExistingAdjust();
-        //void OmitConstraints();
-        //void AddAdjust(object siglaEntita);
-        //void AddConstraints(object siglaEntita);
-        //void AddOpt(object siglaEntita);
-        //void Execute(object siglaEntita);
         void EseguiOttimizzazione(object siglaEntita);
     }
 
@@ -61,22 +55,17 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
-                //if (!info["SiglaEntita"].Equals(siglaEntita))
-                //{
-                //    siglaEntita = info["SiglaEntita"].ToString();
-                //    _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                //    if (_entitaProprieta.Count > 0)
-                //        dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
-                //    else
-                //        dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
-
-                //    nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-                //    newNomiDefiniti = new NewDefinedNames(nomeFoglio);
-                //}
-
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
                 Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
                 Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
+                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
+
+                for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
+                {
+                    Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                    Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                }
+
                 if (info["WB"].Equals("2"))
                 {
                     try
@@ -100,24 +89,10 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
-
-                //if (!info["SiglaEntita"].Equals(siglaEntita))
-                //{
-                //    siglaEntita = info["SiglaEntita"].ToString();
-                //    _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                //    if (_entitaProprieta.Count > 0)
-                //        dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
-                //    else
-                //        dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
-
-                //    nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-                //    newNomiDefiniti = new NewDefinedNames(nomeFoglio);
-                //}
-
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
 
-                Workbook.WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
+                Workbook.WB.Application.Run("WBOMIT", NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
             }
         }
         protected virtual void AddAdjust(object siglaEntita) 
@@ -128,8 +103,15 @@ namespace Iren.ToolsExcel.Base
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
                 Workbook.WB.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
+
+                for (DateTime giorno = DataBase.DataAttiva; giorno <= _dataFine; giorno = giorno.AddDays(1))
+                {
+                    Range rng1 = new Range(rng.StartRow, _newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                    Workbook.WB.Sheets[_sheet].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                }
+
                 if (info["WB"].Equals("2"))
-                    Workbook.WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
+                    Workbook.WB.Application.Run("WBFREE", NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
             }
         }
         protected virtual void AddConstraints(object siglaEntita) 
@@ -139,7 +121,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Workbook.WB.Names.Item("WBOMIT" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                Workbook.WB.Names.Item("WBOMIT" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
             }
         }
         protected virtual void AddOpt(object siglaEntita) 
@@ -160,25 +142,30 @@ namespace Iren.ToolsExcel.Base
             //mantengo il filtro applicato in AddOpt
             if (_entitaInformazioni.Count > 0)
             {
-                Workbook.WB.SheetChange -= Handler.StoreEdit;
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
                 Excel.Worksheet ws = Workbook.WB.Sheets[_sheet];
 
-                Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
-                //eseguo con prezzi a 0
-                ws.Range[rng.ToString()].Value = 1;
-                Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                if (siglaEntitaInfo.Equals("GRUPPO_TORINO"))
+                {
+                    Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
-                //eseguo con prezzi a 500
-                ws.Range[rng.ToString()].Value = 2;
-                Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    //eseguo con prezzi a 0
+                    ws.Range[rng.ToString()].Value = 1;
+                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
 
-                //eseguo con previsione prezzi
-                ws.Range[rng.ToString()].Value = 3;
-                Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    //eseguo con prezzi a 500
+                    ws.Range[rng.ToString()].Value = 2;
+                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
 
-                Workbook.WB.SheetChange += Handler.StoreEdit;
+                    //eseguo con previsione prezzi
+                    ws.Range[rng.ToString()].Value = 3;
+                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                }
+                else
+                {
+                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                }
             }
         }
         public virtual void EseguiOttimizzazione(object siglaEntita) 
@@ -199,7 +186,11 @@ namespace Iren.ToolsExcel.Base
             AddAdjust(siglaEntita);
 
             Excel.Style style = Workbook.WB.Styles["Adjustable"];
-            
+
+            foreach (Excel.Style s in Workbook.WB.Styles)
+            {
+                string sss = s.Name;
+            }
 
             AddConstraints(siglaEntita);
             AddOpt(siglaEntita);

@@ -33,8 +33,6 @@ namespace Iren.ToolsExcel
                     var path = Utility.Utilities.GetUsrConfigElement("pathExportSisComTerna");
                     string pathStr = Utility.ExportPath.PreparePath(path.Value);
 
-                    
-
                     if (Directory.Exists(pathStr))
                     {
                         if (!CreaVariazioneDatiTecniciXML(siglaEntita, pathStr, assettoFasce))
@@ -56,11 +54,13 @@ namespace Iren.ToolsExcel
         {
             try
             {
-                string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+                string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio);
                 Excel.Worksheet ws = Utility.Workbook.WB.Sheets[nomeFoglio];
 
-                DateTime data = Utility.DataBase.DataAttiva;
-                int oreData = Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva);
+                DateTime giorno = Utility.DataBase.DataAttiva;
+                string suffissoData = Utility.Date.GetSuffissoData(giorno);
+                int oreGiorno = Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva);
 
                 DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
@@ -69,90 +69,11 @@ namespace Iren.ToolsExcel
 
                 XElement inserisci = new XElement("INSERISCI");
 
-                DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-
-                Tuple<int, int>[] rangeEntita = nomiDefiniti.Get(DefinedNames.GetName(siglaEntita), "GOTO");
-
-                IEnumerable<int> rows =
-                    from value in rangeEntita
-                    select value.Item1;
-
-                IEnumerable<int> cols =
-                    from value in rangeEntita
-                    select value.Item2;
-
-                Tuple<int, int> topLeft = new Tuple<int, int>(rows.Min(), cols.Min());
-                Tuple<int, int> bottomRight = new Tuple<int, int>(rows.Max(), cols.Max());
-
-                object[,] tmp = ws.Range[ws.Cells[topLeft.Item1, topLeft.Item2], ws.Cells[bottomRight.Item1, bottomRight.Item2]].Value;
-                object[,] valoriEntita = new object[tmp.GetLength(0), tmp.GetLength(1)];
-                Array.Copy(tmp, 1, valoriEntita, 0, valoriEntita.Length);
-
-                Dictionary<string, Tuple<int, int>[]> ranges = new Dictionary<string, Tuple<int, int>[]>();
-
-                int assetto = 1;
-                foreach (KeyValuePair<string, int> assettoFascia in assettoFasce)
+                
+                for (int i = 0; i < oreGiorno && i < 24; i++)
                 {
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "TRISP_ASSETTO" + assetto),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "TRISP_ASSETTO" + assetto)]);
-
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "GPA_ASSETTO" + assetto),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "GPA_ASSETTO" + assetto)]);
-
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "GPD_ASSETTO" + assetto),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "GPD_ASSETTO" + assetto)]);
-
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "TAVA_ASSETTO" + assetto),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "TAVA_ASSETTO" + assetto)]);
-
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "TARA_ASSETTO" + assetto),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "TARA_ASSETTO" + assetto)]);
-
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "BRS_ASSETTO" + assetto),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "BRS_ASSETTO" + assetto)]);
-
-                    if (isTermo)
-                    {
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "TDERAMPA_ASSETTO" + assetto),
-                            nomiDefiniti[DefinedNames.GetName(siglaEntita, "TDERAMPA_ASSETTO" + assetto)]);
-                    }
-
-                    for (int j = 1; j <= assettoFascia.Value; j++)
-                    {
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j),
-                            nomiDefiniti[DefinedNames.GetName(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j)]);
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j),
-                            nomiDefiniti[DefinedNames.GetName(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j)]);
-
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j),
-                            nomiDefiniti[DefinedNames.GetName(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j)]);
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j),
-                            nomiDefiniti[DefinedNames.GetName(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j)]);
-
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j),
-                        nomiDefiniti[DefinedNames.GetName(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j)]);
-
-                        ranges.Add(DefinedNames.GetName(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j),
-                            nomiDefiniti[DefinedNames.GetName(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j)]);
-                    }
-
-                    assetto++;
-                }
-
-                for (int j = 1; j <= oreData; j++)
-                {
-                    ranges.Add(DefinedNames.GetName(siglaEntita, "PQNR", Utility.Date.GetSuffissoData(data), "H" + j),
-                        nomiDefiniti.GetByFilter(DefinedNames.Fields.Foglio + " = '" + nomeFoglio + "' AND " +
-                                                 DefinedNames.Fields.Nome + " LIKE '" + DefinedNames.GetName(siglaEntita, "PQNR") + "%' AND " +
-                                                 DefinedNames.Fields.Nome + " NOT LIKE '%PROFILO%' AND " +
-                                                 DefinedNames.Fields.Nome + " LIKE '%" + DefinedNames.GetName(Utility.Date.GetSuffissoData(data)) + ".H" + j + "'"));
-                }
-
-
-                for (int i = 0; i < oreData && i < 24; i++)
-                {
-                    string start = data.ToString("yyyy-MM-dd") + "T" + i.ToString("00") + ":00:00";
-                    string end = data.ToString("yyyy-MM-dd") + "T" + (i < 23 ? (i + 1).ToString("00") + ":00:00" : "23:59:00");
+                    string start = giorno.ToString("yyyy-MM-dd") + "T" + i.ToString("00") + ":00:00";
+                    string end = giorno.ToString("yyyy-MM-dd") + "T" + (i < 23 ? (i + 1).ToString("00") + ":00:00" : "23:59:00");
 
                     XElement vdt = new XElement("VDT", new XAttribute("DATAORAINIZIO", start), new XAttribute("DATAORAFINE", end),
                         new XElement("CODICEETSO", codiceRUP),
@@ -160,77 +81,79 @@ namespace Iren.ToolsExcel
                         new XElement("NOTE", "Vincoli Tecnologici dell'Unita di Produzione")
                     );
 
-                    assetto = 1;
+                    int assetto = 1;
                     foreach (KeyValuePair<string, int> assettoFascia in assettoFasce)
                     {
                         for (int j = 1; j <= assettoFascia.Value; j++)
                         {
-                            Tuple<int, int> cella = ranges[DefinedNames.GetName(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j)][i];
-                            Tuple<int, int> cellaCorr = ranges[DefinedNames.GetName(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j)][i];
-                            string psminVal = (valoriEntita[cellaCorr.Item1 - topLeft.Item1, cellaCorr.Item2 - topLeft.Item2] ?? valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2]).ToString().Replace('.', ',');
+                            Range rng = newNomiDefiniti.Get(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            Range rngCorr = newNomiDefiniti.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string psminVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j)][i];
-                            cellaCorr = ranges[DefinedNames.GetName(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j)][i];
-                            string psmaxVal = (valoriEntita[cellaCorr.Item1 - topLeft.Item1, cellaCorr.Item2 - topLeft.Item2] ?? valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2]).ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rngCorr = newNomiDefiniti.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string psmaxVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j)][i];
-                            string ptminVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string ptminVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j)][i];
-                            string ptmaxVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string ptmaxVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "TRISP_ASSETTO" + assetto)][i];
-                            string trispVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "TRISP_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string trispVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "GPA_ASSETTO" + assetto)][i];
-                            string gpaVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "GPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string gpaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "GPD_ASSETTO" + assetto)][i];
-                            string gpdVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "GPD_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string gpdVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "TAVA_ASSETTO" + assetto)][i];
-                            string tavaVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "TAVA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string tavaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "TARA_ASSETTO" + assetto)][i];
-                            string taraVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "TARA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string taraVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            cella = ranges[DefinedNames.GetName(siglaEntita, "BRS_ASSETTO" + assetto)][i];
-                            string brsVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                            rng = newNomiDefiniti.Get(siglaEntita, "BRS_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            string brsVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
                             string tderampaVal = null;
                             if (isTermo)
                             {
-                                cella = ranges[DefinedNames.GetName(siglaEntita, "TDERAMPA_ASSETTO" + assetto)][i];
-                                tderampaVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2].ToString().Replace('.', ',');
+                                rng = newNomiDefiniti.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                                tderampaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
                             }
-
-                            vdt.Add(new XElement("FASCIA",
-                                new XElement("PSMIN", psminVal),
-                                new XElement("PSMAX", psmaxVal),
-                                new XElement("ASSETTO",
-                                        new XElement("IDASSETTO", assettoFascia.Key),
-                                        new XElement("PTMIN", ptminVal),
-                                        new XElement("PTMAX", ptmaxVal),
-                                        new XElement("TRISP", trispVal),
-                                        new XElement("GPA", gpaVal),
-                                        new XElement("GPD", gpdVal),
-                                        new XElement("TAVA", tavaVal),
-                                        new XElement("TARA", taraVal),
-                                        new XElement("BRS", brsVal),
-                                        (isTermo && tderampaVal != null ? new XElement("TDERAMPA", tderampaVal) : null)
+                            if (ptminVal != "" && ptmaxVal != "" && assetto > 1)
+                            {
+                                vdt.Add(new XElement("FASCIA",
+                                    new XElement("PSMIN", psminVal),
+                                    new XElement("PSMAX", psmaxVal),
+                                    new XElement("ASSETTO",
+                                            new XElement("IDASSETTO", assettoFascia.Key),
+                                            new XElement("PTMIN", ptminVal),
+                                            new XElement("PTMAX", ptmaxVal),
+                                            new XElement("TRISP", trispVal),
+                                            new XElement("GPA", gpaVal),
+                                            new XElement("GPD", gpdVal),
+                                            new XElement("TAVA", tavaVal),
+                                            new XElement("TARA", taraVal),
+                                            new XElement("BRS", brsVal),
+                                            (isTermo && tderampaVal != null ? new XElement("TDERAMPA", tderampaVal) : null)
+                                        )
                                     )
-                                )
-                            );
+                                );
+                            }
                         }
                         assetto++;
                     }
                     if (isTermo)
                     {
                         XElement pqnr = new XElement("PQNR");
-                        for (int j = 0; j < 24; j++)
+                        for (int j = 1; j <= 24; j++)
                         {
-                            Tuple<int, int> cella = ranges[DefinedNames.GetName(siglaEntita, "PQNR", Utility.Date.GetSuffissoData(data), "H" + (i + 1))][j];
-                            object pqnrVal = valoriEntita[cella.Item1 - topLeft.Item1, cella.Item2 - topLeft.Item2];
+                            Range rng = newNomiDefiniti.Get(siglaEntita, "PQNR" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            object pqnrVal = ws.Range[rng.ToString()].Value;
                             if (pqnrVal != null)
                                 pqnr.Add(new XElement("Q", pqnrVal.ToString()));
                         }

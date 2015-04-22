@@ -1102,12 +1102,17 @@ namespace Iren.ToolsExcel.Utility
         #region Variabili
 
         protected static Microsoft.Office.Tools.Excel.Workbook _wb;
+        private static bool _daElaborazione = false;
 
         #endregion
 
         #region Proprietà
 
         public static Microsoft.Office.Tools.Excel.Workbook WB { get { return _wb; } }
+        public static bool DaElaborazione
+        {
+            get { return _daElaborazione; }
+        }
 
         #endregion
 
@@ -1250,6 +1255,7 @@ namespace Iren.ToolsExcel.Utility
         }
         private static void ElaborazioneInformazione2(object siglaEntita, object siglaAzione, NewDefinedNames newNomiDefiniti, DateTime giorno, int tipologiaCalcolo, int oraInizio = -1, int oraFine = -1)
         {
+            _daElaborazione = true;
             Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
 
             Dictionary<string, int> entitaRiferimento = new Dictionary<string, int>();
@@ -1340,6 +1346,7 @@ namespace Iren.ToolsExcel.Utility
                     }
                 }
             }
+            _daElaborazione = false;
         }
         private static object GetRisultatoCalcolo2(object siglaEntita, NewDefinedNames newNomiDefiniti, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)
         {

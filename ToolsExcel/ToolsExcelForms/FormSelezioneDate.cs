@@ -34,70 +34,73 @@ namespace Iren.ToolsExcel.Forms
         public FormSelezioneDate()
         {
             InitializeComponent();
-
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;            
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
-            entitaProprieta.RowFilter = "";
-
-            _extraDateFrom = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1);
             
-            SortedList<DateTime, string> giorniExtra = new SortedList<DateTime, string>();
-            int maxIntervallo = Struct.intervalloGiorni;
-            foreach (DataRowView entita in categoriaEntita)
-            {
-                entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
-                if (entitaProprieta.Count > 0)
-                {
-                    int value = int.Parse(entitaProprieta[0]["Valore"].ToString());
-                    maxIntervallo = Math.Max(maxIntervallo, value);
-                    if (value > Struct.intervalloGiorni)
-                        if (giorniExtra.ContainsKey(DataBase.DataAttiva.AddDays(value)))
-                            giorniExtra[DataBase.DataAttiva.AddDays(value)] += ", " + entita["SiglaEntita"].ToString().Replace("UP_", "");
-                        else
-                            giorniExtra.Add(DataBase.DataAttiva.AddDays(value), entita["SiglaEntita"].ToString().Replace("UP_", ""));
-                }
-            }
-
             if (Struct.intervalloGiorni > 0)
             {
-                _clusters.Add(Tuple.Create(DataBase.DataAttiva, giorniExtra.Count > 0 ? giorniExtra.Last().Key : DataBase.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
-                checkClusterDate.Items.Add("Tutti");
-            }
-            if (giorniExtra.Count > 0)
-            {
-                _clusters.Add(Tuple.Create(DataBase.DataAttiva, DataBase.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
-                checkClusterDate.Items.Add("Da " + DataBase.DataAttiva.ToString("ddd dd MMM") + " a " + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd dd MMM"));
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
+                entitaProprieta.RowFilter = "";
 
-                foreach (var kv in giorniExtra)
+                _extraDateFrom = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1);
+
+                SortedList<DateTime, string> giorniExtra = new SortedList<DateTime, string>();
+                int maxIntervallo = Struct.intervalloGiorni;
+                foreach (DataRowView entita in categoriaEntita)
                 {
-                    _clusters.Add(Tuple.Create(DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1), kv.Key), false);
-                    checkClusterDate.Items.Add("Da " + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1).ToString("ddd dd MMM") + " a " + kv.Key.ToString("ddd dd MMM") + " (" + kv.Value + ")");
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    if (entitaProprieta.Count > 0)
+                    {
+                        int value = int.Parse(entitaProprieta[0]["Valore"].ToString());
+                        maxIntervallo = Math.Max(maxIntervallo, value);
+                        if (value > Struct.intervalloGiorni)
+                            if (giorniExtra.ContainsKey(DataBase.DataAttiva.AddDays(value)))
+                                giorniExtra[DataBase.DataAttiva.AddDays(value)] += ", " + entita["SiglaEntita"].ToString().Replace("UP_", "");
+                            else
+                                giorniExtra.Add(DataBase.DataAttiva.AddDays(value), entita["SiglaEntita"].ToString().Replace("UP_", ""));
+                    }
                 }
+
+                if (Struct.intervalloGiorni > 0)
+                {
+                    _clusters.Add(Tuple.Create(DataBase.DataAttiva, giorniExtra.Count > 0 ? giorniExtra.Last().Key : DataBase.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
+                    checkClusterDate.Items.Add("Tutti");
+                }
+                if (giorniExtra.Count > 0)
+                {
+                    _clusters.Add(Tuple.Create(DataBase.DataAttiva, DataBase.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
+                    checkClusterDate.Items.Add("Da " + DataBase.DataAttiva.ToString("ddd dd MMM") + " a " + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd dd MMM"));
+
+                    foreach (var kv in giorniExtra)
+                    {
+                        _clusters.Add(Tuple.Create(DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1), kv.Key), false);
+                        checkClusterDate.Items.Add("Da " + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1).ToString("ddd dd MMM") + " a " + kv.Key.ToString("ddd dd MMM") + " (" + kv.Value + ")");
+                    }
+                }
+
+                for (int i = 0; i <= maxIntervallo; i++)
+                {
+                    //DataRow r = dtDate.NewRow();
+                    //r["DescData"] = DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy");
+                    //r["Data"] = DataBase.DB.DataAttiva.AddDays(i);
+                    //dtDate.Rows.Add(r);
+
+                    _workList.Add(DataBase.DB.DataAttiva.AddDays(i), false);
+                    checkDate.Items.Add(DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy"));
+                }
+
+                //checkClusterDate.DataSource = dtClusterDate;
+                //checkClusterDate.DisplayMember = "DescData";
+
+                panelTop.FixedPanel = FixedPanel.None;
+                panelTop.SplitterDistance = checkClusterDate.GetItemRectangle(0).Height * checkClusterDate.Items.Count + 8;
+                panelTop.FixedPanel = FixedPanel.Panel1;
+
+                //checkDate.DataSource = dtDate;
+                //checkDate.DisplayMember = "DescData";
+
+                this.Height = panelTop.SplitterDistance + checkDate.GetItemRectangle(0).Height * (checkDate.Items.Count + 1) + 3 + panelButtons.Height;
             }
-
-            for (int i = 0; i <= maxIntervallo; i++)
-            {
-                //DataRow r = dtDate.NewRow();
-                //r["DescData"] = DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy");
-                //r["Data"] = DataBase.DB.DataAttiva.AddDays(i);
-                //dtDate.Rows.Add(r);
-
-                _workList.Add(DataBase.DB.DataAttiva.AddDays(i), false);
-                checkDate.Items.Add(DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy"));
-            }
-
-            //checkClusterDate.DataSource = dtClusterDate;
-            //checkClusterDate.DisplayMember = "DescData";
-
-            panelTop.FixedPanel = FixedPanel.None;
-            panelTop.SplitterDistance = checkClusterDate.GetItemRectangle(0).Height * checkClusterDate.Items.Count + 8;
-            panelTop.FixedPanel = FixedPanel.Panel1;
-
-            //checkDate.DataSource = dtDate;
-            //checkDate.DisplayMember = "DescData";
-
-            this.Height = panelTop.SplitterDistance + checkDate.GetItemRectangle(0).Height * (checkDate.Items.Count + 1) + 3 + panelButtons.Height;
         }
 
         #endregion

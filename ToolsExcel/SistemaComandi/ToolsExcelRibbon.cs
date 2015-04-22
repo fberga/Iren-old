@@ -277,6 +277,7 @@ namespace Iren.ToolsExcel
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
         {
             Workbook.WB.Application.ScreenUpdating = false;
+            Workbook.WB.SheetChange -= Handler.StoreEdit;
             Sheet.Proteggi(false);
 
             Excel.Range rng = Workbook.WB.Application.Selection;
@@ -316,6 +317,7 @@ namespace Iren.ToolsExcel
             }
 
             Sheet.Proteggi(true);
+            Workbook.WB.SheetChange += Handler.StoreEdit;
             Workbook.WB.Application.ScreenUpdating = true;
         }
         private void btnConfigura_Click(object sender, RibbonControlEventArgs e)

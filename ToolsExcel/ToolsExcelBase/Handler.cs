@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     if (newNomiDefiniti.SaveDB(row.StartRow))
                     {
-                        bool annota = newNomiDefiniti.ToNote(row.StartRow);
+                        bool annota = newNomiDefiniti.ToNote(row.StartRow) && !Workbook.DaElaborazione;
                         foreach (Range column in row.Columns)
                         {
                             string[] parts = newNomiDefiniti.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);

@@ -64,6 +64,9 @@ namespace Iren.ToolsExcel
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             bool emergenza = Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
 
+            Application.Iteration = true;
+            Application.MaxIterations = 100;
+
             Sheet.Proteggi(false);
 
             Riepilogo r = new Riepilogo(this.Sheets["Main"]);

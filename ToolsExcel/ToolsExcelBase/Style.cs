@@ -85,6 +85,7 @@ namespace Iren.ToolsExcel.Base
                 style = wb.Styles.Add("allDatiStyle");
                 style.Font.Size = 10;
                 style.Font.Name = "Verdana";
+                style.NumberFormat = "#,##0.0;-#,##0.0;-";
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 2;
@@ -151,12 +152,12 @@ namespace Iren.ToolsExcel.Base
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
 
                 style = wb.Styles.Add("Adjustable");
-                style.Font.ColorIndex = 26;
+                style.Font.Color = System.Drawing.Color.Coral;
                 style.Font.Size = 10;
-                style.Interior.ColorIndex = 2;
-                style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                style.Interior.ColorIndex = 35;
+                style.NumberFormat = "#,##0.0;-#,##0.0;-";
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                
+                SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
             }
         }
 
