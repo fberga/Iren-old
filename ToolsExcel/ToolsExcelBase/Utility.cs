@@ -59,6 +59,8 @@ namespace Iren.ToolsExcel.Utility
                 ENTITA_RAMPA = "spEntitaRampa",
                 GET_ORE_FERMATA = "spGetOreFermata",
                 GET_VERSIONE = "spGetVersione",
+                INSERT_APPLICAZIONE_INFORMAZIONE_D = "spInsertApplicazioneInformazioneD",
+                INSERT_APPLICAZIONE_RIEPILOGO = "spInsertApplicazioneRiepilogo",
                 INSERT_LOG = "spInsertLog",
                 INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
                 TIPOLOGIA_CHECK = "spTipologiaCheck",
@@ -252,7 +254,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@Data", dataRif.Value.ToString("yyyyMMdd")},
                     {"@Presente", presente ? "1" : "0"}
                 };
-                _db.Insert("spInsertApplicazioneRiepilogo", parameters);
+                _db.Insert(DataBase.SP.INSERT_APPLICAZIONE_RIEPILOGO, parameters);
             }
             catch (Exception e)
             {

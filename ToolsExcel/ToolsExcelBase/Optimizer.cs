@@ -51,28 +51,33 @@ namespace Iren.ToolsExcel.Base
             string nomeFoglio = "";
             DateTime dataFine = new DateTime();
             NewDefinedNames newNomiDefiniti = null;
-            
+
             foreach (DataRowView info in _entitaInformazioni)
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
-                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
-                Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
-                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
-
-                for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
+                if (nomeFoglio == "Iren Termo")
                 {
-                    Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
-                    Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
-                }
+                    object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
+                    Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                    double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
+                    Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
+                    Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
+                    Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
 
-                if (info["WB"].Equals("2"))
-                {
-                    try
+                    for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                     {
-                        Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                        Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                        Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                     }
-                    catch { }
+
+                    if (info["WB"].Equals("2"))
+                    {
+                        try
+                        {
+                            Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                        }
+                        catch { }
+                    }
                 }
             }
         }
@@ -134,7 +139,9 @@ namespace Iren.ToolsExcel.Base
                 Range rng = new Range(_newNomiDefiniti.GetRowByName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"]), _newNomiDefiniti.GetFirstCol());
                 try { Workbook.WB.Names.Item("WBMAX").Delete(); }
                 catch { }
+                double width = Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth;
                 Workbook.WB.Application.Run("wbBest", "'" + _sheet + "'!" + rng.ToString(), "Maximize");
+                Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth = width;
             }
         }
         protected virtual void Execute(object siglaEntita) 
@@ -184,19 +191,9 @@ namespace Iren.ToolsExcel.Base
             DeleteExistingAdjust();
             OmitConstraints();
             AddAdjust(siglaEntita);
-
-            Excel.Style style = Workbook.WB.Styles["Adjustable"];
-
-            foreach (Excel.Style s in Workbook.WB.Styles)
-            {
-                string sss = s.Name;
-            }
-
             AddConstraints(siglaEntita);
             AddOpt(siglaEntita);
             Execute(siglaEntita);
-
-            style = Workbook.WB.Styles["Adjustable"];
         }
     }
 }

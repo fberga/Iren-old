@@ -34,7 +34,7 @@ namespace Iren.ToolsExcel
                 Style.RangeStyle(rng.Cells[1], align: Excel.XlHAlign.xlHAlignLeft);
 
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntita, "ACCENSIONE", Date.GetSuffissoData(_dataInizio));
-                _newNomiDefiniti.SetEditable(new Range(_rigaAttiva, colonnaTitoloInfo + 1));
+                _newNomiDefiniti.SetEditable(_rigaAttiva, new Range(_rigaAttiva, colonnaTitoloInfo + 1));
                 _newNomiDefiniti.SetSaveDB(_rigaAttiva++);
             }
 
@@ -47,7 +47,7 @@ namespace Iren.ToolsExcel
                 Style.RangeStyle(rng, backColor: 35, align: Excel.XlHAlign.xlHAlignCenter, borders: "top:medium,right:medium,bottom:medium,left:medium,insidev:thin", numberFormat: "#,##0;-#,##0;-");
                 Style.RangeStyle(rng.Cells[1], align: Excel.XlHAlign.xlHAlignLeft);
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntita, "CAMBIO_ASSETTO", Date.GetSuffissoData(_dataInizio));
-                _newNomiDefiniti.SetEditable(new Range(_rigaAttiva, colonnaTitoloInfo + 1));
+                _newNomiDefiniti.SetEditable(_rigaAttiva, new Range(_rigaAttiva, colonnaTitoloInfo + 1));
                 _newNomiDefiniti.SetSaveDB(_rigaAttiva++);
             }
 

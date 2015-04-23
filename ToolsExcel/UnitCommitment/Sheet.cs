@@ -28,18 +28,18 @@ namespace Iren.ToolsExcel
             siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
-            Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row, col + 25, informazioni.Count)];
+            Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row + 1, col + 25, informazioni.Count - 1)];
 
             rngPersonalizzazioni.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
             rngPersonalizzazioni.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
             rngPersonalizzazioni.Columns[1].ColumnWidth = Struct.cell.width.jolly1;
 
             //da classe base _dataInizio e _dataFine sono corretti
-            int i = 0;
-            foreach (DataRowView info in informazioni)
+            for (int i = 1; i < informazioni.Count; i++)
             {
-                siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                _newNomiDefiniti.AddName(row + i++, siglaEntita, "NOTE", Date.GetSuffissoData(_dataInizio));
+                siglaEntita = informazioni[i]["SiglaEntitaRif"] is DBNull ? informazioni[i]["SiglaEntita"] : informazioni[i]["SiglaEntitaRif"];
+                _newNomiDefiniti.AddName(row + i, siglaEntita, "NOTE", Date.GetSuffissoData(_dataInizio));
+                _newNomiDefiniti.SetEditable(row + i, new Range(row + i, col + 25));
             }
         }
         public override void CaricaInformazioni(bool all)

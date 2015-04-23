@@ -81,7 +81,7 @@ namespace Iren.ToolsExcel.Forms
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
                 this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-
+                
                 DataBase.DB.CloseConnection();
             }
         }
@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel.Forms
 
         #region Eventi
 
-        private void frmRAMPE_Load(object sender, EventArgs e)
+        public void frmRAMPE_Load(object sender, EventArgs e)
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
@@ -300,7 +300,7 @@ namespace Iren.ToolsExcel.Forms
                 }
             }
         }
-        private void btnApplica_Click(object sender, EventArgs e)
+        public void btnApplica_Click(object sender, EventArgs e)
         {
             object[] intestazione = new object[_oreGiorno];
             object[,] valori = new object[24, _oreGiorno];
@@ -330,7 +330,7 @@ namespace Iren.ToolsExcel.Forms
 
             Range rngPQNRVal = _newNomiDefiniti.Get(_siglaEntita, "PQNR1", _suffissoData).Extend(rowOffset: 24, colOffset: Date.GetOreGiorno(_suffissoData));
             _ws.Range[rngPQNRVal.ToString()].Value = valori;
-
+            
             Handler.StoreEdit(_ws, _ws.Range[rngPQNR.ToString()]);
             DataBase.SalvaModificheDB();
         }

@@ -24,7 +24,7 @@ namespace Iren.ToolsExcel.Base
         protected Dictionary<string, object> _addressFrom = new Dictionary<string, object>();
         protected Dictionary<object, string> _addressTo = new Dictionary<object, string>();
 
-        protected List<string> _editable = new List<string>();
+        protected Dictionary<int, string> _editable = new Dictionary<int, string>();
         protected List<int> _saveDB = new List<int>();
         protected List<int> _toNote = new List<int>();
 
@@ -48,7 +48,7 @@ namespace Iren.ToolsExcel.Base
         {
             get { return _sheet; }
         }
-        public List<string> Editable
+        public Dictionary<int, string> Editable
         {
             get { return _editable; }
         }
@@ -117,7 +117,7 @@ namespace Iren.ToolsExcel.Base
             _editable =
                 (from r in editabili.AsEnumerable()
                  where r["Sheet"].Equals(_sheet)
-                 select (string)r["Range"]).ToList();
+                 select r).ToDictionary(r => (int)r["Row"], r => r["Range"].ToString());
         }
         private void InitSaveDB()
         {
@@ -223,10 +223,12 @@ namespace Iren.ToolsExcel.Base
         {
             _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
         }
-        public void SetEditable(Range rng)
+        public void SetEditable(int row, Range rng)
         {
-            if (!_editable.Contains(rng.ToString()))
-                _editable.Add(rng.ToString());
+            if (!_editable.ContainsKey(row))
+                _editable.Add(row, rng.ToString());
+            else
+                _editable[row] += "," + rng.ToString();
         }
         public void SetSaveDB(int row)
         {
@@ -336,13 +338,18 @@ namespace Iren.ToolsExcel.Base
             return GetRowByName(name);
         }
 
-        public string GetNameByRow(int row)
+        public List<string> GetNameByRow(int row)
         {
-            return _defNamesIndexByRow[row].First();
+            return _defNamesIndexByRow[row].ToList();
+        }
+
+        public bool IsDataColumn(int column)
+        {
+            return column >= GetFirstCol() && column < GetFirstCol() + GetColOffset();
         }
         public string GetDateByCol(int column)
         {
-            if (column >= GetFirstCol())
+            if (IsDataColumn(column))
                 return _defDatesIndexByCol[column];
             else
                 return Date.GetSuffissoData(DataBase.DataAttiva);
@@ -353,10 +360,14 @@ namespace Iren.ToolsExcel.Base
                 return GetName(GetNameByRow(row), GetDateByCol(column));
 
             string[] parts = GetDateByCol(column).Split(Simboli.UNION[0]);
-            if (parts.Length > 1)
-                return GetName(GetNameByRow(row), parts.Last());
+            List<string> names = GetNameByRow(row);
 
-            return GetNameByRow(row);
+            string name = IsDataColumn(column) ? GetNameByRow(row).First() : GetNameByRow(row).Last();
+            
+            if (parts.Length > 1)
+                return GetName(name, parts.Last());
+
+            return name;
         }
 
         public bool IsDefined(int row)
@@ -571,11 +582,12 @@ namespace Iren.ToolsExcel.Base
                 Columns =
                     {
                         {"Sheet", typeof(string)},
+                        {"Row", typeof(int)},
                         {"Range", typeof(string)}
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Range"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Row"] };
             dt.TableName = name;
             return dt;
         }
@@ -680,7 +692,8 @@ namespace Iren.ToolsExcel.Base
             {
                 DataRow r = editable.NewRow();
                 r["Sheet"] = _sheet;
-                r["Range"] = ele;
+                r["Row"] = ele.Key;
+                r["Range"] = ele.Value;
                 editable.Rows.Add(r);
             }
 

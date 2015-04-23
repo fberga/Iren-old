@@ -165,6 +165,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Sheet.cs" />
     <Compile Include="ToolsExcelRibbon.cs">
       <SubType>Component</SubType>
     </Compile>
