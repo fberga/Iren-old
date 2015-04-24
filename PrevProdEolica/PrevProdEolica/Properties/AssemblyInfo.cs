@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
 // set di attributi. Per modificare le informazioni associate a un assembly
 // occorre quindi modificare i valori di questi attributi.
-[assembly: AssemblyTitle("EpexDownloader")]
+[assembly: AssemblyTitle("PrevProdEolica")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("EpexDownloader")]
+[assembly: AssemblyProduct("PrevProdEolica")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Se il progetto viene esposto a COM, il GUID che segue verrà utilizzato per creare l'ID della libreria dei tipi
-[assembly: Guid("d60f4542-1a45-4d08-8b8a-03486190dd01")]
+[assembly: Guid("d3b26e04-ac1b-4f15-93b9-5e9731ee21d1")]
 
 // Le informazioni sulla versione di un assembly sono costituite dai seguenti quattro valori:
 //

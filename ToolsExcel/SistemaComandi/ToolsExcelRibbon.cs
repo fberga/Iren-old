@@ -18,7 +18,7 @@ namespace Iren.ToolsExcel
     {
         #region Variabili
 
-        LoaderScreen loader = new LoaderScreen();
+        public static LoaderScreen loader = new LoaderScreen();
         
         #endregion
 
@@ -87,6 +87,9 @@ namespace Iren.ToolsExcel
             var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
+                loader.Show();
+                loader.Refresh();
+
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 Workbook.WB.Application.ScreenUpdating = false;
                 Sheet.Proteggi(false);
@@ -95,9 +98,7 @@ namespace Iren.ToolsExcel
                 if (DataBase.OpenConnection())
                 {
                     AggiornaStruttura();
-                    //TODO riabilitare log!!
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
-
                     DataBase.DB.CloseConnection();
                 }
 
@@ -106,6 +107,8 @@ namespace Iren.ToolsExcel
                 Workbook.WB.Application.ScreenUpdating = true;
                 Workbook.WB.SheetChange += Handler.StoreEdit;
                 AbilitaTasti(true);
+
+                loader.Hide();
             }
         }
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
@@ -465,6 +468,7 @@ namespace Iren.ToolsExcel
         }
         private void AggiornaStruttura()
         {
+            loader.LoadingWhat = "Carico struttura dal DB";
             Struttura.AggiornaStrutturaDati();
 
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
@@ -488,6 +492,7 @@ namespace Iren.ToolsExcel
 
             Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
             main.LoadStructure();
+            loader.LoadingWhat = "Aggiorno struttura Riepilogo";
 
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
@@ -495,11 +500,13 @@ namespace Iren.ToolsExcel
                 {
                     using (Sheet s = new Sheet(ws))
                     {
+                        loader.LoadingWhat = "Aggiorno struttura " + ws.Name;
                         s.LoadStructure();
                     }
                 }
             }
 
+            loader.LoadingWhat = "Salvo struttura in locale";
             Workbook.DumpDataSet();
             
             Workbook.WB.Sheets["Main"].Select();

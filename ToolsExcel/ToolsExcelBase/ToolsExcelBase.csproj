@@ -110,6 +110,7 @@
     <Content Include="res\Letter-D-icon.png" />
     <Content Include="res\Letter-P-icon.png" />
     <Content Include="res\Letter-T-icon.png" />
+    <Content Include="res\loader.gif" />
     <Content Include="res\mb-icon.png" />
     <Content Include="res\mgp-icon.png" />
     <Content Include="res\mp-icon.png" />
