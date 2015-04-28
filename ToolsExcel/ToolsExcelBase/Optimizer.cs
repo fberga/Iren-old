@@ -55,8 +55,8 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
-                if (nomeFoglio == "Iren Termo")
-                {
+                //if (nomeFoglio == "Iren Termo")
+                //{
                     object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
                     Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
                     double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
@@ -78,7 +78,7 @@ namespace Iren.ToolsExcel.Base
                         }
                         catch { }
                     }
-                }
+                //}
             }
         }
 

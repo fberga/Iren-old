@@ -121,4 +121,10 @@
   <data name="loader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\loader.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="dots-spin-lg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\dots-spin-lg.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="728" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\7281.GIF;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

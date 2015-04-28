@@ -285,6 +285,7 @@ namespace Iren.ToolsExcel.Base
                         _dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
                     InitBloccoEntita(entita);
+
                 }
                 else if (Struct.tipoVisualizzazione == "V")
                 {
@@ -300,7 +301,6 @@ namespace Iren.ToolsExcel.Base
             categoriaEntita.RowFilter = "";
 
             _newNomiDefiniti.DumpToDataSet();
-
             CaricaInformazioni(all: true);
             AggiornaGrafici();            
             //CalcolaFormule();                     //TODO
@@ -340,6 +340,8 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.ScrollColumn = 1;
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;
+            Workbook.WB.Sheets["Main"].Select();
+            _ws.Application.ScreenUpdating = false;
 
             int colInfo = _struttura.colBlock - _visParametro;
             _ws.Columns[colInfo].ColumnWidth = Struct.cell.width.informazione;
@@ -440,6 +442,8 @@ namespace Iren.ToolsExcel.Base
 
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
+            bool sss = _ws.Application.ScreenUpdating;
+
             CreaNomiCelle(entita["SiglaEntita"]);
             InsertTitoloEntita(entita["SiglaEntita"], entita["DesEntita"]);
             InsertOre(entita["SiglaEntita"]);
@@ -499,9 +503,17 @@ namespace Iren.ToolsExcel.Base
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
                 if (info["Editabile"].Equals("1"))
                 {
-                    int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
-                    Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, colOffsett - data0H24 - remove25hour);
-                    _newNomiDefiniti.SetEditable(_rigaAttiva, rng);
+                    if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
+                    {
+                        Range rng = new Range(_rigaAttiva, startCol - 1);
+                        _newNomiDefiniti.SetEditable(_rigaAttiva, rng);
+                    }
+                    else
+                    {
+                        int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
+                        Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, colOffsett - data0H24 - remove25hour);
+                        _newNomiDefiniti.SetEditable(_rigaAttiva, rng);
+                    }
                 }
                 if (info["SalvaDB"].Equals("1"))
                     _newNomiDefiniti.SetSaveDB(_rigaAttiva);
@@ -576,6 +588,9 @@ namespace Iren.ToolsExcel.Base
         protected virtual void FormattaBloccoEntita()
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+
+            informazioni.RowFilter += " AND SiglaTipologiaInformazione <> 'GIORNALIERA'";
+
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             Range rng = new Range(_newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _newNomiDefiniti.GetFirstCol() - _visParametro, informazioni.Count, _newNomiDefiniti.GetColOffset(_dataFine) + _visParametro);
 
@@ -596,6 +611,18 @@ namespace Iren.ToolsExcel.Base
                 bloccoEntita.Columns[_visParametro + col].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                 col += oreGiorno;
             });
+
+            informazioni.RowFilter = informazioni.RowFilter.Replace(" AND SiglaTipologiaInformazione <> 'GIORNALIERA'", " AND SiglaTipologiaInformazione = 'GIORNALIERA'");
+            if (informazioni.Count > 0)
+            {
+                rng = new Range(rng.StartRow + rng.RowOffset, rng.StartColumn, informazioni.Count, 2);
+                bloccoEntita = _ws.Range[rng.ToString()];
+                bloccoEntita.Style = "allDatiStyle";
+                bloccoEntita.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+                bloccoEntita.Columns[1].HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                bloccoEntita.Columns[2].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+            }
+            informazioni.RowFilter = informazioni.RowFilter.Replace(" AND SiglaTipologiaInformazione = 'GIORNALIERA'", "");
         }
         protected virtual void InsertInformazioniEntita()
         {
@@ -662,7 +689,7 @@ namespace Iren.ToolsExcel.Base
                 if (info["Selezione"].Equals(10))
                 {
                     selLinkRangeRow = i;
-                    rngRow.Rows[i].Cells[3].Locked = false;
+                    //rngRow.Rows[i].Cells[3].Locked = false;
                 }
 
                 if ((int)info["Selezione"] > 0 && !info["Selezione"].Equals(10))
@@ -674,36 +701,53 @@ namespace Iren.ToolsExcel.Base
                     optBtn.LinkedCell = rngRow.Rows[selLinkRangeRow].Cells[3].Address;
                 }
                 else if(_struttura.visSelezione)
-                {
                     rngRow.Rows[i].Cells[3].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
-                }
 
-                string styleInfo =
-                    "FontSize:" + info["FontSize"] + ";" +
-                    "ForeColor:" + info["ForeColor"] + ";" +
-                    "BackColor:" + backColor + ";" +
-                    "Visible:" + info["Visibile"] + ";" +
-                    "Borders:[Right:medium];";
-
-                string styleData =
-                    "FontSize:" + info["FontSize"] + ";" +
-                    "ForeColor:" + info["ForeColor"] + ";" +
-                    "Bold:" + info["Grassetto"] + ";" +
-                    "NumberFormat:[" + info["Formato"] + "]" +
-                    "Align:" + Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString());
-
-                if (info["SiglaTipologiaInformazione"].Equals("TITOLO2"))
+                if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                 {
-                    styleInfo += "Merge:true;Borders:[Top:medium];Bold:true;";
-                    Style.RangeStyle(rngRow.Rows[i], styleInfo);
+                    Style.RangeStyle(rngInfo.Rows[i].Cells[1], 
+                        fontSize: info["FontSize"], 
+                        foreColor: info["ForeColor"],
+                        backColor: (info["Editabile"].ToString() == "1" ? 15 : 48), 
+                        visible: info["Visibile"].Equals("1"));
+
+                    Style.RangeStyle(rngInfo.Rows[i].Cells[2], 
+                        fontSize: info["FontSize"],
+                        foreColor: info["ForeColor"],
+                        backColor: backColor,
+                        bold: info["Grassetto"].Equals("1"),
+                        numberFormat: info["Formato"],
+                        align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
+                }
+                else if (info["SiglaTipologiaInformazione"].Equals("TITOLO2"))
+                {
+                    Style.RangeStyle(rngRow.Rows[i], 
+                        fontSize: info["FontSize"],
+                        foreColor: info["ForeColor"],
+                        backColor: backColor,
+                        merge: true,
+                        bold:true,
+                        borders: "[Top:medium, Right:medium]");
                 }
                 else 
                 {
                     if (info["InizioGruppo"].Equals("1"))
                         rngRow.Rows[i].Borders[Excel.XlBordersIndex.xlEdgeTop].Weight = Excel.XlBorderWeight.xlMedium;
 
-                    Style.RangeStyle(rngInfo.Rows[i], styleInfo);
-                    Style.RangeStyle(rngData.Rows[i], styleData);
+                    Style.RangeStyle(rngInfo.Rows[i], 
+                        fontSize: info["FontSize"],
+                        foreColor: info["ForeColor"],
+                        backColor: backColor,
+                        visible: info["Visibile"].Equals("1"),
+                        borders: "[Right:medium]");
+
+                    Style.RangeStyle(rngData.Rows[i], 
+                        fontSize: info["FontSize"],
+                        foreColor: info["ForeColor"],                        
+                        bold: info["Grassetto"].Equals("1"),
+                        numberFormat: info["Formato"],
+                        align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
+
                     if (info["Data0H24"].Equals("0") && _struttura.visData0H24)
                         rngData.Rows[i].Cells[1].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
                 }
@@ -920,6 +964,7 @@ namespace Iren.ToolsExcel.Base
         public override void AggiornaGrafici()
         {
             _ws.Application.CalculateFull();
+            _ws.Application.ScreenUpdating = false;
             Excel.ChartObjects charts = _ws.ChartObjects();
             foreach (Excel.ChartObject chart in charts)
             {
@@ -1011,6 +1056,16 @@ namespace Iren.ToolsExcel.Base
                         {
                             CaricaCommentiEntita(insertManuali);
                         }
+                    }
+
+                    //carico dati giornalieri
+                    DataView datiApplicazioneD = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
+
+                    foreach (DataRowView dato in datiApplicazioneD)
+                    {
+                        Range rng = new Range(_newNomiDefiniti.GetRowByName(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _newNomiDefiniti.GetFirstCol() - 1);
+
+                        _ws.Range[rng.ToString()].Value = dato["Valore"];
                     }
                 }
             }
@@ -1259,13 +1314,22 @@ namespace Iren.ToolsExcel.Base
                 {
                     int col = all ? _newNomiDefiniti.GetFirstCol() : _newNomiDefiniti.GetColFromDate(suffissoData);
                     object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
                     if (Struct.tipoVisualizzazione == "O")
                     {
                         int row = _newNomiDefiniti.GetRowByName(siglaEntita, info["SiglaInformazione"]);
-                        Excel.Range rngData = _ws.Range[Range.GetRange(row, col, 1, colOffset)];
-                        rngData.Value = "";
-                        rngData.ClearComments();
-                        Style.RangeStyle(rngData, "BackColor:" + info["BackColor"] + ";ForeColor:" + info["ForeColor"]);
+                        if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
+                        {
+                            Excel.Range rngData = _ws.Range[Range.GetRange(row, col - 1)];
+                            rngData.Value = "";
+                        }
+                        else
+                        {
+                            Excel.Range rngData = _ws.Range[Range.GetRange(row, col, 1, colOffset)];
+                            rngData.Value = "";
+                            rngData.ClearComments();
+                            Style.RangeStyle(rngData, backColor: info["BackColor"], foreColor: info["ForeColor"]);
+                        }                        
                     }
                     else
                     {
@@ -1280,11 +1344,18 @@ namespace Iren.ToolsExcel.Base
                         CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
                         {
                             int row = _newNomiDefiniti.GetRowByName(siglaEntita, info["SiglaInformazione"], suffData);
-
-                            Excel.Range rng = _ws.Range[Range.GetRange(row, col, 1, oreGiorno)];
-                            rng.Value = "";
-                            rng.ClearComments();
-                            Style.RangeStyle(rng, "BackColor:" + info["BackColor"] + ";ForeColor:" + info["ForeColor"]);
+                            if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
+                            {
+                                Excel.Range rngData = _ws.Range[Range.GetRange(row, col - 1)];
+                                rngData.Value = "";
+                            }
+                            else
+                            {
+                                Excel.Range rng = _ws.Range[Range.GetRange(row, col, 1, oreGiorno)];
+                                rng.Value = "";
+                                rng.ClearComments();
+                                Style.RangeStyle(rng, backColor: info["BackColor"], foreColor: info["ForeColor"]);
+                            }
                         });
                     }
                 }

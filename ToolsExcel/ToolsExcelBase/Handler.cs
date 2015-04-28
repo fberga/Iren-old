@@ -95,52 +95,34 @@ namespace Iren.ToolsExcel.Base
                         {
                             string[] parts = newNomiDefiniti.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
 
-                            if (newNomiDefiniti.IsDataColumn(column.StartColumn))
-                            {
-                                string data;
-                                if (parts.Length == 4)
-                                    data = Date.GetDataFromSuffisso(parts[2], parts[3]);
-                                else
-                                    data = Date.GetDataFromSuffisso(parts[2], "");
+                            string data;
+                            if (parts.Length == 4)
+                                data = Date.GetDataFromSuffisso(parts[2], parts[3]);
+                            else
+                                data = Date.GetDataFromSuffisso(parts[2], "");
 
-                                DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
-                                if (r != null)
-                                    r["Valore"] = ws.Range[column.ToString()].Value;
-                                else
-                                {
-                                    DataRow newRow = modifiche.NewRow();
-
-                                    newRow["SiglaEntita"] = parts[0];
-                                    newRow["SiglaInformazione"] = parts[1];
-                                    newRow["Data"] = data;
-                                    newRow["Valore"] = ws.Range[column.ToString()].Value;
-                                    newRow["AnnotaModifica"] = annota ? "1" : "0";
-                                    newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
-                                    newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
-
-                                    modifiche.Rows.Add(newRow);
-                                }
-
-                                if (annota)
-                                {
-                                    ws.Range[column.ToString()].ClearComments();
-                                    ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
-                                }
-                            }
+                            DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
+                            if (r != null)
+                                r["Valore"] = ws.Range[column.ToString()].Value;
                             else
                             {
-                                string data = Date.GetDataFromSuffisso(parts[2], "");
-                                if (DataBase.OpenConnection())
-                                {
-                                    DataBase.DB.Insert(DataBase.SP.INSERT_APPLICAZIONE_INFORMAZIONE_D, new Core.QryParams() 
-                                    {
-                                        {"@SiglaEntita", parts[0]},
-                                        {"@SiglaInformazione", parts[1]},
-                                        {"@Data", data},
-                                        {"@Valore", ws.Range[column.ToString()].Value},
-                                        {"@InsertManuale", "0"}
-                                    });
-                                }
+                                DataRow newRow = modifiche.NewRow();
+
+                                newRow["SiglaEntita"] = parts[0];
+                                newRow["SiglaInformazione"] = parts[1];
+                                newRow["Data"] = data;
+                                newRow["Valore"] = ws.Range[column.ToString()].Value;
+                                newRow["AnnotaModifica"] = annota ? "1" : "0";
+                                newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
+                                newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
+
+                                modifiche.Rows.Add(newRow);
+                            }
+
+                            if (annota)
+                            {
+                                ws.Range[column.ToString()].ClearComments();
+                                ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
                             }
                         }
                     }

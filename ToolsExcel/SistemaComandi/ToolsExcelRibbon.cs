@@ -16,9 +16,7 @@ namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
     {
-        #region Variabili
-
-        public static LoaderScreen loader = new LoaderScreen();
+        #region Variabili        
         
         #endregion
 
@@ -87,8 +85,7 @@ namespace Iren.ToolsExcel
             var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
-                loader.Show();
-                loader.Refresh();
+                SplashScreen.Show();
 
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 Workbook.WB.Application.ScreenUpdating = false;
@@ -107,8 +104,7 @@ namespace Iren.ToolsExcel
                 Workbook.WB.Application.ScreenUpdating = true;
                 Workbook.WB.SheetChange += Handler.StoreEdit;
                 AbilitaTasti(true);
-
-                loader.Hide();
+                SplashScreen.Close();
             }
         }
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
@@ -138,6 +134,9 @@ namespace Iren.ToolsExcel
                         DataBase.ConvertiParametriInformazioni();
 
                         DataView stato = DataBase.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+
+                        SplashScreen.Show();
+
                         if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
                         {
                             Struttura.AggiornaStrutturaDati();
@@ -147,6 +146,8 @@ namespace Iren.ToolsExcel
                         {
                             AggiornaDati();
                         }
+
+                        SplashScreen.Close();
                     }
                     else  //emergenza
                     {
@@ -231,6 +232,8 @@ namespace Iren.ToolsExcel
             var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento dei dati?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
+                SplashScreen.Show();
+
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 Workbook.WB.Application.ScreenUpdating = false;
                 Sheet.Proteggi(false);
@@ -242,6 +245,9 @@ namespace Iren.ToolsExcel
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
                     DataBase.DB.CloseConnection();
                 }
+
+                SplashScreen.Close();
+
                 Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                 Sheet.Proteggi(true);
                 Workbook.WB.Application.ScreenUpdating = true;
@@ -317,19 +323,32 @@ namespace Iren.ToolsExcel
                     {
                         siglaEntita = selUP.ShowDialog().ToString();
                         if (siglaEntita != null)
+                        {
+                            SplashScreen.Show();
+                            SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
                             opt.EseguiOttimizzazione(siglaEntita);
+                            SplashScreen.Close();
+                        }
                     }
                 }
                 else
                 {
+                    SplashScreen.Show();
+                    SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
                     opt.EseguiOttimizzazione(siglaEntita);
+                    SplashScreen.Close();
                 }
             }
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
             {
                 object siglaEntita = selUP.ShowDialog();
                 if (siglaEntita != null)
+                {
+                    SplashScreen.Show();
+                    SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
                     opt.EseguiOttimizzazione(siglaEntita);
+                    SplashScreen.Close();
+                }
             }
 
             Sheet.Proteggi(true);
@@ -430,32 +449,6 @@ namespace Iren.ToolsExcel
 
         }
 
-        //private bool SelezionaUP(string siglaInformazione, out string siglaEntita, out Excel.Range rng)
-        //{
-        //    FormSelezioneUP selUP = new FormSelezioneUP(siglaInformazione);
-
-        //    selUP.ShowDialog();
-
-        //    rng = null;
-        //    siglaEntita = "";
-
-        //    if (!selUP.IsCanceld && selUP.HasSelection)
-        //    {
-        //        siglaEntita = selUP.SiglaEntita;
-        //        string nome = DefinedNames.GetName(selUP.SiglaEntita, "T", "DATA1");
-        //        string foglio = DefinedNames.GetSheetName(nome);
-        //        DefinedNames nomiDefiniti = new DefinedNames(foglio);
-        //        Tuple<int, int>[] celle = nomiDefiniti.GetRange(nome);
-
-        //        Excel.Worksheet ws = Workbook.WB.Application.Sheets[foglio];
-        //        ((Excel._Worksheet)ws).Activate();
-        //        rng = ws.Range[ws.Cells[celle[0].Item1, celle[0].Item2], ws.Cells[celle[1].Item1, celle[1].Item2]];
-        //        rng.Select();
-        //        Workbook.WB.Application.ActiveWindow.SmallScroll(celle[0].Item1 - ws.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
-        //    }
-        //    selUP.Dispose();
-        //    return !selUP.IsCanceld && selUP.HasSelection;
-        //}
         private void AbilitaTasti(bool abilita)
         {
             btnCalendar.Enabled = abilita;
@@ -468,7 +461,7 @@ namespace Iren.ToolsExcel
         }
         private void AggiornaStruttura()
         {
-            loader.LoadingWhat = "Carico struttura dal DB";
+            SplashScreen.UpdateStatus("Carico struttura dal DB");
             Struttura.AggiornaStrutturaDati();
 
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
@@ -486,50 +479,46 @@ namespace Iren.ToolsExcel
                     ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.WB.Worksheets["Log"]);
                     ws.Name = categoria["DesCategoria"].ToString();
                     ws.Select();
-                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;                    
+                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
                 }
             }
 
+            Workbook.WB.Sheets["Main"].Select();
             Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-            main.LoadStructure();
-            loader.LoadingWhat = "Aggiorno struttura Riepilogo";
+            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
+            main.LoadStructure();            
 
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
-                    using (Sheet s = new Sheet(ws))
-                    {
-                        loader.LoadingWhat = "Aggiorno struttura " + ws.Name;
-                        s.LoadStructure();
-                    }
+                    Sheet s = new Sheet(ws);
+                    SplashScreen.UpdateStatus("Aggiorno struttura " + ws.Name);
+                    s.LoadStructure();
                 }
             }
 
-            loader.LoadingWhat = "Salvo struttura in locale";
+            SplashScreen.UpdateStatus("Salvo struttura in locale");
+            //SplashForm.LabelText = "Salvo struttura in locale";
             Workbook.DumpDataSet();
             
             Workbook.WB.Sheets["Main"].Select();
             Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
         }
-        private void AggiornaDati()//(bool all)
+        private void AggiornaDati()
         {
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
                 if (ws.Name != "Log" && ws.Name != "Main")
                 {
                     Sheet s = new Sheet(ws);
+                    SplashScreen.UpdateStatus("Aggiornamento dati " + ws.Name);
                     s.UpdateData(true);
                 }
             }
-            //if (all)
-            //{
-                Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-                main.UpdateRiepilogo();
-            //}
-
-            //Log
-            //CommonFunctions.InitLog();
+            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
+            SplashScreen.UpdateStatus("Aggiornamento Riepilogo");
+            main.UpdateRiepilogo();
         }
 
         #endregion        

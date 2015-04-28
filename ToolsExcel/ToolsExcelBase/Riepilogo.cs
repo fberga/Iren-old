@@ -243,23 +243,23 @@ namespace Iren.ToolsExcel.Base
                     if (!azione["Gerarchia"].Equals(azionePadre))
                     {
                         rngAzioniPadre.ColOffset = rngAzioni.StartColumn - rngAzioniPadre.StartColumn;
-                        Style.RangeStyle(_ws.Range[rngAzioniPadre.ToString()], "Merge:true;FontSize:9");
+                        Style.RangeStyle(_ws.Range[rngAzioniPadre.ToString()], merge:true, fontSize:9);
                         _ws.Range[rngAzioniPadre.ToString()].Value = azionePadre;
                         azionePadre = azione["Gerarchia"].ToString();
                         rngAzioniPadre.StartColumn = rngAzioni.StartColumn;
                     }
                     _ws.Range[rngAzioni.ToString()].Value = azione["DesAzioneBreve"];
-                    Style.RangeStyle(_ws.Range[rngAzioni.ToString()], "FontSize:7");
+                    Style.RangeStyle(_ws.Range[rngAzioni.ToString()], fontSize:7);
                     rngAzioni.StartColumn++;
                 }
                 rngAzioniPadre.ColOffset = rngAzioni.StartColumn - rngAzioniPadre.StartColumn;
-                Style.RangeStyle(_ws.Range[rngAzioniPadre.ToString()], "Merge:true;FontSize:9");
+                Style.RangeStyle(_ws.Range[rngAzioniPadre.ToString()], merge:true, fontSize:9);
                 _ws.Range[rngAzioniPadre.ToString()].Value = azionePadre;
                 azionePadre = "";
                 rngAzioniPadre.StartColumn = rngAzioni.StartColumn;
 
                 rngData.ColOffset = rngAzioni.StartColumn - rngData.StartColumn;
-                Style.RangeStyle(_ws.Range[rngData.ToString()], "Merge:true;FontSize:10;NumberFormat:[ddd d mmm yyyy]");
+                Style.RangeStyle(_ws.Range[rngData.ToString()], merge:true, fontSize:10, numberFormat:"ddd d mmm yyyy");
                 _ws.Range[rngData.ToString()].Value = giorno;
                 rngData.StartColumn = rngAzioni.StartColumn;
             });
@@ -290,7 +290,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView categoria in _categorie)
             {
                 Range rng = new Range(_newNomiDefiniti.GetRowByName(categoria["SiglaCategoria"]), _newNomiDefiniti.GetFirstCol(), 1, _newNomiDefiniti.GetColOffsetRiepilogo());
-                Style.RangeStyle(_ws.Range[rng.ToString()], "Style:recapCategoryTitle;Borders:[left:medium,top:medium,right:medium];Merge:true");
+                Style.RangeStyle(_ws.Range[rng.ToString()], style: "recapCategoryTitle", borders: "[left:medium,top:medium,right:medium]", merge: true);
                 _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
                 _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
                 foreach (DataRowView entita in _entita)

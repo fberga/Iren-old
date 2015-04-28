@@ -83,11 +83,11 @@
     <Compile Include="FormSelezioneUP.Designer.cs">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>
     </Compile>
-    <Compile Include="LoaderScreen.cs">
+    <Compile Include="SplashForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LoaderScreen.Designer.cs">
-      <DependentUpon>LoaderScreen.cs</DependentUpon>
+    <Compile Include="SplashForm.Designer.cs">
+      <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
     <Compile Include="FormMeteo.cs">
       <SubType>Form</SubType>
@@ -123,8 +123,8 @@
     <EmbeddedResource Include="FormSelezioneUP.resx">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LoaderScreen.resx">
-      <DependentUpon>LoaderScreen.cs</DependentUpon>
+    <EmbeddedResource Include="SplashForm.resx">
+      <DependentUpon>SplashForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMeteo.resx">
       <DependentUpon>FormMeteo.cs</DependentUpon>
@@ -200,6 +200,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\loader.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\loader1.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dots-spin-lg.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\728.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\7281.GIF" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
