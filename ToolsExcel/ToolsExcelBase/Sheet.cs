@@ -83,7 +83,11 @@ namespace Iren.ToolsExcel.Base
                 foreach (string range in newNomiDefiniti.Editable.Values)
                 {
                     string[] subRanges = range.Split(',');
-                    if (ws.Range[subRanges[0]].EntireRow.Hidden == false)
+                    if (subRanges.Length == 1 && ws.Range[subRanges[0]].Cells.Count == 1)
+                    {
+                        ws.Range[subRanges[0]].Locked = !abilita;
+                    }
+                    else if (ws.Range[subRanges[0]].EntireRow.Hidden == false)
                     {
                         foreach (string subRange in subRanges)
                         {
@@ -144,7 +148,7 @@ namespace Iren.ToolsExcel.Base
 
                     foreach (DataRowView entita in categoriaEntita)
                     {
-                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (Selezione = 10 AND SalvaDB = '1'))";
                         foreach (DataRowView info in entitaInformazione)
                         {
                             object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
@@ -302,8 +306,13 @@ namespace Iren.ToolsExcel.Base
 
             _newNomiDefiniti.DumpToDataSet();
             CaricaInformazioni(all: true);
-            AggiornaGrafici();            
+            AggiornaGrafici();
+
             //CalcolaFormule();                     //TODO
+
+            //cancello tutte le selezioni
+            _ws.Activate();
+            _ws.Cells[1, 1].Select();
         }
         protected void Clear()
         {
@@ -501,11 +510,20 @@ namespace Iren.ToolsExcel.Base
             {
                 object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
-                if (info["Editabile"].Equals("1"))
+
+                if (info["Selezione"].Equals(10))
                 {
+                    //seleziono la cella sopra gli optionbuttons
+                    Range rng = new Range(_rigaAttiva, startCol - _visParametro + 2);
+                    _newNomiDefiniti.SetEditable(_rigaAttiva, rng);
+                }
+                else if (info["Editabile"].Equals("1"))
+                {
+                    
                     if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                     {
-                        Range rng = new Range(_rigaAttiva, startCol - 1);
+                        //seleziono la cella dell'unità di misura
+                        Range rng = new Range(_rigaAttiva, startCol - _visParametro + 1);
                         _newNomiDefiniti.SetEditable(_rigaAttiva, rng);
                     }
                     else
@@ -638,11 +656,16 @@ namespace Iren.ToolsExcel.Base
 
             if(Struct.tipoVisualizzazione == "V")
             {
+                DataView infoNoGiornaliere = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE]);
+                infoNoGiornaliere.RowFilter = informazioni.RowFilter + " AND SiglaTipologiaInformazione <> 'GIORNALIERA'";
+
+                Excel.Range rngDataNoGiornaliere = _ws.Range[Range.GetRange(row, col, infoNoGiornaliere.Count, colOffset)];
+
                 int oreGiorno = Date.GetOreGiorno(_dataInizio);
                 if(oreGiorno < 24)
-                    rngData.Columns[rngData.Columns.Count - 1].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                    rngDataNoGiornaliere.Columns[rngDataNoGiornaliere.Columns.Count - 1].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
                 if(oreGiorno < 25)
-                    rngData.Columns[rngData.Columns.Count].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                    rngDataNoGiornaliere.Columns[rngDataNoGiornaliere.Columns.Count].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
             }
 
             //inserisco groupBox per l'entita
@@ -748,7 +771,7 @@ namespace Iren.ToolsExcel.Base
                         numberFormat: info["Formato"],
                         align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
 
-                    if (info["Data0H24"].Equals("0") && _struttura.visData0H24)
+                    if (info["Data0H24"].Equals("0") && _struttura.visData0H24 && !info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                         rngData.Rows[i].Cells[1].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
                 }
                 i++;

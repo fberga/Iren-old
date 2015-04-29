@@ -33,7 +33,6 @@
             this.btnApplica = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
-            this.groupGiorniAggiuntivi = new System.Windows.Forms.GroupBox();
             this.groupDate = new System.Windows.Forms.GroupBox();
             this.comboGiorni = new System.Windows.Forms.Button();
             this.panelCentrale = new System.Windows.Forms.Panel();
@@ -106,24 +105,12 @@
             // 
             // panelTop
             // 
-            this.panelTop.Controls.Add(this.groupGiorniAggiuntivi);
             this.panelTop.Controls.Add(this.groupDate);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(5, 5);
             this.panelTop.Name = "panelTop";
             this.panelTop.Size = new System.Drawing.Size(1050, 53);
             this.panelTop.TabIndex = 13;
-            // 
-            // groupGiorniAggiuntivi
-            // 
-            this.groupGiorniAggiuntivi.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupGiorniAggiuntivi.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupGiorniAggiuntivi.Location = new System.Drawing.Point(350, 0);
-            this.groupGiorniAggiuntivi.Name = "groupGiorniAggiuntivi";
-            this.groupGiorniAggiuntivi.Size = new System.Drawing.Size(700, 53);
-            this.groupGiorniAggiuntivi.TabIndex = 2;
-            this.groupGiorniAggiuntivi.TabStop = false;
-            this.groupGiorniAggiuntivi.Text = "Estendi intervallo giorni";
             // 
             // groupDate
             // 
@@ -297,7 +284,6 @@
         private System.Windows.Forms.GroupBox groupDate;
         private System.Windows.Forms.Button btnMeteo;
         private System.Windows.Forms.CheckBox checkTutte;
-        private System.Windows.Forms.GroupBox groupGiorniAggiuntivi;
         private System.Windows.Forms.Button comboGiorni;
     }
 }

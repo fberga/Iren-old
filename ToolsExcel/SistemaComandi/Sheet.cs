@@ -49,34 +49,37 @@ namespace Iren.ToolsExcel
 
                     Range rngPQNR = _newNomiDefiniti.Get(entita["SiglaEntita"], "PQNR_PROFILO", Date.GetSuffissoDATA1).Extend(colOffset: oreIntervallo);
 
-                    int assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(entita["SiglaEntita"]));
-
-                    double[] pMin = new double[oreIntervallo];
-                    for (int i = 0; i < pMin.Length; i++) pMin[i] = double.MaxValue;
-
-                    for (int i = 0; i < assetti; i++)
+                    if (_ws.Range[rngPQNR.Columns[0].ToString()].Value != null)
                     {
-                        Range rngPmin = _newNomiDefiniti.Get(entita["SiglaEntita"], "PMIN_TERNA_ASSETTO" + (i + 1), Date.GetSuffissoDATA1).Extend(colOffset: oreIntervallo);
-                        for (int j = 0; j < oreIntervallo; j++)
-                            pMin[j] = Math.Min(pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
-                    }
+                        int assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(entita["SiglaEntita"]));
 
-                    object[,] valori = new object[24, oreIntervallo];
-                    for (int i = 0; i < oreIntervallo; i++)
-                    {
-                        pMin[i] = pMin[i] < pRif ? pRif : pMin[i];
-                        entitaRampa.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaRampa = '" + _ws.Range[rngPQNR.Columns[i].ToString()].Value + "'";
+                        double[] pMin = new double[oreIntervallo];
+                        for (int i = 0; i < pMin.Length; i++) pMin[i] = double.MaxValue;
 
-                        for (int j = 0; j < 24; j++)
+                        for (int i = 0; i < assetti; i++)
                         {
-                            if (entitaRampa[0]["Q" + (j + 1)] != DBNull.Value)
+                            Range rngPmin = _newNomiDefiniti.Get(entita["SiglaEntita"], "PMIN_TERNA_ASSETTO" + (i + 1), Date.GetSuffissoDATA1).Extend(colOffset: oreIntervallo);
+                            for (int j = 0; j < oreIntervallo; j++)
+                                pMin[j] = Math.Min(pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
+                        }
+
+                        object[,] valori = new object[24, oreIntervallo];
+                        for (int i = 0; i < oreIntervallo; i++)
+                        {
+                            pMin[i] = pMin[i] < pRif ? pRif : pMin[i];
+                            entitaRampa.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaRampa = '" + _ws.Range[rngPQNR.Columns[i].ToString()].Value + "'";
+
+                            for (int j = 0; j < 24; j++)
                             {
-                                valori[j, i] = Math.Round(((int)entitaRampa[0]["Q" + (j + 1)]) * pRif / pMin[i]);
+                                if (entitaRampa[0]["Q" + (j + 1)] != DBNull.Value)
+                                {
+                                    valori[j, i] = Math.Round(((int)entitaRampa[0]["Q" + (j + 1)]) * pRif / pMin[i]);
+                                }
                             }
                         }
+                        Range rngPQNRVal = _newNomiDefiniti.Get(entita["SiglaEntita"], "PQNR1", Date.GetSuffissoDATA1).Extend(rowOffset: 24, colOffset: oreIntervallo);
+                        _ws.Range[rngPQNRVal.ToString()].Value = valori;
                     }
-                    Range rngPQNRVal = _newNomiDefiniti.Get(entita["SiglaEntita"], "PQNR1", Date.GetSuffissoDATA1).Extend(rowOffset: 24, colOffset: oreIntervallo);
-                    _ws.Range[rngPQNRVal.ToString()].Value = valori;
                 }
             }
         }

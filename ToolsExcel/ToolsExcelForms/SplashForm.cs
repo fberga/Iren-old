@@ -74,11 +74,6 @@ namespace Iren.ToolsExcel.Forms
             lbText.Left = (int)Math.Round((panelAll.Width / 2) - (width / 2));
         }
 
-
-        /// <summary>
-        /// static
-        /// </summary>
-
         static SplashForm sf = null;
 
         public static void ShowSplash()
@@ -101,15 +96,12 @@ namespace Iren.ToolsExcel.Forms
         {
             if (sf != null)
                 sf.UdpateStatusText(status);
-
         }
 
     }
 
     public static class SplashScreen
     {
-        static SplashForm sf = null;
-
         public static void Show()
         {
             Thread splashthread = new Thread(new ThreadStart(SplashForm.ShowSplash));

@@ -80,24 +80,13 @@ namespace Iren.ToolsExcel.Forms
 
                 for (int i = 0; i <= maxIntervallo; i++)
                 {
-                    //DataRow r = dtDate.NewRow();
-                    //r["DescData"] = DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy");
-                    //r["Data"] = DataBase.DB.DataAttiva.AddDays(i);
-                    //dtDate.Rows.Add(r);
-
                     _workList.Add(DataBase.DB.DataAttiva.AddDays(i), false);
                     checkDate.Items.Add(DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy"));
-                }
-
-                //checkClusterDate.DataSource = dtClusterDate;
-                //checkClusterDate.DisplayMember = "DescData";
+                }                
 
                 panelTop.FixedPanel = FixedPanel.None;
                 panelTop.SplitterDistance = checkClusterDate.GetItemRectangle(0).Height * checkClusterDate.Items.Count + 8;
                 panelTop.FixedPanel = FixedPanel.Panel1;
-
-                //checkDate.DataSource = dtDate;
-                //checkDate.DisplayMember = "DescData";
 
                 this.Height = panelTop.SplitterDistance + checkDate.GetItemRectangle(0).Height * (checkDate.Items.Count + 1) + 3 + panelButtons.Height;
             }
