@@ -74,7 +74,7 @@ namespace Iren.ToolsExcel
             r.InitLabels();
 
             Globals.Main.Select();
-            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+            Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             Style.StdStyles();
             Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
@@ -84,6 +84,16 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
+            if (Simboli.ModificaDati)
+            {
+                Application.ScreenUpdating = false;
+                Sheet.Proteggi(false);
+                Simboli.ModificaDati = false;
+                Sheet.AbilitaModifica(false);
+                Sheet.SalvaModifiche();
+                Sheet.Proteggi(true);
+                Application.ScreenUpdating = true;
+            }
             DataBase.SalvaModificheDB();
             this.Save();
         }
@@ -99,20 +109,5 @@ namespace Iren.ToolsExcel
 
             }
         }
-
-        //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
-        //{
-        //    return new Microsoft.Office.Tools.Ribbon.IRibbonExtension[] { new       
-        //Iren.ToolsExcel.Ribbon.SharedRibbon(Globals.Factory.GetRibbonFactory()) };
-        //}
-
     }
-
-    //partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonReadOnlyCollection
-    //{
-    //    internal Iren.ToolsExcel.Ribbon.SharedRibbon SharedRibbon
-    //    {
-    //        get { return this.GetRibbon<Iren.ToolsExcel.Ribbon.SharedRibbon>(); }
-    //    }
-    //}
 }

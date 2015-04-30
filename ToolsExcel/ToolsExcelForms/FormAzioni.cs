@@ -460,6 +460,8 @@ namespace Iren.ToolsExcel.Forms
                 MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
+                SplashScreen.Show();
+
                 foreach (DateTime date in _toProcessDates)
                 {
                     bool calcola = false;
@@ -506,6 +508,9 @@ namespace Iren.ToolsExcel.Forms
                                     {
                                         string nomeFoglio = NewDefinedNames.GetSheetName(n1.Name);
                                         bool presente;
+
+                                        SplashScreen.UpdateStatus(n.Parent.Text + " " + n.Text + ": " + n1.Text);
+
                                         switch (n.Parent.Name)
                                         {
                                             case "CARICA":
@@ -588,6 +593,8 @@ namespace Iren.ToolsExcel.Forms
                         DataBase.DB.CloseConnection();
                     }
                 }
+
+                SplashScreen.Close();
             }
 
             btnApplica.Enabled = true;

@@ -116,7 +116,7 @@ namespace Iren.ToolsExcel.Core
             _dataAttiva = dataAttiva;
         }
 
-        public void Insert(string storedProcedure, QryParams parameters)
+        public bool Insert(string storedProcedure, QryParams parameters)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -127,10 +127,14 @@ namespace Iren.ToolsExcel.Core
 
             try
             {
-                _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
+                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters);
+                cmd.ExecuteNonQuery();
+                return cmd.Parameters[0].Value.Equals(0);
             }
-            catch (TimeoutException) { }
-            
+            catch (TimeoutException) 
+            {
+                return false;
+            }
         }
 
         public DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
@@ -213,6 +217,7 @@ namespace Iren.ToolsExcel.Core
             {
                 using (SqlDataReader dr = cmd.SqlCmd(storedProcedure, parameters, timeout).ExecuteReader())
                 {
+                    
                     DataTable dt = new DataTable();
                     dt.Load(dr);
 

@@ -439,6 +439,8 @@ namespace Iren.ToolsExcel.Base
         }
         protected void InitBloccoEntita(DataRowView entita)
         {
+            SplashScreen.UpdateStatus("Carica struttura " + entita["DesEntita"]);
+
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
             DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
@@ -1061,9 +1063,10 @@ namespace Iren.ToolsExcel.Base
                     {
                         foreach (DataRowView entita in categoriaEntita)
                         {
+                            SplashScreen.UpdateStatus("Carica informazioni " + entita["DesEntita"]);
+
                             datiApplicazioneH.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
 
-                            //_dataFine = dateFineUP[entita["SiglaEntita"]];
                             CaricaInformazioniEntita(datiApplicazioneH);
                             if (all)
                             {

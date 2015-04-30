@@ -46,6 +46,10 @@ namespace Iren.ToolsExcel
                     }
                     
                     break;
+                case "MAIL":
+
+
+                    break;
             }
             return true;
         }
@@ -124,7 +128,7 @@ namespace Iren.ToolsExcel
                                 rng = newNomiDefiniti.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                                 tderampaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
                             }
-                            if (ptminVal != "" && ptmaxVal != "" && assetto > 1)
+                            if (ptminVal != "" && ptmaxVal != "")
                             {
                                 vdt.Add(new XElement("FASCIA",
                                     new XElement("PSMIN", psminVal),

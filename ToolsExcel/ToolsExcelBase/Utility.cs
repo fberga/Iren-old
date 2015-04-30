@@ -33,6 +33,7 @@ namespace Iren.ToolsExcel.Utility
                 APPLICAZIONE_INIT = "spApplicazioneInit",
                 APPLICAZIONE_LOG = "spApplicazioneLog",
                 APPLICAZIONE_NOTE = "spApplicazioneNote",
+                APPLICAZIONE_RIBBON = "spApplicazioneRibbon",
                 APPLICAZIONE_RIEPILOGO = "spApplicazioneRiepilogo",
                 AZIONE = "spAzione",
                 AZIONE_CATEGORIA = "spAzioneCategoria",
@@ -59,7 +60,7 @@ namespace Iren.ToolsExcel.Utility
                 ENTITA_RAMPA = "spEntitaRampa",
                 GET_ORE_FERMATA = "spGetOreFermata",
                 GET_VERSIONE = "spGetVersione",
-                INSERT_APPLICAZIONE_INFORMAZIONE_D = "spInsertApplicazioneInformazioneD",
+                INSERT_APPLICAZIONE_INFORMAZIONE_XML = "spInsertApplicazioneInformazioneXML2",
                 INSERT_APPLICAZIONE_RIEPILOGO = "spInsertApplicazioneRiepilogo",
                 INSERT_LOG = "spInsertLog",
                 INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
@@ -73,6 +74,7 @@ namespace Iren.ToolsExcel.Utility
                 ADDRESS_TO = "AddressTo",
                 ANNOTA = "AnnotaModifica",
                 APPLICAZIONE = "Applicazione",
+                APPLICAZIONE_RIBBON = "ApplicazioneRibbon",
                 AZIONE = "Azione",
                 AZIONE_CATEGORIA = "AzioneCategoria",
                 CALCOLO = "Calcolo",
@@ -180,24 +182,36 @@ namespace Iren.ToolsExcel.Utility
                 if (onLine && Directory.Exists(cartellaRemota))
                 {
                     string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
-
+                    bool executed = false;
                     if (fileEmergenza.Length > 0)
                     {
                         Array.Sort<string>(fileEmergenza);
                         foreach (string file in fileEmergenza)
                         {
                             File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
-                            //TODO esegui stored procedure sul file
-                            if (true)
+
+                            executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
+                            if (executed)
+                            {
+                                if (!Directory.Exists(cartellaArchivio))
+                                    Directory.CreateDirectory(cartellaArchivio);
+
                                 File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                            }
                         }
                     }
 
                     fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
                     dt.WriteXml(fileName);
-                    //TODO esegui stored procedure
-                    if (true)
+
+                    executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
+                    if (executed)
+                    {
+                        if (!Directory.Exists(cartellaArchivio))
+                            Directory.CreateDirectory(cartellaArchivio);
+
                         File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
+                    }
                 }
                 else
                 {
@@ -299,7 +313,7 @@ namespace Iren.ToolsExcel.Utility
                 switch (opt.ToLowerInvariant())
                 {
                     case "appname":
-                        o = Simboli.nomeApplicazione.Replace(" ", "");
+                        o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
                         break;
                 }
 
@@ -435,7 +449,6 @@ namespace Iren.ToolsExcel.Utility
 
         public static void AggiornaStrutturaDati()
         {
-            //CreaTabellaNomi();
             CreaTabellaNomiNew();
             CreaTabellaDate();
             CreaTabellaAddressFrom();
@@ -446,6 +459,7 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaAnnotaModifica();
             CaricaAzioni();
             CaricaCategorie();
+            CaricaApplicazioneRibbon();
             CaricaAzioneCategoria();
             CaricaCategoriaEntita();
             CaricaEntitaAzione();
@@ -470,22 +484,6 @@ namespace Iren.ToolsExcel.Utility
         }
         #region Aggiorna Struttura Dati
 
-        //private static bool CreaTabellaNomi()
-        //{
-        //    try
-        //    {
-        //        string name = Tab.NOMI_DEFINITI;
-        //        ResetTable(name);
-        //        DataTable dt = DefinedNames.GetDefaultTable(name);
-        //        _localDB.Tables.Add(dt);
-        //        return true;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return false;
-        //    }
-        //}
-
         private static bool CreaTabellaNomiNew()
         {
             try
@@ -501,11 +499,6 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
-
-
-
-        
-
         private static bool CreaTabellaDate()
         {
             try
@@ -521,7 +514,6 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
-
         private static bool CreaTabellaAddressFrom()
         {
             try
@@ -552,7 +544,6 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
-
         private static bool CreaTabellaEditabili()
         {
             try
@@ -598,7 +589,6 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
-        
         private static bool CreaTabellaModifica()
         {
             try
@@ -642,6 +632,27 @@ namespace Iren.ToolsExcel.Utility
                     {"@Visibile", Core.DataBase.ALL}
                 };
                 DataTable dt = _db.Select(SP.AZIONE, parameters);
+                dt.TableName = name;
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public static bool CaricaApplicazioneRibbon()
+        {
+            try
+            {
+                string name = Tab.APPLICAZIONE_RIBBON;
+                ResetTable(name);
+                QryParams parameters = new QryParams() 
+                {
+                    {"@IdApplicazione", DB.IdApplicazione},
+                    {"@IdUtente", DB.IdUtenteAttivo}
+                };
+                DataTable dt = _db.Select(SP.APPLICAZIONE_RIBBON, parameters);
                 dt.TableName = name;
                 _localDB.Tables.Add(dt);
                 return true;
@@ -1165,15 +1176,15 @@ namespace Iren.ToolsExcel.Utility
                             DataView azioneInformazione = DataBase.DB.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                             if (azioneInformazione.Count == 0)
                             {
-                    //            if (azioni[0]["Visibile"].Equals("1"))
-                    //                DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif, false);
+                                if (azioni[0]["Visibile"].Equals("1"))
+                                    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
                             }
                             else
                             {
                                 ScriviInformazione2(siglaEntita, azioneInformazione, newNomiDefiniti);
 
-                                //if (azioni[0]["Visibile"].Equals("1"))
-                                //    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
+                                if (azioni[0]["Visibile"].Equals("1"))
+                                    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
                             }
                         }
                     }
@@ -2113,7 +2124,13 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void AggiornaLabelStatoDB()
         {
-            bool isProtected = _wb.Sheets["Main"].ProtectContents;
+            bool isProtected = true;
+            try
+            {
+                isProtected = _wb.Sheets["Main"].ProtectContents;
+            }
+            catch
+            { }
             
             if (isProtected)
                 _wb.Sheets["Main"].Unprotect(Simboli.pwd);

@@ -55,7 +55,6 @@ namespace Iren.ToolsExcel
             this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.GotoClick);
             this.WindowActivate += new Microsoft.Office.Interop.Excel.WorkbookEvents_WindowActivateEventHandler(this.ThisWorkbook_WindowActivate);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
-
         }
 
         #endregion
@@ -80,6 +79,8 @@ namespace Iren.ToolsExcel
             Style.StdStyles();
             Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
             
+            //ActionsPane.Controls.Add(new ErrorPane());
+
             Sheet.Proteggi(true);
         }
 

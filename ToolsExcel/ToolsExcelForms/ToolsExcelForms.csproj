@@ -83,12 +83,6 @@
     <Compile Include="FormSelezioneUP.Designer.cs">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>
     </Compile>
-    <Compile Include="SplashForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SplashForm.Designer.cs">
-      <DependentUpon>SplashForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="FormMeteo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -122,9 +116,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormSelezioneUP.resx">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SplashForm.resx">
-      <DependentUpon>SplashForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMeteo.resx">
       <DependentUpon>FormMeteo.cs</DependentUpon>

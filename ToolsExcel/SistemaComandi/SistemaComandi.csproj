@@ -144,6 +144,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ErrorPane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ErrorPane.Designer.cs">
+      <DependentUpon>ErrorPane.cs</DependentUpon>
+    </Compile>
     <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
@@ -179,6 +185,9 @@
     <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ErrorPane.resx">
+      <DependentUpon>ErrorPane.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
     </EmbeddedResource>

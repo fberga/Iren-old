@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Iren.ToolsExcel.Forms
+namespace Iren.ToolsExcel.Base
 {
     public partial class SplashForm : Form
     {

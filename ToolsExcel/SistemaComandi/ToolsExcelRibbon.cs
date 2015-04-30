@@ -9,6 +9,8 @@ using System.Globalization;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
+using System.Collections.Generic;
+using System.Collections;
 
 // ***************************************************** SISTEMA COMANDI ***************************************************** //
 
@@ -16,44 +18,50 @@ namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
     {
-        #region Variabili        
+        #region Variabili
         
+        private ControlCollection _controls;
+        private List<string> _enabledControls = new List<string>();
+        private bool _allDisabled = false;
+
+        #endregion
+
+        #region Proprietà
+
+        public ControlCollection Controls
+        {
+            get { return _controls; }
+        }
+
         #endregion
 
         #region Eventi
 
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
-            this.RibbonUI.ActivateTab(FrontOffice.ControlId.CustomId);
+            Initialize();
 
             if (Workbook.WB.Sheets.Count <= 2)
-                AbilitaTasti(false);
+                DisabilitaTasti();
 
-            CheckTastoApplicativo();
+            this.RibbonUI.ActivateTab(FrontOffice.ControlId.CustomId);
 
             DateTime cfgDate = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
 
-            btnModifica.Checked = false;
-
-            
-            //configuro gli ambienti selezionabili
-            string[] ambienti = ConfigurationManager.AppSettings["AmbientiVisibili"].Split('|');
-            foreach (string ambiente in ambienti)
-                groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == "btn" + ambiente).ToArray()[0].Visible = true;
-
             //seleziono l'ambiente attivo
-            groupAmbienti.Items.OfType<RibbonToggleButton>().Where(btn => btn.Name == "btn" + ConfigurationManager.AppSettings["DB"]).ToArray()[0].Checked = true;
-
-            //configuro i tasti visibili
-            if (ConfigurationManager.AppSettings["RampeVisible"] != null && ConfigurationManager.AppSettings["RampeVisible"].ToLowerInvariant() == "false")
-                btnRampe.Visible = false;
+            ((RibbonToggleButton)Controls["btn" + ConfigurationManager.AppSettings["DB"]]).Checked = true;
 
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
             btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
             btnModifica.Label = "Modifica NO";
-
+            try
+            {
+                Sheet.AbilitaModifica(false);
+            }
+            catch 
+            { }
         }
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
@@ -103,7 +111,6 @@ namespace Iren.ToolsExcel
                 Sheet.Proteggi(true);
                 Workbook.WB.Application.ScreenUpdating = true;
                 Workbook.WB.SheetChange += Handler.StoreEdit;
-                AbilitaTasti(true);
                 SplashScreen.Close();
             }
         }
@@ -139,7 +146,7 @@ namespace Iren.ToolsExcel
 
                         if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
                         {
-                            Struttura.AggiornaStrutturaDati();
+                            //Struttura.AggiornaStrutturaDati();
                             AggiornaStruttura();
                         }
                         else
@@ -406,6 +413,41 @@ namespace Iren.ToolsExcel
 
         #region Metodi
 
+
+
+        private void Initialize()
+        {
+            _controls = new ControlCollection(this);
+            DataView controlli = new DataView();
+            try
+            {
+                controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+            }
+            catch 
+            {
+                if (DataBase.OpenConnection())
+                {
+                    Struttura.CaricaApplicazioneRibbon();
+                    controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+                    DataBase.CloseConnection();
+                }
+            }
+
+            foreach (DataRowView controllo in controlli)
+            {
+                Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
+                Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
+                if (controllo["Abilitato"].Equals("1"))
+                    _enabledControls.Add(controllo["NomeControllo"].ToString());
+
+                if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
+                {
+                    ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
+                }
+            }
+
+        }
+
         private void CheckTastoApplicativo()
         {
             switch (ConfigurationManager.AppSettings["AppID"])
@@ -449,16 +491,23 @@ namespace Iren.ToolsExcel
 
         }
 
-        private void AbilitaTasti(bool abilita)
+        private void DisabilitaTasti()
         {
-            btnCalendar.Enabled = abilita;
-            btnAzioni.Enabled = abilita;
-            btnRampe.Enabled = abilita;
-            btnAggiornaDati.Enabled = abilita;
-            btnModifica.Enabled = abilita;
-            btnOttimizza.Enabled = abilita;
-            btnCalendar.Enabled = abilita;
+            foreach (RibbonControl control in Controls)
+            {
+                if(control.Name != "btnAggiornaStruttura")
+                    control.Enabled = false;
+            }
+            _allDisabled = true;
         }
+        private void AbilitaTasti()
+        {
+            foreach (string control in _enabledControls)
+                Controls[control].Enabled = true;
+
+            _allDisabled = false;
+        }
+
         private void AggiornaStruttura()
         {
             SplashScreen.UpdateStatus("Carico struttura dal DB");
@@ -499,11 +548,13 @@ namespace Iren.ToolsExcel
             }
 
             SplashScreen.UpdateStatus("Salvo struttura in locale");
-            //SplashForm.LabelText = "Salvo struttura in locale";
             Workbook.DumpDataSet();
             
             Workbook.WB.Sheets["Main"].Select();
             Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
+
+            if (_allDisabled)
+                AbilitaTasti();
         }
         private void AggiornaDati()
         {
@@ -522,5 +573,86 @@ namespace Iren.ToolsExcel
         }
 
         #endregion        
+
+        private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.ThisApplication.Quit();
+        }
+    }
+
+    public class ControlCollection : IEnumerable
+    {
+        #region Variabili
+
+        private ToolsExcelRibbon _ribbon;
+        private Dictionary<string, RibbonControl> _controls = new Dictionary<string, RibbonControl>();
+
+        #endregion
+
+        #region Proprietà
+
+        public int Count
+        {
+            get { return _controls.Count; }
+        }
+
+        public RibbonControl this[int i]
+        {
+            get { return _controls.ElementAt(i).Value; }
+        }
+
+        public RibbonControl this[string name]
+        {
+            get { return _controls[name]; }
+        }
+
+        #endregion
+
+        #region Metodi
+
+        internal ControlCollection(ToolsExcelRibbon ribbon)
+        {
+            _ribbon = ribbon;
+            List<RibbonGroup> groups = ribbon.FrontOffice.Groups.ToList();
+
+            foreach (RibbonGroup group in groups)
+                foreach (RibbonControl control in group.Items)
+                    _controls.Add(control.Name, control);
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return new ControlEnumerator(_ribbon);
+        }
+
+        #endregion
+    }
+    public class ControlEnumerator : IEnumerator
+    {
+        ToolsExcelRibbon _ribbon;
+        int _pos = -1;
+        int _max = -1;
+
+        public ControlEnumerator(ToolsExcelRibbon ribbon)
+        {
+            _ribbon = ribbon;
+            _max = ribbon.Controls.Count;
+        }
+
+        public object Current
+        {
+            get { return _ribbon.Controls[_pos]; }
+        }
+
+        public bool MoveNext()
+        {
+            _pos++;
+            return _pos < _max;
+        }
+
+        public void Reset()
+        {
+            _pos = -1;
+        }
     }
 }

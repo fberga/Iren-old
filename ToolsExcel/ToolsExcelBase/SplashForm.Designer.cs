@@ -1,4 +1,4 @@
-﻿namespace Iren.ToolsExcel.Forms
+﻿namespace Iren.ToolsExcel.Base
 {
     partial class SplashForm
     {
