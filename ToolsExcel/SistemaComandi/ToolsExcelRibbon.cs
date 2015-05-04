@@ -154,6 +154,7 @@ namespace Iren.ToolsExcel
                             AggiornaDati();
                         }
 
+                        Workbook.RefreshLog();
                         SplashScreen.Close();
                     }
                     else  //emergenza

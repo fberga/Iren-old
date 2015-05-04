@@ -5,9 +5,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
+using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace Iren.ToolsExcel
 {
@@ -47,8 +50,42 @@ namespace Iren.ToolsExcel
                     
                     break;
                 case "MAIL":
+                    Globals.ThisWorkbook.Application.ScreenUpdating = false;
+                    string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio, NewDefinedNames.InitType.NamingOnly);
+
+                    var oldActiveWindow = Globals.ThisWorkbook.Application.ActiveWindow;
+                    Globals.ThisWorkbook.Worksheets[nomeFoglio].Activate();
+
+                    List<Range> export = new List<Range>();
+
+                    //titolo entità
+                    export.Add(new Range(newNomiDefiniti.GetRowByName(siglaEntita, "T", Utility.Date.GetSuffissoDATA1), newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+
+                    //data
+                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow - 1, newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+
+                    //ora
+                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow, newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
 
 
+                    DataView entitaAzioneInformazione = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                    entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+                    foreach (DataRowView info in entitaAzioneInformazione)
+                    {
+                        export.Add(new Range(newNomiDefiniti.GetRowByName(siglaEntita, info["SiglaInformazione"], Utility.Date.GetSuffissoDATA1), newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    }
+
+                    if (InviaMail(nomeFoglio, siglaEntita, export))
+                    {
+
+                    }
+
+                    oldActiveWindow.Activate();
+
+
+
+                    Globals.ThisWorkbook.Application.ScreenUpdating = true;
                     break;
             }
             return true;
@@ -181,6 +218,89 @@ namespace Iren.ToolsExcel
             {
                 return false;
             }
+        }
+
+        protected bool InviaMail(string nomeFoglio, object siglaEntita, List<Range> export) 
+        {
+            string fileName = "";
+            try
+            {
+                Excel.Worksheet ws = Globals.ThisWorkbook.Sheets[nomeFoglio];
+
+                DataView entitaProprieta = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL'";
+                if (entitaProprieta.Count > 0)
+                {
+                    fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + Utility.DataBase.DataAttiva.ToString("yyyyMMdd") + ".xls";
+
+                    Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
+                    int i = 2;
+                    foreach (Range rng in export)
+                    {
+                        ws.Range[rng.ToString()].Copy();
+                        wb.Sheets[1].Range["B" + i++].PasteSpecial();
+                    }
+                    wb.Sheets[1].Columns["B:C"].EntireColumn.AutoFit();
+                    wb.Sheets[1].Range["A1"].Select();
+                    wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel8);
+                    wb.Close();
+
+                    var config = Utility.Utilities.GetUsrConfigElement("destMailTest");
+                    string mailTo = config.Value;
+                    string mailCC = "";
+
+                    if (Simboli.Ambiente == "Produzione")
+                    {
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_TO'";
+                        mailTo = entitaProprieta[0]["Valore"].ToString();
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_CC'";
+                        mailCC = entitaProprieta[0]["Valore"].ToString();
+                    }
+                    
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_CODICE_MAIL'";
+                    string codUP = entitaProprieta[0]["Valore"].ToString();
+
+                    config = Utility.Utilities.GetUsrConfigElement("oggettoMail");
+                    string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", Utility.DataBase.DataAttiva.ToString("dd-MM-yyyy"));
+                    config = Utility.Utilities.GetUsrConfigElement("messaggioMail");
+                    string messaggio = config.Value;
+                    messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
+
+                    Outlook.Application outlook = GetOutlookInstance();
+                    Outlook.MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
+                    
+                    //TODO check se manda sempre con lo stesso account...
+                    Outlook.Account senderAccount = outlook.Session.Accounts[1];
+                    foreach (Outlook.Account account in outlook.Session.Accounts)
+                    {
+                        if (account.DisplayName == "Bidding")
+                            senderAccount = account;
+                    }
+                    mail.SendUsingAccount = senderAccount;
+                    mail.Subject = oggetto;
+                    mail.Body = messaggio;
+                    mail.Recipients.Add(mailTo);
+                    mail.CC = mailCC;
+                    mail.Attachments.Add(fileName);
+
+                    mail.Send();
+
+                    File.Delete(fileName);
+                }
+            }
+            catch(Exception e)
+            {
+                Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "SisCom - Esporta.InvioMail: " + e.Message);
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                if(File.Exists(fileName))
+                    File.Delete(fileName);
+
+                return false;
+            }
+
+            return true;
         }
     }
 }
