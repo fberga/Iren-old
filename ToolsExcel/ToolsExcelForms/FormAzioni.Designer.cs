@@ -38,11 +38,11 @@
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
             this.checkTutte = new System.Windows.Forms.CheckBox();
-            this.treeViewUP = new System.Windows.Forms.TreeView();
+            this.treeViewUP = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelCategorie = new System.Windows.Forms.Panel();
-            this.treeViewCategorie = new System.Windows.Forms.TreeView();
+            this.treeViewCategorie = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
-            this.treeViewAzioni = new System.Windows.Forms.TreeView();
+            this.treeViewAzioni = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.groupDate.SuspendLayout();
@@ -214,7 +214,7 @@
             this.treeViewCategorie.ShowRootLines = false;
             this.treeViewCategorie.Size = new System.Drawing.Size(344, 372);
             this.treeViewCategorie.TabIndex = 1;
-            this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewCategorie_AfterCheck);
+            this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
             // panelAzioni
@@ -238,7 +238,7 @@
             this.treeViewAzioni.ShowRootLines = false;
             this.treeViewAzioni.Size = new System.Drawing.Size(344, 372);
             this.treeViewAzioni.TabIndex = 0;
-            this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck);
+            this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
             // FormAzioni
@@ -278,9 +278,9 @@
         private System.Windows.Forms.Panel panelUP;
         private System.Windows.Forms.Panel panelCategorie;
         private System.Windows.Forms.Panel panelAzioni;
-        private System.Windows.Forms.TreeView treeViewUP;
-        private System.Windows.Forms.TreeView treeViewCategorie;
-        private System.Windows.Forms.TreeView treeViewAzioni;
+        private BugFixedTreeView treeViewUP;
+        private BugFixedTreeView treeViewCategorie;
+        private BugFixedTreeView treeViewAzioni;
         private System.Windows.Forms.GroupBox groupDate;
         private System.Windows.Forms.Button btnMeteo;
         private System.Windows.Forms.CheckBox checkTutte;

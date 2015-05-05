@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgrammazioneImpianti", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitCommitment", "UnitCommitment\UnitCommitment.csproj", "{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferteMGP", "OfferteMGP\OfferteMGP.csproj", "{3E16AECC-D55A-465F-9038-31810E47FE7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +111,16 @@ Global
 		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EBFFCDCC-9658-42FB-B740-CBC2C84D07D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

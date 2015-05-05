@@ -196,7 +196,7 @@ namespace Iren.ToolsExcel.Base
             _siglaCategoria = categorie[0]["SiglaCategoria"];
 
             AggiornaParametriApplicazione();
-            _newNomiDefiniti = new NewDefinedNames(_ws.Name);            
+            _newNomiDefiniti = new NewDefinedNames(_ws.Name);
         }
         ~Sheet()
         {
@@ -240,6 +240,20 @@ namespace Iren.ToolsExcel.Base
             Struct.visualizzaRiepilogo = paramApplicazione[0]["VisRiepilogo"] is DBNull ? true : paramApplicazione[0]["VisRiepilogo"].Equals("1");
 
             _visParametro = _struttura.visParametro ? 3 : 2 + (visSelezione ? 1 : 0);
+
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL)";
+            _struttura.numEleMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
+            _struttura.numRigheMenu = 1;
+            if (_struttura.numEleMenu > 8)
+            {
+                int tmp = _struttura.numEleMenu;
+                while (tmp / 8 > 0)
+                {
+                    _struttura.rigaBlock++;
+                    _struttura.numRigheMenu++;
+                    tmp /= 8;
+                }
+            }
         }
 
         public override void LoadStructure()
@@ -338,7 +352,9 @@ namespace Iren.ToolsExcel.Base
             _ws.Columns.ColumnWidth = Struct.cell.width.dato;
 
             _ws.Rows["1:" + (_struttura.rigaBlock - 1)].RowHeight = Struct.cell.height.empty;
-            _ws.Rows[_struttura.rigaGoto].RowHeight = Struct.cell.height.normal;
+
+            for (int i = 0; i < _struttura.numRigheMenu; i++)
+                _ws.Rows[_struttura.rigaGoto + i].RowHeight = Struct.cell.height.normal;
 
             _ws.Columns[1].ColumnWidth = Struct.cell.width.empty;
             _ws.Columns[2].ColumnWidth = Struct.cell.width.entita;
@@ -366,29 +382,16 @@ namespace Iren.ToolsExcel.Base
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
             int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
-            int numElementiMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
+            //int numElementiMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
                 
-            Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, _struttura.colBlock + dataOreTot - 1]];
+            Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + _struttura.numRigheMenu, _struttura.colBlock + dataOreTot - 1]];
             gotoBar.Style = "gotoBarStyle";
             gotoBar.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
 
-            //vedo se e come dividere gli elementi per riga
-            int numRighe = 1;
-            if (numElementiMenu > 8)
-            {
-                int tmp = numElementiMenu;
-                while (tmp / 8 > 0)
-                {
-                    _ws.Rows[_struttura.rigaGoto + 1].Insert(Excel.XlInsertShiftDirection.xlShiftDown);
-                    _struttura.rigaBlock++;
-                    numRighe++;
-                    tmp /= 8;
-                }
-            }
-            double numEleRiga = numElementiMenu / Convert.ToDouble(numRighe);
+            double numEleRiga = _struttura.numEleMenu / Convert.ToDouble(_struttura.numRigheMenu);
 
             int j = 0;
-            for (int i = 0; i < numElementiMenu; i++)
+            for (int i = 0; i < _struttura.numEleMenu; i++)
             {
                 int r = (i / (int)Math.Ceiling(numEleRiga));
                 int c = (i % (int)Math.Ceiling(numEleRiga));

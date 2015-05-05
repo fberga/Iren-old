@@ -120,6 +120,7 @@ namespace Iren.ToolsExcel.Base
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
                 style.Font.Size = 9;
+                style.Interior.ColorIndex = 2;
                 style.Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;

@@ -16,18 +16,19 @@ namespace Iren.ToolsExcel.Forms
     {
         #region Variabili
 
-        DataView _azioni;
-        DataView _categorie;
-        DataView _categoriaEntita;
-        DataView _azioniCategorie;
-        DataView _entitaAzioni;
-        AEsporta _esporta;
-        ARiepilogo _r;
-        List<DateTime> _toProcessDates = new List<DateTime>();
+        private DataView _azioni;
+        private DataView _categorie;
+        private DataView _categoriaEntita;
+        private DataView _azioniCategorie;
+        private DataView _entitaAzioni;
+        private AEsporta _esporta;
+        private ARiepilogo _r;
+        private List<DateTime> _toProcessDates = new List<DateTime>();
 
-        FormSelezioneDate selDate = new FormSelezioneDate();
+        private FormSelezioneDate selDate = new FormSelezioneDate();
 
-        bool _giorniVisible = true;
+        private bool _giorniVisible = true;
+        private bool _fromAzioni = false;
 
         #endregion
 
@@ -67,22 +68,6 @@ namespace Iren.ToolsExcel.Forms
             }
         }
 
-        void selDate_VisibleChanged(object sender, EventArgs e)
-        {
-            if (!_toProcessDates.SequenceEqual(selDate.SelectedDates))
-            {
-                _toProcessDates = new List<DateTime>(selDate.SelectedDates);                
-
-                comboGiorni.Text = "";
-                if (_toProcessDates.Count == 1)
-                    comboGiorni.Text = _toProcessDates[0].ToString("ddd dd MMM yyyy");
-                else if (_toProcessDates.Count > 0)
-                    comboGiorni.Text = _toProcessDates.Count + " giorni";
-                else
-                    comboGiorni.Text = "";
-            }
-        }
-
         #endregion
 
         #region Metodi
@@ -114,7 +99,6 @@ namespace Iren.ToolsExcel.Forms
                 btnMeteo.Hide();
             }
         }
-
         private void CaricaAzioni()
         {
             var stato = DataBase.DB.StatoDB;
@@ -140,7 +124,6 @@ namespace Iren.ToolsExcel.Forms
             }
             treeViewAzioni.ExpandAll();
         }
-
         private void CaricaCategorie()
         {
             foreach (DataRowView categoria in _categorie)
@@ -159,7 +142,6 @@ namespace Iren.ToolsExcel.Forms
             }
             treeViewCategorie.ExpandAll();
         }
-
         private void ThroughAllNodes(TreeNodeCollection root, Action<TreeNode> callback)
         {
             if (root.Count > 0)
@@ -171,7 +153,6 @@ namespace Iren.ToolsExcel.Forms
                 }
             }
         }
-
         private void CaricaEntita()
         {
             Dictionary<string, bool> notSel = new Dictionary<string, bool>();
@@ -209,7 +190,6 @@ namespace Iren.ToolsExcel.Forms
                 }
             });
         }
-
         private void Evidenzia(TreeNode node, bool evidenzia)
         {
             if (evidenzia)
@@ -224,7 +204,6 @@ namespace Iren.ToolsExcel.Forms
                 node.NodeFont = treeViewAzioni.Font;
             }
         }
-
         private void ColoraNodi()
         {
             ThroughAllNodes(treeViewAzioni.Nodes, n =>
@@ -240,25 +219,50 @@ namespace Iren.ToolsExcel.Forms
                 Evidenzia(n, n.Checked);
             });
         }
-
-        private void CheckParents(TreeView treeView)
+        private void CheckParents()
         {
-            foreach (TreeNode node in treeView.Nodes)
+            foreach (TreeNode node in treeViewAzioni.Nodes)
             {
-                if (node.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
+                if (node.Nodes.Count != 0)
                 {
-                    if (node.Checked)
+                    if (HasCheckedNode(node))
+                        node.Checked = true;
+                    else
                         node.Checked = false;
                 }
-                else
+            }
+            foreach (TreeNode node in treeViewCategorie.Nodes)
+            {
+                if (node.Nodes.Count != 0)
                 {
-                    if (!node.Checked)
+                    if (HasCheckedNode(node))
                         node.Checked = true;
+                    else
+                        node.Checked = false;
                 }
             }
         }
 
         #endregion
+
+
+        private void SelectParents(TreeNode node, Boolean isChecked)
+        {
+            var parent = node.Parent;
+
+            if (parent == null)
+                return;
+
+            if (!isChecked && HasCheckedNode(parent))
+                return;
+
+            parent.Checked = isChecked;
+            SelectParents(parent, isChecked);
+        }
+        private bool HasCheckedNode(TreeNode node)
+        {
+            return node.Nodes.Cast<TreeNode>().Any(n => n.Checked);
+        }
 
         #region Eventi
 
@@ -268,156 +272,354 @@ namespace Iren.ToolsExcel.Forms
             CaricaAzioni();
             CaricaCategorie();
         }
-        
         private void treeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
         {
             e.Cancel = true;
         }
+        //private void treeViewAzioni_AfterCheck(object sender, TreeViewEventArgs e)
+        //{
+        //    //treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
 
-        bool fromAzioni = false;
-        private void treeViewAzioni_AfterCheck(object sender, TreeViewEventArgs e)
+        //    //if (e.Node.Nodes.Count > 0)
+        //    //    foreach (TreeNode node in e.Node.Nodes)
+        //    //        node.Checked = e.Node.Checked;
+        //    //else
+        //    //    SelectParents(e.Node, e.Node.Checked);
+
+        //    //treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+
+        //    //treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
+
+        //    //ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
+        //    //{
+        //    //    nodoCategoria.Checked = false;
+        //    //});
+
+        //    //ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
+        //    //{
+        //    //    if (nodoAzione.Nodes.Count == 0)
+        //    //    {
+        //    //        _azioniCategorie.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //    //        {
+        //    //            TreeNode nodoCategoria = treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0];
+        //    //            nodoCategoria.Checked = nodoCategoria.Checked || nodoAzione.Checked;
+        //    //        }
+        //    //    }
+        //    //});
+
+        //    //treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
+
+
+        //    //_fromAzioni = true;
+
+        //    //if (e.Node.Checked)
+        //    //{
+        //    //    if (e.Node.Nodes.Count == 0)
+        //    //    {
+        //    //        treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
+        //    //        if (e.Node.Parent != null && !e.Node.Parent.Checked)
+        //    //            e.Node.Parent.Checked = true;
+        //    //        treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+
+        //    //        _azioniCategorie.RowFilter = "SiglaAzione = '" + e.Node.Name + "'";
+                    
+        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //    //            if (!treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked)
+        //    //                treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked = true;
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        foreach (TreeNode node in e.Node.Nodes)
+        //    //            if(!node.Checked)
+        //    //                node.Checked = true;
+        //    //    }
+        //    //}
+        //    //else
+        //    //{
+        //    //    if (e.Node.Nodes.Count > 0)
+        //    //    {
+        //    //        foreach (TreeNode node in e.Node.Nodes)
+        //    //            if (node.Checked)
+        //    //                node.Checked = false;
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
+        //    //        if(e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
+        //    //            e.Node.Parent.Checked = false;
+        //    //        treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+        //    //    }
+
+        //    //    Dictionary<string, bool> cateogorie = new Dictionary<string, bool>();
+        //    //    ThroughAllNodes(treeViewCategorie.Nodes, n => 
+        //    //    {
+        //    //        if (n.Nodes.Count == 0)
+        //    //        {
+        //    //            cateogorie.Add(n.Name, false);
+        //    //        }
+        //    //    });
+
+        //    //    ThroughAllNodes(treeViewAzioni.Nodes, n =>
+        //    //    {
+        //    //        if (n.Nodes.Count == 0 && n.Checked)
+        //    //        {
+        //    //            _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
+        //    //            foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //    //            {
+        //    //                cateogorie[azioneCategoria["SiglaCategoria"].ToString()] = true;
+        //    //            }
+        //    //        }
+        //    //    });
+
+        //    //    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
+        //    //    foreach (KeyValuePair<string, bool> cat in cateogorie)
+        //    //    {
+        //    //        if (!cat.Value && treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked)
+        //    //            treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked = false;
+        //    //    }
+        //    //    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+        //    //}
+
+        //    ////CaricaEntita();
+        //    ////ColoraNodi();
+        //    //_fromAzioni = false;
+        //}
+
+        private void treeView_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            fromAzioni = true;
+            TreeView from = sender as TreeView;
+            TreeView to = from.Name == "treeViewAzioni" ? treeViewCategorie : treeViewAzioni;
 
+            from.AfterCheck -= treeView_AfterCheck;
+            to.AfterCheck -= treeView_AfterCheck;
+
+            if (e.Node.Nodes.Count > 0)
+                foreach (TreeNode node in e.Node.Nodes)
+                    node.Checked = e.Node.Checked;
+
+            string filter = from.Name == "treeViewAzioni" ? "SiglaAzione" : "SiglaCategoria";
+            string field = from.Name == "treeViewAzioni" ? "SiglaCategoria" : "SiglaAzione";
+
+            Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
             if (e.Node.Checked)
             {
-                if (e.Node.Nodes.Count == 0)
-                {
-                    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-                    if (e.Node.Parent != null && !e.Node.Parent.Checked)
-                        e.Node.Parent.Checked = true;
-                    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-
-                    _azioniCategorie.RowFilter = "SiglaAzione = '" + e.Node.Name + "'";
-                    
-                    foreach (DataRowView azioneCategoria in _azioniCategorie)
-                        if (!treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked)
-                            treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked = true;
-                }
-                else
-                {
-                    foreach (TreeNode node in e.Node.Nodes)
-                        if(!node.Checked)
-                            node.Checked = true;
-                }
-            }
-            else
-            {
-                if (e.Node.Nodes.Count > 0)
-                {
-                    foreach (TreeNode node in e.Node.Nodes)
-                        if (node.Checked)
-                            node.Checked = false;
-                }
-                else
-                {
-                    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-                    if(e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
-                        e.Node.Parent.Checked = false;
-                    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-                }
-
-                Dictionary<string, bool> cateogorie = new Dictionary<string, bool>();
-                ThroughAllNodes(treeViewCategorie.Nodes, n => 
-                {
-                    if (n.Nodes.Count == 0)
-                    {
-                        cateogorie.Add(n.Name, false);
-                    }
-                });
-
-                ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                ThroughAllNodes(from.Nodes, n =>
                 {
                     if (n.Nodes.Count == 0 && n.Checked)
                     {
-                        _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                        _azioniCategorie.RowFilter = filter + " = '" + n.Name + "'";
                         foreach (DataRowView azioneCategoria in _azioniCategorie)
                         {
-                            cateogorie[azioneCategoria["SiglaCategoria"].ToString()] = true;
+                            TreeNode n1 = to.Nodes.Find(azioneCategoria[field].ToString(), true)[0];
+                            if (checkedNodes.ContainsKey(azioneCategoria[field].ToString()))
+                                checkedNodes[azioneCategoria[field].ToString()] = true;
+                            else
+                                checkedNodes.Add(azioneCategoria[field].ToString(), true);
                         }
                     }
                 });
 
-                treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-                foreach (KeyValuePair<string, bool> cat in cateogorie)
+                ThroughAllNodes(to.Nodes, n =>
                 {
-                    if (!cat.Value && treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked)
-                        treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked = false;
-                }
-                treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-            }
-
-            CaricaEntita();
-            ColoraNodi();
-            fromAzioni = false;
-        }
-
-        private void treeViewCategorie_AfterCheck(object sender, TreeViewEventArgs e)
-        {
-            if (e.Node.Checked)
-            {
-                if (e.Node.Nodes.Count > 0)
-                {
-                    foreach (TreeNode node in e.Node.Nodes)
-                        if (!node.Checked)
-                            node.Checked = true;
-                }
-                else
-                {
-                    treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
-                    if (e.Node.Parent != null && !e.Node.Parent.Checked)
-                        e.Node.Parent.Checked = true;
-                    treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
-                }
-
-                if (!fromAzioni)
-                {
-                    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-                    _azioniCategorie.RowFilter = "SiglaCategoria = '" + e.Node.Name + "'";
-                    foreach (DataRowView azioneCategoria in _azioniCategorie)
-                        if (!treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked)
-                            treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked = true;
-                    CheckParents(treeViewAzioni);
-                    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-                }
+                    if (n.Nodes.Count == 0 && checkedNodes.ContainsKey(n.Name))
+                        n.Checked = n.Checked || checkedNodes[n.Name];
+                });
             }
             else
             {
-                if (e.Node.Nodes.Count > 0)
-                {
-                    foreach (TreeNode node in e.Node.Nodes)
-                        if (node.Checked)
-                            node.Checked = false;
-                }
-                else
-                {
-                    treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
-                    if (e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
-                        e.Node.Parent.Checked = false;
-                    treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
-                }
-                List<string> azioni = new List<string>();
-                bool trovato = false;
-
-                ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                ThroughAllNodes(from.Nodes, n =>
                 {
                     if (n.Nodes.Count == 0)
                     {
-                        _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                        _azioniCategorie.RowFilter = filter + " = '" + n.Name + "'";
                         foreach (DataRowView azioneCategoria in _azioniCategorie)
-                            trovato = trovato || treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked;
-
-                        if (!trovato && n.Checked)
-                            n.Checked = false;
+                        {
+                            TreeNode n1 = to.Nodes.Find(azioneCategoria[field].ToString(), true)[0];
+                            if (checkedNodes.ContainsKey(azioneCategoria[field].ToString()))
+                                checkedNodes[azioneCategoria[field].ToString()] = checkedNodes[azioneCategoria[field].ToString()] || n.Checked;
+                            else
+                                checkedNodes.Add(azioneCategoria[field].ToString(), n.Checked);
+                        }
                     }
                 });
 
-                CheckParents(treeViewAzioni);
+                ThroughAllNodes(to.Nodes, n =>
+                {
+                    if (n.Nodes.Count == 0)
+                        n.Checked = n.Checked && checkedNodes[n.Name];
+                });
             }
+
+            CheckParents();
             CaricaEntita();
             ColoraNodi();
+
+            to.AfterCheck += treeView_AfterCheck;
+            from.AfterCheck += treeView_AfterCheck;
         }
 
+        //private void treeViewCategorie_AfterCheck(object sender, TreeViewEventArgs e)
+        //{
+        //    treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
+
+        //    if (e.Node.Nodes.Count > 0)
+        //        foreach (TreeNode node in e.Node.Nodes)
+        //            node.Checked = e.Node.Checked;
+        //    else
+        //        SelectParents(e.Node, e.Node.Checked);
+
+        //    treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
+
+        //    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
+            
+        //    if (e.Node.Checked)
+        //    {
+        //        ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
+        //        {
+        //            nodoAzione.Checked = false;
+        //        });
+
+        //        ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
+        //        {
+        //            if (nodoCategoria.Nodes.Count == 0 && nodoCategoria.Checked)
+        //            {
+        //                _azioniCategorie.RowFilter = "SiglaCategoria = '" + nodoCategoria.Name + "'";
+        //                foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //                {
+        //                    TreeNode nodoAzione = treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0];
+        //                    nodoAzione.Checked = nodoCategoria.Checked;
+        //                }
+        //            }
+        //        });
+        //    }
+        //    else
+        //    {
+        //        Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
+        //        ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
+        //        {
+        //            if (nodoCategoria.Nodes.Count == 0)
+        //            {
+        //                _azioniCategorie.RowFilter = "SiglaCategoria = '" + nodoCategoria.Name + "'";
+        //                foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //                {
+        //                    TreeNode nodoAzione = treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0];
+        //                    if (checkedNodes.ContainsKey(azioneCategoria["SiglaAzione"].ToString()))
+        //                        checkedNodes[azioneCategoria["SiglaAzione"].ToString()] = checkedNodes[azioneCategoria["SiglaAzione"].ToString()] || nodoCategoria.Checked;
+        //                    else
+        //                        checkedNodes.Add(azioneCategoria["SiglaAzione"].ToString(), nodoCategoria.Checked);
+        //                }
+        //            }
+        //        });
+
+        //        ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
+        //        {
+        //            if (nodoAzione.Nodes.Count == 0)
+        //                nodoAzione.Checked = nodoAzione.Checked && checkedNodes[nodoAzione.Name];
+        //        });
+        //    }
+            
+        //    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+
+
+        //    //treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
+
+        //    ////ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
+        //    ////{
+        //    ////    nodoAzione.Checked = false;
+        //    ////});
+
+        //    //Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
+
+        //    //ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
+        //    //{
+        //    //    if (nodoCategoria.Nodes.Count == 0)
+        //    //    {
+        //    //        _azioniCategorie.RowFilter = "SiglaCategoria = '" + nodoCategoria.Name + "'";
+        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //    //        {
+        //    //            TreeNode nodoAzione = treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0];
+        //    //            if (checkedNodes.ContainsKey(azioneCategoria["SiglaAzione"].ToString()))
+        //    //                checkedNodes[azioneCategoria["SiglaAzione"].ToString()] = checkedNodes[azioneCategoria["SiglaAzione"].ToString()] || nodoCategoria.Checked;
+        //    //            else
+        //    //                checkedNodes.Add(azioneCategoria["SiglaAzione"].ToString(), nodoCategoria.Checked);
+        //    //        }
+        //    //    }
+        //    //});
+
+        //    //ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
+        //    //{
+        //    //    if (nodoAzione.Nodes.Count == 0)
+        //    //        nodoAzione.Checked = nodoAzione.Checked && checkedNodes[nodoAzione.Name];
+        //    //});
+
+        //    //treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+
+
+
+        //    //if (e.Node.Checked)
+        //    //{
+        //    //    if (e.Node.Nodes.Count > 0)
+        //    //    {
+        //    //        foreach (TreeNode node in e.Node.Nodes)
+        //    //            if (!node.Checked)
+        //    //                node.Checked = true;
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
+        //    //        if (e.Node.Parent != null && !e.Node.Parent.Checked)
+        //    //            e.Node.Parent.Checked = true;
+        //    //        treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
+        //    //    }
+
+        //    //    if (!_fromAzioni)
+        //    //    {
+        //    //        treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
+        //    //        _azioniCategorie.RowFilter = "SiglaCategoria = '" + e.Node.Name + "'";
+        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //    //            if (!treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked)
+        //    //                treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked = true;
+        //    //        CheckParents(treeViewAzioni);
+        //    //        treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
+        //    //    }
+        //    //}
+        //    //else
+        //    //{
+        //    //    if (e.Node.Nodes.Count > 0)
+        //    //    {
+        //    //        foreach (TreeNode node in e.Node.Nodes)
+        //    //            if (node.Checked)
+        //    //                node.Checked = false;
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
+        //    //        if (e.Node.Parent != null && e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
+        //    //            e.Node.Parent.Checked = false;
+        //    //        treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
+        //    //    }
+        //    //    List<string> azioni = new List<string>();
+        //    //    bool trovato = false;
+
+        //    //    ThroughAllNodes(treeViewAzioni.Nodes, n =>
+        //    //    {
+        //    //        if (n.Nodes.Count == 0)
+        //    //        {
+        //    //            _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
+        //    //            foreach (DataRowView azioneCategoria in _azioniCategorie)
+        //    //                trovato = trovato || treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked;
+
+        //    //            if (!trovato && n.Checked)
+        //    //                n.Checked = false;
+        //    //        }
+        //    //    });
+
+        //    //    CheckParents(treeViewAzioni);
+        //    //}
+        //    //CaricaEntita();
+        //    //ColoraNodi();
+        //}
         private void treeViewUP_AfterCheck(object sender, TreeViewEventArgs e)
         {
             checkTutte.CheckedChanged -= checkTutte_CheckedChanged;
@@ -433,7 +635,6 @@ namespace Iren.ToolsExcel.Forms
 
             checkTutte.CheckedChanged += checkTutte_CheckedChanged;
         }
-
         private void btnMeteo_Click(object sender, EventArgs e)
         {
             if (_toProcessDates.Count > 0)
@@ -447,7 +648,6 @@ namespace Iren.ToolsExcel.Forms
             else
                 MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-
         private void btnApplica_Click(object sender, EventArgs e)
         {
             btnApplica.Enabled = false;
@@ -495,90 +695,73 @@ namespace Iren.ToolsExcel.Forms
 
                         bool[] statoAzione = new bool[4] { false, false, false, false };
 
-                        ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                        ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
                         {
-                            if (n.Checked && n.Nodes.Count == 0)
+                            if (nodoAzione.Checked && nodoAzione.Nodes.Count == 0)
                             {
                                 TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                                _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                                _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
 
-                                ThroughAllNodes(treeViewUP.Nodes, n1 =>
+                                ThroughAllNodes(treeViewUP.Nodes, nodoEntita =>
                                 {
-                                    if (n1.Checked && n1.Nodes.Count == 0)
+                                    if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                     {
-                                        string nomeFoglio = NewDefinedNames.GetSheetName(n1.Name);
+                                        string nomeFoglio = NewDefinedNames.GetSheetName(nodoEntita.Name);
                                         bool presente;
 
-                                        SplashScreen.UpdateStatus(n.Parent.Text + " " + n.Text + ": " + n1.Text);
+                                        SplashScreen.UpdateStatus(nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
-                                        switch (n.Parent.Name)
+                                        switch (nodoAzione.Parent.Name)
                                         {
                                             case "CARICA":
-                                                presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, date);
-                                                _r.AggiornaRiepilogo(n1.Name, n.Name, presente, date);
+                                                presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
+                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                 statoAzione[0] = true;
                                                 break;
                                             case "GENERA":
-                                                presente = Workbook.CaricaAzioneInformazione(n1.Name, n.Name, n.Parent.Name, date);
-                                                _r.AggiornaRiepilogo(n1.Name, n.Name, presente, date);
+                                                presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
+                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                 statoAzione[1] = true;
                                                 break;
                                             case "ESPORTA":
-                                                presente = _esporta.RunExport(n1.Name, n.Name, n1.Text, n.Text, date);
-                                                _r.AggiornaRiepilogo(n1.Name, n.Name, presente, date);
+                                                presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date);
+                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                 statoAzione[2] = true;
                                                 break;
                                         }
 
-                                        if (_azioni[0]["Relazione"] != DBNull.Value)
+                                        if (_azioni[0]["Relazione"] != DBNull.Value && Struct.visualizzaRiepilogo)
                                         {
                                             string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
                                             
                                             NewDefinedNames newNomiDefiniti = new NewDefinedNames("Main");
-                                            
+                                            Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+
                                             foreach (string relazione in azioneRelazione)
                                             {
                                                 _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
 
-                                                if (Struct.visualizzaRiepilogo)
+                                                Range rng = new Range(newNomiDefiniti.GetRowByName(nodoEntita.Name), newNomiDefiniti.GetColFromName(relazione, suffissoData));
+                                                if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
                                                 {
-                                                    Range rng = new Range(newNomiDefiniti.GetRowByName(n1.Name), newNomiDefiniti.GetColFromName(relazione, suffissoData));
-                                                    Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
-                                                    if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
-                                                    {
-                                                        ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                        Style.RangeStyle(ws.Range[rng.ToString()], bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
-                                                    }
+                                                    ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                    Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
                                                 }
-
-
-                                                //if (DefinedNames.IsDefined("Main", DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)))
-                                                //{
-                                                //    DefinedNames nomiDefiniti = new DefinedNames("Main");
-                                                //    Tuple<int, int> cella = nomiDefiniti[DefinedNames.GetName("RIEPILOGO", n1.Name, relazione, suffissoData)][0];
-
-                                                //    Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
-                                                //    if (ws.Cells[cella.Item1, cella.Item2].Interior.ColoIndex != 2)
-                                                //    {
-                                                //        ws.Cells[cella.Item1, cella.Item2].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                //        Style.RangeStyle(ws.Cells[cella.Item1, cella.Item2], "Bold:True;ForeColor:3;BackColor:6;Align:Center");
-                                                //    }
-                                                //}
                                             }
-                                            _azioni.RowFilter = "SiglaAzione = '" + n.Name + "'";
+                                            _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
                                         }
                                     }
                                 });
-                                switch (n.Parent.Name)
+                                switch (nodoAzione.Parent.Name)
                                 {
                                     case "CARICA":
-                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + n.Name);
+                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Name);
                                         break;
                                     case "GENERA":
-                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + n.Name);
+                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + nodoAzione.Name);
                                         break;
                                     case "ESPORTA":
-                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + n.Name);
+                                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + nodoAzione.Name);
                                         break;
                                 }
                             }
@@ -601,9 +784,6 @@ namespace Iren.ToolsExcel.Forms
             btnAnnulla.Enabled = true;
             btnMeteo.Enabled = true;
         }
-
-        #endregion
-
         private void checkTutte_CheckedChanged(object sender, EventArgs e)
         {
             treeViewUP.AfterCheck -= treeViewUP_AfterCheck;
@@ -614,12 +794,10 @@ namespace Iren.ToolsExcel.Forms
             }
             treeViewUP.AfterCheck += treeViewUP_AfterCheck;
         }
-
         private void FormAzioni_FormClosing(object sender, FormClosingEventArgs e)
         {
             selDate.Close();
         }
-
         private void comboGiorni_MouseClick(object sender, EventArgs e)
         {
             selDate.BringToFront();
@@ -628,7 +806,6 @@ namespace Iren.ToolsExcel.Forms
             selDate.Width = comboGiorni.Width;
             selDate.Show();
         }
-
         private void comboGiorni_TextChanged(object sender, EventArgs e)
         {
             comboGiorni.TextChanged -= comboGiorni_TextChanged;
@@ -645,5 +822,23 @@ namespace Iren.ToolsExcel.Forms
             }
             comboGiorni.TextChanged += comboGiorni_TextChanged;
         }
+        private void selDate_VisibleChanged(object sender, EventArgs e)
+        {
+            if (!_toProcessDates.SequenceEqual(selDate.SelectedDates))
+            {
+                _toProcessDates = new List<DateTime>(selDate.SelectedDates);
+
+                comboGiorni.Text = "";
+                if (_toProcessDates.Count == 1)
+                    comboGiorni.Text = _toProcessDates[0].ToString("ddd dd MMM yyyy");
+                else if (_toProcessDates.Count > 0)
+                    comboGiorni.Text = _toProcessDates.Count + " giorni";
+                else
+                    comboGiorni.Text = "";
+            }
+        }
+
+        #endregion
+
     }
 }

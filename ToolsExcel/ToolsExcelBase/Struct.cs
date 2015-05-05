@@ -37,6 +37,9 @@ namespace Iren.ToolsExcel.Base
         public static bool visualizzaRiepilogo = true;
         public static Cella cell;
 
+        public int numRigheMenu = 1;
+        public int numEleMenu = 1;
+
         public int colBlock = 5,
             rigaBlock = 6,
             rigaGoto = 3,

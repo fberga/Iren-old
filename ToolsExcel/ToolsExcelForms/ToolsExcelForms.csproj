@@ -53,6 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BugFixedTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FormAzioni.cs">
       <SubType>Form</SubType>
     </Compile>

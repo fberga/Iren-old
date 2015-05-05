@@ -177,6 +177,7 @@ namespace Iren.ToolsExcel.Base
 
             _ws.UsedRange.EntireColumn.Delete();
             _ws.UsedRange.FormatConditions.Delete();
+            _ws.UsedRange.Interior.ColorIndex = 2;
             _ws.UsedRange.EntireRow.Hidden = false;
             _ws.UsedRange.Font.Size = 8;
             _ws.UsedRange.NumberFormat = "General";
@@ -311,6 +312,7 @@ namespace Iren.ToolsExcel.Base
                 {                    
                     Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(azione["SiglaEntita"]), _newNomiDefiniti.GetColFromName(azione["SiglaAzione"], suffissoData));
                     _ws.Range[cellaAzione.ToString()].Interior.Pattern = Excel.XlPattern.xlPatternNone;
+                    _ws.Range[cellaAzione.ToString()].Interior.ColorIndex = 2;
                 }
             });
         }
@@ -326,7 +328,6 @@ namespace Iren.ToolsExcel.Base
                         foreach (DataRowView valore in datiRiepilogo)
                         {
                             Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(valore["SiglaEntita"]), _newNomiDefiniti.GetColFromName(valore["SiglaAzione"], suffissoData));
-                            string commento = "";
 
                             Excel.Range rng = _ws.Range[cellaAzione.ToString()];
 
@@ -334,8 +335,7 @@ namespace Iren.ToolsExcel.Base
                             {
                                 rng.ClearComments();
                                 DateTime data = DateTime.ParseExact(valore["Data"].ToString(), "yyyyMMddHHmm", CultureInfo.InvariantCulture);
-                                commento = "Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm");
-                                rng.AddComment(commento);
+                                rng.AddComment("Utente: " + valore["Utente"] + "\nData: " + data.ToString("dd MMM yyyy") + "\nOra: " + data.ToString("HH:mm"));
                                 rng.Value = "OK";
                                 Style.RangeStyle(rng, foreColor: 1, bold: true, fontSize: 9, backColor: 4, align: Excel.XlHAlign.xlHAlignCenter);
                             }
@@ -385,6 +385,7 @@ namespace Iren.ToolsExcel.Base
         {
             Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
             _ws.Range[rngData.ToString()].Value = null;
+            _ws.Range[rngData.ToString()].Interior.ColorIndex = 2;
             _ws.Range[rngData.ToString()].ClearComments();
         }
         protected void AggiornaDate()
@@ -421,10 +422,6 @@ namespace Iren.ToolsExcel.Base
             Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
 
             Style.RangeStyle(_ws.Range[rngData.ToString()], pattern: Excel.XlPattern.xlPatternCrissCross);
-
-            //Style.RangeStyle(_ws.Range[rngData.ToString()], "FontSize:9;BackPattern:CrissCross;Backcolor:2");
-            //_ws.Range[rngData.ToString()].Value = "";
-            //_ws.Range[rngData.ToString()].ClearComments();
         }
         public override void RiepilogoInEmergenza()
         {

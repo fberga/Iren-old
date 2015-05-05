@@ -172,18 +172,16 @@ namespace Iren.ToolsExcel.Forms
 
             this.Hide();
         }
-
-        #endregion
-
         private void checkDate_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             _workList[_workList.ElementAt(e.Index).Key] = e.NewValue == CheckState.Checked;
         }
-
         private void FormSelezioneDate_VisibleChanged(object sender, EventArgs e)
         {
             if (this.Visible)
                 _workListOld = new Dictionary<DateTime, bool>(_workList);
         }
+
+        #endregion
     }
 }
