@@ -38,10 +38,10 @@
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
             this.checkTutte = new System.Windows.Forms.CheckBox();
-            this.treeViewUP = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelCategorie = new System.Windows.Forms.Panel();
-            this.treeViewCategorie = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
+            this.treeViewUP = new Iren.ToolsExcel.Forms.BugFixedTreeView();
+            this.treeViewCategorie = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.treeViewAzioni = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
@@ -105,6 +105,7 @@
             // 
             // panelTop
             // 
+            this.panelTop.Controls.Add(this.checkTutte);
             this.panelTop.Controls.Add(this.groupDate);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(5, 5);
@@ -153,7 +154,6 @@
             // 
             // panelUP
             // 
-            this.panelUP.Controls.Add(this.checkTutte);
             this.panelUP.Controls.Add(this.treeViewUP);
             this.panelUP.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelUP.Location = new System.Drawing.Point(700, 5);
@@ -165,17 +165,37 @@
             // checkTutte
             // 
             this.checkTutte.AutoSize = true;
-            this.checkTutte.BackColor = System.Drawing.SystemColors.Window;
+            this.checkTutte.BackColor = System.Drawing.SystemColors.Control;
+            this.checkTutte.CausesValidation = false;
             this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkTutte.Location = new System.Drawing.Point(279, 1);
+            this.checkTutte.Location = new System.Drawing.Point(982, 28);
             this.checkTutte.Name = "checkTutte";
             this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.checkTutte.Size = new System.Drawing.Size(65, 24);
             this.checkTutte.TabIndex = 2;
             this.checkTutte.Text = "Tutte";
-            this.checkTutte.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.checkTutte.UseVisualStyleBackColor = false;
             this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
+            // 
+            // panelCategorie
+            // 
+            this.panelCategorie.Controls.Add(this.treeViewCategorie);
+            this.panelCategorie.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelCategorie.Location = new System.Drawing.Point(350, 5);
+            this.panelCategorie.Name = "panelCategorie";
+            this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.panelCategorie.Size = new System.Drawing.Size(350, 372);
+            this.panelCategorie.TabIndex = 5;
+            // 
+            // panelAzioni
+            // 
+            this.panelAzioni.Controls.Add(this.treeViewAzioni);
+            this.panelAzioni.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelAzioni.Location = new System.Drawing.Point(0, 5);
+            this.panelAzioni.Name = "panelAzioni";
+            this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.panelAzioni.Size = new System.Drawing.Size(350, 372);
+            this.panelAzioni.TabIndex = 4;
             // 
             // treeViewUP
             // 
@@ -192,16 +212,6 @@
             this.treeViewUP.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewUP_AfterCheck);
             this.treeViewUP.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
-            // panelCategorie
-            // 
-            this.panelCategorie.Controls.Add(this.treeViewCategorie);
-            this.panelCategorie.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelCategorie.Location = new System.Drawing.Point(350, 5);
-            this.panelCategorie.Name = "panelCategorie";
-            this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelCategorie.Size = new System.Drawing.Size(350, 372);
-            this.panelCategorie.TabIndex = 5;
-            // 
             // treeViewCategorie
             // 
             this.treeViewCategorie.CheckBoxes = true;
@@ -216,16 +226,6 @@
             this.treeViewCategorie.TabIndex = 1;
             this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
-            // 
-            // panelAzioni
-            // 
-            this.panelAzioni.Controls.Add(this.treeViewAzioni);
-            this.panelAzioni.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelAzioni.Location = new System.Drawing.Point(0, 5);
-            this.panelAzioni.Name = "panelAzioni";
-            this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelAzioni.Size = new System.Drawing.Size(350, 372);
-            this.panelAzioni.TabIndex = 4;
             // 
             // treeViewAzioni
             // 
@@ -258,10 +258,10 @@
             this.Load += new System.EventHandler(this.frmAZIONI_Load);
             this.panelButtons.ResumeLayout(false);
             this.panelTop.ResumeLayout(false);
+            this.panelTop.PerformLayout();
             this.groupDate.ResumeLayout(false);
             this.panelCentrale.ResumeLayout(false);
             this.panelUP.ResumeLayout(false);
-            this.panelUP.PerformLayout();
             this.panelCategorie.ResumeLayout(false);
             this.panelAzioni.ResumeLayout(false);
             this.ResumeLayout(false);

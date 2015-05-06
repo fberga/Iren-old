@@ -18,7 +18,7 @@ using System.Globalization;
 using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
-// ************************************************************* PROGRAMMAZIONE ************************************************************* //
+// ************************************************************* OFFERTE MGP ************************************************************* //
 
 namespace Iren.ToolsExcel
 {
@@ -112,20 +112,5 @@ namespace Iren.ToolsExcel
 
             }
         }
-
-        //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
-        //{
-        //    return new Microsoft.Office.Tools.Ribbon.IRibbonExtension[] { new       
-        //Iren.ToolsExcel.Ribbon.SharedRibbon(Globals.Factory.GetRibbonFactory()) };
-        //}
-
     }
-
-    //partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonReadOnlyCollection
-    //{
-    //    internal Iren.ToolsExcel.Ribbon.SharedRibbon SharedRibbon
-    //    {
-    //        get { return this.GetRibbon<Iren.ToolsExcel.Ribbon.SharedRibbon>(); }
-    //    }
-    //}
 }

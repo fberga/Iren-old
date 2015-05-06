@@ -56,6 +56,12 @@
     <Compile Include="BugFixedTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ErrorPane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ErrorPane.Designer.cs">
+      <DependentUpon>ErrorPane.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormAzioni.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -105,6 +111,9 @@
     <Compile Include="FormSettings.Designer.cs">
       <DependentUpon>FormSettings.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ErrorPane.resx">
+      <DependentUpon>ErrorPane.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormAzioni.resx">
       <DependentUpon>FormAzioni.cs</DependentUpon>
     </EmbeddedResource>

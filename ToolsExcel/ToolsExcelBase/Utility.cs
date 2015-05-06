@@ -81,6 +81,7 @@ namespace Iren.ToolsExcel.Utility
                 CALCOLO_INFORMAZIONE = "CalcoloInformazione",
                 CATEGORIA = "Categoria",
                 CATEGORIA_ENTITA = "CategoriaEntita",
+                CHECK = "Check",
                 DATE_DEFINITE = "DefinedDates",
                 EDITABILI = "Editabili",
                 ENTITA_ASSETTO = "EntitaAssetto",
@@ -488,6 +489,7 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaEditabili();
             CreaTabellaSalvaDB();
             CreaTabellaAnnotaModifica();
+            CreaTabellaCheck();
             CaricaAzioni();
             CaricaCategorie();
             CaricaApplicazioneRibbon();
@@ -514,6 +516,8 @@ namespace Iren.ToolsExcel.Utility
             _localDB.AcceptChanges();
         }
         #region Aggiorna Struttura Dati
+
+        
 
         private static bool CreaTabellaNomiNew()
         {
@@ -611,7 +615,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.ANNOTA;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultToNote(name);
+                DataTable dt = NewDefinedNames.GetDefaultToNoteTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -642,6 +646,21 @@ namespace Iren.ToolsExcel.Utility
 
                 dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
 
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CreaTabellaCheck()
+        {
+            try
+            {
+                string name = Tab.CHECK;
+                ResetTable(name);
+                DataTable dt = NewDefinedNames.GetDefaultCheckTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -1201,6 +1220,8 @@ namespace Iren.ToolsExcel.Utility
                             ElaborazioneInformazione(siglaEntita, siglaAzione, newNomiDefiniti, giorno, (siglaAzione.Equals("G_MP_MGP") ? 5 : 7));
                             if (azioni[0]["Visibile"].Equals("1"))
                                 DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
+
+                            return true;
                         }
                         else
                         {
@@ -1209,6 +1230,7 @@ namespace Iren.ToolsExcel.Utility
                             {
                                 if (azioni[0]["Visibile"].Equals("1"))
                                     DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
+                                return false;
                             }
                             else
                             {
@@ -1216,6 +1238,8 @@ namespace Iren.ToolsExcel.Utility
 
                                 if (azioni[0]["Visibile"].Equals("1"))
                                     DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
+
+                                return false;
                             }
                         }
                     }
@@ -1401,41 +1425,48 @@ namespace Iren.ToolsExcel.Utility
             int ora1 = calcolo["OraInformazione1"] is DBNull ? ora : ora + (int)calcolo["OraInformazione1"];
             int ora2 = calcolo["OraInformazione2"] is DBNull ? ora : ora + (int)calcolo["OraInformazione2"];
 
-            object siglaEntitaRif1 = calcolo["Riferimento1"] is DBNull ? (calcolo["SiglaEntita1"] is DBNull ? siglaEntita : calcolo["SiglaEntita1"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == (int)calcolo["Riferimento1"]);
-            object siglaEntitaRif2 = calcolo["Riferimento2"] is DBNull ? (calcolo["SiglaEntita2"] is DBNull ? siglaEntita : calcolo["SiglaEntita2"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == (int)calcolo["Riferimento2"]);
+            object siglaEntitaRif1 = calcolo["Riferimento1"] is DBNull ? (calcolo["SiglaEntita1"] is DBNull ? siglaEntita : calcolo["SiglaEntita1"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == (int)calcolo["Riferimento1"]).Key;
+            object siglaEntitaRif2 = calcolo["Riferimento2"] is DBNull ? (calcolo["SiglaEntita2"] is DBNull ? siglaEntita : calcolo["SiglaEntita2"]) : entitaRiferimento.FirstOrDefault(kv => kv.Value == (int)calcolo["Riferimento2"]).Key;
 
             object valore1 = 0d;
             object valore2 = 0d;
 
             if (calcolo["SiglaInformazione1"] != DBNull.Value)
             {
-                Range cella1 = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1));
-
-                switch (calcolo["SiglaInformazione1"].ToString())
+                try
                 {
-                    case "UNIT_COMM":
-                        DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
-                        entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Range[cella1.ToString()].Value + "'";
-                        valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0]["IdEntitaCommitment"] : null;
+                    Range cella1 = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1));
 
-                        break;
-                    case "DISPONIBILITA":
-                        if (ws.Range[cella1.ToString()].Value == "OFF")
-                            valore1 = 0d;
-                        else
-                            valore1 = 1d;
+                    switch (calcolo["SiglaInformazione1"].ToString())
+                    {
+                        case "UNIT_COMM":
+                            DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
+                            entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Range[cella1.ToString()].Value + "'";
+                            valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0]["IdEntitaCommitment"] : null;
 
-                        break;
-                    case "CHECKINFO":
-                        if (ws.Range[cella1.ToString()].Value == "OK")
-                            valore1 = 1d;
-                        else
-                            valore1 = 2d;
-                        break;
-                    default:
-                        //if (cella != null)
+                            break;
+                        case "DISPONIBILITA":
+                            if (ws.Range[cella1.ToString()].Value == "OFF")
+                                valore1 = 0d;
+                            else
+                                valore1 = 1d;
+
+                            break;
+                        case "CHECKINFO":
+                            if (ws.Range[cella1.ToString()].Value == "OK")
+                                valore1 = 1d;
+                            else
+                                valore1 = 2d;
+                            break;
+                        default:
+                            //if (cella != null)
                             valore1 = ws.Range[cella1.ToString()].Value ?? 0d;
-                        break;
+                            break;
+                    }
+                }
+                catch
+                {
+                    valore1 = 0d;
                 }
             }
             else if (calcolo["IdProprieta"] != DBNull.Value)
@@ -1469,36 +1500,44 @@ namespace Iren.ToolsExcel.Utility
 
             if (calcolo["SiglaInformazione2"] != DBNull.Value)
             {
-                Range cella2 = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, Date.GetSuffissoOra(ora2));
-
-                switch (calcolo["SiglaInformazione2"].ToString())
+                try
                 {
-                    case "UNIT_COMM":
-                        DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
-                        entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Range[cella2.ToString()].Value + "'";
-                        valore2 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
+                    Range cella2 = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, Date.GetSuffissoOra(ora2));
 
-                        break;
-                    case "DISPONIBILITA":
-                        if (ws.Range[cella2.ToString()].Value == "OFF")
-                            valore2 = 0d;
-                        else
-                            valore2 = 1d;
+                    switch (calcolo["SiglaInformazione2"].ToString())
+                    {
+                        case "UNIT_COMM":
+                            DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
+                            entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Range[cella2.ToString()].Value + "'";
+                            valore2 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
 
-                        break;
-                    case "CHECKINFO":
-                        if (ws.Range[cella2.ToString()].Value == "OK")
-                            valore2 = 1d;
-                        else
-                            valore2 = 2d;
-                        break;
-                    default:
-                        //if (cella != null)
-                        valore2 = ws.Range[cella2.ToString()].Value ?? 0d;
-                        //else
-                        //    valore2 = 0d;
-                        break;
+                            break;
+                        case "DISPONIBILITA":
+                            if (ws.Range[cella2.ToString()].Value == "OFF")
+                                valore2 = 0d;
+                            else
+                                valore2 = 1d;
+
+                            break;
+                        case "CHECKINFO":
+                            if (ws.Range[cella2.ToString()].Value == "OK")
+                                valore2 = 1d;
+                            else
+                                valore2 = 2d;
+                            break;
+                        default:
+                            //if (cella != null)
+                            valore2 = ws.Range[cella2.ToString()].Value ?? 0d;
+                            //else
+                            //    valore2 = 0d;
+                            break;
+                    }
                 }
+                catch
+                {
+                    valore2 = 0d;
+                }
+                
             }
 
             double retVal = 0d;
@@ -1566,13 +1605,13 @@ namespace Iren.ToolsExcel.Utility
                     {
                         retVal = double.MinValue;
                         foreach (var kvp in entitaRiferimento)
-                            retVal = Math.Max(ws.Range[newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
+                            retVal = Math.Max(ws.Range[newNomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
                     }
                     else if (func.Contains("min"))
                     {
                         retVal = double.MaxValue;
                         foreach (var kvp in entitaRiferimento)
-                            retVal = Math.Min(ws.Range[newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
+                            retVal = Math.Min(ws.Range[newNomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
                     }
                 }
                 //caso in cui ci sia anche SiglaInformazione2

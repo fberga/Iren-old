@@ -81,6 +81,8 @@
             this.TabPrintPreview = this.Factory.CreateRibbonTab();
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.TabSmartArtToolsDesign = this.Factory.CreateRibbonTab();
+            this.groupErrori = this.Factory.CreateRibbonGroup();
+            this.btnMostraErrorPane = this.Factory.CreateRibbonToggleButton();
             this.FrontOffice.SuspendLayout();
             this.groupChiudi.SuspendLayout();
             this.groupConfigura.SuspendLayout();
@@ -103,6 +105,7 @@
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
             this.TabSmartArtToolsDesign.SuspendLayout();
+            this.groupErrori.SuspendLayout();
             // 
             // FrontOffice
             // 
@@ -115,6 +118,7 @@
             this.FrontOffice.Groups.Add(this.groupAmbienti);
             this.FrontOffice.Groups.Add(this.groupFileRete);
             this.FrontOffice.Groups.Add(this.groupFileLocali);
+            this.FrontOffice.Groups.Add(this.groupErrori);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
@@ -499,6 +503,20 @@
             this.TabSmartArtToolsDesign.Label = "TabSmartArtToolsDesign";
             this.TabSmartArtToolsDesign.Name = "TabSmartArtToolsDesign";
             // 
+            // groupErrori
+            // 
+            this.groupErrori.Items.Add(this.btnMostraErrorPane);
+            this.groupErrori.Label = "Errori";
+            this.groupErrori.Name = "groupErrori";
+            // 
+            // btnMostraErrorPane
+            // 
+            this.btnMostraErrorPane.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnMostraErrorPane.Label = "Mostra pannello";
+            this.btnMostraErrorPane.Name = "btnMostraErrorPane";
+            this.btnMostraErrorPane.ShowImage = true;
+            this.btnMostraErrorPane.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnMostraErrorPane_Click);
+            // 
             // ToolsExcelRibbon
             // 
             this.Name = "ToolsExcelRibbon";
@@ -561,6 +579,8 @@
             this.TabBackgroundRemoval.PerformLayout();
             this.TabSmartArtToolsDesign.ResumeLayout(false);
             this.TabSmartArtToolsDesign.PerformLayout();
+            this.groupErrori.ResumeLayout(false);
+            this.groupErrori.PerformLayout();
 
         }
 
@@ -612,6 +632,8 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnInvioProgrammi;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnSistemaComandi;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnForzaEmergenza;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupErrori;
+        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnMostraErrorPane;
     }
 
     partial class ThisRibbonCollection

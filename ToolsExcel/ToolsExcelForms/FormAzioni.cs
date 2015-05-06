@@ -28,7 +28,6 @@ namespace Iren.ToolsExcel.Forms
         private FormSelezioneDate selDate = new FormSelezioneDate();
 
         private bool _giorniVisible = true;
-        private bool _fromAzioni = false;
 
         #endregion
 
@@ -242,27 +241,12 @@ namespace Iren.ToolsExcel.Forms
                 }
             }
         }
-
-        #endregion
-
-
-        private void SelectParents(TreeNode node, Boolean isChecked)
-        {
-            var parent = node.Parent;
-
-            if (parent == null)
-                return;
-
-            if (!isChecked && HasCheckedNode(parent))
-                return;
-
-            parent.Checked = isChecked;
-            SelectParents(parent, isChecked);
-        }
         private bool HasCheckedNode(TreeNode node)
         {
             return node.Nodes.Cast<TreeNode>().Any(n => n.Checked);
         }
+
+        #endregion
 
         #region Eventi
 
@@ -276,116 +260,6 @@ namespace Iren.ToolsExcel.Forms
         {
             e.Cancel = true;
         }
-        //private void treeViewAzioni_AfterCheck(object sender, TreeViewEventArgs e)
-        //{
-        //    //treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-
-        //    //if (e.Node.Nodes.Count > 0)
-        //    //    foreach (TreeNode node in e.Node.Nodes)
-        //    //        node.Checked = e.Node.Checked;
-        //    //else
-        //    //    SelectParents(e.Node, e.Node.Checked);
-
-        //    //treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-
-        //    //treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
-
-        //    //ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
-        //    //{
-        //    //    nodoCategoria.Checked = false;
-        //    //});
-
-        //    //ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
-        //    //{
-        //    //    if (nodoAzione.Nodes.Count == 0)
-        //    //    {
-        //    //        _azioniCategorie.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
-        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //    //        {
-        //    //            TreeNode nodoCategoria = treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0];
-        //    //            nodoCategoria.Checked = nodoCategoria.Checked || nodoAzione.Checked;
-        //    //        }
-        //    //    }
-        //    //});
-
-        //    //treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
-
-
-        //    //_fromAzioni = true;
-
-        //    //if (e.Node.Checked)
-        //    //{
-        //    //    if (e.Node.Nodes.Count == 0)
-        //    //    {
-        //    //        treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-        //    //        if (e.Node.Parent != null && !e.Node.Parent.Checked)
-        //    //            e.Node.Parent.Checked = true;
-        //    //        treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-
-        //    //        _azioniCategorie.RowFilter = "SiglaAzione = '" + e.Node.Name + "'";
-                    
-        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //    //            if (!treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked)
-        //    //                treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked = true;
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        foreach (TreeNode node in e.Node.Nodes)
-        //    //            if(!node.Checked)
-        //    //                node.Checked = true;
-        //    //    }
-        //    //}
-        //    //else
-        //    //{
-        //    //    if (e.Node.Nodes.Count > 0)
-        //    //    {
-        //    //        foreach (TreeNode node in e.Node.Nodes)
-        //    //            if (node.Checked)
-        //    //                node.Checked = false;
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-        //    //        if(e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
-        //    //            e.Node.Parent.Checked = false;
-        //    //        treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-        //    //    }
-
-        //    //    Dictionary<string, bool> cateogorie = new Dictionary<string, bool>();
-        //    //    ThroughAllNodes(treeViewCategorie.Nodes, n => 
-        //    //    {
-        //    //        if (n.Nodes.Count == 0)
-        //    //        {
-        //    //            cateogorie.Add(n.Name, false);
-        //    //        }
-        //    //    });
-
-        //    //    ThroughAllNodes(treeViewAzioni.Nodes, n =>
-        //    //    {
-        //    //        if (n.Nodes.Count == 0 && n.Checked)
-        //    //        {
-        //    //            _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
-        //    //            foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //    //            {
-        //    //                cateogorie[azioneCategoria["SiglaCategoria"].ToString()] = true;
-        //    //            }
-        //    //        }
-        //    //    });
-
-        //    //    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-        //    //    foreach (KeyValuePair<string, bool> cat in cateogorie)
-        //    //    {
-        //    //        if (!cat.Value && treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked)
-        //    //            treeViewCategorie.Nodes.Find(cat.Key, true)[0].Checked = false;
-        //    //    }
-        //    //    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-        //    //}
-
-        //    ////CaricaEntita();
-        //    ////ColoraNodi();
-        //    //_fromAzioni = false;
-        //}
-
         private void treeView_AfterCheck(object sender, TreeViewEventArgs e)
         {
             TreeView from = sender as TreeView;
@@ -394,40 +268,32 @@ namespace Iren.ToolsExcel.Forms
             from.AfterCheck -= treeView_AfterCheck;
             to.AfterCheck -= treeView_AfterCheck;
 
+            List<TreeNode> justChecked = new List<TreeNode>();
             if (e.Node.Nodes.Count > 0)
                 foreach (TreeNode node in e.Node.Nodes)
+                {
                     node.Checked = e.Node.Checked;
+                    justChecked.Add(node);
+                }
+            else
+                justChecked.Add(e.Node);
 
             string filter = from.Name == "treeViewAzioni" ? "SiglaAzione" : "SiglaCategoria";
             string field = from.Name == "treeViewAzioni" ? "SiglaCategoria" : "SiglaAzione";
 
-            Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
+            
             if (e.Node.Checked)
             {
-                ThroughAllNodes(from.Nodes, n =>
+                foreach (TreeNode node in justChecked)
                 {
-                    if (n.Nodes.Count == 0 && n.Checked)
-                    {
-                        _azioniCategorie.RowFilter = filter + " = '" + n.Name + "'";
-                        foreach (DataRowView azioneCategoria in _azioniCategorie)
-                        {
-                            TreeNode n1 = to.Nodes.Find(azioneCategoria[field].ToString(), true)[0];
-                            if (checkedNodes.ContainsKey(azioneCategoria[field].ToString()))
-                                checkedNodes[azioneCategoria[field].ToString()] = true;
-                            else
-                                checkedNodes.Add(azioneCategoria[field].ToString(), true);
-                        }
-                    }
-                });
-
-                ThroughAllNodes(to.Nodes, n =>
-                {
-                    if (n.Nodes.Count == 0 && checkedNodes.ContainsKey(n.Name))
-                        n.Checked = n.Checked || checkedNodes[n.Name];
-                });
+                    _azioniCategorie.RowFilter = filter + " = '" + node.Name + "'";
+                    foreach (DataRowView azioneCategoria in _azioniCategorie)
+                        to.Nodes.Find(azioneCategoria[field].ToString(), true)[0].Checked = true;
+                }
             }
             else
             {
+                Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
                 ThroughAllNodes(from.Nodes, n =>
                 {
                     if (n.Nodes.Count == 0)
@@ -458,168 +324,6 @@ namespace Iren.ToolsExcel.Forms
             to.AfterCheck += treeView_AfterCheck;
             from.AfterCheck += treeView_AfterCheck;
         }
-
-        //private void treeViewCategorie_AfterCheck(object sender, TreeViewEventArgs e)
-        //{
-        //    treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
-
-        //    if (e.Node.Nodes.Count > 0)
-        //        foreach (TreeNode node in e.Node.Nodes)
-        //            node.Checked = e.Node.Checked;
-        //    else
-        //        SelectParents(e.Node, e.Node.Checked);
-
-        //    treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
-
-        //    treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-            
-        //    if (e.Node.Checked)
-        //    {
-        //        ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
-        //        {
-        //            nodoAzione.Checked = false;
-        //        });
-
-        //        ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
-        //        {
-        //            if (nodoCategoria.Nodes.Count == 0 && nodoCategoria.Checked)
-        //            {
-        //                _azioniCategorie.RowFilter = "SiglaCategoria = '" + nodoCategoria.Name + "'";
-        //                foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //                {
-        //                    TreeNode nodoAzione = treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0];
-        //                    nodoAzione.Checked = nodoCategoria.Checked;
-        //                }
-        //            }
-        //        });
-        //    }
-        //    else
-        //    {
-        //        Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
-        //        ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
-        //        {
-        //            if (nodoCategoria.Nodes.Count == 0)
-        //            {
-        //                _azioniCategorie.RowFilter = "SiglaCategoria = '" + nodoCategoria.Name + "'";
-        //                foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //                {
-        //                    TreeNode nodoAzione = treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0];
-        //                    if (checkedNodes.ContainsKey(azioneCategoria["SiglaAzione"].ToString()))
-        //                        checkedNodes[azioneCategoria["SiglaAzione"].ToString()] = checkedNodes[azioneCategoria["SiglaAzione"].ToString()] || nodoCategoria.Checked;
-        //                    else
-        //                        checkedNodes.Add(azioneCategoria["SiglaAzione"].ToString(), nodoCategoria.Checked);
-        //                }
-        //            }
-        //        });
-
-        //        ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
-        //        {
-        //            if (nodoAzione.Nodes.Count == 0)
-        //                nodoAzione.Checked = nodoAzione.Checked && checkedNodes[nodoAzione.Name];
-        //        });
-        //    }
-            
-        //    treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-
-
-        //    //treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-
-        //    ////ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
-        //    ////{
-        //    ////    nodoAzione.Checked = false;
-        //    ////});
-
-        //    //Dictionary<string, bool> checkedNodes = new Dictionary<string, bool>();
-
-        //    //ThroughAllNodes(treeViewCategorie.Nodes, nodoCategoria =>
-        //    //{
-        //    //    if (nodoCategoria.Nodes.Count == 0)
-        //    //    {
-        //    //        _azioniCategorie.RowFilter = "SiglaCategoria = '" + nodoCategoria.Name + "'";
-        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //    //        {
-        //    //            TreeNode nodoAzione = treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0];
-        //    //            if (checkedNodes.ContainsKey(azioneCategoria["SiglaAzione"].ToString()))
-        //    //                checkedNodes[azioneCategoria["SiglaAzione"].ToString()] = checkedNodes[azioneCategoria["SiglaAzione"].ToString()] || nodoCategoria.Checked;
-        //    //            else
-        //    //                checkedNodes.Add(azioneCategoria["SiglaAzione"].ToString(), nodoCategoria.Checked);
-        //    //        }
-        //    //    }
-        //    //});
-
-        //    //ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
-        //    //{
-        //    //    if (nodoAzione.Nodes.Count == 0)
-        //    //        nodoAzione.Checked = nodoAzione.Checked && checkedNodes[nodoAzione.Name];
-        //    //});
-
-        //    //treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-
-
-
-        //    //if (e.Node.Checked)
-        //    //{
-        //    //    if (e.Node.Nodes.Count > 0)
-        //    //    {
-        //    //        foreach (TreeNode node in e.Node.Nodes)
-        //    //            if (!node.Checked)
-        //    //                node.Checked = true;
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
-        //    //        if (e.Node.Parent != null && !e.Node.Parent.Checked)
-        //    //            e.Node.Parent.Checked = true;
-        //    //        treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
-        //    //    }
-
-        //    //    if (!_fromAzioni)
-        //    //    {
-        //    //        treeViewAzioni.AfterCheck -= treeViewAzioni_AfterCheck;
-        //    //        _azioniCategorie.RowFilter = "SiglaCategoria = '" + e.Node.Name + "'";
-        //    //        foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //    //            if (!treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked)
-        //    //                treeViewAzioni.Nodes.Find(azioneCategoria["SiglaAzione"].ToString(), true)[0].Checked = true;
-        //    //        CheckParents(treeViewAzioni);
-        //    //        treeViewAzioni.AfterCheck += treeViewAzioni_AfterCheck;
-        //    //    }
-        //    //}
-        //    //else
-        //    //{
-        //    //    if (e.Node.Nodes.Count > 0)
-        //    //    {
-        //    //        foreach (TreeNode node in e.Node.Nodes)
-        //    //            if (node.Checked)
-        //    //                node.Checked = false;
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        treeViewCategorie.AfterCheck -= treeViewCategorie_AfterCheck;
-        //    //        if (e.Node.Parent != null && e.Node.Parent.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
-        //    //            e.Node.Parent.Checked = false;
-        //    //        treeViewCategorie.AfterCheck += treeViewCategorie_AfterCheck;
-        //    //    }
-        //    //    List<string> azioni = new List<string>();
-        //    //    bool trovato = false;
-
-        //    //    ThroughAllNodes(treeViewAzioni.Nodes, n =>
-        //    //    {
-        //    //        if (n.Nodes.Count == 0)
-        //    //        {
-        //    //            _azioniCategorie.RowFilter = "SiglaAzione = '" + n.Name + "'";
-        //    //            foreach (DataRowView azioneCategoria in _azioniCategorie)
-        //    //                trovato = trovato || treeViewCategorie.Nodes.Find(azioneCategoria["SiglaCategoria"].ToString(), true)[0].Checked;
-
-        //    //            if (!trovato && n.Checked)
-        //    //                n.Checked = false;
-        //    //        }
-        //    //    });
-
-        //    //    CheckParents(treeViewAzioni);
-        //    //}
-        //    //CaricaEntita();
-        //    //ColoraNodi();
-        //}
         private void treeViewUP_AfterCheck(object sender, TreeViewEventArgs e)
         {
             checkTutte.CheckedChanged -= checkTutte_CheckedChanged;

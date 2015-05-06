@@ -544,6 +544,12 @@ namespace Iren.ToolsExcel.Base
                 if (info["AnnotaModifica"].Equals("1"))
                     _newNomiDefiniti.SetToNote(_rigaAttiva);
 
+                if (info["SiglaTipologiaInformazione"].Equals("CHECK") && info["Funzione"] != DBNull.Value)
+                {
+                    int checkType = int.Parse(Regex.Match(info["Funzione"].ToString(), @"\d+").Value);
+                    _newNomiDefiniti.AddCheck(siglaEntitaRif.ToString(), checkType);
+                }
+
                 _rigaAttiva++;
             }
         }
@@ -771,7 +777,8 @@ namespace Iren.ToolsExcel.Base
 
                     Style.RangeStyle(rngData.Rows[i], 
                         fontSize: info["FontSize"],
-                        foreColor: info["ForeColor"],                        
+                        foreColor: info["ForeColor"],
+                        backColor: info["BackColor"],
                         bold: info["Grassetto"].Equals("1"),
                         numberFormat: info["Formato"],
                         align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));

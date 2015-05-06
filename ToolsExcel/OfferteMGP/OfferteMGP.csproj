@@ -144,12 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ErrorPane.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="ErrorPane.Designer.cs">
-      <DependentUpon>ErrorPane.cs</DependentUpon>
-    </Compile>
+    <Compile Include="Check.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>OfferteMGP.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
@@ -181,9 +176,6 @@
     </Compile>
     <EmbeddedResource Include="..\SistemaComandi\ToolsExcelRibbon.resx">
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ErrorPane.resx">
-      <DependentUpon>ErrorPane.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>

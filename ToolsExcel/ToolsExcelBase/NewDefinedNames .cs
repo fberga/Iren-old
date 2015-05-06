@@ -28,9 +28,11 @@ namespace Iren.ToolsExcel.Base
         protected List<int> _saveDB = new List<int>();
         protected List<int> _toNote = new List<int>();
 
+        protected List<KeyValuePair<string, int>> _check = new List<KeyValuePair<string, int>>();
+
         public enum InitType
         {
-            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB
+            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB, Check
         }
 
         #endregion
@@ -55,6 +57,11 @@ namespace Iren.ToolsExcel.Base
         public bool HasData0H24
         {
             get { return _defDatesIndexByName.First().Key == GetName(Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24)); }
+        }
+
+        public List<KeyValuePair<string, int>> Checks
+        {
+            get { return _check; }
         }
 
         #endregion
@@ -137,6 +144,15 @@ namespace Iren.ToolsExcel.Base
                  where r["Sheet"].Equals(_sheet)
                  select (int)r["Row"]).ToList();
         }
+        private void InitCheck()
+        {
+            DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CHECK];
+
+            _check =
+                (from r in check.AsEnumerable()
+                 where r["Sheet"].Equals(_sheet)
+                 select new KeyValuePair<string, int>(r["SiglaEntita"].ToString(), (int)r["Type"])).ToList();
+        }
 
         public NewDefinedNames(string sheet, InitType type = InitType.NamingOnly)
         {
@@ -149,6 +165,7 @@ namespace Iren.ToolsExcel.Base
                     InitGOTOs();
                     InitEditable();
                     InitSaveDB();
+                    InitCheck();
                     break;
                 case InitType.NamingOnly:
                     InitNaming();
@@ -167,6 +184,11 @@ namespace Iren.ToolsExcel.Base
                     InitNaming();
                     InitSaveDB();
                     InitToNote();
+                    break;
+                case InitType.Check:
+                    InitCheck();
+                    if(_check.Count > 0)
+                        InitNaming();
                     break;
             }
         }
@@ -239,6 +261,10 @@ namespace Iren.ToolsExcel.Base
         {
             if (!_toNote.Contains(row))
                 _toNote.Add(row);
+        }
+        public void AddCheck(string siglaEntita, int type)
+        {            
+                _check.Add(new KeyValuePair<string, int>(siglaEntita, type));
         }
 
 
@@ -462,6 +488,11 @@ namespace Iren.ToolsExcel.Base
             return _addressFrom.ElementAt(i).Key;
         }
 
+        public bool HasCheck()
+        {
+            return _check.Count > 0;
+        }
+
         #endregion
 
         #region Metodi Statici
@@ -606,7 +637,7 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
-        public static DataTable GetDefaultToNote(string name)
+        public static DataTable GetDefaultToNoteTable(string name)
         {
             DataTable dt = new DataTable()
             {
@@ -618,6 +649,22 @@ namespace Iren.ToolsExcel.Base
             };
 
             dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Row"] };
+            dt.TableName = name;
+            return dt;
+        }
+        public static DataTable GetDefaultCheckTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Sheet", typeof(string)},
+                        {"SiglaEntita", typeof(string)},
+                        {"Type", typeof(int)}
+                    }
+            };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["SiglaEntita"], dt.Columns["Type"] };
             dt.TableName = name;
             return dt;
         }
@@ -645,6 +692,7 @@ namespace Iren.ToolsExcel.Base
             DataTable editable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
             DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
             DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
+            DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CHECK];
 
             ///////// nomi
             foreach(var ele in _defNamesIndexByName) 
@@ -713,6 +761,16 @@ namespace Iren.ToolsExcel.Base
                 r["Sheet"] = _sheet;
                 r["Row"] = ele;
                 toNote.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _check)
+            {
+                DataRow r = check.NewRow();
+                r["Sheet"] = _sheet;
+                r["SiglaEntita"] = ele.Key;
+                r["Type"] = ele.Value;
+                check.Rows.Add(r);
             }
         }
     }

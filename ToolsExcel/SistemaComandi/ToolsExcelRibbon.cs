@@ -23,6 +23,7 @@ namespace Iren.ToolsExcel
         private ControlCollection _controls;
         private List<string> _enabledControls = new List<string>();
         private bool _allDisabled = false;
+        private ErrorPane _errorPane = new ErrorPane();
 
         #endregion
 
@@ -54,6 +55,7 @@ namespace Iren.ToolsExcel
 
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
+            btnMostraErrorPane.Checked = false;
             btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
             btnModifica.Label = "Modifica NO";
             try
@@ -62,6 +64,20 @@ namespace Iren.ToolsExcel
             }
             catch 
             { }
+
+            //aggiungo errorPane
+            Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
+            Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+            Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
+            Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+            
+            //TODO rimuovere
+            btnMostraErrorPane.Enabled = true;
+        }
+
+        void ActionsPane_SizeChanged(object sender, EventArgs e)
+        {
+            _errorPane.SetDimension(Globals.ThisWorkbook.ActionsPane.Width, Globals.ThisWorkbook.ActionsPane.Height);
         }
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
@@ -410,6 +426,19 @@ namespace Iren.ToolsExcel
             Workbook.WB.Application.ScreenUpdating = true;
             Workbook.WB.SheetChange += Handler.StoreEdit;
         }
+        private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.ThisApplication.Quit();
+        }
+        private void btnMostraErrorPane_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = btnMostraErrorPane.Checked;
+            _errorPane.SetDimension(Globals.ThisWorkbook.ActionsPane.Width, Globals.ThisWorkbook.ActionsPane.Height);
+            
+            Check checkFunctions = new Check();
+            _errorPane.RefreshCheck(checkFunctions);
+        }
+
         #endregion
 
         #region Metodi
@@ -574,11 +603,6 @@ namespace Iren.ToolsExcel
         }
 
         #endregion        
-
-        private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
-        {
-            Globals.ThisWorkbook.ThisApplication.Quit();
-        }
     }
 
     public class ControlCollection : IEnumerable

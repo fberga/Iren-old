@@ -68,6 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Check.cs" />
     <Compile Include="NewDefinedNames .cs" />
     <Compile Include="Handler.cs" />
     <Compile Include="Range.cs" />
