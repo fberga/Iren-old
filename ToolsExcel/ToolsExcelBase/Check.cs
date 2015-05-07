@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
-    public abstract class Check
+    public class Check
     {
-        public abstract void ExecuteCheck(NewDefinedNames newNomiDefiniti, string siglaEntita, int type);
+        public virtual TreeNode ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
+        {
+            return new TreeNode();
+        }  
     }
 }

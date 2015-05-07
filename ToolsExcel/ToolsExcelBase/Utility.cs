@@ -122,6 +122,23 @@ namespace Iren.ToolsExcel.Utility
         public static DataSet LocalDB { get { return _localDB; } }
         public static Core.DataBase DB { get { return _db; } }
         public static DateTime DataAttiva { get { return _db.DataAttiva; } }
+        public static Dictionary<Core.DataBase.NomiDB, ConnectionState> StatoDB
+        {
+            get
+            {
+                if (Simboli.EmergenzaForzata)
+                {
+                    return new Dictionary<Core.DataBase.NomiDB, ConnectionState>() 
+                    {
+                        {Core.DataBase.NomiDB.SQLSERVER, ConnectionState.Closed},
+                        {Core.DataBase.NomiDB.IMP, ConnectionState.Closed},
+                        {Core.DataBase.NomiDB.ELSAG, ConnectionState.Closed}
+                    };
+                }
+
+                return DB.StatoDB;
+            }
+        }
 
         #endregion
 
@@ -247,14 +264,16 @@ namespace Iren.ToolsExcel.Utility
             dataRif = dataRif ?? DataAttiva;
             try
             {
-                _db.OpenConnection();
-                QryParams parameters = new QryParams() {
+                if (OpenConnection())
+                {
+                    QryParams parameters = new QryParams() {
                     {"@SiglaEntita", siglaEntita},
                     {"@SiglaAzione", siglaAzione},
                     {"@Data", dataRif.Value.ToString("yyyyMMdd")},
                     {"@Presente", presente ? "1" : "0"}
                 };
-                _db.Insert(DataBase.SP.INSERT_APPLICAZIONE_RIEPILOGO, parameters);
+                    _db.Insert(DataBase.SP.INSERT_APPLICAZIONE_RIEPILOGO, parameters);
+                }
             }
             catch (Exception e)
             {
@@ -284,9 +303,9 @@ namespace Iren.ToolsExcel.Utility
         public void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
         {
 #if (!DEBUG)
-            if (_db.OpenConnection())
+            if (OpenConnection())
             {
-                _db.Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });
+                Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });
             }
 #endif
 
@@ -294,9 +313,9 @@ namespace Iren.ToolsExcel.Utility
         }
         public void RefreshLog()
         {
-            if (_db.OpenConnection())
+            if (OpenConnection())
             {
-                DataTable dt = _db.Select(SP.APPLICAZIONE_LOG);
+                DataTable dt = Select(SP.APPLICAZIONE_LOG);
                 dt.TableName = Tab.LOG;
 
                 bool sameSchema = dt.Columns.Count == _localDB.Tables[Tab.LOG].Columns.Count;
@@ -315,17 +334,60 @@ namespace Iren.ToolsExcel.Utility
                         _localDB.Tables[Tab.LOG].Columns.Add(col);
                 }
 
-                foreach (DataRow row in dt.Rows)
-                {
-                    DataRow row1 = _localDB.Tables[Tab.LOG].NewRow();
-                    row1.ItemArray = row.ItemArray;
-                    _localDB.Tables[Tab.LOG].Rows.Add(row1);
-                }
+                _localDB.Tables[Tab.LOG].Merge(dt);
 
                 Excel.Worksheet ws = Workbook.WB.Sheets["Log"];
                 if (ws.ListObjects.Count > 0)
                     ws.ListObjects[1].Range.EntireColumn.AutoFit();
             }
+        }
+
+        public static DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
+        {
+            if (OpenConnection())
+            {
+                DataTable dt = _db.Select(storedProcedure, parameters, timeout);
+                CloseConnection();
+                
+                return dt;
+            }
+
+            return new DataTable();
+        }
+        public static DataTable Select(string storedProcedure, String parameters, int timeout = 300)
+        {
+            if (OpenConnection())
+            {
+                DataTable dt = _db.Select(storedProcedure, parameters, timeout);
+                CloseConnection();
+
+                return dt;
+            }
+
+            return new DataTable();
+        }
+        public static DataTable Select(string storedProcedure, int timeout = 300)
+        {
+            if (OpenConnection())
+            {
+                DataTable dt = _db.Select(storedProcedure, timeout);
+                CloseConnection();
+
+                return dt;
+            }
+
+            return new DataTable();
+        }
+
+        public static bool Insert(string storedProcedure, QryParams parameters)
+        {
+            if (OpenConnection())
+            {
+                bool o = _db.Insert(storedProcedure, parameters);
+                CloseConnection();
+                return o;
+            }
+            return false;
         }
 
         #endregion
@@ -474,7 +536,7 @@ namespace Iren.ToolsExcel.Utility
                 {"@IdApplicazione", idApplicazione},
 
             };
-            DataTable dt = DataBase.DB.Select(DataBase.SP.APPLICAZIONE, parameters);
+            DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE, parameters);
             dt.TableName = name;
             return dt;
         }
@@ -1225,7 +1287,7 @@ namespace Iren.ToolsExcel.Utility
                         }
                         else
                         {
-                            DataView azioneInformazione = DataBase.DB.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                            DataView azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                             if (azioneInformazione.Count == 0)
                             {
                                 if (azioni[0]["Visibile"].Equals("1"))
@@ -1705,32 +1767,32 @@ namespace Iren.ToolsExcel.Utility
             try
             {
                 isProtected = _wb.Sheets["Main"].ProtectContents;
+                
+                if (isProtected)
+                    _wb.Sheets["Main"].Unprotect(Simboli.pwd);
+
+                if (DataBase.OpenConnection())
+                {
+                    Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.StatoDB;
+                    Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
+                    Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
+                    Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+
+                    DataBase.CloseConnection();
+                }
+                else
+                {
+                    Simboli.SQLServerOnline = false;
+                    Simboli.ImpiantiOnline = false;
+                    Simboli.ElsagOnline = false;
+                }
+
+
+                if (isProtected)
+                    _wb.Sheets["Main"].Protect(Simboli.pwd);
             }
             catch
             { }
-            
-            if (isProtected)
-                _wb.Sheets["Main"].Unprotect(Simboli.pwd);
-
-            if (DataBase.OpenConnection())
-            {
-                Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.DB.StatoDB;
-                Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
-                Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
-                Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
-
-                DataBase.CloseConnection();
-            }
-            else
-            {
-                Simboli.SQLServerOnline = false;
-                Simboli.ImpiantiOnline = false;
-                Simboli.ElsagOnline = false;
-            }
-            
-
-            if (isProtected)
-                _wb.Sheets["Main"].Protect(Simboli.pwd);
         }
         public static void DumpDataSet()
         {
@@ -1786,7 +1848,7 @@ namespace Iren.ToolsExcel.Utility
 
         public static void InitLog() 
         {
-            DataTable dtLog = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_LOG);
+            DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
             dtLog.TableName = DataBase.Tab.LOG;
             if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.LOG))
                 DataBase.LocalDB.Tables[DataBase.Tab.LOG].Merge(dtLog);
@@ -1802,7 +1864,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 DataBase.ResetTable(DataBase.Tab.UTENTE);
 
-                DataTable dtUtente = DataBase.DB.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
+                DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
                 dtUtente.TableName = DataBase.Tab.UTENTE;
 
                 if (dtUtente.Rows.Count == 0)

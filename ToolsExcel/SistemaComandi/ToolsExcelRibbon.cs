@@ -33,6 +33,7 @@ namespace Iren.ToolsExcel
         {
             get { return _controls; }
         }
+        public ErrorPane EPane { get { return _errorPane; } }
 
         #endregion
 
@@ -55,7 +56,6 @@ namespace Iren.ToolsExcel
 
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
-            btnMostraErrorPane.Checked = false;
             btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
             btnModifica.Label = "Modifica NO";
             try
@@ -70,9 +70,6 @@ namespace Iren.ToolsExcel
             Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
             Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
             Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
-            
-            //TODO rimuovere
-            btnMostraErrorPane.Enabled = true;
         }
 
         void ActionsPane_SizeChanged(object sender, EventArgs e)
@@ -123,6 +120,9 @@ namespace Iren.ToolsExcel
                     DataBase.DB.CloseConnection();
                 }
 
+                Check checkFunctions = new Check();
+                _errorPane.RefreshCheck(checkFunctions);
+
                 Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                 Sheet.Proteggi(true);
                 Workbook.WB.Application.ScreenUpdating = true;
@@ -156,7 +156,7 @@ namespace Iren.ToolsExcel
                         DataBase.RefreshDate(cal.Date.Value);
                         DataBase.ConvertiParametriInformazioni();
 
-                        DataView stato = DataBase.DB.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
+                        DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + cal.Date.Value.ToString("yyyyMMdd")).DefaultView;
 
                         SplashScreen.Show();
 
@@ -194,6 +194,9 @@ namespace Iren.ToolsExcel
                 }
             }
             cal.Dispose();
+
+            Check checkFunctions = new Check();
+            _errorPane.RefreshCheck(checkFunctions);
 
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
@@ -270,6 +273,9 @@ namespace Iren.ToolsExcel
                     DataBase.DB.CloseConnection();
                 }
 
+                Check checkFunctions = new Check();
+                _errorPane.RefreshCheck(checkFunctions);
+
                 SplashScreen.Close();
 
                 Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
@@ -287,6 +293,9 @@ namespace Iren.ToolsExcel
             FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo());
             frmAz.ShowDialog();
 
+            Check checkFunctions = new Check();
+            _errorPane.RefreshCheck(checkFunctions);
+
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
@@ -297,7 +306,6 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(false);
             Simboli.ModificaDati = btnModifica.Checked;
 
-            Sheet.AbilitaModifica(btnModifica.Checked);
             if (btnModifica.Checked) 
             {
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_icon;
@@ -306,11 +314,16 @@ namespace Iren.ToolsExcel
             else
             {
                 //Salva modifiche su db
+                Check checkFunctions = new Check();
+                _errorPane.RefreshCheck(checkFunctions);
+
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
                 btnModifica.Label = "Modifica NO";
             }
+            Sheet.AbilitaModifica(btnModifica.Checked);
+
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
         }
@@ -432,11 +445,17 @@ namespace Iren.ToolsExcel
         }
         private void btnMostraErrorPane_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = btnMostraErrorPane.Checked;
+            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
+            Sheet.Proteggi(false);
+            if (!Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane)
+                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = true;
+            
             _errorPane.SetDimension(Globals.ThisWorkbook.ActionsPane.Width, Globals.ThisWorkbook.ActionsPane.Height);
             
-            Check checkFunctions = new Check();
-            _errorPane.RefreshCheck(checkFunctions);
+            //Check checkFunctions = new Check();
+            //_errorPane.RefreshCheck(checkFunctions);
+            Sheet.Proteggi(true);
+            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
         }
 
         #endregion
@@ -581,6 +600,7 @@ namespace Iren.ToolsExcel
             Workbook.DumpDataSet();
             
             Workbook.WB.Sheets["Main"].Select();
+            Workbook.WB.ActiveSheet.Range["A1"].Select();
             Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             if (_allDisabled)

@@ -516,6 +516,8 @@ namespace Iren.ToolsExcel.Base
                 object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 _newNomiDefiniti.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
+                int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
+
                 if (info["Selezione"].Equals(10))
                 {
                     //seleziono la cella sopra gli optionbuttons
@@ -533,7 +535,6 @@ namespace Iren.ToolsExcel.Base
                     }
                     else
                     {
-                        int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
                         Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, colOffsett - data0H24 - remove25hour);
                         _newNomiDefiniti.SetEditable(_rigaAttiva, rng);
                     }
@@ -547,7 +548,8 @@ namespace Iren.ToolsExcel.Base
                 if (info["SiglaTipologiaInformazione"].Equals("CHECK") && info["Funzione"] != DBNull.Value)
                 {
                     int checkType = int.Parse(Regex.Match(info["Funzione"].ToString(), @"\d+").Value);
-                    _newNomiDefiniti.AddCheck(siglaEntitaRif.ToString(), checkType);
+                    Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, colOffsett - data0H24 - remove25hour);
+                    _newNomiDefiniti.AddCheck(siglaEntitaRif.ToString(), rng.ToString(), checkType);
                 }
 
                 _rigaAttiva++;
@@ -717,8 +719,7 @@ namespace Iren.ToolsExcel.Base
             {
                 rngInfo.Rows[i].Value = new object[2] { info["DesInformazione"], info["DesInformazioneBreve"] };
 
-                int backColor = (info["BackColor"] is DBNull ? 0 : (int)info["BackColor"]);
-                backColor = backColor == 0 || backColor == 2 ? (info["Editabile"].ToString() == "1" ? 15 : 48) : backColor;
+                int infoBackColor = info["Editabile"].ToString() == "1" ? 15 : 48;
 
                 if (info["Selezione"].Equals(10))
                 {
@@ -748,7 +749,7 @@ namespace Iren.ToolsExcel.Base
                     Style.RangeStyle(rngInfo.Rows[i].Cells[2], 
                         fontSize: info["FontSize"],
                         foreColor: info["ForeColor"],
-                        backColor: backColor,
+                        backColor: infoBackColor,
                         bold: info["Grassetto"].Equals("1"),
                         numberFormat: info["Formato"],
                         align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
@@ -758,7 +759,7 @@ namespace Iren.ToolsExcel.Base
                     Style.RangeStyle(rngRow.Rows[i], 
                         fontSize: info["FontSize"],
                         foreColor: info["ForeColor"],
-                        backColor: backColor,
+                        backColor: info["BackColor"],
                         merge: true,
                         bold:true,
                         borders: "[Top:medium, Right:medium]");
@@ -771,7 +772,7 @@ namespace Iren.ToolsExcel.Base
                     Style.RangeStyle(rngInfo.Rows[i], 
                         fontSize: info["FontSize"],
                         foreColor: info["ForeColor"],
-                        backColor: backColor,
+                        backColor: infoBackColor,
                         visible: info["Visibile"].Equals("1"),
                         borders: "[Right:medium]");
 
@@ -1063,11 +1064,11 @@ namespace Iren.ToolsExcel.Base
                         dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
                     }
 
-                    DataView datiApplicazioneH = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
+                    DataView datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
 
                     DataView insertManuali = new DataView();
                     if (all)
-                        insertManuali = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=1").DefaultView;
+                        insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@All=1").DefaultView;
 
                     if (Struct.tipoVisualizzazione == "O")
                     {
@@ -1095,7 +1096,7 @@ namespace Iren.ToolsExcel.Base
                     }
 
                     //carico dati giornalieri
-                    DataView datiApplicazioneD = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
+                    DataView datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
 
                     foreach (DataRowView dato in datiApplicazioneD)
                     {

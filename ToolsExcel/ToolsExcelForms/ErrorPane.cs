@@ -36,16 +36,42 @@ namespace Iren.ToolsExcel.Forms
 
         public void RefreshCheck(Check checkFunctions)
         {
+            SplashScreen.UpdateStatus("Aggiornamento Check");
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
                 NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name, NewDefinedNames.InitType.Check);
                 if (newNomiDefiniti.HasCheck())
                 {
-                    foreach (KeyValuePair<string, int> check in newNomiDefiniti.Checks)
+                    foreach (CheckObj check in newNomiDefiniti.Checks)
                     {
-                        checkFunctions.ExecuteCheck(newNomiDefiniti, check.Key, check.Value);
+                        TreeNode n = checkFunctions.ExecuteCheck(ws, newNomiDefiniti, check);
+
+                        if (n.Nodes.Count > 0)
+                        {
+                            if(treeViewErrori.Nodes.ContainsKey(n.Name))
+                            {
+                                treeViewErrori.Nodes.RemoveByKey(n.Name);
+                            }
+                            treeViewErrori.Nodes.Add(n);
+                        }
                     }
                 }
+            }
+        }
+
+        private void treeViewErrori_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Node.Name.StartsWith("'"))
+            {
+                Excel.Range rng = (Excel.Range)Workbook.WB.Application.Range[e.Node.Name];
+                rng.Worksheet.Activate();
+                rng.Select();
+            }
+            else if (e.Node.Parent != null && e.Node.Parent.Name.StartsWith("'"))
+            {
+                Excel.Range rng = (Excel.Range)Workbook.WB.Application.Range[e.Node.Parent.Name];
+                rng.Worksheet.Activate();
+                rng.Select();
             }
         }
     }

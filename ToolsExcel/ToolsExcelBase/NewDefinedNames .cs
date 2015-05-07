@@ -28,7 +28,8 @@ namespace Iren.ToolsExcel.Base
         protected List<int> _saveDB = new List<int>();
         protected List<int> _toNote = new List<int>();
 
-        protected List<KeyValuePair<string, int>> _check = new List<KeyValuePair<string, int>>();
+        //siglaEntita, row, type
+        protected List<CheckObj> _check = new List<CheckObj>();
 
         public enum InitType
         {
@@ -59,7 +60,7 @@ namespace Iren.ToolsExcel.Base
             get { return _defDatesIndexByName.First().Key == GetName(Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24)); }
         }
 
-        public List<KeyValuePair<string, int>> Checks
+        public List<CheckObj> Checks
         {
             get { return _check; }
         }
@@ -151,7 +152,7 @@ namespace Iren.ToolsExcel.Base
             _check =
                 (from r in check.AsEnumerable()
                  where r["Sheet"].Equals(_sheet)
-                 select new KeyValuePair<string, int>(r["SiglaEntita"].ToString(), (int)r["Type"])).ToList();
+                 select new CheckObj(r["SiglaEntita"].ToString(), (string)r["Range"], (int)r["Type"])).ToList();
         }
 
         public NewDefinedNames(string sheet, InitType type = InitType.NamingOnly)
@@ -262,11 +263,11 @@ namespace Iren.ToolsExcel.Base
             if (!_toNote.Contains(row))
                 _toNote.Add(row);
         }
-        public void AddCheck(string siglaEntita, int type)
+        
+        public void AddCheck(string siglaEntita, string range, int type)
         {            
-                _check.Add(new KeyValuePair<string, int>(siglaEntita, type));
+                _check.Add(new CheckObj(siglaEntita, range, type));
         }
-
 
         public bool SaveDB(int row)
         {
@@ -659,12 +660,13 @@ namespace Iren.ToolsExcel.Base
                 Columns =
                     {
                         {"Sheet", typeof(string)},
+                        {"Range", typeof(string)},
                         {"SiglaEntita", typeof(string)},
                         {"Type", typeof(int)}
                     }
             };
 
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["SiglaEntita"], dt.Columns["Type"] };
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Range"] };
             dt.TableName = name;
             return dt;
         }
@@ -768,10 +770,33 @@ namespace Iren.ToolsExcel.Base
             {
                 DataRow r = check.NewRow();
                 r["Sheet"] = _sheet;
-                r["SiglaEntita"] = ele.Key;
-                r["Type"] = ele.Value;
+                r["Range"] = ele.Range;
+                r["SiglaEntita"] = ele.SiglaEntita;
+                r["Type"] = ele.Type;
                 check.Rows.Add(r);
             }
         }
+    }
+
+    public class CheckObj
+    {
+
+        #region Proprietà
+
+        public string SiglaEntita { get; set; }
+        public string Range { get; set; }
+        public int Type { get; set; }
+
+        #endregion
+
+        public CheckObj(string siglaEntita, string range, int type)
+        {
+            SiglaEntita = siglaEntita;
+            Range = range;
+            Type = type;
+        }
+
+
+
     }
 }
