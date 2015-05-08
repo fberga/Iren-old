@@ -98,37 +98,37 @@ namespace Iren.ToolsExcel.Base
             }
             Proteggi(true);
         }
-        public static void SalvaModifiche(DateTime inizio, DateTime fine)
-        {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+        //public static void SalvaModifiche(DateTime inizio, DateTime fine)
+        //{
+        //    DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+        //    DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+        //    DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
-            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
-            {
-                if (ws.Name != "Main" && ws.Name != "Log")
-                {
-                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name);
-                    categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
-                    categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+        //    foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+        //    {
+        //        if (ws.Name != "Main" && ws.Name != "Log")
+        //        {
+        //            NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name);
+        //            categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
+        //            categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
 
-                    for (DateTime giorno = inizio; giorno <= fine; giorno = giorno.AddDays(1))
-                    {
-                        foreach (DataRowView entita in categoriaEntita)
-                        {
-                            entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
-                            foreach (DataRowView info in entitaInformazione)
-                            {
-                                object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                                Range rng = newNomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(1, newNomiDefiniti.GetDayOffset(giorno));
+        //            for (DateTime giorno = inizio; giorno <= fine; giorno = giorno.AddDays(1))
+        //            {
+        //                foreach (DataRowView entita in categoriaEntita)
+        //                {
+        //                    entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1'";
+        //                    foreach (DataRowView info in entitaInformazione)
+        //                    {
+        //                        object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+        //                        Range rng = newNomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(1, newNomiDefiniti.GetDayOffset(giorno));
 
-                                Handler.StoreEdit(ws, ws.Range[rng.ToString()]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                        Handler.StoreEdit(ws, ws.Range[rng.ToString()]);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
         public static void SalvaModifiche()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -148,7 +148,7 @@ namespace Iren.ToolsExcel.Base
 
                     foreach (DataRowView entita in categoriaEntita)
                     {
-                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (Selezione = 10 AND SalvaDB = '1'))";
+                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (Selezione = 10 AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
                         foreach (DataRowView info in entitaInformazione)
                         {
                             object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
@@ -160,7 +160,7 @@ namespace Iren.ToolsExcel.Base
                             rng.StartColumn -= considerData0H24 ? 1 : 0;
                             rng.Extend(colOffset: newNomiDefiniti.GetColOffset() + (hasData0H24 && !considerData0H24 ? -1 : 0));
 
-                            Handler.StoreEdit(ws, ws.Range[rng.ToString()]);
+                            Handler.StoreEdit(ws.Range[rng.ToString()], 0);
                         }
                     }
                 }

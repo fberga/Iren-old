@@ -172,7 +172,7 @@ namespace Iren.ToolsExcel.Base
                 else
                 {
                     Workbook.WB.Application.Run("wbsolve", Arg3: "1");
-                }
+                }                
             }
         }
         public virtual void EseguiOttimizzazione(object siglaEntita) 

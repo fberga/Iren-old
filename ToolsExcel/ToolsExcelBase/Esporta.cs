@@ -24,6 +24,31 @@ namespace Iren.ToolsExcel.Base
 
         public abstract bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
         protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
+
+        protected Outlook.Application GetOutlookInstance()
+        {
+            Outlook.Application application = null;
+
+            // Check whether there is an Outlook process running.
+            if (Process.GetProcessesByName("OUTLOOK").Count() > 0)
+            {
+
+                // If so, use the GetActiveObject method to obtain the process and cast it to an Application object.
+                application = Marshal.GetActiveObject("Outlook.Application") as Outlook.Application;
+            }
+            else
+            {
+
+                // If not, create a new instance of Outlook and log on to the default profile.
+                application = new Outlook.Application();
+                Outlook.NameSpace nameSpace = application.GetNamespace("MAPI");
+                nameSpace.Logon("", "");
+                nameSpace = null;
+            }
+
+            // Return the Outlook Application object.
+            return application;
+        }
     }
 
     public class Esporta : AEsporta
@@ -167,31 +192,6 @@ namespace Iren.ToolsExcel.Base
             {
                 return false;
             }
-        }
-
-        protected Outlook.Application GetOutlookInstance()
-        {
-            Outlook.Application application = null;
-
-            // Check whether there is an Outlook process running.
-            if (Process.GetProcessesByName("OUTLOOK").Count() > 0)
-            {
-
-                // If so, use the GetActiveObject method to obtain the process and cast it to an Application object.
-                application = Marshal.GetActiveObject("Outlook.Application") as Outlook.Application;
-            }
-            else
-            {
-
-                // If not, create a new instance of Outlook and log on to the default profile.
-                application = new Outlook.Application();
-                Outlook.NameSpace nameSpace = application.GetNamespace("MAPI");
-                nameSpace.Logon("", "");
-                nameSpace = null;
-            }
-
-            // Return the Outlook Application object.
-            return application;
         }
     }
 }

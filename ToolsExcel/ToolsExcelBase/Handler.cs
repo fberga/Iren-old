@@ -13,7 +13,7 @@ namespace Iren.ToolsExcel.Base
 {
     public class Handler
     {
-        public static void GotoClick(object Sh, Excel.Range Target)
+        public static void CellClick(object Sh, Excel.Range Target)
         {
             //controllo che la selezione non sia multi-linea con in mezzo delle righe nascoste - nel caso avverto l'utente che non può effettuare modifiche
             if (Target.Rows.Count > 1)
@@ -35,13 +35,15 @@ namespace Iren.ToolsExcel.Base
             }
             else
             {
+
+
                 try
                 {
                     NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.GOTOsOnly);
                     string address = newDefinedNames.GetGOTO(Range.R1C1toA1(Target.Row, Target.Column));
                     Goto(address);
                 }
-                catch { }
+                catch {}
             }
         }
 
@@ -60,21 +62,20 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        public static void StoreEdit(object Sh, Excel.Range Target)
+        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1)
         {
-            bool wasProtected = Target.Worksheet.ProtectContents;
-            bool screenUpdating = Target.Application.ScreenUpdating;
+            Excel.Worksheet ws = Target.Worksheet;
+            bool wasProtected = ws.ProtectContents;
+            bool screenUpdating = ws.Application.ScreenUpdating;
             if (wasProtected)
-                Target.Worksheet.Unprotect(Simboli.pwd);
-            
+                ws.Unprotect(Simboli.pwd);
+
             if (screenUpdating)
                 Target.Application.ScreenUpdating = false;
 
             NewDefinedNames newNomiDefiniti = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.SaveDB);
             DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
-            
 
-            Excel.Worksheet ws = (Excel.Worksheet)Sh;
             if (ws.ChartObjects().Count > 0)
             {
                 Sheet s = new Sheet(ws);
@@ -82,7 +83,7 @@ namespace Iren.ToolsExcel.Base
             }
 
             string[] ranges = Target.Address.Split(',');
-            
+
             foreach (string range in ranges)
             {
                 Range rng = new Range(range);
@@ -90,7 +91,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     if (newNomiDefiniti.SaveDB(row.StartRow))
                     {
-                        bool annota = newNomiDefiniti.ToNote(row.StartRow) && !Workbook.DaElaborazione;
+                        bool annota =  annotaModifica == -1 ? newNomiDefiniti.ToNote(row.StartRow) : annotaModifica == 1;
                         foreach (Range column in row.Columns)
                         {
                             string[] parts = newNomiDefiniti.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
@@ -130,10 +131,15 @@ namespace Iren.ToolsExcel.Base
             }
 
             if (wasProtected)
-                Target.Worksheet.Protect(Simboli.pwd);
-            
-           if (screenUpdating)
-                Target.Application.ScreenUpdating = true;
+                ws.Protect(Simboli.pwd);
+
+            if (screenUpdating)
+                ws.Application.ScreenUpdating = true;
+        }
+
+        public static void StoreEdit(object Sh, Excel.Range Target)
+        {
+            StoreEdit(Target);
         }
 
         public static void ChangeModificaDati(bool modifica)

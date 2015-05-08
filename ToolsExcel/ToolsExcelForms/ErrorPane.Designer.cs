@@ -28,19 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Nodo0");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("Nodo1");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("Nodo2");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("Nodo3");
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("Nodo4");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("Nodo5");
             this.panelDescrizione = new System.Windows.Forms.Panel();
             this.lbTesto = new System.Windows.Forms.Label();
             this.lbTitolo = new System.Windows.Forms.Label();
             this.panelContent = new System.Windows.Forms.Panel();
             this.treeViewErrori = new System.Windows.Forms.TreeView();
-            this.panelSeparator = new System.Windows.Forms.Panel();
             this.panelPadding = new System.Windows.Forms.Panel();
+            this.panelSeparator = new System.Windows.Forms.Panel();
             this.panelDescrizione.SuspendLayout();
             this.panelContent.SuspendLayout();
             this.panelPadding.SuspendLayout();
@@ -60,9 +54,10 @@
             // lbTesto
             // 
             this.lbTesto.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbTesto.Location = new System.Drawing.Point(4, 17);
+            this.lbTesto.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbTesto.Location = new System.Drawing.Point(4, 19);
             this.lbTesto.Name = "lbTesto";
-            this.lbTesto.Size = new System.Drawing.Size(376, 69);
+            this.lbTesto.Size = new System.Drawing.Size(376, 67);
             this.lbTesto.TabIndex = 3;
             this.lbTesto.Text = "Il pannello contiene la lista di errori suddivisi per UP e per giorno.";
             // 
@@ -70,11 +65,11 @@
             // 
             this.lbTitolo.AutoSize = true;
             this.lbTitolo.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lbTitolo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbTitolo.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbTitolo.Location = new System.Drawing.Point(4, 1);
             this.lbTitolo.Margin = new System.Windows.Forms.Padding(5);
             this.lbTitolo.Name = "lbTitolo";
-            this.lbTitolo.Size = new System.Drawing.Size(149, 16);
+            this.lbTitolo.Size = new System.Drawing.Size(159, 18);
             this.lbTitolo.TabIndex = 2;
             this.lbTitolo.Text = "Pannello degli errori";
             // 
@@ -92,39 +87,13 @@
             // 
             this.treeViewErrori.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.treeViewErrori.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeViewErrori.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.treeViewErrori.HideSelection = false;
             this.treeViewErrori.Location = new System.Drawing.Point(0, 10);
             this.treeViewErrori.Name = "treeViewErrori";
-            treeNode1.Name = "Nodo0";
-            treeNode1.Text = "Nodo0";
-            treeNode2.Name = "Nodo1";
-            treeNode2.Text = "Nodo1";
-            treeNode3.Name = "Nodo2";
-            treeNode3.Text = "Nodo2";
-            treeNode4.Name = "Nodo3";
-            treeNode4.Text = "Nodo3";
-            treeNode5.Name = "Nodo4";
-            treeNode5.Text = "Nodo4";
-            treeNode6.Name = "Nodo5";
-            treeNode6.Text = "Nodo5";
-            this.treeViewErrori.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2,
-            treeNode3,
-            treeNode4,
-            treeNode5,
-            treeNode6});
             this.treeViewErrori.Size = new System.Drawing.Size(382, 331);
             this.treeViewErrori.TabIndex = 0;
-            // 
-            // panelSeparator
-            // 
-            this.panelSeparator.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelSeparator.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panelSeparator.Location = new System.Drawing.Point(4, 0);
-            this.panelSeparator.Margin = new System.Windows.Forms.Padding(0);
-            this.panelSeparator.Name = "panelSeparator";
-            this.panelSeparator.Size = new System.Drawing.Size(374, 1);
-            this.panelSeparator.TabIndex = 1;
+            this.treeViewErrori.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeViewErrori_NodeMouseClick);
             // 
             // panelPadding
             // 
@@ -135,6 +104,16 @@
             this.panelPadding.Padding = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.panelPadding.Size = new System.Drawing.Size(382, 10);
             this.panelPadding.TabIndex = 2;
+            // 
+            // panelSeparator
+            // 
+            this.panelSeparator.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelSeparator.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelSeparator.Location = new System.Drawing.Point(4, 0);
+            this.panelSeparator.Margin = new System.Windows.Forms.Padding(0);
+            this.panelSeparator.Name = "panelSeparator";
+            this.panelSeparator.Size = new System.Drawing.Size(374, 1);
+            this.panelSeparator.TabIndex = 1;
             // 
             // ErrorPane
             // 

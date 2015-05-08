@@ -13,11 +13,13 @@ namespace Iren.ToolsExcel.Forms
         DataView _entita;
         DataView _entitaProprieta;
         DateTime _dataRif;
+        ACarica _carica;
 
-        public FormMeteo(object dataRif)
+        public FormMeteo(object dataRif, ACarica carica)
         {
             InitializeComponent();
 
+            _carica = carica;
             _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
@@ -60,7 +62,7 @@ namespace Iren.ToolsExcel.Forms
                 foreach (RadioButton rdb in radioArray)
                     groupDati.Controls.Remove(rdb);
 
-                DataView fonti = DataBase.DB.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
+                DataView fonti = DataBase.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
 
                 int fonteOrdine = 0;
                 foreach (DataRowView fonte in fonti)
@@ -95,7 +97,6 @@ namespace Iren.ToolsExcel.Forms
                     ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).Items.Add(dataEmissione);
                     ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).SelectedIndex = 0;
                 }
-                DataBase.DB.CloseConnection();
             }
         }
 
@@ -111,14 +112,12 @@ namespace Iren.ToolsExcel.Forms
                     //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
                     _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "'";
 
-                    DataBase.DB.Insert("spUpdateFonteMeteo", new Core.QryParams() 
+                    DataBase.Insert("spUpdateFonteMeteo", new Core.QryParams() 
                     {
                         {"@SiglaEntita", entita["SiglaEntita"]},
                         {"@Valore", _entitaProprieta[0]["Ordine"]}
                     });
                 }
-
-                DataBase.DB.CloseConnection();
             }
             
         }
@@ -130,7 +129,7 @@ namespace Iren.ToolsExcel.Forms
                 //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
                 foreach (DataRowView entita in _entita)
                 {
-                    DataBase.DB.Insert("spUpdateFonteMeteo", new Core.QryParams() 
+                    DataBase.Insert("spUpdateFonteMeteo", new Core.QryParams() 
                         {
                             {"@SiglaEntita", entita["SiglaEntita"]},
                             {"@Valore", "1"}
@@ -139,7 +138,6 @@ namespace Iren.ToolsExcel.Forms
 
                 _entita.RowFilter = "";
                 _entitaProprieta.RowFilter = "";
-                DataBase.DB.CloseConnection();
                 this.Close();
             }
         }
@@ -156,15 +154,12 @@ namespace Iren.ToolsExcel.Forms
 
             string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
 
-            bool gone = Workbook.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, dataEmissione);
-
-            DataBase.OpenConnection();
+            bool gone = Workbook.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, _carica,  dataEmissione);
 
             Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
             r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
 
             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
-            DataBase.DB.CloseConnection();
 
             btnCarica.Enabled = true;
             btnAnnulla.Enabled = true;

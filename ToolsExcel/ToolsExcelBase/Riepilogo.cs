@@ -69,7 +69,6 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Excel.Worksheet _ws;
-        //protected DefinedNames _nomiDefiniti;
         protected NewDefinedNames _newNomiDefiniti;
         protected int _rigaAttiva;
         protected int _colonnaInizio;
@@ -92,7 +91,6 @@ namespace Iren.ToolsExcel.Base
             _struttura = new Struct();
             _struttura.rigaBlock = 5;
             _struttura.colBlock = 59;
-            //_nomiDefiniti = new DefinedNames(_ws.Name);
             try
             {
                 _newNomiDefiniti = new NewDefinedNames(_ws.Name);
@@ -324,7 +322,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     if (DataBase.OpenConnection())
                     {
-                        DataView datiRiepilogo = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                        DataView datiRiepilogo = DataBase.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                         foreach (DataRowView valore in datiRiepilogo)
                         {
                             Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(valore["SiglaEntita"]), _newNomiDefiniti.GetColFromName(valore["SiglaAzione"], suffissoData));
@@ -347,7 +345,6 @@ namespace Iren.ToolsExcel.Base
                             }
                         }
                     }
-                    
                 });
             }
             catch (Exception e)
@@ -360,7 +357,7 @@ namespace Iren.ToolsExcel.Base
 
         public override void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif)
         {
-            if (Struct.visualizzaRiepilogo)
+            if (Struct.visualizzaRiepilogo && !Simboli.EmergenzaForzata)
             {
                 Range cell = _newNomiDefiniti.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
                 Excel.Range rng = _ws.Range[cell.ToString()];

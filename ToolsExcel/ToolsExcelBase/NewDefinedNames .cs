@@ -28,12 +28,11 @@ namespace Iren.ToolsExcel.Base
         protected List<int> _saveDB = new List<int>();
         protected List<int> _toNote = new List<int>();
 
-        //siglaEntita, row, type
         protected List<CheckObj> _check = new List<CheckObj>();
 
         public enum InitType
         {
-            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB, Check
+            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB, CheckNaming, CheckOnly
         }
 
         #endregion
@@ -186,10 +185,13 @@ namespace Iren.ToolsExcel.Base
                     InitSaveDB();
                     InitToNote();
                     break;
-                case InitType.Check:
+                case InitType.CheckNaming:
                     InitCheck();
                     if(_check.Count > 0)
                         InitNaming();
+                    break;
+                case InitType.CheckOnly:
+                    InitCheck();
                     break;
             }
         }
@@ -242,10 +244,6 @@ namespace Iren.ToolsExcel.Base
             AddGOTO(siglaEntita, addressFrom);
             _addressTo.Add(siglaEntita, "'" + _sheet + "'!" + addressTo);
         }
-        public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
-        {
-            _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
-        }
         public void SetEditable(int row, Range rng)
         {
             if (!_editable.ContainsKey(row))
@@ -263,10 +261,14 @@ namespace Iren.ToolsExcel.Base
             if (!_toNote.Contains(row))
                 _toNote.Add(row);
         }
-        
         public void AddCheck(string siglaEntita, string range, int type)
         {            
                 _check.Add(new CheckObj(siglaEntita, range, type));
+        }
+
+        public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
+        {
+            _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
         }
 
         public bool SaveDB(int row)
@@ -350,7 +352,6 @@ namespace Iren.ToolsExcel.Base
         {
             return GetDayOffset(Date.GetSuffissoData(giorno));
         }
-
         public int GetRowByName(params object[] parts)
         {
             return _defNamesIndexByName[GetName(parts)];
@@ -364,15 +365,9 @@ namespace Iren.ToolsExcel.Base
             string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
             return GetRowByName(name);
         }
-
         public List<string> GetNameByRow(int row)
         {
             return _defNamesIndexByRow[row].ToList();
-        }
-
-        public bool IsDataColumn(int column)
-        {
-            return column >= GetFirstCol() && column < GetFirstCol() + GetColOffset();
         }
         public string GetDateByCol(int column)
         {
@@ -397,6 +392,21 @@ namespace Iren.ToolsExcel.Base
             return name;
         }
 
+        public bool IsDataColumn(int column)
+        {
+            return column >= GetFirstCol() && column < GetFirstCol() + GetColOffset();
+        }
+        public bool IsCheck(Range rng)
+        {
+            foreach (CheckObj chk in _check)
+            {
+                Range rngCheck = new Range(chk.Range);
+                if (rngCheck.Contains(rng))
+                    return true;
+            }
+
+            return false;
+        }
         public bool IsDefined(int row)
         {
             return _defNamesIndexByRow.Contains(row);
@@ -450,26 +460,6 @@ namespace Iren.ToolsExcel.Base
                 return new Range(row, col);
             }
         }
-        //public Range Get(object siglaEntita, object siglaInformazione)
-        //{
-        //    int row = GetRowByName(siglaEntita, siglaInformazione);
-        //    int col = GetFirstCol();
-
-        //    return new Range(row, col);
-        //}
-        //public Range Get(object siglaEntita, object siglaInformazione, string suffissoData)
-        //{
-        //    return Get(siglaEntita, siglaInformazione, suffissoData, "H1");
-        //}
-        //public Range Get(object siglaEntita, object siglaInformazione, string suffissoData, string suffissoOra)
-        //{
-        //    string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
-        //    int row = GetRowByName(name);
-        //    int col = GetColFromDate(suffissoData, suffissoOra);
-
-        //    return new Range(row, col);
-        //}
-
         public string GetGOTO(string addressFrom)
         {
             if (_addressFrom.ContainsKey("'" + _sheet + "'!" + addressFrom))
@@ -488,7 +478,6 @@ namespace Iren.ToolsExcel.Base
         {
             return _addressFrom.ElementAt(i).Key;
         }
-
         public bool HasCheck()
         {
             return _check.Count > 0;
@@ -780,7 +769,6 @@ namespace Iren.ToolsExcel.Base
 
     public class CheckObj
     {
-
         #region Proprietà
 
         public string SiglaEntita { get; set; }
@@ -789,6 +777,12 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
+        #region Costruttori
+
+        public CheckObj(string range)
+        {
+            Range = range;
+        }
         public CheckObj(string siglaEntita, string range, int type)
         {
             SiglaEntita = siglaEntita;
@@ -796,7 +790,10 @@ namespace Iren.ToolsExcel.Base
             Type = type;
         }
 
+        #endregion
 
+        #region Metodi
 
+        #endregion
     }
 }

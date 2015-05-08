@@ -29,8 +29,10 @@ namespace Iren.ToolsExcel
                     n = CheckFunc1();
                     break;
                 case 2:
+                    n = CheckFunc2();
                     break;
                 case 3:
+                    n = CheckFunc3();
                     break;
             }
 
@@ -108,7 +110,7 @@ namespace Iren.ToolsExcel
                 bool errore = false;
                 bool attenzione = false;
 
-                TreeNode nOra = new TreeNode(i.ToString("00"));
+                TreeNode nOra = new TreeNode("Ora " + i);
 
                 if (eOfferta1 + eOfferta2 + eOfferta3 + eOfferta4 + pce > margineUP)
                 {
@@ -197,15 +199,9 @@ namespace Iren.ToolsExcel
                 }
 
                 if (errore)
-                {
-                    nOra.BackColor = System.Drawing.Color.Red;
-                    nOra.ForeColor = System.Drawing.Color.White;
-                }
+                    ErrorStyle(ref nOra);
                 else if(attenzione)
-                {
-                    nOra.BackColor = System.Drawing.Color.Yellow;
-                    nOra.ForeColor = System.Drawing.Color.Black;
-                }
+                    AlertStyle(ref nOra);
 
                 nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
 
@@ -224,6 +220,212 @@ namespace Iren.ToolsExcel
                 return n;
 
             return new TreeNode();
+        }
+        private TreeNode CheckFunc2()
+        {
+            Range rngCheck = new Range(_check.Range);
+            Range rng;
+
+            DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
+                if (data != Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(i));
+                double eOfferta1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+               
+                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(i));
+                double pce = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+
+                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(i));
+                double progrUC = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+
+                DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+                entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+                double limitePmax = double.MaxValue;
+                if (entitaParametroD.Count > 0)
+                    limitePmax = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+
+                entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+                double limitePmin = double.MinValue;
+                if (entitaParametroD.Count > 0)
+                    limitePmin = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+
+                bool errore = false;
+                bool attenzione = false;
+
+                TreeNode nOra = new TreeNode("Ora " + i);
+
+                if (eOfferta1 + pce != progrUC)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("Eofferta + PCE <> Programma");
+                    errore |= true;
+                }
+                if (eOfferta1 + pce > limitePmax)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("Eofferta + PCE > PLimMax");
+                    errore |= true;
+                }
+                if (eOfferta1 + pce < limitePmin)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("Eofferta + PCE < PLimMin");
+                    errore |= true;
+                }
+                if (progrUC < pce)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("PCE > Programma");
+                    attenzione |= true;
+                }
+
+                if (errore)
+                    ErrorStyle(ref nOra);
+                else if (attenzione)
+                    AlertStyle(ref nOra);
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return n;
+
+            return new TreeNode();
+        }
+        private TreeNode CheckFunc3()
+        {
+            Range rngCheck = new Range(_check.Range);
+            Range rng;
+
+            DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
+                if (data != Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(i));
+                double eOfferta1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+
+                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(i));
+                double pce = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+
+                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(i));
+                double progrUC = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+
+                double delta = 0;
+                if (_newNomiDefiniti.IsDefined(_check.SiglaEntita, "DELTA_PROGR_UC"))
+                {
+                    rng = _newNomiDefiniti.Get(_check.SiglaEntita, "DELTA_PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(i));
+                    delta = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+                }
+
+                DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+                entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+                double limitePmax = double.MaxValue;
+                if (entitaParametroD.Count > 0)
+                    limitePmax = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+
+                entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+                double limitePmin = double.MinValue;
+                if (entitaParametroD.Count > 0)
+                    limitePmin = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+
+                bool errore = false;
+                bool attenzione = false;
+
+                TreeNode nOra = new TreeNode("Ora " + i);
+
+                if (eOfferta1 + pce != progrUC)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("Eofferta + PCE <> Programma");
+                    errore |= true;
+                }
+                if (eOfferta1 + pce > limitePmax)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("Eofferta + PCE > PLimMax");
+                    errore |= true;
+                }
+                if (eOfferta1 + pce < limitePmin)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("Eofferta + PCE < PLimMin");
+                    errore |= true;
+                }
+                if (progrUC + delta < pce)
+                {
+                    TreeNode n1 = nOra.Nodes.Add("PCE > Programma + Delta");
+                    attenzione |= true;
+                }
+
+                if (errore)
+                    ErrorStyle(ref nOra);
+                else if (attenzione)
+                    AlertStyle(ref nOra);
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return n;
+
+            return new TreeNode();
+        }
+
+        private void ErrorStyle(ref TreeNode node) 
+        {
+            node.BackColor = System.Drawing.Color.Red;
+            node.ForeColor = System.Drawing.Color.Yellow;
+            node.NodeFont = new System.Drawing.Font(Forms.ErrorPane.GetFont, System.Drawing.FontStyle.Bold);
+        }
+        private void AlertStyle(ref TreeNode node)
+        {
+            node.BackColor = System.Drawing.Color.Yellow;
+            node.ForeColor = System.Drawing.Color.Red;
+            node.NodeFont = new System.Drawing.Font(Forms.ErrorPane.GetFont, System.Drawing.FontStyle.Bold);
         }
     }
 }

@@ -76,13 +76,11 @@ namespace Iren.ToolsExcel.Forms
                         _pMin[j] = Math.Min(_pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
                 }
 
-                _oreFermata = int.Parse(DataBase.DB.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita).Rows[0]["OreFermata"].ToString());
+                _oreFermata = int.Parse(DataBase.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita).Rows[0]["OreFermata"].ToString());
 
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
                 this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-                
-                DataBase.DB.CloseConnection();
             }
         }
 

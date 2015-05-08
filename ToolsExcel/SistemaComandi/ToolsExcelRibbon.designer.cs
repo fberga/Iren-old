@@ -82,7 +82,7 @@
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.TabSmartArtToolsDesign = this.Factory.CreateRibbonTab();
             this.groupErrori = this.Factory.CreateRibbonGroup();
-            this.btnMostraErrorPane = this.Factory.CreateRibbonToggleButton();
+            this.btnMostraErrorPane = this.Factory.CreateRibbonButton();
             this.FrontOffice.SuspendLayout();
             this.groupChiudi.SuspendLayout();
             this.groupConfigura.SuspendLayout();
@@ -633,7 +633,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnSistemaComandi;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnForzaEmergenza;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupErrori;
-        internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnMostraErrorPane;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnMostraErrorPane;
     }
 
     partial class ThisRibbonCollection

@@ -52,7 +52,7 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.BeforeClose += new Microsoft.Office.Interop.Excel.WorkbookEvents_BeforeCloseEventHandler(this.ThisWorkbook_BeforeClose);
-            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.GotoClick);
+            this.SheetSelectionChange += new Microsoft.Office.Interop.Excel.WorkbookEvents_SheetSelectionChangeEventHandler(Handler.CellClick);
             this.WindowActivate += new Microsoft.Office.Interop.Excel.WorkbookEvents_WindowActivateEventHandler(this.ThisWorkbook_WindowActivate);
             this.Startup += new System.EventHandler(this.ThisWorkbook_Startup);
         }
@@ -61,8 +61,12 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
+            Application.ScreenUpdating = false;
             DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
             bool emergenza = Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
+
+            Application.Iteration = true;
+            Application.MaxIterations = 100;
 
             Sheet.Proteggi(false);
 
@@ -73,13 +77,24 @@ namespace Iren.ToolsExcel
 
             r.InitLabels();
 
-            Globals.Main.Select();
-            Application.WindowState = Excel.XlWindowState.xlMaximized;
-
             Style.StdStyles();
             Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
-            
+
+            foreach (Excel.Worksheet ws in Sheets)
+            {
+                ws.Activate();
+                ws.Range["A1"].Select();
+                Application.ActiveWindow.ScrollRow = 1;
+                if (ws.Name != "Main")
+                    Application.ActiveWindow.ScrollColumn = 1;
+            }
+
+            Globals.Main.Select();
+            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+
             Sheet.Proteggi(true);
+
+            Application.ScreenUpdating = true;
         }
 
         private void ThisWorkbook_BeforeClose(ref bool Cancel)

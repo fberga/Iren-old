@@ -14,6 +14,8 @@ namespace Iren.ToolsExcel.Forms
 {
     public partial class ErrorPane : UserControl
     {
+        public static Font GetFont { get { return new ErrorPane().treeViewErrori.Font; } }
+
         public ErrorPane()
         {
             InitializeComponent();
@@ -39,7 +41,7 @@ namespace Iren.ToolsExcel.Forms
             SplashScreen.UpdateStatus("Aggiornamento Check");
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
-                NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name, NewDefinedNames.InitType.Check);
+                NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name, NewDefinedNames.InitType.CheckNaming);
                 if (newNomiDefiniti.HasCheck())
                 {
                     foreach (CheckObj check in newNomiDefiniti.Checks)
@@ -74,5 +76,24 @@ namespace Iren.ToolsExcel.Forms
                 rng.Select();
             }
         }
+
+        public void SelectNode(string address)
+        {
+            TreeNode[] nodes = treeViewErrori.Nodes.Find(address, true);
+            treeViewErrori.CollapseAll();
+            if (nodes.Length > 0)
+            {                
+                nodes[0].Expand();
+                TreeNode n = nodes[0].Parent;
+                while (n != null)
+                {
+                    n.Expand();
+                    n = n.Parent;
+                }
+
+                treeViewErrori.SelectedNode = nodes[0];
+                //treeViewErrori.Focus();
+            }
+        }     
     }
 }

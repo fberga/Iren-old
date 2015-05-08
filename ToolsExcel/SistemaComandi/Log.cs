@@ -68,7 +68,7 @@ namespace Iren.ToolsExcel
                 rng.NumberFormat = "dd/MM/yyyy";
                 rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
 
-                DataBase.DB.CloseConnection();
+                DataBase.CloseConnection();
             }
             Protect(Simboli.pwd);
         }

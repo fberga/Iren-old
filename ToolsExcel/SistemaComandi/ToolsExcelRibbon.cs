@@ -33,7 +33,6 @@ namespace Iren.ToolsExcel
         {
             get { return _controls; }
         }
-        public ErrorPane EPane { get { return _errorPane; } }
 
         #endregion
 
@@ -70,8 +69,26 @@ namespace Iren.ToolsExcel
             Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
             Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
             Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+
+            //aggiungo un altro handler per cell click
+            Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
         }
 
+        void CheckSelection(object Sh, Excel.Range Target)
+        {
+            try
+            {
+                NewDefinedNames newNomiDefiniti = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.CheckOnly);
+                Range rng = new Range(Target.Row, Target.Column);
+                if (newNomiDefiniti.HasCheck() && newNomiDefiniti.IsCheck(rng))
+                {
+                    Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = true;
+                    _errorPane.SelectNode("'" + Target.Worksheet.Name + "'!" + rng.ToString());
+
+                }
+            }
+            catch { }
+        }
         void ActionsPane_SizeChanged(object sender, EventArgs e)
         {
             _errorPane.SetDimension(Globals.ThisWorkbook.ActionsPane.Width, Globals.ThisWorkbook.ActionsPane.Height);
@@ -117,7 +134,6 @@ namespace Iren.ToolsExcel
                 {
                     AggiornaStruttura();
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
-                    DataBase.DB.CloseConnection();
                 }
 
                 Check checkFunctions = new Check();
@@ -270,7 +286,6 @@ namespace Iren.ToolsExcel
                 {
                     AggiornaDati();
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
-                    DataBase.DB.CloseConnection();
                 }
 
                 Check checkFunctions = new Check();
@@ -290,7 +305,7 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(false);
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             
-            FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo());
+            FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
             frmAz.ShowDialog();
 
             Check checkFunctions = new Check();
@@ -364,6 +379,9 @@ namespace Iren.ToolsExcel
                             SplashScreen.Show();
                             SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
                             opt.EseguiOttimizzazione(siglaEntita);
+                            SplashScreen.UpdateStatus("Salvataggio");
+                            Sheet.SalvaModifiche();
+                            DataBase.SalvaModificheDB();
                             SplashScreen.Close();
                         }
                     }
@@ -373,6 +391,9 @@ namespace Iren.ToolsExcel
                     SplashScreen.Show();
                     SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
                     opt.EseguiOttimizzazione(siglaEntita);
+                    SplashScreen.UpdateStatus("Salvataggio");
+                    Sheet.SalvaModifiche();
+                    DataBase.SalvaModificheDB();
                     SplashScreen.Close();
                 }
             }
@@ -384,10 +405,12 @@ namespace Iren.ToolsExcel
                     SplashScreen.Show();
                     SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
                     opt.EseguiOttimizzazione(siglaEntita);
+                    SplashScreen.UpdateStatus("Salvataggio");
+                    Sheet.SalvaModifiche();
+                    DataBase.SalvaModificheDB();
                     SplashScreen.Close();
                 }
             }
-
             Sheet.Proteggi(true);
             Workbook.WB.SheetChange += Handler.StoreEdit;
             Workbook.WB.Application.ScreenUpdating = true;
@@ -430,7 +453,6 @@ namespace Iren.ToolsExcel
                 if (DataBase.OpenConnection())
                 {
                     main.UpdateRiepilogo();
-                    DataBase.DB.CloseConnection();
                 }
             }
 
@@ -461,8 +483,6 @@ namespace Iren.ToolsExcel
         #endregion
 
         #region Metodi
-
-
 
         private void Initialize()
         {
@@ -495,8 +515,10 @@ namespace Iren.ToolsExcel
                 }
             }
 
+            List<RibbonGroup> groups = FrontOffice.Groups.ToList();
+            foreach (RibbonGroup group in groups)
+                group.Visible = group.Items.Any(c => c.Visible);
         }
-
         private void CheckTastoApplicativo()
         {
             switch (ConfigurationManager.AppSettings["AppID"])
@@ -539,7 +561,6 @@ namespace Iren.ToolsExcel
 
 
         }
-
         private void DisabilitaTasti()
         {
             foreach (RibbonControl control in Controls)
@@ -556,7 +577,6 @@ namespace Iren.ToolsExcel
 
             _allDisabled = false;
         }
-
         private void AggiornaStruttura()
         {
             SplashScreen.UpdateStatus("Carico struttura dal DB");
@@ -625,6 +645,8 @@ namespace Iren.ToolsExcel
         #endregion        
     }
 
+    #region Controls Collection
+
     public class ControlCollection : IEnumerable
     {
         #region Variabili
@@ -674,9 +696,15 @@ namespace Iren.ToolsExcel
     }
     public class ControlEnumerator : IEnumerator
     {
-        ToolsExcelRibbon _ribbon;
-        int _pos = -1;
-        int _max = -1;
+        #region Variabili
+
+        private ToolsExcelRibbon _ribbon;
+        private int _pos = -1;
+        private int _max = -1;
+
+        #endregion
+
+        #region Costruttori
 
         public ControlEnumerator(ToolsExcelRibbon ribbon)
         {
@@ -684,20 +712,26 @@ namespace Iren.ToolsExcel
             _max = ribbon.Controls.Count;
         }
 
+        #endregion
+
+        #region Metodi
+
         public object Current
         {
             get { return _ribbon.Controls[_pos]; }
         }
-
         public bool MoveNext()
         {
             _pos++;
             return _pos < _max;
         }
-
         public void Reset()
         {
             _pos = -1;
         }
+
+        #endregion
     }
+
+    #endregion
 }

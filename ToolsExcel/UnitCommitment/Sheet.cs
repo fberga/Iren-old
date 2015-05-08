@@ -53,7 +53,7 @@ namespace Iren.ToolsExcel
                     string start = DataBase.DataAttiva.ToString("yyyyMMdd");
                     string end = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd");
 
-                    DataView note = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_NOTE, "@SiglaEntita=ALL;@DateFrom="+start+";@DateTo="+end).DefaultView;
+                    DataView note = DataBase.Select(DataBase.SP.APPLICAZIONE_NOTE, "@SiglaEntita=ALL;@DateFrom="+start+";@DateTo="+end).DefaultView;
 
                     foreach (DataRowView nota in note)
                     {

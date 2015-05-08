@@ -128,6 +128,14 @@ namespace Iren.ToolsExcel.Base
             return GetRange(_startRow, _startColumn, _rowOffset, _colOffset);
         }
 
+        public bool Contains(Range rng)
+        {
+            return StartRow <= rng.StartRow
+                && StartColumn <= rng.StartColumn 
+                && StartRow + RowOffset >= rng.StartRow + rng.RowOffset 
+                && StartColumn + ColOffset >= rng.StartColumn + rng.ColOffset;
+        }
+
         #endregion
 
         #region Metodi Statici
