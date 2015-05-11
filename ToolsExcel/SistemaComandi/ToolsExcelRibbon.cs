@@ -55,7 +55,7 @@ namespace Iren.ToolsExcel
 
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
-            btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
+            btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
             btnModifica.Label = "Modifica NO";
             try
             {
@@ -323,7 +323,7 @@ namespace Iren.ToolsExcel
 
             if (btnModifica.Checked) 
             {
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI_icon;
                 btnModifica.Label = "Modifica SI";
             }
             else
@@ -334,7 +334,7 @@ namespace Iren.ToolsExcel
 
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modifica_no_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
                 btnModifica.Label = "Modifica NO";
             }
             Sheet.AbilitaModifica(btnModifica.Checked);

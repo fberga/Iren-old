@@ -104,7 +104,6 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "LoaderScreen";
-            this.TopMost = true;
             this.panelAll.ResumeLayout(false);
             this.panelAll.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.loader)).EndInit();

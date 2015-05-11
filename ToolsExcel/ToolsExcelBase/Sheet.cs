@@ -1459,7 +1459,7 @@ namespace Iren.ToolsExcel.Base
                     if (_ws.Range[Range.GetRange(row, col)].Value != null)
                         _ws.Range[Range.GetRange(row, col)].Value = giorno;
 
-                    _ws.Range[gotos.GetAddressFromGOTO(i)].Value = giorno;
+                    _ws.Range[gotos.GetFromAddressGOTO(i)].Value = giorno;
 
                 }
             }

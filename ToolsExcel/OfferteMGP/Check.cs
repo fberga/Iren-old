@@ -15,13 +15,13 @@ namespace Iren.ToolsExcel
         NewDefinedNames _newNomiDefiniti;
         CheckObj _check;
 
-        public override TreeNode ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
+        public override CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
         {
             _ws = ws;
             _newNomiDefiniti = newNomiDefiniti;
             _check = check;
 
-            TreeNode n = new TreeNode();
+            CheckOutput n = new CheckOutput();
 
             switch (check.Type)
             {
@@ -39,7 +39,7 @@ namespace Iren.ToolsExcel
             return n;
         }
 
-        private TreeNode CheckFunc1()
+        private CheckOutput CheckFunc1()
         {
             Range rngCheck = new Range(_check.Range);
             Range rng;
@@ -51,6 +51,9 @@ namespace Iren.ToolsExcel
             n.Name = _check.SiglaEntita;
             TreeNode nData = new TreeNode();
             string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
             for (int i = 1; i <= rngCheck.ColOffset; i++)
             {
                 string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
@@ -107,10 +110,10 @@ namespace Iren.ToolsExcel
                 if (entitaParametroD.Count > 0)
                     limitePmin = Double.Parse(entitaParametroD[0]["Valore"].ToString());
 
+                TreeNode nOra = new TreeNode("Ora " + i);
+
                 bool errore = false;
                 bool attenzione = false;
-
-                TreeNode nOra = new TreeNode("Ora " + i);
 
                 if (eOfferta1 + eOfferta2 + eOfferta3 + eOfferta4 + pce > margineUP)
                 {
@@ -199,9 +202,16 @@ namespace Iren.ToolsExcel
                 }
 
                 if (errore)
+                {
                     ErrorStyle(ref nOra);
-                else if(attenzione)
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
                     AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
 
                 nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
 
@@ -211,17 +221,18 @@ namespace Iren.ToolsExcel
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
                 _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
             }
+            
             if (nData.Nodes.Count > 0)
             {
                 n.Nodes.Add(nData);
             }
 
-            if(n.Nodes.Count > 0)
-                return n;
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
 
-            return new TreeNode();
+            return new CheckOutput();
         }
-        private TreeNode CheckFunc2()
+        private CheckOutput CheckFunc2()
         {
             Range rngCheck = new Range(_check.Range);
             Range rng;
@@ -233,6 +244,9 @@ namespace Iren.ToolsExcel
             n.Name = _check.SiglaEntita;
             TreeNode nData = new TreeNode();
             string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+            
             for (int i = 1; i <= rngCheck.ColOffset; i++)
             {
                 string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
@@ -291,10 +305,17 @@ namespace Iren.ToolsExcel
                     attenzione |= true;
                 }
 
-                if (errore)
+                if (errore) 
+                {
                     ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
                 else if (attenzione)
+                {
                     AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
 
                 nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
 
@@ -304,17 +325,18 @@ namespace Iren.ToolsExcel
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
                 _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
             }
+            
             if (nData.Nodes.Count > 0)
             {
                 n.Nodes.Add(nData);
             }
 
             if (n.Nodes.Count > 0)
-                return n;
+                return new CheckOutput(n, status);
 
-            return new TreeNode();
+            return new CheckOutput();
         }
-        private TreeNode CheckFunc3()
+        private CheckOutput CheckFunc3()
         {
             Range rngCheck = new Range(_check.Range);
             Range rng;
@@ -326,6 +348,9 @@ namespace Iren.ToolsExcel
             n.Name = _check.SiglaEntita;
             TreeNode nData = new TreeNode();
             string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
             for (int i = 1; i <= rngCheck.ColOffset; i++)
             {
                 string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
@@ -392,9 +417,16 @@ namespace Iren.ToolsExcel
                 }
 
                 if (errore)
+                {
                     ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
                 else if (attenzione)
+                {
                     AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
 
                 nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
 
@@ -410,9 +442,9 @@ namespace Iren.ToolsExcel
             }
 
             if (n.Nodes.Count > 0)
-                return n;
+                return new CheckOutput(n, status);
 
-            return new TreeNode();
+            return new CheckOutput();
         }
 
         private void ErrorStyle(ref TreeNode node) 

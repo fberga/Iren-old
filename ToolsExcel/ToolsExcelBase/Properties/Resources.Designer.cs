@@ -63,9 +63,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap aggiorna_dati_icon {
+        public static System.Drawing.Bitmap aggiornadati_icon {
             get {
-                object obj = ResourceManager.GetObject("aggiorna_dati_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("aggiornadati_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap aggiorna_struttura_icon {
+        public static System.Drawing.Bitmap aggiornastruttura_icon {
             get {
-                object obj = ResourceManager.GetObject("aggiorna_struttura_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("aggiornastruttura_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -93,19 +93,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap calendar_icon {
+        public static System.Drawing.Bitmap calendario_icon {
             get {
-                object obj = ResourceManager.GetObject("calendar_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ct_icon {
-            get {
-                object obj = ResourceManager.GetObject("ct_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("calendario_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -123,9 +113,19 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap forza_emergenza_icon {
+        public static System.Drawing.Bitmap errorpane_icon {
             get {
-                object obj = ResourceManager.GetObject("forza_emergenza_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("errorpane_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap forzaemergenza_icon {
+            get {
+                object obj = ResourceManager.GetObject("forzaemergenza_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -143,9 +143,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap invio_icon {
+        public static System.Drawing.Bitmap invioProgrammi_icon {
             get {
-                object obj = ResourceManager.GetObject("invio_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("invioProgrammi_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -153,9 +153,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap loader {
+        public static System.Drawing.Bitmap modificaNO_icon {
             get {
-                object obj = ResourceManager.GetObject("loader", resourceCulture);
+                object obj = ResourceManager.GetObject("modificaNO_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -163,9 +163,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap mb_icon {
+        public static System.Drawing.Bitmap modificaSI_icon {
             get {
-                object obj = ResourceManager.GetObject("mb_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("modificaSI_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -173,9 +173,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap mgp_icon {
+        public static System.Drawing.Bitmap offerteMB_icon {
             get {
-                object obj = ResourceManager.GetObject("mgp_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("offerteMB_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -183,9 +183,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap modifica_icon {
+        public static System.Drawing.Bitmap offerteMGP_icon {
             get {
-                object obj = ResourceManager.GetObject("modifica_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("offerteMGP_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -193,9 +193,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap modifica_no_icon {
+        public static System.Drawing.Bitmap offerteMSD_icon {
             get {
-                object obj = ResourceManager.GetObject("modifica_no_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("offerteMSD_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -203,9 +203,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap mp_icon {
+        public static System.Drawing.Bitmap ottimizzatore_icon {
             get {
-                object obj = ResourceManager.GetObject("mp_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("ottimizzatore_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -213,19 +213,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap msd_icon {
+        public static System.Drawing.Bitmap previsioneCT_icon {
             get {
-                object obj = ResourceManager.GetObject("msd_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap optimizer_icon {
-            get {
-                object obj = ResourceManager.GetObject("optimizer_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("previsioneCT_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -253,6 +243,16 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap progrImpianti_icon {
+            get {
+                object obj = ResourceManager.GetObject("progrImpianti_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap rampe_icon {
             get {
                 object obj = ResourceManager.GetObject("rampe_icon", resourceCulture);
@@ -263,19 +263,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap Save_icon {
+        public static System.Drawing.Bitmap salva_icon {
             get {
-                object obj = ResourceManager.GetObject("Save_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap sc_icon {
-            get {
-                object obj = ResourceManager.GetObject("sc_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("salva_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -293,6 +283,16 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap sisCom_icon {
+            get {
+                object obj = ResourceManager.GetObject("sisCom_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap test_icon {
             get {
                 object obj = ResourceManager.GetObject("test_icon", resourceCulture);
@@ -303,9 +303,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap tl_icon {
+        public static System.Drawing.Bitmap unitComm_icon {
             get {
-                object obj = ResourceManager.GetObject("tl_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("unitComm_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -313,9 +313,9 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap uc_icon {
+        public static System.Drawing.Bitmap validazioneTL_icon {
             get {
-                object obj = ResourceManager.GetObject("uc_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("validazioneTL_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

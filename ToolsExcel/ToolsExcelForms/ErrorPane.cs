@@ -39,25 +39,68 @@ namespace Iren.ToolsExcel.Forms
         public void RefreshCheck(Check checkFunctions)
         {
             SplashScreen.UpdateStatus("Aggiornamento Check");
+            NewDefinedNames gotos = new NewDefinedNames("Main", NewDefinedNames.InitType.GOTOsOnly);
+
+            //Reset delle celle GOTO di tutto il Workbook
+            List<string> gotoRanges = gotos.GetAllFromAddressGOTO();
+            foreach (string gotoCell in gotoRanges)
+                Style.RangeStyle(Workbook.WB.Application.Range[gotoCell], backColor: 2, foreColor: 1);
+
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
-                NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name, NewDefinedNames.InitType.CheckNaming);
-                if (newNomiDefiniti.HasCheck())
+                if(ws.Name != "Main" && ws.Name != "Log") 
                 {
-                    foreach (CheckObj check in newNomiDefiniti.Checks)
-                    {
-                        TreeNode n = checkFunctions.ExecuteCheck(ws, newNomiDefiniti, check);
+                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name, NewDefinedNames.InitType.CheckNaming);
 
-                        if (n.Nodes.Count > 0)
+                    if (newNomiDefiniti.HasCheck())
+                    {
+                        foreach (CheckObj check in newNomiDefiniti.Checks)
                         {
-                            if(treeViewErrori.Nodes.ContainsKey(n.Name))
+                            CheckOutput o = checkFunctions.ExecuteCheck(ws, newNomiDefiniti, check);
+
+                            if (o.Node.Nodes.Count > 0)
                             {
-                                treeViewErrori.Nodes.RemoveByKey(n.Name);
+                                if (treeViewErrori.Nodes.ContainsKey(o.Node.Name))
+                                {
+                                    treeViewErrori.Nodes.RemoveByKey(o.Node.Name);
+                                }
+                                treeViewErrori.Nodes.Add(o.Node);
+
+
+                                //Coloro le celle GOTO del Main e della scheda corrente
+                                List<string> rngToCheck = gotos.GetFromAddressGOTO(check.SiglaEntita);
+                                foreach (string gotoCell in rngToCheck)
+                                {
+                                    if(o.Status == CheckOutput.CheckStatus.Error)
+                                        Style.RangeStyle(Workbook.WB.Application.Range[gotoCell], backColor: 3, foreColor: 6);
+                                    else if(o.Status == CheckOutput.CheckStatus.Alert)
+                                        Style.RangeStyle(Workbook.WB.Application.Range[gotoCell], backColor: 6, foreColor: 3);
+                                }
+
+                                //Coloro la barra del titolo verticale
+                                Range titoloVert = new Range(check.Range);
+                                //riduco il range ad una sola cella alla colonna B
+                                titoloVert.StartColumn = 2;
+                                titoloVert.ColOffset = 1;
+                                titoloVert.RowOffset = 1;
+                                if(o.Status == CheckOutput.CheckStatus.Error)
+                                    Style.RangeStyle(ws.Range[titoloVert.ToString()].MergeArea, backColor: 3, foreColor: 6);
+                                else if(o.Status == CheckOutput.CheckStatus.Alert)
+                                    Style.RangeStyle(ws.Range[titoloVert.ToString()].MergeArea, backColor: 6, foreColor: 3);
                             }
-                            treeViewErrori.Nodes.Add(n);
+                            else
+                            {
+                                //Reset della barra del titolo verticale
+                                Range titoloVert = new Range(check.Range);
+                                //riduco il range ad una sola cella alla colonna B
+                                titoloVert.StartColumn = 2;
+                                titoloVert.ColOffset = 1;
+                                titoloVert.RowOffset = 1;
+                                Style.RangeStyle(ws.Range[titoloVert.ToString()].MergeArea, backColor: 2, foreColor: 1);
+                            }
                         }
                     }
-                }
+                }   
             }
         }
 

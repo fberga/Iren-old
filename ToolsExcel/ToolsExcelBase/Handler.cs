@@ -40,7 +40,7 @@ namespace Iren.ToolsExcel.Base
                 try
                 {
                     NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.GOTOsOnly);
-                    string address = newDefinedNames.GetGOTO(Range.R1C1toA1(Target.Row, Target.Column));
+                    string address = newDefinedNames.GetGotoFromAddress(Range.R1C1toA1(Target.Row, Target.Column));
                     Goto(address);
                 }
                 catch {}

@@ -16,7 +16,7 @@ using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
 using Microsoft.Office.Interop.Word;
 using System.Reflection;
-using Iren.FrontOffice.Core;
+using Iren.ToolsExcel.Core;
 using System.IO;
 
 namespace Iren.FrontOffice.Tools
@@ -54,27 +54,24 @@ namespace Iren.FrontOffice.Tools
             }
 
             _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
+            if(_db.OpenConnection())
+            {
+                DataView dtView = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura).DefaultView;
 
-            DataView dtView = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura).DefaultView;
+                cmbStrumento.DataSource = dtView;
+                cmbStrumento.DisplayMember = "DesApplicazione";
 
-            cmbStrumento.DataSource = dtView;
-            cmbStrumento.DisplayMember = "DesApplicazione";
+                DataTable dt = _db.Select("spGetFirstAvailableID", "@IdStruttura=" + _idStruttura);
+                lbIdRichiesta.Text = dt.Rows[0][0].ToString();
 
-            DataTable dt = _db.Select("spGetFirstAvailableID", "@IdStruttura=" + _idStruttura);
-            lbIdRichiesta.Text = dt.Rows[0][0].ToString();
+                lbDataInvio.Text = DateTime.Now.ToShortDateString();
 
-            lbDataInvio.Text = DateTime.Now.ToShortDateString();
+                object what = Word.WdGoToItem.wdGoToLine;
+                object which = Word.WdGoToDirection.wdGoToLast;
+                object missing = Missing.Value;
 
-            txtDescrizione.Multiline = true;
-            txtDescrizione.Height = 265.5f;
-            txtNote.Multiline = true;
-            txtNote.Height = 54.75f;
-            txtOggetto.Multiline = true;
-            txtOggetto.Height = 33f;
-
-            object what = Word.WdGoToItem.wdGoToLine;
-            object which = Word.WdGoToDirection.wdGoToLast;
-            object missing = Missing.Value;
+                _db.CloseConnection();
+            }
 
             AddProtection();
         }
@@ -85,7 +82,7 @@ namespace Iren.FrontOffice.Tools
         #pragma warning disable 0467
         private void ThisDocument_Shutdown(object sender, System.EventArgs e)
         {
-            Application.Quit();
+            ThisApplication.Quit();
         }
         #pragma warning restore 0467
 
@@ -103,7 +100,7 @@ namespace Iren.FrontOffice.Tools
                 File.Delete(AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString());
             }
             AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", file);
-            Connection.CryptSection(file);
+            CryptHelper.CryptSection("connectionStrings");
         }
 
         public void AddProtection()
@@ -161,6 +158,12 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
+            this.txtDescrizione.Entering += new Microsoft.Office.Tools.Word.ContentControlEnteringEventHandler(this.TextArea_Entering);
+            this.txtDescrizione.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.TextArea_Exiting);
+            this.txtOggetto.Entering += new Microsoft.Office.Tools.Word.ContentControlEnteringEventHandler(this.TextArea_Entering);
+            this.txtOggetto.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.TextArea_Exiting);
+            this.txtNote.Entering += new Microsoft.Office.Tools.Word.ContentControlEnteringEventHandler(this.TextArea_Entering);
+            this.txtNote.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.TextArea_Exiting);
             this.Startup += new System.EventHandler(this.ThisDocument_Startup);
             this.Shutdown += new System.EventHandler(this.ThisDocument_Shutdown);
             this.BeforeClose += new System.ComponentModel.CancelEventHandler(this.ThisDocument_BeforeClose);
@@ -168,6 +171,16 @@ namespace Iren.FrontOffice.Tools
         }
 
         #endregion
+
+        private void TextArea_Entering(object sender, ContentControlEnteringEventArgs e)
+        {
+            RemoveProtection();
+        }
+
+        private void TextArea_Exiting(object sender, ContentControlExitingEventArgs e)
+        {
+            AddProtection();
+        }
 
 
     }

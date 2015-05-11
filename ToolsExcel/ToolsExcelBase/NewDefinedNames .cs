@@ -460,21 +460,38 @@ namespace Iren.ToolsExcel.Base
                 return new Range(row, col);
             }
         }
-        public string GetGOTO(string addressFrom)
+        public string GetGotoFromAddress(string addressFrom)
         {
             if (_addressFrom.ContainsKey("'" + _sheet + "'!" + addressFrom))
-                return GetGOTO(_addressFrom["'" + _sheet + "'!" + addressFrom]);
+                return GetGotoFromSiglaEntita(_addressFrom["'" + _sheet + "'!" + addressFrom]);
 
             return "";
         }
-        public string GetGOTO(object siglaEntita)
+        public string GetGotoFromSiglaEntita(object siglaEntita)
         {
             if (_addressTo.ContainsKey(siglaEntita))
                 return _addressTo[siglaEntita];
 
             return "";
         }
-        public string GetAddressFromGOTO(int i)
+        public List<string> GetFromAddressGOTO(object siglaEntita)
+        {
+            List<string> o = 
+                (from kv in _addressFrom
+                where kv.Value.Equals(siglaEntita.ToString())
+                select kv.Key).ToList();
+
+            return o;
+        }
+        public List<string> GetAllFromAddressGOTO()
+        {
+            List<string> o =
+               (from kv in _addressFrom
+                select kv.Key).ToList();
+
+            return o;
+        }
+        public string GetFromAddressGOTO(int i)
         {
             return _addressFrom.ElementAt(i).Key;
         }

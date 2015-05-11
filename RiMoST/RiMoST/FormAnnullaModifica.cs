@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Iren.FrontOffice.Core;
+using Iren.ToolsExcel.Core;
 
 namespace Iren.FrontOffice.Tools
 {
@@ -27,10 +27,15 @@ namespace Iren.FrontOffice.Tools
         #region Callbacks
         private void FormAnnullaModifica_Load(object sender, EventArgs e)
         {
-            DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
-            dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
-            cmbRichiesta.DataSource = dv;
-            cmbRichiesta.DisplayMember = "IdRichiesta";
+            if(ThisDocument._db.OpenConnection())
+            {
+                DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
+                dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
+                cmbRichiesta.DataSource = dv;
+                cmbRichiesta.DisplayMember = "IdRichiesta";
+
+                ThisDocument._db.CloseConnection();
+            }
         }
 
         private void btnOK_Click(object sender, EventArgs e)

@@ -72,6 +72,11 @@
     <Compile Include="Check.cs" />
     <Compile Include="NewDefinedNames .cs" />
     <Compile Include="Handler.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Range.cs" />
     <Compile Include="SplashForm.cs">
       <SubType>Form</SubType>
@@ -84,11 +89,6 @@
     <Compile Include="Esporta.cs" />
     <Compile Include="Optimizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Riepilogo.cs" />
     <Compile Include="Sheet.cs" />
     <Compile Include="Simboli.cs" />
@@ -106,36 +106,37 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="res\Actions-icon.png" />
-    <Content Include="res\Calculator-icon.png" />
-    <Content Include="res\Calendar-icon.png" />
-    <Content Include="res\checklist-icon.png" />
-    <Content Include="res\ct-icon.png" />
-    <Content Include="res\edit-not-validated-icon.png" />
-    <Content Include="res\edit-validated-icon.png" />
-    <Content Include="res\Folder-Settings-Tools-icon.png" />
-    <Content Include="res\forza-emergenza-icon.png" />
-    <Content Include="res\gas-icon.png" />
-    <Content Include="res\Generate-tables-icon.png" />
-    <Content Include="res\invio-icon.png" />
-    <Content Include="res\Letter-D-icon.png" />
-    <Content Include="res\Letter-P-icon.png" />
-    <Content Include="res\Letter-T-icon.png" />
-    <Content Include="res\loader.gif" />
-    <Content Include="res\mb-icon.png" />
-    <Content Include="res\mgp-icon.png" />
-    <Content Include="res\mp-icon.png" />
-    <Content Include="res\msd-icon.png" />
-    <Content Include="res\prezziMSD-icon.png" />
-    <Content Include="res\Save-icon.png" />
-    <Content Include="res\sc-icon.png" />
-    <Content Include="res\Structure-Refresh-icon.png" />
-    <Content Include="res\tl-icon.png" />
-    <Content Include="res\uc-icon.png" />
+    <Content Include="resources\azioni-icon.png" />
+    <None Include="resources\validazioneTL-icon.png" />
+    <None Include="resources\unitComm-icon.png" />
+    <None Include="resources\errorpane-icon.png" />
+    <Content Include="resources\ottimizzatore-icon.png" />
+    <Content Include="resources\calendario-icon.png" />
+    <Content Include="resources\rampe-icon.png" />
+    <Content Include="resources\modificaNO-icon.png" />
+    <Content Include="resources\modificaSI-icon.png" />
+    <Content Include="resources\settings-icon.png" />
+    <Content Include="resources\forzaemergenza-icon.png" />
+    <None Include="resources\gas-icon.png" />
+    <Content Include="resources\aggiornadati-icon.png" />
+    <None Include="resources\invioProgrammi-icon.png" />
+    <Content Include="resources\dev-icon.png" />
+    <Content Include="resources\prod-icon.png" />
+    <Content Include="resources\test-icon.png" />
+    <None Include="resources\offerteMB-icon.png" />
+    <None Include="resources\offerteMGP-icon.png" />
+    <None Include="resources\offerteMSD-icon.png" />
+    <None Include="resources\previsioneCT-icon.png" />
+    <None Include="resources\prezziMSD-icon.png" />
+    <None Include="resources\progrImpianti-icon.png" />
+    <Content Include="resources\salva-icon.png" />
+    <None Include="resources\sisCom-icon.png" />
+    <Content Include="resources\aggiornastruttura-icon.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="SplashForm.resx">

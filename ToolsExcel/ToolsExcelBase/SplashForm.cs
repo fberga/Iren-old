@@ -41,9 +41,10 @@ namespace Iren.ToolsExcel.Base
                 BeginInvoke(new ShowCloseDelegate(ShowSplashScreen));
                 return;
             }
-
-            this.Show();
-            Application.Run(this);
+            
+            this.ShowDialog();
+            if(!this.IsDisposed)
+                Application.Run(this);
         }
 
         public void CloseSplashScreen()
@@ -55,6 +56,7 @@ namespace Iren.ToolsExcel.Base
             }
             
             this.Close();
+            this.Dispose();
         }
 
         public void UdpateStatusText(string status)

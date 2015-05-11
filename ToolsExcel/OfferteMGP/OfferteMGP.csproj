@@ -160,6 +160,11 @@
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>OfferteMGP.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
@@ -179,6 +184,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="ThisWorkbook.resx">
       <DependentUpon>ThisWorkbook.cs</DependentUpon>
@@ -220,6 +229,84 @@
       <Project>{3e119690-1387-4fe3-89c1-756220fedeee}</Project>
       <Name>ToolsExcelUserConfig</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Actions-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Alert-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Calculator-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Calendar-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\checklist-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ct-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\edit-not-validated-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\edit-validated-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Folder-Settings-Tools-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\forza-emergenza-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\gas-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Generate-tables-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\invio-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Letter-D-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Letter-P-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Letter-T-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mb-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mgp-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mp-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\msd-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\prezziMSD-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Save-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sc-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Structure-Refresh-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tl-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\uc-icon.png" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
