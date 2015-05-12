@@ -7,7 +7,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <RootNamespace>RiMoST2</RootNamespace>
+    <RootNamespace>Iren.RiMoST</RootNamespace>
     <AssemblyName>RiMoST</AssemblyName>
     <VSTO_HostDocumentName>RiMoST.docx</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -178,6 +178,13 @@
     <EmbeddedResource Include="FormAnnullaModifica.resx">
       <DependentUpon>FormAnnullaModifica.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RiMoSTRibbon.resx">
+      <DependentUpon>RiMoSTRibbon.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SelezionaModifica.resx">
       <DependentUpon>SelezionaModifica.cs</DependentUpon>
     </EmbeddedResource>
@@ -207,8 +214,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Ribbon.cs">
-      <XmlRibbon>true</XmlRibbon>
+    <Compile Include="RiMoSTRibbon.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RiMoSTRibbon.Designer.cs">
+      <DependentUpon>RiMoSTRibbon.cs</DependentUpon>
     </Compile>
     <Compile Include="SelezionaModifica.cs">
       <SubType>Form</SubType>
@@ -225,21 +235,6 @@
     </None>
     <Compile Include="ThisDocument.Designer.cs">
       <DependentUpon>ThisDocument.Designer.xml</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -264,11 +259,6 @@
     <None Include="res\Eraser-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Ribbon.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\save-icon.png" />
   </ItemGroup>
   <ItemGroup>
@@ -287,8 +277,19 @@
     <None Include="res\Editing-Edit-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="res\draft-icon.png" />
+    <Content Include="resources\Bin.png" />
+    <Content Include="resources\Calendar.png" />
+    <Content Include="resources\Close.png" />
+    <Content Include="resources\Draft.png" />
+    <Content Include="resources\Edit.png" />
+    <Content Include="resources\Help.png" />
+    <Content Include="resources\New.png" />
+    <Content Include="resources\Print-icon.png" />
+    <Content Include="resources\Refresh.png" />
+    <Content Include="resources\Send.png" />
+    <Content Include="resources\draft-icon.png" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -299,7 +300,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="RiMoST.docx" HostPackage="{763FDC83-64E5-4651-AC9B-28C4FEB985A1}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="DOC" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE" DebugInfoCommandLine="/w &quot;[$OUTPUT]RiMoST.docx&quot;" />
-        <Host Name="Word Document" Path=".\RiMoST.docx" GeneratedCodeNamespace="RiMoST2" PublishedHash="CFECFF3FB805E9A295392C4C85A42160CA201773">
+        <Host Name="Word Document" Path=".\RiMoST.docx" GeneratedCodeNamespace="Iren.RiMoST" PublishedHash="CFECFF3FB805E9A295392C4C85A42160CA201773">
           <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="248EBE99C053606ED0093997ABAB1F802D28EC21" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
         </Host>
       </FlavorProperties>

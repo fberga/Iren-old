@@ -16,11 +16,11 @@ using Word = Microsoft.Office.Interop.Word;
 using DataTable = System.Data.DataTable;
 using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
-using RiMoST2.Properties;
+using Iren.RiMoST.Properties;
 using System.Drawing;
 using System.Deployment.Application;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.RiMoST
 {
     [ComVisible(true)]
     public class Ribbon : Office.IRibbonExtensibility
@@ -38,7 +38,7 @@ namespace Iren.FrontOffice.Tools
         internal bool _chkIsDraftEnabled = true;
         internal bool _chkIsDraft = false;
         internal bool _btnSalvaBozzaEnabled = true;
-        internal bool _btnRefreshEnabled = true;
+        internal bool _btnRefreshEnabled = true;       
 
         #endregion
 
@@ -70,7 +70,6 @@ namespace Iren.FrontOffice.Tools
             {
                 MessageBox.Show("Alcuni campi obbligatori non sono stati compilati. Compilare i campi evidenziati!", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                Globals.ThisDocument.RemoveProtection();
                 Globals.ThisDocument.Application.ScreenUpdating = false;
 
                 ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
@@ -83,19 +82,16 @@ namespace Iren.FrontOffice.Tools
                     ThisDocument.Highlight("Descrizione", Word.WdColorIndex.wdRed, "*");
 
                 Globals.ThisDocument.Application.ScreenUpdating = true;
-                Globals.ThisDocument.AddProtection();
 
                 return true;
             }
 
-            Globals.ThisDocument.RemoveProtection();
             Globals.ThisDocument.Application.ScreenUpdating = false;
 
             ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
             ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
 
             Globals.ThisDocument.Application.ScreenUpdating = true;
-            Globals.ThisDocument.AddProtection();
 
             return false;
         }
@@ -105,7 +101,9 @@ namespace Iren.FrontOffice.Tools
             if (ThisDocument._db.OpenConnection())
             {
                 DataTable dt = ThisDocument._db.Select("spGetFirstAvailableID", "@IdStruttura=" + ThisDocument._idStruttura);
+                Globals.ThisDocument.lbIdRichiesta.LockContents = false;
                 Globals.ThisDocument.lbIdRichiesta.Text = dt.Rows[0][0].ToString();
+                Globals.ThisDocument.lbIdRichiesta.LockContents = true;
                 ThisDocument._db.CloseConnection();
             }
         }
@@ -122,16 +120,16 @@ namespace Iren.FrontOffice.Tools
 
         private void ChangeBozzaVisibility(bool visible)
         {
-            if (!visible)
-            {
-                Globals.ThisDocument.lbBozza.Text = "";
-                Globals.ThisDocument.lbBozza.Image = null;
-            }
-            else
-            {
-                Globals.ThisDocument.lbBozza.Text = "Bozza";
-                Globals.ThisDocument.lbBozza.Image = Resources.Editing_Edit_icon;
-            }
+            //if (!visible)
+            //{
+            //    Globals.ThisDocument.lbBozza.Text = "";
+            //    Globals.ThisDocument.lbBozza.Image = null;
+            //}
+            //else
+            //{
+            //    Globals.ThisDocument.lbBozza.Text = "Bozza";
+            //    Globals.ThisDocument.lbBozza.Image = Resources.Editing_Edit_icon;
+            //}
         }
 
         #endregion
@@ -171,9 +169,8 @@ namespace Iren.FrontOffice.Tools
         {
             if (MessageBox.Show("Sicuro di voler cancellare il contenuto dei campi?", "Cancellare campi?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
             {
-                Globals.ThisDocument.cmbStrumento.SelectedIndex = 0;
-                ((DataView)Globals.ThisDocument.cmbStrumento.DataSource).RowFilter = "";
-                Globals.ThisDocument.cmbStrumento.Enabled = true;
+                Globals.ThisDocument.cmbStrumento.DropDownListEntries[0].Select();                
+                Globals.ThisDocument.cmbStrumento.LockContents = false;
                 Globals.ThisDocument.txtDescrizione.Text = "";
                 Globals.ThisDocument.txtOggetto.Text = "";
                 Globals.ThisDocument.txtNote.Text = "";
@@ -206,14 +203,12 @@ namespace Iren.FrontOffice.Tools
                     {
                         if (_chkIsDraft || MessageBox.Show("Sicuro di voler inviare il documento?", "Stampa e invia?", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
                         {
-                            Globals.ThisDocument.RemoveProtection();
                             Globals.ThisDocument.Application.ScreenUpdating = false;
 
                             ThisDocument.ToNormal("Oggetto", Word.WdColorIndex.wdBlack, "*");
                             ThisDocument.ToNormal("Descrizione", Word.WdColorIndex.wdBlack, "*");
 
                             Globals.ThisDocument.Application.ScreenUpdating = true;
-                            Globals.ThisDocument.AddProtection();
 
                             _btnRefreshEnabled = !_chkIsDraft;
                             if (!_chkIsDraft)
@@ -245,7 +240,7 @@ namespace Iren.FrontOffice.Tools
                                         ref missing, ref missing, ref missing, ref missing, ref missing);
 
                                 DateTime dataInvio = DateTime.Parse(Globals.ThisDocument.lbDataInvio.Text);
-                                DataRowView strumento = (DataRowView)Globals.ThisDocument.cmbStrumento.SelectedItem;
+                                string idApplicazione = Globals.ThisDocument.cmbStrumento.DropDownListEntries[0].Value;
 
                                 QryParams parameters = new QryParams()
                             {
@@ -253,7 +248,7 @@ namespace Iren.FrontOffice.Tools
                                 {"@IdStruttura", ThisDocument._idStruttura},
                                 {"@DataInvio", dataInvio.ToString("yyyyMMdd")},
                                 {"@IdTipologiaStato", _chkIsDraft ? 7:1},
-                                {"@IdApplicazione", strumento["IdApplicazione"]},
+                                {"@IdApplicazione", idApplicazione},
                                 {"@Oggetto", Globals.ThisDocument.txtOggetto.Text.Trim()},
                                 {"@Descr", Globals.ThisDocument.txtDescrizione.Text.Trim()},
                                 {"@Note", Globals.ThisDocument.txtNote.Text.Trim()},

@@ -18,15 +18,26 @@ using Microsoft.Office.Interop.Word;
 using System.Reflection;
 using Iren.ToolsExcel.Core;
 using System.IO;
+using Microsoft.Office.Tools.Ribbon;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.RiMoST
 {
     public partial class ThisDocument
     {
         #region Variabili
 
-        public static DataBase _db;
+        private static DataBase _db;
         public static string _idStruttura;
+        private DataTable _dtApplicazioni;
+        
+        private Microsoft.Office.Tools.Word.GroupContentControl groupControl1;
+
+        #endregion
+
+        #region Proprietà
+
+        public DataTable Applicazioni { get { return _dtApplicazioni; } }
+        public static DataBase DB { get { return _db; } }
 
         #endregion
 
@@ -35,6 +46,7 @@ namespace Iren.FrontOffice.Tools
         private void ThisDocument_Startup(object sender, System.EventArgs e)
         {
             SetAppConfigEnvironment();
+
             _idStruttura = ConfigurationManager.AppSettings["idStruttura"];
             string[] users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
             int rowNum = (int)Math.Ceiling(users.Length / 5.0);
@@ -56,15 +68,22 @@ namespace Iren.FrontOffice.Tools
             _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
             if(_db.OpenConnection())
             {
-                DataView dtView = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura).DefaultView;
+                _dtApplicazioni = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura);
+                foreach (DataRow r in _dtApplicazioni.Rows)
+                {
+                    dropDownStrumenti.DropDownListEntries.Add(r["DesApplicazione"].ToString(), r["IdApplicazione"].ToString());
+                }
 
-                cmbStrumento.DataSource = dtView;
-                cmbStrumento.DisplayMember = "DesApplicazione";
+                dropDownStrumenti.DropDownListEntries[1].Select();
 
                 DataTable dt = _db.Select("spGetFirstAvailableID", "@IdStruttura=" + _idStruttura);
+                lbIdRichiesta.LockContents = false;
                 lbIdRichiesta.Text = dt.Rows[0][0].ToString();
+                lbIdRichiesta.LockContents = true;
 
+                lbDataInvio.LockContents = false;
                 lbDataInvio.Text = DateTime.Now.ToShortDateString();
+                lbDataInvio.LockContents = true;
 
                 object what = Word.WdGoToItem.wdGoToLine;
                 object which = Word.WdGoToDirection.wdGoToLast;
@@ -73,7 +92,10 @@ namespace Iren.FrontOffice.Tools
                 _db.CloseConnection();
             }
 
-            AddProtection();
+            //disabilito la modifica per gli elementi strutturali del documento
+            this.Tables[1].Range.Select();
+            groupControl1 = this.Controls.AddGroupContentControl("groupControl1");
+            dropDownStrumenti.Range.Select();
         }
         private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -103,22 +125,6 @@ namespace Iren.FrontOffice.Tools
             CryptHelper.CryptSection("connectionStrings");
         }
 
-        public void AddProtection()
-        {
-            object noReset = false;
-            object password = System.String.Empty;
-            object useIRM = false;
-            object enforceStyleLock = false;
-
-            this.Protect(Word.WdProtectionType.wdAllowOnlyFormFields,
-                ref noReset, ref password, ref useIRM, ref enforceStyleLock);
-        }
-        public void RemoveProtection()
-        {
-            object password = System.String.Empty;
-            this.Unprotect(ref password);
-        }
-
         public void CloseWithoutSaving()
         {
             object saveMod = WdSaveOptions.wdDoNotSaveChanges;
@@ -126,31 +132,29 @@ namespace Iren.FrontOffice.Tools
             this.Close(ref saveMod, ref missing, ref missing);
         }
 
-        public static void Highlight(string textToFind, Word.WdColorIndex color, string highlightMark = "")
+        public static void Highlight(Microsoft.Office.Tools.Word.RichTextContentControl ctrl)
         {
-            Word.Find finder = Globals.ThisDocument.Content.Find;
-            finder.Text = textToFind;
-            finder.Replacement.Text = finder.Text + highlightMark;
-            finder.Replacement.Font.ColorIndex = color;
-            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
+            ctrl.LockContents = false;
+            ctrl.Text = ctrl.Text + "*";
+            ctrl.Range.Font.ColorIndex = WdColorIndex.wdRed;
+            ctrl.LockContents = true;
         }
-        public static void ToNormal(string textToFind, Word.WdColorIndex color, string highlightMark = "")
+        public static void ToNormal(Microsoft.Office.Tools.Word.RichTextContentControl ctrl)
         {
-            Word.Find finder = Globals.ThisDocument.Content.Find;
-            finder.Text = textToFind + highlightMark;
-            finder.Replacement.Text = textToFind;
-            finder.Replacement.Font.ColorIndex = color;
-            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
+            ctrl.LockContents = false;
+            ctrl.Text = ctrl.Text.Replace("*","");
+            ctrl.Range.Font.ColorIndex = WdColorIndex.wdBlack;
+            ctrl.LockContents = true;
         }
 
         #endregion
 
         #region Codice generato dalla finestra di progettazione di VSTO
 
-        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        {
-            return new Ribbon();
-        }
+        //protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        //{
+        //    return new Ribbon();
+        //}
 
         /// <summary>
         /// Metodo richiesto per il supporto della finestra di progettazione - non modificare
@@ -158,12 +162,6 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
-            this.txtDescrizione.Entering += new Microsoft.Office.Tools.Word.ContentControlEnteringEventHandler(this.TextArea_Entering);
-            this.txtDescrizione.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.TextArea_Exiting);
-            this.txtOggetto.Entering += new Microsoft.Office.Tools.Word.ContentControlEnteringEventHandler(this.TextArea_Entering);
-            this.txtOggetto.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.TextArea_Exiting);
-            this.txtNote.Entering += new Microsoft.Office.Tools.Word.ContentControlEnteringEventHandler(this.TextArea_Entering);
-            this.txtNote.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.TextArea_Exiting);
             this.Startup += new System.EventHandler(this.ThisDocument_Startup);
             this.Shutdown += new System.EventHandler(this.ThisDocument_Shutdown);
             this.BeforeClose += new System.ComponentModel.CancelEventHandler(this.ThisDocument_BeforeClose);
@@ -171,17 +169,5 @@ namespace Iren.FrontOffice.Tools
         }
 
         #endregion
-
-        private void TextArea_Entering(object sender, ContentControlEnteringEventArgs e)
-        {
-            RemoveProtection();
-        }
-
-        private void TextArea_Exiting(object sender, ContentControlExitingEventArgs e)
-        {
-            AddProtection();
-        }
-
-
     }
 }

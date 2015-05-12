@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Iren.ToolsExcel.Core;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.RiMoST
 {
     public partial class FormAnnullaModifica : Form
     {
@@ -27,14 +27,14 @@ namespace Iren.FrontOffice.Tools
         #region Callbacks
         private void FormAnnullaModifica_Load(object sender, EventArgs e)
         {
-            if(ThisDocument._db.OpenConnection())
+            if(ThisDocument.DB.OpenConnection())
             {
-                DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
+                DataView dv = ThisDocument.DB.Select("spGetRichiesta", "@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
                 dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
                 cmbRichiesta.DataSource = dv;
                 cmbRichiesta.DisplayMember = "IdRichiesta";
 
-                ThisDocument._db.CloseConnection();
+                ThisDocument.DB.CloseConnection();
             }
         }
 
@@ -43,15 +43,13 @@ namespace Iren.FrontOffice.Tools
             if (MessageBox.Show("Sei sicuro di voler ANNULLARE la richiesta selezionata?", "Attenzione!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.OK)
             {
                 DataRowView row = (DataRowView)cmbRichiesta.SelectedItem;
-
-                QryParams parameters = new QryParams() 
-                {
-                    {"@IdRichiesta", row["IdRichiesta"]},
-                    {"@IdStruttura", ThisDocument._idStruttura},
-                };
                 try
                 {
-                    ThisDocument._db.Insert("spAnnullaRichiesta", parameters);
+                    ThisDocument.DB.Insert("spAnnullaRichiesta", new QryParams() 
+                        {
+                            {"@IdRichiesta", row["IdRichiesta"]},
+                            {"@IdStruttura", ThisDocument._idStruttura},
+                        });
                 }
                 catch (Exception)
                 {

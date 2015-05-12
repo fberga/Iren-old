@@ -1,4 +1,4 @@
-﻿namespace Iren.FrontOffice.Tools
+﻿namespace Iren.RiMoST
 {
     partial class SelezionaModifica
     {

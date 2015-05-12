@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RiMoST2.Properties {
+namespace Iren.RiMoST.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace RiMoST2.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("RiMoST2.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Iren.RiMoST.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -63,9 +63,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Bin_icon {
+        internal static System.Drawing.Bitmap Bin {
             get {
-                object obj = ResourceManager.GetObject("Bin_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Bin", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap calendar_icon {
+        internal static System.Drawing.Bitmap Calendar {
             get {
-                object obj = ResourceManager.GetObject("calendar_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Calendar", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -83,9 +83,19 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Close_icon {
+        internal static System.Drawing.Bitmap Close {
             get {
-                object obj = ResourceManager.GetObject("Close_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Close", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Draft {
+            get {
+                object obj = ResourceManager.GetObject("Draft", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +113,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap edit_icon {
+        internal static System.Drawing.Bitmap Edit {
             get {
-                object obj = ResourceManager.GetObject("edit_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Edit", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -113,9 +123,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Editing_Edit_icon {
+        internal static System.Drawing.Bitmap Help {
             get {
-                object obj = ResourceManager.GetObject("Editing_Edit_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Help", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -123,19 +133,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Eraser_icon {
+        internal static System.Drawing.Bitmap New {
             get {
-                object obj = ResourceManager.GetObject("Eraser_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap File_New_icon {
-            get {
-                object obj = ResourceManager.GetObject("File_New_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("New", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -153,9 +153,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Refresh_icon {
+        internal static System.Drawing.Bitmap Refresh {
             get {
-                object obj = ResourceManager.GetObject("Refresh_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Refresh", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -163,39 +163,9 @@ namespace RiMoST2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Reset_icon {
+        internal static System.Drawing.Bitmap Send {
             get {
-                object obj = ResourceManager.GetObject("Reset_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap save_icon {
-            get {
-                object obj = ResourceManager.GetObject("save_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Send_icon {
-            get {
-                object obj = ResourceManager.GetObject("Send_icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap support_icon {
-            get {
-                object obj = ResourceManager.GetObject("support_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Send", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
