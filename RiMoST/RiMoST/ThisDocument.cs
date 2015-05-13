@@ -29,6 +29,9 @@ namespace Iren.RiMoST
         private static DataBase _db;
         public static string _idStruttura;
         private DataTable _dtApplicazioni;
+        public const int OGGETTO_MAX_LEN = 255;
+        public const int DESCRIZIONE_MAX_LEN = 4000;
+        public const int NOTE_MAX_LEN = 255;
         
         private Microsoft.Office.Tools.Word.GroupContentControl groupControl1;
 
@@ -54,9 +57,15 @@ namespace Iren.RiMoST
 
             Word.Table tb = this.Tables[1];
 
+            //if (users.Length == 0 || (users.Length == 1 && users[0] == ""))
+            //{
+            //    tb.Rows[tb.Rows.Count].Delete();
+            //    tb.Rows[tb.Rows.Count].Delete();
+            //}
+            //else
+            //{
             tb.Rows[tb.Rows.Count].Cells.Split(rowNum, colNum);
-
-            int i = 0, j = 0;            
+            int i = 0, j = 0;
             foreach (string usr in users)
             {
                 tb.Cell((tb.Rows.Count - rowNum) + i + 1, (j % colNum) + 1).Range.Text = usr;
@@ -64,6 +73,8 @@ namespace Iren.RiMoST
                 if ((++j % colNum) == 0)
                     i++;
             }
+            //}
+            
 
             _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
             if(_db.OpenConnection())
@@ -76,10 +87,7 @@ namespace Iren.RiMoST
 
                 dropDownStrumenti.DropDownListEntries[1].Select();
 
-                DataTable dt = _db.Select("spGetFirstAvailableID", "@IdStruttura=" + _idStruttura);
-                lbIdRichiesta.LockContents = false;
-                lbIdRichiesta.Text = dt.Rows[0][0].ToString();
-                lbIdRichiesta.LockContents = true;
+                Globals.Ribbons.RiMoSTRibbon.getAvailableID();                
 
                 lbDataInvio.LockContents = false;
                 lbDataInvio.Text = DateTime.Now.ToShortDateString();
@@ -93,9 +101,11 @@ namespace Iren.RiMoST
             }
 
             //disabilito la modifica per gli elementi strutturali del documento
-            this.Tables[1].Range.Select();
-            groupControl1 = this.Controls.AddGroupContentControl("groupControl1");
+            tb.Select();
+            groupControl1 = this.Controls.AddGroupContentControl("TabellaStruttura");
+
             dropDownStrumenti.Range.Select();
+            this.ThisApplication.Options.PasteFormatWithinDocument = WdPasteOptions.wdKeepTextOnly;
         }
         private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -107,11 +117,59 @@ namespace Iren.RiMoST
             ThisApplication.Quit();
         }
         #pragma warning restore 0467
+        private void RichText_Exiting(object sender, ContentControlExitingEventArgs e)
+        {
+            Microsoft.Office.Tools.Word.RichTextContentControl ctrl = (Microsoft.Office.Tools.Word.RichTextContentControl)sender;
+
+            string messaggio = "";
+            bool overDimension = false;
+            int length = 0;
+            if (ctrl.Equals(txtOggetto) && ctrl.Text.Length > OGGETTO_MAX_LEN)
+            {
+                messaggio = "La lunghezza dell'oggetto supera i caratteri consentiti. Se si procede così il testo salvato risulterà parziale.";
+                overDimension = true;
+                length = OGGETTO_MAX_LEN;
+            }
+            else if (ctrl.Equals(txtDescrizione) && ctrl.Text.Length > DESCRIZIONE_MAX_LEN)
+            {
+                messaggio = "La lunghezza della descrizione supera i caratteri consentiti. Se si procede così il testo salvato risulterà parziale.";
+                overDimension = true;
+                length = DESCRIZIONE_MAX_LEN;
+            }
+            else if (ctrl.Equals(txtNote) && ctrl.Text.Length > NOTE_MAX_LEN)
+            {
+                messaggio = "La lunghezza delle note supera i caratteri consentiti. Se si procede così il testo salvato risulterà parziale.";
+                overDimension = true;
+                length = NOTE_MAX_LEN;
+            }
+
+            FormatTextOverDimension(ctrl, length, overDimension);
+            if (overDimension)
+                System.Windows.Forms.MessageBox.Show(messaggio, "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
 
         #endregion
 
         #region Metodi
 
+        public void FormatTextOverDimension(Microsoft.Office.Tools.Word.RichTextContentControl ctrl, int length, bool overDimension)
+        {
+            if (overDimension)
+            {
+                string text = ctrl.Text;
+                Word.Range rng = ctrl.Range;
+                rng.Text = text.Substring(0, length);
+                rng.Font.ColorIndex = WdColorIndex.wdBlack;
+                rng.Collapse(WdCollapseDirection.wdCollapseEnd);
+                rng.Text = text.Substring(length, text.Length - length);
+                rng.Font.ColorIndex = WdColorIndex.wdRed;
+            }
+            else
+            {
+                if(!ctrl.ShowingPlaceholderText)
+                    ctrl.Range.Font.ColorIndex = WdColorIndex.wdAuto;
+            }
+        }
         private void SetAppConfigEnvironment()
         {
             string file = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RiMoST/RiMoST.config");
@@ -124,14 +182,12 @@ namespace Iren.RiMoST
             AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", file);
             CryptHelper.CryptSection("connectionStrings");
         }
-
         public void CloseWithoutSaving()
         {
             object saveMod = WdSaveOptions.wdDoNotSaveChanges;
             object missing = Missing.Value;
             this.Close(ref saveMod, ref missing, ref missing);
         }
-
         public static void Highlight(Microsoft.Office.Tools.Word.RichTextContentControl ctrl)
         {
             ctrl.LockContents = false;
@@ -151,17 +207,15 @@ namespace Iren.RiMoST
 
         #region Codice generato dalla finestra di progettazione di VSTO
 
-        //protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        //{
-        //    return new Ribbon();
-        //}
-
         /// <summary>
         /// Metodo richiesto per il supporto della finestra di progettazione - non modificare
         /// il contenuto del metodo con l'editor di codice.
         /// </summary>
         private void InternalStartup()
         {
+            this.txtDescrizione.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.RichText_Exiting);
+            this.txtOggetto.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.RichText_Exiting);
+            this.txtNote.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.RichText_Exiting);
             this.Startup += new System.EventHandler(this.ThisDocument_Startup);
             this.Shutdown += new System.EventHandler(this.ThisDocument_Shutdown);
             this.BeforeClose += new System.ComponentModel.CancelEventHandler(this.ThisDocument_BeforeClose);

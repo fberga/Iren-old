@@ -45,11 +45,15 @@ namespace Iren.RiMoST
                 DataRowView row = (DataRowView)cmbRichiesta.SelectedItem;
                 try
                 {
-                    ThisDocument.DB.Insert("spAnnullaRichiesta", new QryParams() 
+                    if (ThisDocument.DB.OpenConnection())
+                    {
+                        ThisDocument.DB.Insert("spAnnullaRichiesta", new QryParams() 
                         {
                             {"@IdRichiesta", row["IdRichiesta"]},
                             {"@IdStruttura", ThisDocument._idStruttura},
                         });
+                        ThisDocument.DB.CloseConnection();
+                    }
                 }
                 catch (Exception)
                 {

@@ -24,10 +24,10 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\FrontOffice\</PublishUrl>
+    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\PortaFoglio\</PublishUrl>
     <InstallUrl />
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.2.4</ApplicationVersion>
+    <ApplicationVersion>1.1.0.2</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -52,11 +52,6 @@
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Office.PIARedist.2007">
-      <Visible>False</Visible>
-      <ProductName>Microsoft Office 2007 Primary Interop Assemblies</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
@@ -194,6 +189,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="App.config.BackOffice" />
     <None Include="App.config.Debug">
       <SubType>Designer</SubType>
     </None>
@@ -238,45 +234,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\Bin-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Close-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Print-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Refresh-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Reset-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Send-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Eraser-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\save-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\edit-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\calendar-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\support-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\File-New-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\Editing-Edit-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="resources\Bin.png" />
     <Content Include="resources\Calendar.png" />
     <Content Include="resources\Close.png" />
@@ -294,6 +251,14 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'BackOffice|AnyCPU'">
+    <OutputPath>bin\BackOffice\</OutputPath>
+    <DefineConstants>VSTO40;TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
   <ProjectExtensions>
@@ -301,7 +266,7 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="RiMoST.docx" HostPackage="{763FDC83-64E5-4651-AC9B-28C4FEB985A1}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="DOC" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE" DebugInfoCommandLine="/w &quot;[$OUTPUT]RiMoST.docx&quot;" />
         <Host Name="Word Document" Path=".\RiMoST.docx" GeneratedCodeNamespace="Iren.RiMoST" PublishedHash="CFECFF3FB805E9A295392C4C85A42160CA201773">
-          <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="248EBE99C053606ED0093997ABAB1F802D28EC21" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
+          <HostItem Name="ThisDocument" Code="ThisDocument.cs" CanonicalName="ThisDocument" PublishedHash="7CA78D5A2CE788B6399A16D45027428E8C5110FE" Blueprint="ThisDocument.Designer.xml" GeneratedCode="ThisDocument.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

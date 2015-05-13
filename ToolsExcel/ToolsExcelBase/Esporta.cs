@@ -120,7 +120,7 @@ namespace Iren.ToolsExcel.Base
                         }
                     };
 
-                    string suffissoData = Utility.Date.GetSuffissoData(_db.DataAttiva, dataRif);
+                    string suffissoData = Utility.Date.GetSuffissoData(dataRif);
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
                         object entita = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]);

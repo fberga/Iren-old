@@ -7,12 +7,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiMoST", "RiMoST\RiMoST.csp
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		BackOffice|Any CPU = BackOffice|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		FrontOffice|Any CPU = FrontOffice|Any CPU
 		Portafoglio|Any CPU = Portafoglio|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.BackOffice|Any CPU.ActiveCfg = BackOffice|Any CPU
+		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.BackOffice|Any CPU.Build.0 = BackOffice|Any CPU
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAEA9619-7835-40BB-8EEE-DD253F4C52E1}.FrontOffice|Any CPU.ActiveCfg = FrontOffice|Any CPU

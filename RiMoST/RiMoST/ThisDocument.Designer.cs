@@ -19,12 +19,6 @@ namespace Iren.RiMoST {
         
         internal Microsoft.Office.Tools.ActionsPane ActionsPane;
         
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl4;
-        
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl5;
-        
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl1;
-        
         internal Microsoft.Office.Tools.Word.RichTextContentControl txtDescrizione;
         
         internal Microsoft.Office.Tools.Word.RichTextContentControl txtOggetto;
@@ -48,6 +42,16 @@ namespace Iren.RiMoST {
         internal Microsoft.Office.Tools.Word.RichTextContentControl lbNote;
         
         internal Microsoft.Office.Tools.Word.DropDownListContentControl dropDownStrumenti;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbBozza;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl1;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl headerIdRichiesta;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl3;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl4;
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
@@ -154,9 +158,6 @@ namespace Iren.RiMoST {
         private void BeginInitialization() {
             this.BeginInit();
             this.ActionsPane.BeginInit();
-            this.plainTextContentControl4.BeginInit();
-            this.plainTextContentControl5.BeginInit();
-            this.plainTextContentControl1.BeginInit();
             this.txtDescrizione.BeginInit();
             this.txtOggetto.BeginInit();
             this.txtNote.BeginInit();
@@ -169,6 +170,11 @@ namespace Iren.RiMoST {
             this.lbDescrizione.BeginInit();
             this.lbNote.BeginInit();
             this.dropDownStrumenti.BeginInit();
+            this.lbBozza.BeginInit();
+            this.plainTextContentControl1.BeginInit();
+            this.headerIdRichiesta.BeginInit();
+            this.plainTextContentControl3.BeginInit();
+            this.plainTextContentControl4.BeginInit();
         }
         
         /// 
@@ -176,6 +182,11 @@ namespace Iren.RiMoST {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void EndInitialization() {
+            this.plainTextContentControl4.EndInit();
+            this.plainTextContentControl3.EndInit();
+            this.headerIdRichiesta.EndInit();
+            this.plainTextContentControl1.EndInit();
+            this.lbBozza.EndInit();
             this.dropDownStrumenti.EndInit();
             this.lbNote.EndInit();
             this.lbDescrizione.EndInit();
@@ -188,9 +199,6 @@ namespace Iren.RiMoST {
             this.txtNote.EndInit();
             this.txtOggetto.EndInit();
             this.txtDescrizione.EndInit();
-            this.plainTextContentControl1.EndInit();
-            this.plainTextContentControl5.EndInit();
-            this.plainTextContentControl4.EndInit();
             this.ActionsPane.EndInit();
             this.EndInit();
         }
@@ -201,9 +209,6 @@ namespace Iren.RiMoST {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeControls() {
             this.ActionsPane = Globals.Factory.CreateActionsPane(null, null, "ActionsPane", "ActionsPane", this);
-            this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "77677295", "plainTextContentControl4", this);
-            this.plainTextContentControl5 = Globals.Factory.CreatePlainTextContentControl(null, null, "75971759", "plainTextContentControl5", this);
-            this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "3740960896", "plainTextContentControl1", this);
             this.txtDescrizione = Globals.Factory.CreateRichTextContentControl(null, null, "3964439384", "txtDescrizione", this);
             this.txtOggetto = Globals.Factory.CreateRichTextContentControl(null, null, "3529901788", "txtOggetto", this);
             this.txtNote = Globals.Factory.CreateRichTextContentControl(null, null, "1717777112", "txtNote", this);
@@ -216,6 +221,11 @@ namespace Iren.RiMoST {
             this.lbDescrizione = Globals.Factory.CreateRichTextContentControl(null, null, "2574693929", "lbDescrizione", this);
             this.lbNote = Globals.Factory.CreateRichTextContentControl(null, null, "3555103920", "lbNote", this);
             this.dropDownStrumenti = Globals.Factory.CreateDropDownListContentControl(null, null, "117655195", "dropDownStrumenti", this);
+            this.lbBozza = Globals.Factory.CreateRichTextContentControl(null, null, "3735105531", "lbBozza", this);
+            this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "1951277223", "plainTextContentControl1", this);
+            this.headerIdRichiesta = Globals.Factory.CreatePlainTextContentControl(null, null, "4094021969", "headerIdRichiesta", this);
+            this.plainTextContentControl3 = Globals.Factory.CreatePlainTextContentControl(null, null, "1736129785", "plainTextContentControl3", this);
+            this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "2154937362", "plainTextContentControl4", this);
         }
         
         /// 
@@ -231,18 +241,6 @@ namespace Iren.RiMoST {
             // 
             this.ActionsPane.AutoSize = false;
             this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            // 
-            // plainTextContentControl4
-            // 
-            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // plainTextContentControl5
-            // 
-            this.plainTextContentControl5.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
-            // 
-            // plainTextContentControl1
-            // 
-            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
             // txtDescrizione
             // 
@@ -303,6 +301,26 @@ namespace Iren.RiMoST {
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Text = "pictureBox1";
             // 
+            // lbBozza
+            // 
+            this.lbBozza.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl1
+            // 
+            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // headerIdRichiesta
+            // 
+            this.headerIdRichiesta.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl3
+            // 
+            this.plainTextContentControl3.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl4
+            // 
+            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
             // ThisDocument
             // 
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -320,6 +338,11 @@ namespace Iren.RiMoST {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void OnShutdown() {
+            this.plainTextContentControl4.Dispose();
+            this.plainTextContentControl3.Dispose();
+            this.headerIdRichiesta.Dispose();
+            this.plainTextContentControl1.Dispose();
+            this.lbBozza.Dispose();
             this.dropDownStrumenti.Dispose();
             this.lbNote.Dispose();
             this.lbDescrizione.Dispose();
@@ -332,9 +355,6 @@ namespace Iren.RiMoST {
             this.txtNote.Dispose();
             this.txtOggetto.Dispose();
             this.txtDescrizione.Dispose();
-            this.plainTextContentControl1.Dispose();
-            this.plainTextContentControl5.Dispose();
-            this.plainTextContentControl4.Dispose();
             this.ActionsPane.Dispose();
             base.OnShutdown();
         }
