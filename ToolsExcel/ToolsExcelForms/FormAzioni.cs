@@ -375,6 +375,8 @@ namespace Iren.ToolsExcel.Forms
             {
                 SplashScreen.Show();
 
+                bool caricaOrGenera = false;
+
                 foreach (DateTime date in _toProcessDates)
                 {
                     bool calcola = false;
@@ -404,8 +406,6 @@ namespace Iren.ToolsExcel.Forms
 
                     string suffissoData = Date.GetSuffissoData(date);
 
-                    bool[] statoAzione = new bool[4] { false, false, false, false };
-
                     ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
                     {
                         if (nodoAzione.Checked && nodoAzione.Nodes.Count == 0)
@@ -420,46 +420,52 @@ namespace Iren.ToolsExcel.Forms
                                     string nomeFoglio = NewDefinedNames.GetSheetName(nodoEntita.Name);
                                     bool presente;
 
-                                    SplashScreen.UpdateStatus(nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
+                                    DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
+                                    entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "'";
 
-                                    switch (nodoAzione.Parent.Name)
+                                    if (entitaAzione.Count > 0)
                                     {
-                                        case "CARICA":
-                                            presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
-                                            _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
-                                            statoAzione[0] = true;
-                                            break;
-                                        case "GENERA":
-                                            presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
-                                            _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
-                                            statoAzione[1] = true;
-                                            break;
-                                        case "ESPORTA":
-                                            presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date);
-                                            _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
-                                            statoAzione[2] = true;
-                                            break;
-                                    }
+                                        SplashScreen.UpdateStatus(date.ToShortDateString() + " - " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
-                                    if (_azioni[0]["Relazione"] != DBNull.Value && Struct.visualizzaRiepilogo)
-                                    {
-                                        string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
-                                            
-                                        NewDefinedNames newNomiDefiniti = new NewDefinedNames("Main");
-                                        Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
-
-                                        foreach (string relazione in azioneRelazione)
+                                        switch (nodoAzione.Parent.Name)
                                         {
-                                            _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
-
-                                            Range rng = new Range(newNomiDefiniti.GetRowByName(nodoEntita.Name), newNomiDefiniti.GetColFromName(relazione, suffissoData));
-                                            if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
-                                            {
-                                                ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
-                                            }
+                                            case "CARICA":
+                                                presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
+                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
+                                                caricaOrGenera = true;
+                                                break;
+                                            case "GENERA":
+                                                presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
+                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
+                                                caricaOrGenera = true;
+                                                break;
+                                            case "ESPORTA":
+                                                presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date);
+                                                if (presente)
+                                                    _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
+                                                break;
                                         }
-                                        _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+
+                                        if (_azioni[0]["Relazione"] != DBNull.Value && Struct.visualizzaRiepilogo)
+                                        {
+                                            string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
+
+                                            NewDefinedNames newNomiDefiniti = new NewDefinedNames("Main");
+                                            Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+
+                                            foreach (string relazione in azioneRelazione)
+                                            {
+                                                _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
+
+                                                Range rng = new Range(newNomiDefiniti.GetRowByName(nodoEntita.Name), newNomiDefiniti.GetColFromName(relazione, suffissoData));
+                                                if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
+                                                {
+                                                    ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                    Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
+                                                }
+                                            }
+                                            _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+                                        }
                                     }
                                 }
                             });
@@ -477,13 +483,13 @@ namespace Iren.ToolsExcel.Forms
                             }
                         }
                     });
+                }
 
-                    if (statoAzione[0] || statoAzione[1])
-                    {
-                        SplashScreen.UpdateStatus("Salvataggio");
-                        Sheet.SalvaModifiche();
-                        DataBase.SalvaModificheDB();
-                    }
+                if (caricaOrGenera)
+                {
+                    SplashScreen.UpdateStatus("Salvataggio");
+                    Sheet.SalvaModifiche();
+                    DataBase.SalvaModificheDB();
                 }
 
                 SplashScreen.Close();

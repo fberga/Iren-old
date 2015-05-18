@@ -106,6 +106,8 @@ namespace Iren.ToolsExcel.Forms
 
         private void treeViewErrori_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            Utilities.fromErrorPane = true;
+
             if (e.Node.Name.StartsWith("'"))
             {
                 Excel.Range rng = (Excel.Range)Workbook.WB.Application.Range[e.Node.Name];
@@ -118,6 +120,7 @@ namespace Iren.ToolsExcel.Forms
                 rng.Worksheet.Activate();
                 rng.Select();
             }
+            Utilities.fromErrorPane = false;
         }
 
         public void SelectNode(string address)
@@ -135,8 +138,13 @@ namespace Iren.ToolsExcel.Forms
                 }
 
                 treeViewErrori.SelectedNode = nodes[0];
-                //treeViewErrori.Focus();
             }
+        }
+
+        private void treeViewErrori_BeforeSelect(object sender, TreeViewCancelEventArgs e)
+        {
+            if (!e.Node.IsExpanded)
+                e.Node.Expand();
         }     
     }
 }

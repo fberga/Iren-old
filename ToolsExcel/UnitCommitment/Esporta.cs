@@ -32,8 +32,10 @@ namespace Iren.ToolsExcel
             DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
             entitaAzioneInformazione.RowFilter = "SiglaEntitaRif = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
-            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
+            string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio, NewDefinedNames.InitType.NamingOnly);
+
+            Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
 
             switch (siglaAzione.ToString())
             {
@@ -54,36 +56,44 @@ namespace Iren.ToolsExcel
                         }
                     };
 
-                    string suffissoData = Utility.Date.GetSuffissoData(_db.DataAttiva, dataRif);
-                    foreach (DataRowView entAzInfo in entitaAzioneInformazione)
+                    string suffissoData = Utility.Date.GetSuffissoData(dataRif);
+                    int oreData = Utility.Date.GetOreGiorno(dataRif);
+                    foreach (DataRowView info in entitaAzioneInformazione)
                     {
-                        object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
+                        object siglaEntitaRif = (info["SiglaEntitaRif"] is DBNull ? siglaEntita: info["SiglaEntitaRif"]);
 
-                        Tuple<int, int>[] riga = nomiDefiniti[DefinedNames.GetName(entita, entAzInfo["SiglaInformazione"], suffissoData)];
+                        Range rng = newNomiDefiniti.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreData);
 
-                        string range = Range.R1C1toA1(riga[0].Item1, riga[0].Item2) + ":" + Range.R1C1toA1(riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2);
+                        //object[,] values = ws.Range[rng.ToString()].Value;
+                        //bool empty = true;
+                        //foreach (object value in values)
+                        //{
+                        //    if(value != null) 
+                        //    {
+                        //        empty = false;
+                        //        break;
+                        //    }
+                        //}
 
-                        Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
-                        Excel.Range rng = ws.Range[range];
-                        object[,] tmpVal = rng.Value;
-                        object[] values = tmpVal.Cast<object>().ToArray();
+                        //if (!empty)
+                        //{
+                            for (int i = 0; i < rng.Columns.Count; i++)
+                            {
+                                DataRow row = dt.NewRow();
 
-                        for (int i = 0, length = values.Length; i < length; i++)
-                        {
-                            DataRow row = dt.NewRow();
+                                row["Campo1"] = "ASSET";
+                                row["Campo2"] = "Produzione";
+                                row["UP"] = codiceIF;
+                                row["Campo3"] = "NA";
+                                row["Data"] = dataRif.ToString("dd/MM/yyyy");
+                                row["Ora"] = (i + 1).ToString("00") + ".00";
+                                row["Campo4"] = "ASSETTO";
+                                row["UnitComm"] = ws.Range[rng.Columns[i].ToString()].Value;
+                                row["Campo5"] = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
 
-                            row["Campo1"] = "ASSET";
-                            row["Campo2"] = "Produzione";
-                            row["UP"] = codiceIF;
-                            row["Campo3"] = "NA";
-                            row["Data"] = dataRif.ToString("dd/MM/yyyy");
-                            row["Ora"] = (i + 1).ToString("00") + ".00";
-                            row["Campo4"] = "ASSETTO";
-                            row["UnitComm"] = values[i];
-                            row["Campo5"] = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-
-                            dt.Rows.Add(row);
-                        }
+                                dt.Rows.Add(row);
+                            }
+                        //}
                     }
 
                     var path = Utility.Utilities.GetUsrConfigElement("pathCaricatoreImpianti");
@@ -92,18 +102,17 @@ namespace Iren.ToolsExcel
 
                     if (Directory.Exists(pathStr))
                     {
-                        if (!ExportToCSV(System.IO.Path.Combine(pathStr, "AEM_ASSET_" + codiceIF + "_" + dataRif.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
-                            return false;
+                        if (dt.AsEnumerable().Any(r => r["UnitComm"] != DBNull.Value)
+                            && ExportToCSV(System.IO.Path.Combine(pathStr, "AEM_ASSET_" + codiceIF + "_" + dataRif.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
+                            return true;
                     }
                     else
                     {
                         System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                        return false;
                     }
-
                     break;
             }
-            return true;
+            return false;
         }
     }
 }

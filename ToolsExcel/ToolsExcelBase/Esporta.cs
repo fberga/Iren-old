@@ -175,23 +175,28 @@ namespace Iren.ToolsExcel.Base
 
         protected bool ExportToCSV(string nomeFile, DataTable dt)
         {
-            try
+            if (dt.Rows.Count > 0)
             {
-                using (StreamWriter outFile = new StreamWriter(nomeFile))
+                try
                 {
-                    foreach (DataRow r in dt.Rows)
+                    using (StreamWriter outFile = new StreamWriter(nomeFile))
                     {
-                        IEnumerable<string> fields = r.ItemArray.Select(field => field.ToString());
-                        outFile.WriteLine(string.Join(";", fields));
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            IEnumerable<string> fields = r.ItemArray.Select(field => field.ToString());
+                            outFile.WriteLine(string.Join(";", fields));
+                        }
+                        outFile.Flush();
                     }
-                    outFile.Flush();
+                    return true;
                 }
-                return true;
+                catch (Exception)
+                {
+                    return false;
+                }
             }
-            catch (Exception)
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }

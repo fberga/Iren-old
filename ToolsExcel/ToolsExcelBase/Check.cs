@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -12,7 +13,20 @@ namespace Iren.ToolsExcel.Base
         public virtual CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
         {
             return new CheckOutput();
-        }  
+        }
+
+        protected virtual void ErrorStyle(ref TreeNode node)
+        {
+            node.BackColor = System.Drawing.Color.Red;
+            node.ForeColor = System.Drawing.Color.Yellow;
+            node.NodeFont = new System.Drawing.Font("Microsoft Sans Serif", 12, System.Drawing.FontStyle.Bold);
+        }
+        protected virtual void AlertStyle(ref TreeNode node)
+        {
+            node.BackColor = System.Drawing.Color.Yellow;
+            node.ForeColor = System.Drawing.Color.Red;
+            node.NodeFont = new System.Drawing.Font("Microsoft Sans Serif", 12, System.Drawing.FontStyle.Bold);
+        }
     }
 
     public class CheckOutput

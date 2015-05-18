@@ -144,6 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Check.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
@@ -159,6 +160,7 @@
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Riepilogo.cs" />
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>

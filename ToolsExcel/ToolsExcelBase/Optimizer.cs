@@ -55,30 +55,27 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
-                //if (nomeFoglio == "Iren Termo")
-                //{
-                    object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                    Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
-                    double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
-                    Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
-                    Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
-                    Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
+                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
+                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
+                Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
+                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
+                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
 
-                    for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
-                    {
-                        Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
-                        Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
-                    }
+                for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
+                {
+                    Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                    Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                }
 
-                    if (info["WB"].Equals("2"))
+                if (info["WB"].Equals("2"))
+                {
+                    try
                     {
-                        try
-                        {
-                            Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
-                        }
-                        catch { }
+                        Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
                     }
-                //}
+                    catch { }
+                }
             }
         }
 
@@ -144,6 +141,23 @@ namespace Iren.ToolsExcel.Base
                 Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth = width;
             }
         }
+
+        protected virtual void ShowErrorMessageBox(int res, string messaggio)
+        {
+            switch (res)
+            {
+                case 3:
+                    System.Windows.Forms.MessageBox.Show(messaggio + ": infattibile", Simboli.nomeApplicazione + " ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                    break;
+                case 4:
+                    System.Windows.Forms.MessageBox.Show(messaggio + ": troppe soluzioni", Simboli.nomeApplicazione + " ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                    break;
+                case 6:
+                    System.Windows.Forms.MessageBox.Show(messaggio + ": infattibile o troppe soluzioni", Simboli.nomeApplicazione + " ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                    break;
+            }
+        }
+
         protected virtual void Execute(object siglaEntita) 
         {
             //mantengo il filtro applicato in AddOpt
@@ -157,21 +171,31 @@ namespace Iren.ToolsExcel.Base
                 {
                     Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
+                    int res = 0;
+
                     //eseguo con prezzi a 0
                     ws.Range[rng.ToString()].Value = 1;
-                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+
+                    ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 0)");
 
                     //eseguo con prezzi a 500
                     ws.Range[rng.ToString()].Value = 2;
-                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+
+                    ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 500)");
 
                     //eseguo con previsione prezzi
                     ws.Range[rng.ToString()].Value = 3;
-                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+
+                    ShowErrorMessageBox(res, "Calcolo dell'ottimo (previsione prezzi)");
                 }
                 else
                 {
-                    Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    int res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+
+                    ShowErrorMessageBox(res, "Calcolo dell'ottimo");
                 }                
             }
         }

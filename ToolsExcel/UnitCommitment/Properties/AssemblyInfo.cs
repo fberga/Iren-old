@@ -34,6 +34,6 @@ using System.Resources;
 // È possibile specificare tutti i valori o impostare come predefiniti i valori Numero revisione e Numero build 
 // utilizzando il carattere "*" come mostrato di seguito:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: NeutralResourcesLanguageAttribute("it-IT")]

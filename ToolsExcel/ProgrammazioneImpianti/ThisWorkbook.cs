@@ -61,24 +61,9 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
-            Application.ScreenUpdating = false;
-            DateTime dataAttiva = DateTime.ParseExact(ConfigurationManager.AppSettings["DataInizio"], "yyyyMMdd", CultureInfo.InvariantCulture);
-            bool emergenza = Utilities.Init(ConfigurationManager.AppSettings["DB"], ConfigurationManager.AppSettings["AppID"], dataAttiva, Globals.ThisWorkbook.Base, Version);
-
-            Application.Iteration = true;
-            Application.MaxIterations = 100;
-
-            Sheet.Proteggi(false);
-
-            Riepilogo r = new Riepilogo(this.Sheets["Main"]);
-
-            if (emergenza)
-                r.RiepilogoInEmergenza();
-
-            r.InitLabels();
-
-            Style.StdStyles();
-            Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+            ThisApplication.ScreenUpdating = false;
+            ThisApplication.Iteration = true;
+            ThisApplication.MaxIterations = 100;
 
             foreach (Excel.Worksheet ws in Sheets)
             {
@@ -92,13 +77,33 @@ namespace Iren.ToolsExcel
             Globals.Main.Select();
             Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
+            DateTime dataAttiva = DateTime.ParseExact(Utilities.AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
+            bool emergenza = Utilities.Init(Utilities.AppSettings("DB"), Utilities.AppSettings("AppID"), dataAttiva, Globals.ThisWorkbook.Base, Version);
+
+            Sheet.Proteggi(false);
+
+            Riepilogo r = new Riepilogo(this.Sheets["Main"]);
+
+            if (emergenza)
+                r.RiepilogoInEmergenza();
+
+            r.InitLabels();
+
+            Style.StdStyles();
+            Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+
             Sheet.Proteggi(true);
-
-            Application.ScreenUpdating = true;
+            ThisApplication.ScreenUpdating = true;
         }
-
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
+            ThisApplication.ScreenUpdating = false;
+            if (Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane)
+                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+
+            Globals.Main.Select();
+            Globals.ThisWorkbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+
             if (Simboli.ModificaDati)
             {
                 Application.ScreenUpdating = false;
@@ -112,7 +117,6 @@ namespace Iren.ToolsExcel
             DataBase.SalvaModificheDB();
             this.Save();
         }
-
         private void ThisWorkbook_WindowActivate(Excel.Window Wn)
         {
             try
@@ -124,20 +128,5 @@ namespace Iren.ToolsExcel
 
             }
         }
-
-        //protected override Microsoft.Office.Tools.Ribbon.IRibbonExtension[] CreateRibbonObjects()
-        //{
-        //    return new Microsoft.Office.Tools.Ribbon.IRibbonExtension[] { new       
-        //Iren.ToolsExcel.Ribbon.SharedRibbon(Globals.Factory.GetRibbonFactory()) };
-        //}
-
     }
-
-    //partial class ThisRibbonCollection : Microsoft.Office.Tools.Ribbon.RibbonReadOnlyCollection
-    //{
-    //    internal Iren.ToolsExcel.Ribbon.SharedRibbon SharedRibbon
-    //    {
-    //        get { return this.GetRibbon<Iren.ToolsExcel.Ribbon.SharedRibbon>(); }
-    //    }
-    //}
 }

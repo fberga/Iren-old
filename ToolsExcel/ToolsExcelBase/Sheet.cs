@@ -58,6 +58,11 @@ namespace Iren.ToolsExcel.Base
 
         public static void Proteggi(bool proteggi)
         {
+            if(proteggi)
+                Workbook.WB.Protect(Simboli.pwd);
+            else
+                Workbook.WB.Unprotect(Simboli.pwd);
+
             foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
             {
                 if (proteggi)
@@ -135,34 +140,47 @@ namespace Iren.ToolsExcel.Base
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
-            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
+
+            //controllo quali entità sono state modificate
+            List<object> entitaModificate =
+                (from r in modifiche.AsEnumerable()
+                 group r["SiglaEntita"] by r["SiglaEntita"] into gr
+                 select gr.Key).ToList();
+
+            //aggiungo i RIFx
+            entitaInformazione.RowFilter = "Selezione = 10 AND SalvaDB = '1'";
+            List<object> entitaSelezione =
+                (from r in entitaInformazione.ToTable().AsEnumerable()
+                 select r["SiglaEntita"]).ToList();
+
+            foreach (var entita in entitaSelezione)
+                if (!entitaModificate.Contains(entita))
+                    entitaModificate.Add(entita);
+
+            foreach (string siglaEntita in entitaModificate)
             {
-                if (ws.Name != "Main" && ws.Name != "Log")
+                string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+
+                Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
+
+                bool hasData0H24 = newNomiDefiniti.HasData0H24;
+
+                entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (Selezione = 10 AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
+
+                foreach (DataRowView info in entitaInformazione)
                 {
-                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name);
+                    object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                    bool considerData0H24 = hasData0H24 && info["Data0H24"].Equals("1");
+                    DateTime giorno = DataBase.DataAttiva;
 
-                    categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND Operativa = '1'";
-                    categoriaEntita.RowFilter = "SiglaCategoria = '" + categorie[0]["SiglaCategoria"] + "'";
+                    //prima cella della riga da salvare (non considera Data0H24)
+                    Range rng = newNomiDefiniti.Get(siglaEntitaRif, info["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva));
+                    rng.StartColumn -= considerData0H24 ? 1 : 0;
+                    rng.Extend(colOffset: newNomiDefiniti.GetColOffset() + (hasData0H24 && !considerData0H24 ? -1 : 0));
 
-                    bool hasData0H24 = newNomiDefiniti.HasData0H24;
-
-                    foreach (DataRowView entita in categoriaEntita)
-                    {
-                        entitaInformazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (Selezione = 10 AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
-                        foreach (DataRowView info in entitaInformazione)
-                        {
-                            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                            bool considerData0H24 = hasData0H24 && info["Data0H24"].Equals("1");
-                            DateTime giorno = DataBase.DataAttiva;
-                            
-                            //prima cella della riga da salvare (non considera Data0H24)
-                            Range rng = newNomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva));
-                            rng.StartColumn -= considerData0H24 ? 1 : 0;
-                            rng.Extend(colOffset: newNomiDefiniti.GetColOffset() + (hasData0H24 && !considerData0H24 ? -1 : 0));
-
-                            Handler.StoreEdit(ws.Range[rng.ToString()], 0);
-                        }
-                    }
+                    Handler.StoreEdit(ws.Range[rng.ToString()], 0);
                 }
             }
         }
@@ -259,7 +277,7 @@ namespace Iren.ToolsExcel.Base
         public override void LoadStructure()
         {
             //dimensionamento celle in base ai parametri del DB
-            Struttura.AggiornaParametriApplicazione(ConfigurationManager.AppSettings["AppID"]);
+            Struttura.AggiornaParametriApplicazione(Utilities.AppSettings("AppID"));
             AggiornaParametriApplicazione();
 
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
@@ -749,7 +767,7 @@ namespace Iren.ToolsExcel.Base
                     Style.RangeStyle(rngInfo.Rows[i].Cells[2], 
                         fontSize: info["FontSize"],
                         foreColor: info["ForeColor"],
-                        backColor: infoBackColor,
+                        backColor: info["BackColor"],
                         bold: info["Grassetto"].Equals("1"),
                         numberFormat: info["Formato"],
                         align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
@@ -1125,8 +1143,7 @@ namespace Iren.ToolsExcel.Base
                 }
                 else
                 {
-                    Range rng = _newNomiDefiniti.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno));
-                    rng.Extend(1, Date.GetOreGiorno(giorno));
+                    Range rng = _newNomiDefiniti.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
 
                     //TODO sentire Domenico se va bene così
                     if (Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))

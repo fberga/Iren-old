@@ -33,15 +33,15 @@
             this.btnApplica = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
+            this.checkTutte = new System.Windows.Forms.CheckBox();
             this.groupDate = new System.Windows.Forms.GroupBox();
             this.comboGiorni = new System.Windows.Forms.Button();
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
-            this.checkTutte = new System.Windows.Forms.CheckBox();
-            this.panelCategorie = new System.Windows.Forms.Panel();
-            this.panelAzioni = new System.Windows.Forms.Panel();
             this.treeViewUP = new Iren.ToolsExcel.Forms.BugFixedTreeView();
+            this.panelCategorie = new System.Windows.Forms.Panel();
             this.treeViewCategorie = new Iren.ToolsExcel.Forms.BugFixedTreeView();
+            this.panelAzioni = new System.Windows.Forms.Panel();
             this.treeViewAzioni = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
@@ -113,6 +113,22 @@
             this.panelTop.Size = new System.Drawing.Size(1050, 53);
             this.panelTop.TabIndex = 13;
             // 
+            // checkTutte
+            // 
+            this.checkTutte.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkTutte.AutoSize = true;
+            this.checkTutte.BackColor = System.Drawing.SystemColors.Control;
+            this.checkTutte.CausesValidation = false;
+            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkTutte.Location = new System.Drawing.Point(982, 28);
+            this.checkTutte.Name = "checkTutte";
+            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.checkTutte.Size = new System.Drawing.Size(65, 24);
+            this.checkTutte.TabIndex = 2;
+            this.checkTutte.Text = "Tutte";
+            this.checkTutte.UseVisualStyleBackColor = false;
+            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
+            // 
             // groupDate
             // 
             this.groupDate.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -162,41 +178,6 @@
             this.panelUP.Size = new System.Drawing.Size(350, 372);
             this.panelUP.TabIndex = 6;
             // 
-            // checkTutte
-            // 
-            this.checkTutte.AutoSize = true;
-            this.checkTutte.BackColor = System.Drawing.SystemColors.Control;
-            this.checkTutte.CausesValidation = false;
-            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkTutte.Location = new System.Drawing.Point(982, 28);
-            this.checkTutte.Name = "checkTutte";
-            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.checkTutte.Size = new System.Drawing.Size(65, 24);
-            this.checkTutte.TabIndex = 2;
-            this.checkTutte.Text = "Tutte";
-            this.checkTutte.UseVisualStyleBackColor = false;
-            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
-            // 
-            // panelCategorie
-            // 
-            this.panelCategorie.Controls.Add(this.treeViewCategorie);
-            this.panelCategorie.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelCategorie.Location = new System.Drawing.Point(350, 5);
-            this.panelCategorie.Name = "panelCategorie";
-            this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelCategorie.Size = new System.Drawing.Size(350, 372);
-            this.panelCategorie.TabIndex = 5;
-            // 
-            // panelAzioni
-            // 
-            this.panelAzioni.Controls.Add(this.treeViewAzioni);
-            this.panelAzioni.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelAzioni.Location = new System.Drawing.Point(0, 5);
-            this.panelAzioni.Name = "panelAzioni";
-            this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelAzioni.Size = new System.Drawing.Size(350, 372);
-            this.panelAzioni.TabIndex = 4;
-            // 
             // treeViewUP
             // 
             this.treeViewUP.CheckBoxes = true;
@@ -212,6 +193,16 @@
             this.treeViewUP.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewUP_AfterCheck);
             this.treeViewUP.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
+            // panelCategorie
+            // 
+            this.panelCategorie.Controls.Add(this.treeViewCategorie);
+            this.panelCategorie.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelCategorie.Location = new System.Drawing.Point(350, 5);
+            this.panelCategorie.Name = "panelCategorie";
+            this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.panelCategorie.Size = new System.Drawing.Size(350, 372);
+            this.panelCategorie.TabIndex = 5;
+            // 
             // treeViewCategorie
             // 
             this.treeViewCategorie.CheckBoxes = true;
@@ -226,6 +217,16 @@
             this.treeViewCategorie.TabIndex = 1;
             this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
+            // 
+            // panelAzioni
+            // 
+            this.panelAzioni.Controls.Add(this.treeViewAzioni);
+            this.panelAzioni.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelAzioni.Location = new System.Drawing.Point(0, 5);
+            this.panelAzioni.Name = "panelAzioni";
+            this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.panelAzioni.Size = new System.Drawing.Size(350, 372);
+            this.panelAzioni.TabIndex = 4;
             // 
             // treeViewAzioni
             // 

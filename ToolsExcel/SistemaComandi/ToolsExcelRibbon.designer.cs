@@ -71,7 +71,6 @@
             this.btnSistemaComandi = this.Factory.CreateRibbonToggleButton();
             this.groupErrori = this.Factory.CreateRibbonGroup();
             this.btnMostraErrorPane = this.Factory.CreateRibbonButton();
-            this.TabAddIns = this.Factory.CreateRibbonTab();
             this.TabHome = this.Factory.CreateRibbonTab();
             this.TabInsert = this.Factory.CreateRibbonTab();
             this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
@@ -80,6 +79,7 @@
             this.TabReview = this.Factory.CreateRibbonTab();
             this.TabView = this.Factory.CreateRibbonTab();
             this.TabDeveloper = this.Factory.CreateRibbonTab();
+            this.TabAddIns = this.Factory.CreateRibbonTab();
             this.TabPrintPreview = this.Factory.CreateRibbonTab();
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.TabSmartArtToolsDesign = this.Factory.CreateRibbonTab();
@@ -94,7 +94,6 @@
             this.groupFileRete.SuspendLayout();
             this.groupFileLocali.SuspendLayout();
             this.groupErrori.SuspendLayout();
-            this.TabAddIns.SuspendLayout();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -103,6 +102,7 @@
             this.TabReview.SuspendLayout();
             this.TabView.SuspendLayout();
             this.TabDeveloper.SuspendLayout();
+            this.TabAddIns.SuspendLayout();
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
             this.TabSmartArtToolsDesign.SuspendLayout();
@@ -132,7 +132,7 @@
             // btnChiudi
             // 
             this.btnChiudi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnChiudi.Image = global::Iren.ToolsExcel.Base.Properties.Resources.salva_icon;
+            this.btnChiudi.Image = ((System.Drawing.Image)(resources.GetObject("btnChiudi.Image")));
             this.btnChiudi.Label = "Chiudi";
             this.btnChiudi.Name = "btnChiudi";
             this.btnChiudi.ShowImage = true;
@@ -141,7 +141,7 @@
             // btnForzaEmergenza
             // 
             this.btnForzaEmergenza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnForzaEmergenza.Image = global::Iren.ToolsExcel.Base.Properties.Resources.forzaemergenza_icon;
+            this.btnForzaEmergenza.Image = ((System.Drawing.Image)(resources.GetObject("btnForzaEmergenza.Image")));
             this.btnForzaEmergenza.Label = "Forza Emergenza";
             this.btnForzaEmergenza.Name = "btnForzaEmergenza";
             this.btnForzaEmergenza.ShowImage = true;
@@ -156,7 +156,7 @@
             // btnConfigura
             // 
             this.btnConfigura.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnConfigura.Image = global::Iren.ToolsExcel.Base.Properties.Resources.settings_icon;
+            this.btnConfigura.Image = ((System.Drawing.Image)(resources.GetObject("btnConfigura.Image")));
             this.btnConfigura.Label = "Configura percorsi";
             this.btnConfigura.Name = "btnConfigura";
             this.btnConfigura.ShowImage = true;
@@ -171,8 +171,8 @@
             // btnCalendar
             // 
             this.btnCalendar.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnCalendar.Image = global::Iren.ToolsExcel.Base.Properties.Resources.calendario_icon;
             this.btnCalendar.Description = "Apre il calendario per cambiare la data";
+            this.btnCalendar.Image = ((System.Drawing.Image)(resources.GetObject("btnCalendar.Image")));
             this.btnCalendar.Label = "Calendario";
             this.btnCalendar.Name = "btnCalendar";
             this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
@@ -189,7 +189,7 @@
             // btnAggiornaDati
             // 
             this.btnAggiornaDati.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnAggiornaDati.Image = global::Iren.ToolsExcel.Base.Properties.Resources.aggiornadati_icon;
+            this.btnAggiornaDati.Image = ((System.Drawing.Image)(resources.GetObject("btnAggiornaDati.Image")));
             this.btnAggiornaDati.Label = "Aggiorna Dati";
             this.btnAggiornaDati.Name = "btnAggiornaDati";
             this.btnAggiornaDati.ShowImage = true;
@@ -198,7 +198,7 @@
             // btnAggiornaStruttura
             // 
             this.btnAggiornaStruttura.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnAggiornaStruttura.Image = global::Iren.ToolsExcel.Base.Properties.Resources.aggiornastruttura_icon;
+            this.btnAggiornaStruttura.Image = ((System.Drawing.Image)(resources.GetObject("btnAggiornaStruttura.Image")));
             this.btnAggiornaStruttura.Label = "Aggiorna Struttura";
             this.btnAggiornaStruttura.Name = "btnAggiornaStruttura";
             this.btnAggiornaStruttura.ShowImage = true;
@@ -215,7 +215,7 @@
             // btnAzioni
             // 
             this.btnAzioni.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnAzioni.Image = global::Iren.ToolsExcel.Base.Properties.Resources.azioni_icon;
+            this.btnAzioni.Image = ((System.Drawing.Image)(resources.GetObject("btnAzioni.Image")));
             this.btnAzioni.Label = "Start";
             this.btnAzioni.Name = "btnAzioni";
             this.btnAzioni.ShowImage = true;
@@ -224,7 +224,7 @@
             // btnOttimizza
             // 
             this.btnOttimizza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnOttimizza.Image = global::Iren.ToolsExcel.Base.Properties.Resources.ottimizzatore_icon;
+            this.btnOttimizza.Image = ((System.Drawing.Image)(resources.GetObject("btnOttimizza.Image")));
             this.btnOttimizza.Label = "Esegui Ottimizzazione";
             this.btnOttimizza.Name = "btnOttimizza";
             this.btnOttimizza.ShowImage = true;
@@ -233,7 +233,7 @@
             // btnRampe
             // 
             this.btnRampe.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnRampe.Image = global::Iren.ToolsExcel.Base.Properties.Resources.rampe_icon;
+            this.btnRampe.Image = ((System.Drawing.Image)(resources.GetObject("btnRampe.Image")));
             this.btnRampe.Label = "Seleziona Rampa";
             this.btnRampe.Name = "btnRampe";
             this.btnRampe.ShowImage = true;
@@ -427,13 +427,6 @@
             this.btnMostraErrorPane.ShowImage = true;
             this.btnMostraErrorPane.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnMostraErrorPane_Click);
             // 
-            // TabAddIns
-            // 
-            this.TabAddIns.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.TabAddIns.Label = "TabAddIns";
-            this.TabAddIns.Name = "TabAddIns";
-            this.TabAddIns.Visible = false;
-            // 
             // TabHome
             // 
             this.TabHome.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
@@ -495,6 +488,13 @@
             this.TabDeveloper.Label = "TabDeveloper";
             this.TabDeveloper.Name = "TabDeveloper";
             // 
+            // TabAddIns
+            // 
+            this.TabAddIns.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
+            this.TabAddIns.Label = "TabAddIns";
+            this.TabAddIns.Name = "TabAddIns";
+            this.TabAddIns.Visible = false;
+            // 
             // TabPrintPreview
             // 
             this.TabPrintPreview.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
@@ -522,6 +522,7 @@
             // 
             this.Name = "ToolsExcelRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
+            this.StartFromScratch = true;
             this.Tabs.Add(this.FrontOffice);
             this.Tabs.Add(this.TabHome);
             this.Tabs.Add(this.TabInsert);
@@ -558,8 +559,6 @@
             this.groupFileLocali.PerformLayout();
             this.groupErrori.ResumeLayout(false);
             this.groupErrori.PerformLayout();
-            this.TabAddIns.ResumeLayout(false);
-            this.TabAddIns.PerformLayout();
             this.TabHome.ResumeLayout(false);
             this.TabHome.PerformLayout();
             this.TabInsert.ResumeLayout(false);
@@ -576,6 +575,8 @@
             this.TabView.PerformLayout();
             this.TabDeveloper.ResumeLayout(false);
             this.TabDeveloper.PerformLayout();
+            this.TabAddIns.ResumeLayout(false);
+            this.TabAddIns.PerformLayout();
             this.TabPrintPreview.ResumeLayout(false);
             this.TabPrintPreview.PerformLayout();
             this.TabBackgroundRemoval.ResumeLayout(false);

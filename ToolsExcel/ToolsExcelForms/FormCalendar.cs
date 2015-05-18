@@ -6,16 +6,6 @@ namespace Iren.ToolsExcel.Forms
 {
     public partial class FormCalendar : Form
     {
-        private DateTime? _date = null;
-
-        public DateTime? Date 
-        { 
-            get 
-            { 
-                return _date; 
-            } 
-        }
-
         public FormCalendar()
         {
             InitializeComponent();
@@ -26,16 +16,27 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            _date = calObj.SelectionStart;
             this.Close();
         }
 
         private void btnANNULLA_Click(object sender, EventArgs e)
         {
-            _date = null;
+            calObj.SetDate(Utility.DataBase.DataAttiva);
             this.Close();
         }
 
+        /// <summary>
+        /// Override del metodo ShowDialog di Windows Forms. Restituisce l'oggetto data selezionato se l'utente ha cambiato la selezione, null altrimenti.
+        /// </summary>
+        /// <returns>Restituisce l'oggetto data selezionato se l'utente ha cambiato la selezione, null altrimenti.</returns>
+        public new object ShowDialog()
+        {
+            base.ShowDialog();
+            if (calObj.SelectionStart == Utility.DataBase.DataAttiva)
+                return null;
+
+            return calObj.SelectionStart;
+        }
 
     }
 }

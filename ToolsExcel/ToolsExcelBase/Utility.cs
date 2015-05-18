@@ -1332,10 +1332,10 @@ namespace Iren.ToolsExcel.Utility
                 {
                     siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                     Range rng;
-                    if(info["Selezione"].Equals(0))
+                    //if(info["Selezione"].Equals(0))
                         rng = newNomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
-                    else
-                        rng = newNomiDefiniti.Get(siglaEntita, "SEL", info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    //else
+                    //    rng = newNomiDefiniti.Get(siglaEntita, "SEL", info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
 
                     Excel.Range xlRng = ws.Range[rng.ToString()];
                     xlRng.Value = null;
@@ -1439,7 +1439,8 @@ namespace Iren.ToolsExcel.Utility
 
                         if (step == 0)
                         {
-                            Range rng = newNomiDefiniti.Get(siglaEntita, calcolo["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(ora));
+                            object siglaEntitaRif = calcolo["SiglaEntitaRif"] is DBNull ? siglaEntita : calcolo["SiglaEntitaRif"];
+                            Range rng = newNomiDefiniti.Get(siglaEntitaRif, calcolo["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(ora));
                             Excel.Range xlRng = ws.Range[rng.ToString()];
 
                             xlRng.Formula = calcolo["SiglaInformazione"].Equals("CHECKINFO") ? DataBase.GetMessaggioCheck(risultato) : risultato;
@@ -1826,6 +1827,7 @@ namespace Iren.ToolsExcel.Utility
         #region Variabili
 
         private static System.Version _wbVersion;
+        public static bool fromErrorPane = false;
 
         #endregion
 
@@ -1890,7 +1892,7 @@ namespace Iren.ToolsExcel.Utility
             _wb = wb;
             _wbVersion = wbVersion;
 
-            Simboli.pwd = ConfigurationManager.AppSettings["pwd"];
+            Simboli.pwd = AppSettings("pwd");
 
             bool localDBNotPresent = false;
             try
@@ -1945,6 +1947,18 @@ namespace Iren.ToolsExcel.Utility
             var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
 
             return (UserConfigElement)settings.Items[configKey];
+        }
+        public static string AppSettings(string key)
+        {
+            try
+            {
+                return ConfigurationManager.AppSettings[key];
+            }
+            catch
+            {
+                ConfigurationManager.RefreshSection("applicationSettings");
+                return ConfigurationManager.AppSettings[key];
+            }
         }
 
         #endregion

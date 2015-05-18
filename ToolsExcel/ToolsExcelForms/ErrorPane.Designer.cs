@@ -93,6 +93,7 @@
             this.treeViewErrori.Name = "treeViewErrori";
             this.treeViewErrori.Size = new System.Drawing.Size(382, 331);
             this.treeViewErrori.TabIndex = 0;
+            this.treeViewErrori.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeViewErrori_BeforeSelect);
             this.treeViewErrori.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeViewErrori_NodeMouseClick);
             // 
             // panelPadding

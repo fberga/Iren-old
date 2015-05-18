@@ -152,7 +152,7 @@ namespace Iren.ToolsExcel.Base
             Simboli.ModificaDati = false;
 
             //aggiorna la scritta e il colore del label che mostra l'ambiente
-            Simboli.Ambiente = ConfigurationManager.AppSettings["DB"];
+            Simboli.Ambiente = Utilities.AppSettings("DB");
 
             if (Struct.intervalloGiorni > 0)
             {
