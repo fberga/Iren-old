@@ -24,10 +24,10 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\PortaFoglio\</PublishUrl>
+    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\Portafoglio\</PublishUrl>
     <InstallUrl />
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.1.0.2</ApplicationVersion>
+    <ApplicationVersion>1.1.0.3</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

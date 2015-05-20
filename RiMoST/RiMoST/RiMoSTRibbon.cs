@@ -222,6 +222,8 @@ namespace Iren.RiMoST
                 Globals.ThisDocument.txtOggetto.Text = "";
                 Globals.ThisDocument.txtNote.Text = "";
 
+                chkIsDraft.Enabled = true;
+
                 getAvailableID();
                 isBozza = true;
             }
@@ -298,6 +300,11 @@ namespace Iren.RiMoST
                                         {"@NomeFile", savePath}
                                     });
 
+                                if(!isBozza)
+                                    MessageBox.Show("Richiesta presa in carico!", "Perfetto!!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                else
+                                    MessageBox.Show("Bozza salvata!", "Perfetto!!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                                 if (!isBozza)
                                     Print();
                             }
@@ -323,6 +330,7 @@ namespace Iren.RiMoST
         private void btnRefresh_Click(object sender, RibbonControlEventArgs e)
         {
             getAvailableID();
+            chkIsDraft.Enabled = true;
             isBozza = true;
         }
         private void btnPrint_Click(object sender, RibbonControlEventArgs e)

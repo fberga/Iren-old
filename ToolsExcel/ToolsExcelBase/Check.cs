@@ -10,11 +10,27 @@ namespace Iren.ToolsExcel.Base
 {
     public class Check
     {
+        protected Excel.Worksheet _ws;
+        protected NewDefinedNames _newNomiDefiniti;
+        protected CheckObj _check;
+
         public virtual CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
         {
             return new CheckOutput();
         }
 
+        protected decimal GetDecimal(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
+        {
+            return (decimal)(_ws.Range[_newNomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? 0);
+        }
+        protected object GetObject(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
+        {
+            return _ws.Range[_newNomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value;
+        }
+        protected string GetString(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
+        {
+            return (string)(_ws.Range[_newNomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? "");
+        }
         protected virtual void ErrorStyle(ref TreeNode node)
         {
             node.BackColor = System.Drawing.Color.Red;
@@ -55,3 +71,4 @@ namespace Iren.ToolsExcel.Base
         public CheckStatus Status { get { return _status; } }
     }
 }
+

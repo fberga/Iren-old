@@ -11,10 +11,6 @@ namespace Iren.ToolsExcel
 {
     class Check : Base.Check
     {
-        Excel.Worksheet _ws;
-        NewDefinedNames _newNomiDefiniti;
-        CheckObj _check;
-
         public override CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
         {
             _ws = ws;
@@ -36,7 +32,6 @@ namespace Iren.ToolsExcel
         private CheckOutput CheckFunc1()
         {
             Range rngCheck = new Range(_check.Range);
-            Range rng;
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
@@ -62,45 +57,24 @@ namespace Iren.ToolsExcel
 
                 int ora = (i - 1) % Utility.Date.GetOreGiorno(suffissoData) + 1;
 
-                //caricamento dati
-                rng = _newNomiDefiniti.Get("CE_MTX", "TEMPERATURA", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object temperaturaMTX = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("CE_TTX", "TEMPERATURA", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object temperaturaTTX = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("CE_MTX", "PRESSIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object pressioneMTX = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("CE_TTX", "PRESSIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object pressioneTTX = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("CT_TORINO", "CARICO_TERMICO_PREVISIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object caricoTermico = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("ZM_NORD", "PREV_PREZZO", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object prezzoZonale = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("CE_MTX", "PREV_PORTATA", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object portataCanale = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("CE_TTX", "GRUPPO_FRIGO", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object gruppoFrigo = _ws.Range[rng.ToString()].Value;
-                rng = _newNomiDefiniti.Get("UP_MT2R", "TEMP_PROG1", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double onOff = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_MT3", "TEMP_PROG1", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                onOff += (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_MT2R", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                string unitCommMT2R = (string)(_ws.Range[rng.ToString()].Value ?? "");
-                rng = _newNomiDefiniti.Get("UP_MT3", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                string unitCommMT3 = (string)(_ws.Range[rng.ToString()].Value ?? "");
-                rng = _newNomiDefiniti.Get("UP_TN1", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                string unitCommTN1 = (string)(_ws.Range[rng.ToString()].Value ?? "");
-                rng = _newNomiDefiniti.Get("UP_MT2R", "DISPONIBILITA_CALORE_PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double dispCalorePMaxMT2R = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_MT3", "DISPONIBILITA_CALORE_PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double dispCalorePMaxMT3 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_TN1", "DISPONIBILITA_CALORE_PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double dispCalorePMaxTN1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_MT2R", "DISPONIBILITA_CALORE_PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double dispCalorePMinMT2R = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_MT3", "DISPONIBILITA_CALORE_PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double dispCalorePMinMT3 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get("UP_TN1", "DISPONIBILITA_CALORE_PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double dispCalorePMinTN1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+                //caricamento dati                
+                object temperaturaMTX = GetObject("CE_MTX", "TEMPERATURA", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object temperaturaTTX = GetObject("CE_TTX", "TEMPERATURA", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object pressioneMTX = GetObject("CE_MTX", "PRESSIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object pressioneTTX = GetObject("CE_TTX", "PRESSIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object caricoTermico = GetObject("CT_TORINO", "CARICO_TERMICO_PREVISIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object prezzoZonale = GetObject("ZM_NORD", "PREV_PREZZO", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object portataCanale = GetObject("CE_MTX", "PREV_PORTATA", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object gruppoFrigo = GetObject("CE_TTX", "GRUPPO_FRIGO", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                string unitCommMT2R = GetString("UP_MT2R", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                string unitCommMT3 = GetString("UP_MT3", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                string unitCommTN1 = GetString("UP_TN1", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal dispCalorePMaxMT2R = GetDecimal("UP_MT2R", "DISPONIBILITA_CALORE_PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal dispCalorePMaxMT3 = GetDecimal("UP_MT3", "DISPONIBILITA_CALORE_PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal dispCalorePMaxTN1 = GetDecimal("UP_TN1", "DISPONIBILITA_CALORE_PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal dispCalorePMinMT2R = GetDecimal("UP_MT2R", "DISPONIBILITA_CALORE_PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal dispCalorePMinMT3 = GetDecimal("UP_MT3", "DISPONIBILITA_CALORE_PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal dispCalorePMinTN1 = GetDecimal("UP_TN1", "DISPONIBILITA_CALORE_PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
                 //fine caricameto dati
 
                 TreeNode nOra = new TreeNode("Ora " + ora);

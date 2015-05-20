@@ -5,28 +5,49 @@ using Iren.ToolsExcel.Utility;
 
 namespace Iren.ToolsExcel.Base
 {
+    /// <summary>
+    /// Interfaccia dell'ottimizzatore.
+    /// </summary>
     public interface IOptimizer
     {
         void EseguiOttimizzazione(object siglaEntita);
     }
 
+    /// <summary>
+    /// Classe per l'esecuzione dell'Ottimizzatore. All'occorrenza può essere sovrascritta da una custom inserita all'interno del pacchetto del documento.
+    /// </summary>
     public class Optimizer : IOptimizer
     {
-        DataSet _localDB;
+        #region Variabili
+
         DataView _entitaInformazioni;
         DataView _entitaProprieta;
         string _sheet;
         NewDefinedNames _newNomiDefiniti;
         DateTime _dataFine;
-        
+
+        #endregion
+
+        #region Costruttori
 
         public Optimizer() 
-        {
-            _localDB = Utility.DataBase.LocalDB;
-            _entitaInformazioni = _localDB.Tables[Utility.DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+        {            
+            _entitaInformazioni = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
         }
 
+        #endregion
+
+        #region Metodi Privati
+
+        /// <summary>
+        /// Controlla da LocalDB se ho cambiato entità dal ciclo precedente. Se sì, aggiorno la sigla entità, il nome del foglio, la data fine ed inizializzo la struttra dei nomi con questi parametri. Tutti parametri sono passati per riferimento e servono nei passaggi successivi dell'algoritmo.
+        /// </summary>
+        /// <param name="info">La riga delle informazioni da cui prendere i dati</param>
+        /// <param name="siglaEntita">La variabile su cui salvare la Sigla Entità</param>
+        /// <param name="nomeFoglio">La variabile su cui salvare il nome del foglio</param>
+        /// <param name="dataFine">La variabile su cui salvare la data fine</param>
+        /// <param name="newNomiDefiniti">La struttura dei nomi inizializzata sul nuovo foglio</param>
         private void Helper(DataRowView info, ref string siglaEntita, ref string nomeFoglio, ref DateTime dataFine, ref NewDefinedNames newNomiDefiniti)
         {
             if (!info["SiglaEntita"].Equals(siglaEntita))
@@ -39,46 +60,19 @@ namespace Iren.ToolsExcel.Base
                     dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
                 nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-                newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+                
+                if (nomeFoglio != newNomiDefiniti.Sheet)
+                    newNomiDefiniti = new NewDefinedNames(nomeFoglio);
             }
         }
 
-        protected virtual void DeleteExistingAdjust() 
-        {
-            _entitaInformazioni.RowFilter = "WB <> '0'";
+        #endregion
 
-            string siglaEntita = "";
-            string nomeFoglio = "";
-            DateTime dataFine = new DateTime();
-            NewDefinedNames newNomiDefiniti = null;
+        #region Metodi Virtuali
 
-            foreach (DataRowView info in _entitaInformazioni)
-            {
-                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
-                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
-                double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
-                Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
-                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
-                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
-
-                for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
-                {
-                    Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
-                    Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
-                }
-
-                if (info["WB"].Equals("2"))
-                {
-                    try
-                    {
-                        Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
-                    }
-                    catch { }
-                }
-            }
-        }
-
+        /// <summary>
+        /// Blocca le aree su cui non considerare i vincoli.
+        /// </summary>
         protected virtual void OmitConstraints() 
         {
             _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO'";
@@ -97,6 +91,10 @@ namespace Iren.ToolsExcel.Base
                 Workbook.WB.Application.Run("WBOMIT", NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
             }
         }
+        /// <summary>
+        /// Aggiunge gli adjust necessari all'entità da ottimizzare.
+        /// </summary>
+        /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddAdjust(object siglaEntita) 
         {
             _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0'";
@@ -116,6 +114,10 @@ namespace Iren.ToolsExcel.Base
                     Workbook.WB.Application.Run("WBFREE", NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
             }
         }
+        /// <summary>
+        /// Aggiunge i vincoli necessari all'entità da ottimizzare.
+        /// </summary>
+        /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddConstraints(object siglaEntita) 
         {
             _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO'";
@@ -126,6 +128,10 @@ namespace Iren.ToolsExcel.Base
                 Workbook.WB.Names.Item("WBOMIT" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
             }
         }
+        /// <summary>
+        /// Aggiunge la funzione ottimo per l'entità da ottimizzare.
+        /// </summary>
+        /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddOpt(object siglaEntita) 
         {
             _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO'";
@@ -141,7 +147,11 @@ namespace Iren.ToolsExcel.Base
                 Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth = width;
             }
         }
-
+        /// <summary>
+        /// Crea i MessageBox in cui avvisare l'utente dell'eventuale errore nel processo di ottimizzazione.
+        /// </summary>
+        /// <param name="res">Codice di errore di What's Best!.</param>
+        /// <param name="messaggio">Messaggio da visualizzare.</param>
         protected virtual void ShowErrorMessageBox(int res, string messaggio)
         {
             switch (res)
@@ -157,7 +167,10 @@ namespace Iren.ToolsExcel.Base
                     break;
             }
         }
-
+        /// <summary>
+        /// Lancia l'ottimizzazione per l'entità selezionata.
+        /// </summary>
+        /// <param name="siglaEntita">Entità selezionata.</param>
         protected virtual void Execute(object siglaEntita) 
         {
             //mantengo il filtro applicato in AddOpt
@@ -199,6 +212,48 @@ namespace Iren.ToolsExcel.Base
                 }                
             }
         }
+        /// <summary>
+        /// Cancella tutti gli adjust esistenti. 
+        /// </summary>
+        protected virtual void DeleteExistingAdjust()
+        {
+            _entitaInformazioni.RowFilter = "WB <> '0'";
+
+            string siglaEntita = "";
+            string nomeFoglio = "";
+            DateTime dataFine = new DateTime();
+            NewDefinedNames newNomiDefiniti = null;
+
+            foreach (DataRowView info in _entitaInformazioni)
+            {
+                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
+                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
+                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
+                Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
+                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
+                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
+
+                for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
+                {
+                    Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                    Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                }
+
+                if (info["WB"].Equals("2"))
+                {
+                    try
+                    {
+                        Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                    }
+                    catch { }
+                }
+            }
+        }
+        /// <summary>
+        /// Funizione ereditata dall'interfaccia che viene richiamata nella parte base dell'algoritmo per eseguire l'ottimizzazione.
+        /// </summary>
+        /// <param name="siglaEntita">Entità da ottimizzare.</param>
         public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
             Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
@@ -212,12 +267,14 @@ namespace Iren.ToolsExcel.Base
             else
                 _dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
-            DeleteExistingAdjust();
             OmitConstraints();
             AddAdjust(siglaEntita);
             AddConstraints(siglaEntita);
             AddOpt(siglaEntita);
             Execute(siglaEntita);
+            DeleteExistingAdjust();
         }
+
+        #endregion
     }
 }

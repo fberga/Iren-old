@@ -20,16 +20,35 @@ namespace Iren.ToolsExcel
     {
         #region Variabili
         
+        /// <summary>
+        /// Lista dei controlli (solo button e togglebutton).
+        /// </summary>
         private ControlCollection _controls;
+        /// <summary>
+        /// lista degli id dei tasti abilitati.
+        /// </summary>
         private List<string> _enabledControls = new List<string>();
+        /// <summary>
+        /// Indica se tutti i tasti (a parte Aggiorna Struttura) sono disabilitati.
+        /// </summary>
         private bool _allDisabled = false;
+        /// <summary>
+        /// Componente da aggiungere all'actionsPane del documento.
+        /// </summary>
         private ErrorPane _errorPane = new ErrorPane();
+        /// <summary>
+        /// Variabile per svolgere delle azioni custom coi ceck.
+        /// </summary>
         private Check _checkFunctions = new Check();
 
         #endregion
 
         #region Proprietà
 
+        /// <summary>
+        /// Proprietà che permette l'indicizzazione per nome dei vari tasti della barra Ribbon. 
+        /// La necessità di questa proprietà deriva dalla necessità di abilitare/disabilitare/nascondere i tasti leggendo i parametri del DB.
+        /// </summary>
         public ControlCollection Controls
         {
             get { return _controls; }
@@ -162,7 +181,7 @@ namespace Iren.ToolsExcel
             ambienteScelto.Checked = true;
         }
         /// <summary>
-        /// Handler del click del tasto di aggiornamento della struttura. Avvisa l'utente ed esegue l'aggiornamento della struttura.
+        /// Handler del click del tasto di aggiornamento della struttura. Avvisa l'utente ed esegue l'aggiornamento della struttura. Esegue il refresh dei check.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -200,7 +219,7 @@ namespace Iren.ToolsExcel
         }
         /// <summary>
         /// Handler del click del tasto di cambio data. Verifica che la data selezionata sia diversa da quella attuale e fa partire il controllo per vedere se ci siano modifiche alla struttura attraverso
-        /// DataBase.SP.CHECKMODIFICASTRUTTURA. Se ci sono aggiorno la struttra, altrimenti aggiorno semplicemente i dati.
+        /// DataBase.SP.CHECKMODIFICASTRUTTURA. Se ci sono aggiorno la struttra, altrimenti aggiorno semplicemente i dati. Esegue il refresh dei check.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -271,7 +290,7 @@ namespace Iren.ToolsExcel
             Workbook.WB.SheetChange += Handler.StoreEdit;
         }
         /// <summary>
-        /// Handler del click del tasto di selezione rampe. Apre il form per la selezione delle rampe.
+        /// Handler del click del tasto di selezione rampe. Apre il form per la selezione delle rampe ed esegue il refresh dei check.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -282,22 +301,26 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(false);
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
+            //prendo il nome sheet e il range selezionato (per poter lavorare su più giorni nel caso ci fosse necessità)
             string sheet = Workbook.WB.ActiveSheet.Name;
             Excel.Range rng = Workbook.WB.Application.Selection;
             
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(sheet, NewDefinedNames.InitType.NamingOnly);
+            NewDefinedNames newNomiDefiniti = new NewDefinedNames(sheet);
             FormSelezioneUP selUP = new FormSelezioneUP("PQNR_PROFILO");
 
+            //controllo se nel range selezionato è definita un'entità
             if (sheet == "Iren Termo" && newNomiDefiniti.IsDefined(rng.Row))
             {
                 string nome = newNomiDefiniti.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
-
+                
+                //controllo se l'entità ha la possibilità di selezionare le rampe
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
 
                 if (entitaInformazioni.Count == 0)
                 {
+                    //avviso l'utente che l'entità selezionata non ha l'opzione
                     if (System.Windows.Forms.MessageBox.Show("L'operazione selezionata non è disponibile per l'UP selezionata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                         && selUP.ShowDialog().ToString() != "")
                     {
@@ -313,6 +336,7 @@ namespace Iren.ToolsExcel
                     rampe.Dispose();
                 }
             }
+            //sono in un foglio diverso da Iren Termo o su una cella senza definizione di nomi
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                 && selUP.ShowDialog().ToString() != "")
             {
@@ -326,6 +350,11 @@ namespace Iren.ToolsExcel
             Workbook.WB.Application.ScreenUpdating = true;
             Workbook.WB.SheetChange += Handler.StoreEdit;
         }
+        /// <summary>
+        /// Handler del click del tasto di aggiornamento dei dati. Aziona la funzione AggiornaDati ed esegue il refresh dei check.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
         { 
             var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento dei dati?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
@@ -354,6 +383,11 @@ namespace Iren.ToolsExcel
                 Workbook.WB.SheetChange += Handler.StoreEdit;
             }
         }
+        /// <summary>
+        /// Handler del click del tasto delle azioni. Mostra il form delle azioni ed esegue il refresh dei check.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
             Workbook.WB.Application.ScreenUpdating = false;
@@ -369,6 +403,11 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
         }
+        /// <summary>
+        /// Handler del click del tasto di modifica. Attiva e disattiva la modifica foglio. Nel caso di disattivazione, aggiorna i check.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
             Workbook.WB.Application.ScreenUpdating = false;
@@ -395,6 +434,11 @@ namespace Iren.ToolsExcel
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
         }
+        /// <summary>
+        /// Handler del click del tasto di Ottimizzazione.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
         {
             Workbook.WB.Application.ScreenUpdating = false;
@@ -405,6 +449,7 @@ namespace Iren.ToolsExcel
 
             NewDefinedNames newNomiDefiniti = new NewDefinedNames(Workbook.WB.ActiveSheet.Name, NewDefinedNames.InitType.NamingOnly);
 
+            //inizializzo ottimizzatore e il form di selezione entità per l'ottimo.
             Optimizer opt = new Optimizer();
             FormSelezioneUP selUP = new FormSelezioneUP("OTTIMO");
 
@@ -468,11 +513,21 @@ namespace Iren.ToolsExcel
             Workbook.WB.SheetChange += Handler.StoreEdit;
             Workbook.WB.Application.ScreenUpdating = true;
         }
+        /// <summary>
+        /// Handler del click del tasto di modifica parametri. Mostra il form di modifica dei parametri utente.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnConfigura_Click(object sender, RibbonControlEventArgs e)
         {
             FormConfig conf = new FormConfig();
             conf.ShowDialog();
         }
+        /// <summary>
+        /// Handler del click dei tasti delle varie applicazioni. Abilita il foglio selezionato.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnProgrammi_Click(object sender, RibbonControlEventArgs e)
         {
             RibbonToggleButton btn = (RibbonToggleButton)sender;
@@ -487,6 +542,11 @@ namespace Iren.ToolsExcel
                 Handler.SwitchWorksheet(btn.Name.Substring(3));
             }
         }
+        /// <summary>
+        /// Handler del click del tasto per forzare l'emergenza. Disabilita le connessioni al DB.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
         {
             Workbook.WB.SheetChange -= Handler.StoreEdit;
@@ -514,10 +574,20 @@ namespace Iren.ToolsExcel
             Workbook.WB.Application.ScreenUpdating = true;
             Workbook.WB.SheetChange += Handler.StoreEdit;
         }
+        /// <summary>
+        /// Handler del click del tasto di chiusura. Chiude l'applicativo.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.ThisApplication.Quit();
         }
+        /// <summary>
+        /// Handler del click del tasto per visualizzare l'actionsPane del documento.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnMostraErrorPane_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
@@ -544,36 +614,54 @@ namespace Iren.ToolsExcel
         {
             _controls = new ControlCollection(this);
             DataView controlli = new DataView();
-            try
+            
+            if (DataBase.OpenConnection())
             {
+                Struttura.CaricaApplicazioneRibbon();
                 controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+                DataBase.CloseConnection();
             }
-            catch 
+            else
             {
-                if (DataBase.OpenConnection())
+                try
                 {
-                    Struttura.CaricaApplicazioneRibbon();
                     controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-                    DataBase.CloseConnection();
                 }
-            }
-
-            foreach (DataRowView controllo in controlli)
-            {
-                Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
-                Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
-                if (controllo["Abilitato"].Equals("1"))
-                    _enabledControls.Add(controllo["NomeControllo"].ToString());
-
-                if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
+                catch
                 {
-                    ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
+                    controlli = null;
                 }
             }
 
-            List<RibbonGroup> groups = FrontOffice.Groups.ToList();
-            foreach (RibbonGroup group in groups)
-                group.Visible = group.Items.Any(c => c.Visible);
+            if (controlli != null)
+            {
+                foreach (DataRowView controllo in controlli)
+                {
+                    Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
+                    Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
+                    if (controllo["Abilitato"].Equals("1"))
+                        _enabledControls.Add(controllo["NomeControllo"].ToString());
+
+                    if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
+                    {
+                        ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
+                    }
+                }
+
+                List<RibbonGroup> groups = FrontOffice.Groups.ToList();
+                foreach (RibbonGroup group in groups)
+                    group.Visible = group.Items.Any(c => c.Visible);
+            }
+            else
+            {
+                foreach (RibbonControl control in Controls)
+                {
+                    control.Visible = true;
+                    control.Enabled = true;
+                    if (control.GetType().ToString().Contains("ToggleButton"))
+                        ((RibbonToggleButton)control).Checked = false;
+                }
+            }
         }
         /// <summary>
         /// Metodo che seleziona il tasto corretto tra quelli degli applicativi presenti nella Tab Front Office. La selezione avviene in base all'ID applicazione scritto sul file di configurazione.

@@ -11,10 +11,6 @@ namespace Iren.ToolsExcel
 {
     class Check : Base.Check
     {
-        Excel.Worksheet _ws;
-        NewDefinedNames _newNomiDefiniti;
-        CheckObj _check;
-
         public override CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
         {
             _ws = ws;
@@ -38,11 +34,9 @@ namespace Iren.ToolsExcel
 
             return n;
         }
-
         private CheckOutput CheckFunc1()
         {
             Range rngCheck = new Range(_check.Range);
-            Range rng;
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
@@ -56,14 +50,14 @@ namespace Iren.ToolsExcel
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
-            double limitePmax = double.MaxValue;
+            decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
-                limitePmax = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+                limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
-            double limitePmin = double.MinValue;
+            decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
-                limitePmin = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+                limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
             for (int i = 1; i <= rngCheck.ColOffset; i++)
             {
@@ -79,38 +73,19 @@ namespace Iren.ToolsExcel
 
                 int ora = (i - 1) % Utility.Date.GetOreGiorno(suffissoData) + 1;
 
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double eOfferta1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double eOfferta2 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E3", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double eOfferta3 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E4", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double eOfferta4 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_P1", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pOfferta1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_P2", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pOfferta2 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_P3", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pOfferta3 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_P4", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pOfferta4 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pce = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "REQ", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double req = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "MARGINEUP", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double margineUP = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pmin = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pmax = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+                decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E3", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E4", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P2", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P3", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P4", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pce = GetDecimal(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal req = GetDecimal(_check.SiglaEntita, "REQ", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal margineUP = GetDecimal(_check.SiglaEntita, "MARGINEUP", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pmin = GetDecimal(_check.SiglaEntita, "PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pmax = GetDecimal(_check.SiglaEntita, "PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
 
                 TreeNode nOra = new TreeNode("Ora " + ora);
 
@@ -134,7 +109,7 @@ namespace Iren.ToolsExcel
                 }
                 if (eOfferta1 + eOfferta2 + eOfferta3 + eOfferta4 + pce < pmax)
                 {
-                    nOra.Nodes.Add("PCE > Preq");
+                    nOra.Nodes.Add("Eofferta + PCE < Pmax");
                     attenzione |= true;
                 }
                 if (pce > pmax && pmax > 0)
@@ -170,11 +145,6 @@ namespace Iren.ToolsExcel
                 if (eOfferta4 == 0 && pOfferta4 != 0)
                 {
                     nOra.Nodes.Add("Energia Offerta 4 = 0 e Prezzo Offerta 4 <> 0");
-                    errore |= true;
-                }
-                if (eOfferta1 != 0 && pOfferta1 == 0)
-                {
-                    nOra.Nodes.Add("Energia Offerta 1 <> 0 e Prezzo Offerta 1 = 0");
                     errore |= true;
                 }
                 if (eOfferta2 != 0 && pOfferta2 == 0)
@@ -237,7 +207,6 @@ namespace Iren.ToolsExcel
         private CheckOutput CheckFunc2()
         {
             Range rngCheck = new Range(_check.Range);
-            Range rng;
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
@@ -251,14 +220,14 @@ namespace Iren.ToolsExcel
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
-            double limitePmax = double.MaxValue;
+            decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
-                limitePmax = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+                limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
-            double limitePmin = double.MinValue;
+            decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
-                limitePmin = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+                limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
             for (int i = 1; i <= rngCheck.ColOffset; i++)
             {
@@ -274,14 +243,9 @@ namespace Iren.ToolsExcel
 
                 int ora = (i - 1) % Utility.Date.GetOreGiorno(suffissoData) + 1;
 
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double eOfferta1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-               
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pce = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double progrUC = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+                decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pce = GetDecimal(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal progrUC = GetDecimal(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
 
                 bool errore = false;
                 bool attenzione = false;
@@ -343,7 +307,6 @@ namespace Iren.ToolsExcel
         private CheckOutput CheckFunc3()
         {
             Range rngCheck = new Range(_check.Range);
-            Range rng;
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
@@ -357,14 +320,14 @@ namespace Iren.ToolsExcel
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
-            double limitePmax = double.MaxValue;
+            decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
-                limitePmax = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+                limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
-            double limitePmin = double.MinValue;
+            decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
-                limitePmin = Double.Parse(entitaParametroD[0]["Valore"].ToString());
+                limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
             for (int i = 1; i <= rngCheck.ColOffset; i++)
             {
@@ -380,21 +343,13 @@ namespace Iren.ToolsExcel
 
                 int ora = (i - 1) % Utility.Date.GetOreGiorno(suffissoData) + 1;
 
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double eOfferta1 = (double)(_ws.Range[rng.ToString()].Value ?? 0);
+                decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pce = GetDecimal(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal progrUC = GetDecimal(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
 
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PCE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double pce = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                rng = _newNomiDefiniti.Get(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                double progrUC = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-
-                double delta = 0;
+                decimal delta = 0;
                 if (_newNomiDefiniti.IsDefined(_check.SiglaEntita, "DELTA_PROGR_UC"))
-                {
-                    rng = _newNomiDefiniti.Get(_check.SiglaEntita, "DELTA_PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                    delta = (double)(_ws.Range[rng.ToString()].Value ?? 0);
-                }
+                    delta = GetDecimal(_check.SiglaEntita, "DELTA_PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
 
                 bool errore = false;
                 bool attenzione = false;

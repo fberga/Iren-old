@@ -56,14 +56,7 @@ namespace Iren.RiMoST
             int colNum = (int)Math.Ceiling((decimal)users.Length / rowNum);
 
             Word.Table tb = this.Tables[1];
-
-            //if (users.Length == 0 || (users.Length == 1 && users[0] == ""))
-            //{
-            //    tb.Rows[tb.Rows.Count].Delete();
-            //    tb.Rows[tb.Rows.Count].Delete();
-            //}
-            //else
-            //{
+            
             tb.Rows[tb.Rows.Count].Cells.Split(rowNum, colNum);
             int i = 0, j = 0;
             foreach (string usr in users)
@@ -73,7 +66,6 @@ namespace Iren.RiMoST
                 if ((++j % colNum) == 0)
                     i++;
             }
-            //}
             
 
             _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
