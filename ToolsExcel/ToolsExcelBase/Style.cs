@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Tools.Excel;
+﻿using Iren.ToolsExcel.Utility;
+using Microsoft.Office.Tools.Excel;
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -32,7 +33,6 @@ namespace Iren.ToolsExcel.Base
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 style.Interior.ColorIndex = 15;
-
 
                 style = wb.Styles.Add("navBarStyleVertical");
                 style.Font.Bold = true;

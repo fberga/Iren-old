@@ -129,9 +129,9 @@ namespace Iren.ToolsExcel
             {
                 if (!Utilities.fromErrorPane)
                 {
-                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.CheckOnly);
+                    DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.CheckOnly);
                     Range rng = new Range(Target.Row, Target.Column);
-                    if (newNomiDefiniti.HasCheck() && newNomiDefiniti.IsCheck(rng))
+                    if (definedNames.HasCheck() && definedNames.IsCheck(rng))
                     {
                         Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = true;
                         _errorPane.SelectNode("'" + Target.Worksheet.Name + "'!" + rng.ToString());
@@ -305,13 +305,13 @@ namespace Iren.ToolsExcel
             string sheet = Workbook.WB.ActiveSheet.Name;
             Excel.Range rng = Workbook.WB.Application.Selection;
             
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(sheet);
+            DefinedNames definedNames = new DefinedNames(sheet);
             FormSelezioneUP selUP = new FormSelezioneUP("PQNR_PROFILO");
 
             //controllo se nel range selezionato è definita un'entità
-            if (sheet == "Iren Termo" && newNomiDefiniti.IsDefined(rng.Row))
+            if (sheet == "Iren Termo" && definedNames.IsDefined(rng.Row))
             {
-                string nome = newNomiDefiniti.GetNameByAddress(rng.Row, rng.Column);
+                string nome = definedNames.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
                 
                 //controllo se l'entità ha la possibilità di selezionare le rampe
@@ -447,15 +447,15 @@ namespace Iren.ToolsExcel
 
             Excel.Range rng = Workbook.WB.Application.Selection;
 
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(Workbook.WB.ActiveSheet.Name, NewDefinedNames.InitType.NamingOnly);
+            DefinedNames definedNames = new DefinedNames(Workbook.WB.ActiveSheet.Name, DefinedNames.InitType.NamingOnly);
 
             //inizializzo ottimizzatore e il form di selezione entità per l'ottimo.
             Optimizer opt = new Optimizer();
             FormSelezioneUP selUP = new FormSelezioneUP("OTTIMO");
 
-            if (newNomiDefiniti.IsDefined(rng.Row))
+            if (definedNames.IsDefined(rng.Row))
             {
-                string nome = newNomiDefiniti.GetNameByAddress(rng.Row, rng.Column);
+                string nome = definedNames.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -475,9 +475,9 @@ namespace Iren.ToolsExcel
                         if (siglaEntita != null)
                         {
                             SplashScreen.Show();
-                            SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
+                            SplashScreen.UpdateStatus("Ottimizzo " + siglaEntita);
                             opt.EseguiOttimizzazione(siglaEntita);
-                            SplashScreen.UpdateStatus("Salvataggio");
+                            SplashScreen.UpdateStatus("Salvo modifiche su DB");
                             Sheet.SalvaModifiche();
                             DataBase.SalvaModificheDB();
                             SplashScreen.Close();
@@ -487,9 +487,9 @@ namespace Iren.ToolsExcel
                 else
                 {
                     SplashScreen.Show();
-                    SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
+                    SplashScreen.UpdateStatus("Ottimizzo " + siglaEntita);
                     opt.EseguiOttimizzazione(siglaEntita);
-                    SplashScreen.UpdateStatus("Salvataggio");
+                    SplashScreen.UpdateStatus("Salvo modifiche su DB");
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
                     SplashScreen.Close();
@@ -501,9 +501,9 @@ namespace Iren.ToolsExcel
                 if (siglaEntita != null)
                 {
                     SplashScreen.Show();
-                    SplashScreen.UpdateStatus("Ottimizzazione " + siglaEntita + " in corso...");
+                    SplashScreen.UpdateStatus("Ottimizzo " + siglaEntita);
                     opt.EseguiOttimizzazione(siglaEntita);
-                    SplashScreen.UpdateStatus("Salvataggio");
+                    SplashScreen.UpdateStatus("Salvo modifiche su DB");
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
                     SplashScreen.Close();

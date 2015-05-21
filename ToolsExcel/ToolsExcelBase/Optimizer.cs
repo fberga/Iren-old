@@ -23,7 +23,7 @@ namespace Iren.ToolsExcel.Base
         DataView _entitaInformazioni;
         DataView _entitaProprieta;
         string _sheet;
-        NewDefinedNames _newNomiDefiniti;
+        DefinedNames _definedNames;
         DateTime _dataFine;
 
         #endregion
@@ -47,8 +47,8 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">La variabile su cui salvare la Sigla Entità</param>
         /// <param name="nomeFoglio">La variabile su cui salvare il nome del foglio</param>
         /// <param name="dataFine">La variabile su cui salvare la data fine</param>
-        /// <param name="newNomiDefiniti">La struttura dei nomi inizializzata sul nuovo foglio</param>
-        private void Helper(DataRowView info, ref string siglaEntita, ref string nomeFoglio, ref DateTime dataFine, ref NewDefinedNames newNomiDefiniti)
+        /// <param name="definedNames">La struttura dei nomi inizializzata sul nuovo foglio</param>
+        private void Helper(DataRowView info, ref string siglaEntita, ref string nomeFoglio, ref DateTime dataFine, ref DefinedNames definedNames)
         {
             if (!info["SiglaEntita"].Equals(siglaEntita))
             {
@@ -59,10 +59,10 @@ namespace Iren.ToolsExcel.Base
                 else
                     dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
-                nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
+                nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 
-                if (nomeFoglio != newNomiDefiniti.Sheet)
-                    newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+                if (nomeFoglio != definedNames.Sheet)
+                    definedNames = new DefinedNames(nomeFoglio);
             }
         }
 
@@ -80,15 +80,15 @@ namespace Iren.ToolsExcel.Base
             string siglaEntita = "";
             string nomeFoglio = "";
             DateTime dataFine = new DateTime();
-            NewDefinedNames newNomiDefiniti = null;
+            DefinedNames definedNames = null;
 
             foreach (DataRowView info in _entitaInformazioni)
             {
-                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
+                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref definedNames);
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
 
-                Workbook.WB.Application.Run("WBOMIT", NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
+                Workbook.WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
             }
         }
         /// <summary>
@@ -101,17 +101,17 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+                Range rng = _definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
                 Workbook.WB.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
 
                 for (DateTime giorno = DataBase.DataAttiva; giorno <= _dataFine; giorno = giorno.AddDays(1))
                 {
-                    Range rng1 = new Range(rng.StartRow, _newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                    Range rng1 = new Range(rng.StartRow, _definedNames.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
                     Workbook.WB.Sheets[_sheet].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                 }
 
                 if (info["WB"].Equals("2"))
-                    Workbook.WB.Application.Run("WBFREE", NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
+                    Workbook.WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
             }
         }
         /// <summary>
@@ -125,7 +125,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Workbook.WB.Names.Item("WBOMIT" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                Workbook.WB.Names.Item("WBOMIT" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
             }
         }
         /// <summary>
@@ -139,7 +139,7 @@ namespace Iren.ToolsExcel.Base
             if (_entitaInformazioni.Count > 0)
             {
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
-                Range rng = new Range(_newNomiDefiniti.GetRowByName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"]), _newNomiDefiniti.GetFirstCol());
+                Range rng = new Range(_definedNames.GetRowByName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"]), _definedNames.GetFirstCol());
                 try { Workbook.WB.Names.Item("WBMAX").Delete(); }
                 catch { }
                 double width = Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth;
@@ -182,7 +182,7 @@ namespace Iren.ToolsExcel.Base
 
                 if (siglaEntitaInfo.Equals("GRUPPO_TORINO"))
                 {
-                    Range rng = _newNomiDefiniti.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+                    Range rng = _definedNames.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
                     int res = 0;
 
@@ -222,13 +222,13 @@ namespace Iren.ToolsExcel.Base
             string siglaEntita = "";
             string nomeFoglio = "";
             DateTime dataFine = new DateTime();
-            NewDefinedNames newNomiDefiniti = null;
+            DefinedNames definedNames = null;
 
             foreach (DataRowView info in _entitaInformazioni)
             {
-                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref newNomiDefiniti);
+                Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref definedNames);
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                Range rng = newNomiDefiniti.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
                 double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
                 Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
                 Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
@@ -236,7 +236,7 @@ namespace Iren.ToolsExcel.Base
 
                 for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                 {
-                    Range rng1 = new Range(rng.StartRow, newNomiDefiniti.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
+                    Range rng1 = new Range(rng.StartRow, definedNames.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
                     Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                 }
 
@@ -244,7 +244,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     try
                     {
-                        Workbook.WB.Names.Item("WBFREE" + NewDefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
+                        Workbook.WB.Names.Item("WBFREE" + DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"])).Delete();
                     }
                     catch { }
                 }
@@ -258,8 +258,8 @@ namespace Iren.ToolsExcel.Base
         {
             Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
 
-            _sheet = NewDefinedNames.GetSheetName(siglaEntita);
-            _newNomiDefiniti = new NewDefinedNames(_sheet);
+            _sheet = DefinedNames.GetSheetName(siglaEntita);
+            _definedNames = new DefinedNames(_sheet);
 
             _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
             if (_entitaProprieta.Count > 0)

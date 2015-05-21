@@ -11,10 +11,10 @@ namespace Iren.ToolsExcel
 {
     class Check : Base.Check
     {
-        public override CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
+        public override CheckOutput ExecuteCheck(Excel.Worksheet ws, DefinedNames definedNames, CheckObj check)
         {
             _ws = ws;
-            _newNomiDefiniti = newNomiDefiniti;
+            _nomiDefiniti = definedNames;
             _check = check;
 
             CheckOutput n = new CheckOutput();

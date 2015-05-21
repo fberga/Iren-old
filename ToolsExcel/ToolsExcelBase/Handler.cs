@@ -39,7 +39,7 @@ namespace Iren.ToolsExcel.Base
 
                 try
                 {
-                    NewDefinedNames newDefinedNames = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.GOTOsOnly);
+                    DefinedNames newDefinedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.GOTOsOnly);
                     string address = newDefinedNames.GetGotoFromAddress(Range.R1C1toA1(Target.Row, Target.Column));
                     Goto(address);
                 }
@@ -73,7 +73,7 @@ namespace Iren.ToolsExcel.Base
             if (screenUpdating)
                 Target.Application.ScreenUpdating = false;
 
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(Target.Worksheet.Name, NewDefinedNames.InitType.SaveDB);
+            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
             DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
 
             if (ws.ChartObjects().Count > 0)
@@ -89,12 +89,12 @@ namespace Iren.ToolsExcel.Base
                 Range rng = new Range(range);
                 foreach (Range row in rng.Rows)
                 {
-                    if (newNomiDefiniti.SaveDB(row.StartRow))
+                    if (definedNames.SaveDB(row.StartRow))
                     {
-                        bool annota =  annotaModifica == -1 ? newNomiDefiniti.ToNote(row.StartRow) : annotaModifica == 1;
+                        bool annota =  annotaModifica == -1 ? definedNames.ToNote(row.StartRow) : annotaModifica == 1;
                         foreach (Range column in row.Columns)
                         {
-                            string[] parts = newNomiDefiniti.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
+                            string[] parts = definedNames.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
 
                             string data;
                             if (parts.Length == 4)

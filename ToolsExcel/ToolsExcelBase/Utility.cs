@@ -101,7 +101,6 @@ namespace Iren.ToolsExcel.Utility
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
-                NOMI_DEFINITI_NEW = "DefinedNamesNew",
                 SALVADB = "SaveDB",
                 TIPOLOGIA_CHECK = "TipologiaCheck",
                 TIPOLOGIA_RAMPA = "TipologiaRampa",
@@ -584,9 +583,9 @@ namespace Iren.ToolsExcel.Utility
         {
             try
             {
-                string name = Tab.NOMI_DEFINITI_NEW;
+                string name = Tab.NOMI_DEFINITI;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultNameTable(name);
+                DataTable dt = DefinedNames.GetDefaultNameTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -601,7 +600,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.DATE_DEFINITE;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultDateTable(name);
+                DataTable dt = DefinedNames.GetDefaultDateTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -616,7 +615,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.ADDRESS_FROM;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultAddressFromTable(name);
+                DataTable dt = DefinedNames.GetDefaultAddressFromTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -631,7 +630,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.ADDRESS_TO;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultAddressToTable(name);
+                DataTable dt = DefinedNames.GetDefaultAddressToTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -646,7 +645,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.EDITABILI;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultEditableTable(name);
+                DataTable dt = DefinedNames.GetDefaultEditableTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -661,7 +660,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.SALVADB;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultSaveTable(name);
+                DataTable dt = DefinedNames.GetDefaultSaveTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -676,7 +675,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.ANNOTA;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultToNoteTable(name);
+                DataTable dt = DefinedNames.GetDefaultToNoteTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -721,7 +720,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 string name = Tab.CHECK;
                 ResetTable(name);
-                DataTable dt = NewDefinedNames.GetDefaultCheckTable(name);
+                DataTable dt = DefinedNames.GetDefaultCheckTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -1243,34 +1242,16 @@ namespace Iren.ToolsExcel.Utility
         }
         public static bool CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, ACarica carica, object parametro = null)
         {
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(NewDefinedNames.GetSheetName(siglaEntita));
+            DefinedNames nomiDefiniti = new DefinedNames(DefinedNames.GetSheetName(siglaEntita));
             try
             {
-                //DataView azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
-                //azioni.RowFilter = "SiglaAzione = '" + siglaAzione + "'";
-
-                //bool procedi = true;
-                //if (azioni[0]["Visibile"].Equals("1"))
-                //{
-                //    procedi = false;
-                //    DataView entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
-                //    entitaAzioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
-                //    if (entitaAzioni.Count > 0)
-                //    {
-                //        procedi = true;
-                //    }
-                //}
-
-                //if (procedi)
-                //{
-                AzzeraInformazione(siglaEntita, siglaAzione, newNomiDefiniti, giorno);
+                AzzeraInformazione(siglaEntita, siglaAzione, nomiDefiniti, giorno);
 
                 if (DataBase.OpenConnection())
                 {
                     if (azionePadre.Equals("GENERA"))
                     {
-                        ElaborazioneInformazione(siglaEntita, siglaAzione, newNomiDefiniti, giorno);
-                        //if (azioni[0]["Visibile"].Equals("1"))
+                        ElaborazioneInformazione(siglaEntita, siglaAzione, nomiDefiniti, giorno);
                         DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
                         return true;
                     }
@@ -1279,15 +1260,12 @@ namespace Iren.ToolsExcel.Utility
                         DataView azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                         if (azioneInformazione.Count == 0)
                         {
-                            //if (azioni[0]["Visibile"].Equals("1"))
                             DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
                             return false;
                         }
                         else
                         {
-                            ScriviInformazione(siglaEntita, azioneInformazione, newNomiDefiniti);
-
-                            //if (azioni[0]["Visibile"].Equals("1"))
+                            ScriviInformazione(siglaEntita, azioneInformazione, nomiDefiniti);
                             DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
                             return true;
                         }
@@ -1295,19 +1273,13 @@ namespace Iren.ToolsExcel.Utility
                 }
                 else
                 {
-                    if (azionePadre.Equals("GENERA")) 
-                    {
-                        ElaborazioneInformazione(siglaEntita, siglaAzione, newNomiDefiniti, giorno);
-                        return true;
-                    }
+                    if (azionePadre.Equals("GENERA"))
+                        ElaborazioneInformazione(siglaEntita, siglaAzione, nomiDefiniti, giorno);
                     else if (azionePadre.Equals("CARICA"))
-                    {
                         carica.RunCarica(siglaEntita, siglaAzione, giorno);
-                        return true;
-                    }
+                    
                     return true;
                 }
-                //}
             }
             catch (Exception e)
             {
@@ -1317,9 +1289,9 @@ namespace Iren.ToolsExcel.Utility
             }
         }
 
-        public static void AzzeraInformazione(object siglaEntita, object siglaAzione, NewDefinedNames newNomiDefiniti, DateTime giorno)
+        public static void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames nomiDefiniti, DateTime giorno)
         {
-            Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
+            Excel.Worksheet ws = _wb.Sheets[nomiDefiniti.Sheet];
 
             string suffissoData = Date.GetSuffissoData(giorno);
 
@@ -1333,9 +1305,9 @@ namespace Iren.ToolsExcel.Utility
                     siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                     Range rng;
                     //if(info["Selezione"].Equals(0))
-                        rng = newNomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                        rng = nomiDefiniti.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
                     //else
-                    //    rng = newNomiDefiniti.Get(siglaEntita, "SEL", info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    //    rng = nomiDefiniti.Get(siglaEntita, "SEL", info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
 
                     Excel.Range xlRng = ws.Range[rng.ToString()];
                     xlRng.Value = null;
@@ -1344,9 +1316,9 @@ namespace Iren.ToolsExcel.Utility
                 }
             }
         }
-        public static void ScriviInformazione(object siglaEntita, DataView azioneInformazione, NewDefinedNames newNomiDefiniti)
+        public static void ScriviInformazione(object siglaEntita, DataView azioneInformazione, DefinedNames nomiDefiniti)
         {
-            Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
+            Excel.Worksheet ws = _wb.Sheets[nomiDefiniti.Sheet];
 
             foreach (DataRowView azione in azioneInformazione)
             {
@@ -1363,7 +1335,7 @@ namespace Iren.ToolsExcel.Utility
                     suffissoOra = Date.GetSuffissoOra(azione["Data"]);
                 }
 
-                Range rng = newNomiDefiniti.Get(siglaEntita, azione["SiglaInformazione"], suffissoData, suffissoOra);
+                Range rng = nomiDefiniti.Get(siglaEntita, azione["SiglaInformazione"], suffissoData, suffissoOra);
 
                 Excel.Range xlRng = ws.Range[rng.ToString()];
                 xlRng.Value = azione["Valore"];
@@ -1378,9 +1350,9 @@ namespace Iren.ToolsExcel.Utility
                     xlRng.AddComment(azione["Commento"]).Visible = false;
             }
         }
-        private static void ElaborazioneInformazione(object siglaEntita, object siglaAzione, NewDefinedNames newNomiDefiniti, DateTime giorno, int oraInizio = -1, int oraFine = -1)
+        private static void ElaborazioneInformazione(object siglaEntita, object siglaAzione, DefinedNames nomiDefiniti, DateTime giorno, int oraInizio = -1, int oraFine = -1)
         {
-            Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
+            Excel.Worksheet ws = _wb.Sheets[nomiDefiniti.Sheet];
 
             Dictionary<string, int> entitaRiferimento = new Dictionary<string, int>();
             List<int> oreDaCalcolare = new List<int>();
@@ -1412,7 +1384,7 @@ namespace Iren.ToolsExcel.Utility
                 {
                     if (!info["SiglaInformazione"].Equals("CHECKINFO"))
                     {
-                        Range rng = newNomiDefiniti.Get(info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"], info["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(oraInizio)).Extend(colOffset: oraFine - oraInizio + 1);
+                        Range rng = nomiDefiniti.Get(info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"], info["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(oraInizio)).Extend(colOffset: oraFine - oraInizio + 1);
                         ws.Range[rng.ToString()].Value = null;
                     }
                 }
@@ -1435,12 +1407,12 @@ namespace Iren.ToolsExcel.Utility
                                     break;
 
                         int step = 0;
-                        object risultato = GetRisultatoCalcolo(siglaEntita, newNomiDefiniti, giorno, ora, calcolo, entitaRiferimento, out step);
+                        object risultato = GetRisultatoCalcolo(siglaEntita, nomiDefiniti, giorno, ora, calcolo, entitaRiferimento, out step);
 
                         if (step == 0)
                         {
                             object siglaEntitaRif = calcolo["SiglaEntitaRif"] is DBNull ? siglaEntita : calcolo["SiglaEntitaRif"];
-                            Range rng = newNomiDefiniti.Get(siglaEntitaRif, calcolo["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(ora));
+                            Range rng = nomiDefiniti.Get(siglaEntitaRif, calcolo["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(ora));
                             Excel.Range xlRng = ws.Range[rng.ToString()];
 
                             xlRng.Formula = calcolo["SiglaInformazione"].Equals("CHECKINFO") ? DataBase.GetMessaggioCheck(risultato) : risultato;
@@ -1472,9 +1444,9 @@ namespace Iren.ToolsExcel.Utility
                 }
             }
         }
-        private static object GetRisultatoCalcolo(object siglaEntita, NewDefinedNames newNomiDefiniti, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)
+        private static object GetRisultatoCalcolo(object siglaEntita, DefinedNames nomiDefiniti, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)
         {
-            Excel.Worksheet ws = _wb.Sheets[newNomiDefiniti.Sheet];
+            Excel.Worksheet ws = _wb.Sheets[nomiDefiniti.Sheet];
 
             string suffissoData = Date.GetSuffissoData(giorno);
 
@@ -1491,7 +1463,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 try
                 {
-                    Range cella1 = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1));
+                    Range cella1 = nomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1));
 
                     switch (calcolo["SiglaInformazione1"].ToString())
                     {
@@ -1558,7 +1530,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 try
                 {
-                    Range cella2 = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, Date.GetSuffissoOra(ora2));
+                    Range cella2 = nomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, Date.GetSuffissoOra(ora2));
 
                     switch (calcolo["SiglaInformazione2"].ToString())
                     {
@@ -1635,24 +1607,24 @@ namespace Iren.ToolsExcel.Utility
                     else if (func.Contains("sum"))
                     {
                         foreach (var kvp in entitaRiferimento)
-                            retVal += ws.Range[newNomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0d;
+                            retVal += ws.Range[nomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0d;
                     }
                     else if (func.Contains("avg"))
                     {
                         foreach (var kvp in entitaRiferimento)
-                            retVal += ws.Range[newNomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0d;
+                            retVal += ws.Range[nomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0d;
                         retVal /= entitaRiferimento.Count;
                     }
                     else if (func.Contains("max_h"))
                     {                        
-                        Range rng = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                        Range rng = nomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
                         object[,] tmpVal = ws.Range[rng.ToString()].Value;
                         double[] values = tmpVal.Cast<double>().ToArray();
                         retVal = values.Max();
                     }
                     else if (func.Contains("min_h"))
                     {
-                        Range rng = newNomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                        Range rng = nomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
                         object[,] tmpVal = ws.Range[rng.ToString()].Value;
                         double[] values = tmpVal.Cast<double>().ToArray();
                         retVal = values.Min();
@@ -1661,13 +1633,13 @@ namespace Iren.ToolsExcel.Utility
                     {
                         retVal = double.MinValue;
                         foreach (var kvp in entitaRiferimento)
-                            retVal = Math.Max(ws.Range[newNomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
+                            retVal = Math.Max(ws.Range[nomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
                     }
                     else if (func.Contains("min"))
                     {
                         retVal = double.MaxValue;
                         foreach (var kvp in entitaRiferimento)
-                            retVal = Math.Min(ws.Range[newNomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
+                            retVal = Math.Min(ws.Range[nomiDefiniti.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
                     }
                 }
                 //caso in cui ci sia anche SiglaInformazione2
@@ -1915,6 +1887,12 @@ namespace Iren.ToolsExcel.Utility
                 int usr = InitUser();
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
 
+                DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
+
+                Simboli.rgbSfondo = Utilities.GetRGBFromString(applicazione[0]["BackColorApp"].ToString());
+                Simboli.rgbTitolo = Utilities.GetRGBFromString(applicazione[0]["BackColorFrameApp"].ToString());
+                Simboli.rgbLinee = Utilities.GetRGBFromString(applicazione[0]["BorderColorApp"].ToString());
+
                 InitLog();
 
                 return false;
@@ -1959,6 +1937,13 @@ namespace Iren.ToolsExcel.Utility
                 ConfigurationManager.RefreshSection("applicationSettings");
                 return ConfigurationManager.AppSettings[key];
             }
+        }
+
+        public static int[] GetRGBFromString(string rgb)
+        {
+            string[] rgbComp = rgb.Split(';');
+
+            return new int[] { int.Parse(rgbComp[0]), int.Parse(rgbComp[1]), int.Parse(rgbComp[2]) };
         }
 
         #endregion

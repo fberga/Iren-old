@@ -4,10 +4,7 @@ namespace Iren.ToolsExcel.Base
 {
     public class Simboli
     {
-        public const string UNION = ".", 
-            ALL = "ALL";
-
-        public const string EXCLUDE = "<!--%EXCLUDE%-->";
+        public const string UNION = ".";
 
         public static string nomeApplicazione = "";
         private static bool emergenzaForzata = false;
@@ -102,6 +99,10 @@ namespace Iren.ToolsExcel.Base
         }
 
         public const string NameSpace = "Iren.ToolsExcel";
+
+        public static int[] rgbSfondo = { 183, 222, 232 };
+        public static int[] rgbLinee = { 33, 89, 104 };
+        public static int[] rgbTitolo = { 49, 133, 156 };
 
     }
 }

@@ -24,9 +24,9 @@ namespace Iren.ToolsExcel
 
             _ws.Columns[3].Font.Size = 9;
 
-            int col = _newNomiDefiniti.GetFirstCol();
+            int col = _definedNames.GetFirstCol();
             siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
+            int row = _definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
             Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row + 1, col + 25, informazioni.Count - 1)];
 
@@ -38,8 +38,8 @@ namespace Iren.ToolsExcel
             for (int i = 1; i < informazioni.Count; i++)
             {
                 siglaEntita = informazioni[i]["SiglaEntitaRif"] is DBNull ? informazioni[i]["SiglaEntita"] : informazioni[i]["SiglaEntitaRif"];
-                _newNomiDefiniti.AddName(row + i, siglaEntita, "NOTE", Date.GetSuffissoData(_dataInizio));
-                _newNomiDefiniti.SetEditable(row + i, new Range(row + i, col + 25));
+                _definedNames.AddName(row + i, siglaEntita, "NOTE", Date.GetSuffissoData(_dataInizio));
+                _definedNames.SetEditable(row + i, new Range(row + i, col + 25));
             }
         }
         public override void CaricaInformazioni(bool all)
@@ -57,8 +57,8 @@ namespace Iren.ToolsExcel
 
                     foreach (DataRowView nota in note)
                     {
-                        int row = _newNomiDefiniti.GetRowByName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
-                        int col = _newNomiDefiniti.GetFirstCol();
+                        int row = _definedNames.GetRowByName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
+                        int col = _definedNames.GetFirstCol();
                         _ws.Range[Range.GetRange(row, col + 25)].Value = nota["Note"];
                     }
                 } 
@@ -80,7 +80,7 @@ namespace Iren.ToolsExcel
                 DateTime dataInizio = DataBase.DataAttiva;
                 DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
-                int col = _newNomiDefiniti.GetFirstCol() + 25;
+                int col = _definedNames.GetFirstCol() + 25;
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel
 
                     CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
                     {
-                        int row = _newNomiDefiniti.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
+                        int row = _definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
                         _ws.Range[Range.GetRange(row, col, informazioni.Count)].Value = "";
                     });
                 }

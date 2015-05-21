@@ -32,8 +32,8 @@ namespace Iren.ToolsExcel
             DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
             entitaAzioneInformazione.RowFilter = "SiglaEntitaRif = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
-            string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio, NewDefinedNames.InitType.NamingOnly);
+            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+            DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.NamingOnly);
 
             Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
 
@@ -62,7 +62,7 @@ namespace Iren.ToolsExcel
                     {
                         object siglaEntitaRif = (info["SiglaEntitaRif"] is DBNull ? siglaEntita: info["SiglaEntitaRif"]);
 
-                        Range rng = newNomiDefiniti.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreData);
+                        Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreData);
 
                         //object[,] values = ws.Range[rng.ToString()].Value;
                         //bool empty = true;

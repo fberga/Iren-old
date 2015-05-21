@@ -70,7 +70,7 @@
   <ItemGroup>
     <Compile Include="Carica.cs" />
     <Compile Include="Check.cs" />
-    <Compile Include="NewDefinedNames .cs" />
+    <Compile Include="DefinedNames .cs" />
     <Compile Include="Handler.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -85,7 +85,6 @@
       <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utility.cs" />
-    <Compile Include="DefinedNames.cs" />
     <Compile Include="Esporta.cs" />
     <Compile Include="Optimizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

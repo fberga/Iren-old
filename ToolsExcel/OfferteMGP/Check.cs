@@ -11,10 +11,10 @@ namespace Iren.ToolsExcel
 {
     class Check : Base.Check
     {
-        public override CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
+        public override CheckOutput ExecuteCheck(Excel.Worksheet ws, DefinedNames nomiDefiniti, CheckObj check)
         {
             _ws = ws;
-            _newNomiDefiniti = newNomiDefiniti;
+            _nomiDefiniti = nomiDefiniti;
             _check = check;
 
             CheckOutput n = new CheckOutput();
@@ -348,7 +348,7 @@ namespace Iren.ToolsExcel
                 decimal progrUC = GetDecimal(_check.SiglaEntita, "PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
 
                 decimal delta = 0;
-                if (_newNomiDefiniti.IsDefined(_check.SiglaEntita, "DELTA_PROGR_UC"))
+                if (_nomiDefiniti.IsDefined(_check.SiglaEntita, "DELTA_PROGR_UC"))
                     delta = GetDecimal(_check.SiglaEntita, "DELTA_PROGR_UC", suffissoData, Utility.Date.GetSuffissoOra(ora));
 
                 bool errore = false;

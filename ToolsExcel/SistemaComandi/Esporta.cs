@@ -51,8 +51,8 @@ namespace Iren.ToolsExcel
                     break;
                 case "MAIL":
                     Globals.ThisWorkbook.Application.ScreenUpdating = false;
-                    string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio, NewDefinedNames.InitType.NamingOnly);
+                    string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+                    DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.NamingOnly);
 
                     var oldActiveWindow = Globals.ThisWorkbook.Application.ActiveWindow;
                     Globals.ThisWorkbook.Worksheets[nomeFoglio].Activate();
@@ -60,20 +60,20 @@ namespace Iren.ToolsExcel
                     List<Range> export = new List<Range>();
 
                     //titolo entità
-                    export.Add(new Range(newNomiDefiniti.GetRowByName(siglaEntita, "T", Utility.Date.GetSuffissoDATA1), newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(definedNames.GetRowByName(siglaEntita, "T", Utility.Date.GetSuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
 
                     //data
-                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow - 1, newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow - 1, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
 
                     //ora
-                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow, newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
 
 
                     DataView entitaAzioneInformazione = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
                     entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
-                        export.Add(new Range(newNomiDefiniti.GetRowByName(siglaEntita, info["SiglaInformazione"], Utility.Date.GetSuffissoDATA1), newNomiDefiniti.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                        export.Add(new Range(definedNames.GetRowByName(siglaEntita, info["SiglaInformazione"], Utility.Date.GetSuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
                     }
 
                     if (InviaMail(nomeFoglio, siglaEntita, export))
@@ -95,8 +95,8 @@ namespace Iren.ToolsExcel
         {
             try
             {
-                string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-                NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+                string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+                DefinedNames definedNames = new DefinedNames(nomeFoglio);
                 Excel.Worksheet ws = Utility.Workbook.WB.Sheets[nomeFoglio];
 
                 DateTime giorno = Utility.DataBase.DataAttiva;
@@ -127,42 +127,42 @@ namespace Iren.ToolsExcel
                     {
                         for (int j = 1; j <= assettoFascia.Value; j++)
                         {
-                            Range rng = newNomiDefiniti.Get(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
-                            Range rngCorr = newNomiDefiniti.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            Range rng = definedNames.Get(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            Range rngCorr = definedNames.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string psminVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
-                            rngCorr = newNomiDefiniti.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rngCorr = definedNames.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string psmaxVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string ptminVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string ptmaxVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "TRISP_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TRISP_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string trispVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "GPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "GPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string gpaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "GPD_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "GPD_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string gpdVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "TAVA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TAVA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string tavaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "TARA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TARA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string taraVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = newNomiDefiniti.Get(siglaEntita, "BRS_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "BRS_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             string brsVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
                             string tderampaVal = null;
                             if (isTermo)
                             {
-                                rng = newNomiDefiniti.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                                rng = definedNames.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                                 tderampaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
                             }
                             if (ptminVal != "" && ptmaxVal != "")
@@ -193,7 +193,7 @@ namespace Iren.ToolsExcel
                         XElement pqnr = new XElement("PQNR");
                         for (int j = 1; j <= 24; j++)
                         {
-                            Range rng = newNomiDefiniti.Get(siglaEntita, "PQNR" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            Range rng = definedNames.Get(siglaEntita, "PQNR" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                             object pqnrVal = ws.Range[rng.ToString()].Value;
                             if (pqnrVal != null)
                                 pqnr.Add(new XElement("Q", pqnrVal.ToString()));

@@ -24,7 +24,7 @@ namespace Iren.ToolsExcel.Forms
         int _oreFermata;
         Excel.Worksheet _ws;
         object[] _profiloPQNR;
-        NewDefinedNames _newNomiDefiniti;
+        DefinedNames _definedNames;
         string _siglaEntita;
         string _suffissoData;
 
@@ -40,9 +40,9 @@ namespace Iren.ToolsExcel.Forms
             if (DataBase.OpenConnection())
             {
                 _ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
-                _newNomiDefiniti = new NewDefinedNames(_ws.Name, NewDefinedNames.InitType.NamingOnly);
+                _definedNames = new DefinedNames(_ws.Name, DefinedNames.InitType.NamingOnly);
 
-                string nome = _newNomiDefiniti.GetNameByAddress(rng.Row, rng.Column);
+                string nome = _definedNames.GetNameByAddress(rng.Row, rng.Column);
                 _siglaEntita = nome.Split(Simboli.UNION[0])[0];
                 _suffissoData = Regex.Match(nome, @"DATA\d+").Value;
                 _oreGiorno = Date.GetOreGiorno(_suffissoData);
@@ -61,7 +61,7 @@ namespace Iren.ToolsExcel.Forms
 
                 int assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(_siglaEntita));
 
-                Range profilo = _newNomiDefiniti.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: _oreGiorno);
+                Range profilo = _definedNames.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: _oreGiorno);
 
                 object[,] values = _ws.Range[profilo.ToString()].Value;
                 _profiloPQNR = values.Cast<object>().ToArray();
@@ -71,7 +71,7 @@ namespace Iren.ToolsExcel.Forms
 
                 for(int i = 0; i < assetti; i++)
                 {
-                    Range rngPmin = _newNomiDefiniti.Get(_siglaEntita, "PMIN_TERNA_ASSETTO" + (i + 1), _suffissoData).Extend(colOffset: _oreGiorno);
+                    Range rngPmin = _definedNames.Get(_siglaEntita, "PMIN_TERNA_ASSETTO" + (i + 1), _suffissoData).Extend(colOffset: _oreGiorno);
                     for (int j = 0; j < _oreGiorno; j++)
                         _pMin[j] = Math.Min(_pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
                 }
@@ -323,10 +323,10 @@ namespace Iren.ToolsExcel.Forms
                 }
             }
 
-            Range rngPQNR = _newNomiDefiniti.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: Date.GetOreGiorno(_suffissoData));
+            Range rngPQNR = _definedNames.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: Date.GetOreGiorno(_suffissoData));
             _ws.Range[rngPQNR.ToString()].Value = intestazione;
 
-            Range rngPQNRVal = _newNomiDefiniti.Get(_siglaEntita, "PQNR1", _suffissoData).Extend(rowOffset: 24, colOffset: Date.GetOreGiorno(_suffissoData));
+            Range rngPQNRVal = _definedNames.Get(_siglaEntita, "PQNR1", _suffissoData).Extend(rowOffset: 24, colOffset: Date.GetOreGiorno(_suffissoData));
             _ws.Range[rngPQNRVal.ToString()].Value = valori;
             
             Handler.StoreEdit(_ws, _ws.Range[rngPQNR.ToString()]);

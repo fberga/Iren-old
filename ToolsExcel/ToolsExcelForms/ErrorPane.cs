@@ -38,8 +38,8 @@ namespace Iren.ToolsExcel.Forms
 
         public void RefreshCheck(Check checkFunctions)
         {
-            SplashScreen.UpdateStatus("Aggiornamento Check");
-            NewDefinedNames gotos = new NewDefinedNames("Main", NewDefinedNames.InitType.GOTOsOnly);
+            SplashScreen.UpdateStatus("Aggiorno Check");
+            DefinedNames gotos = new DefinedNames("Main", DefinedNames.InitType.GOTOsOnly);
 
             //Reset delle celle GOTO di tutto il Workbook
             List<string> gotoRanges = gotos.GetAllFromAddressGOTO();
@@ -50,13 +50,13 @@ namespace Iren.ToolsExcel.Forms
             {
                 if(ws.Name != "Main" && ws.Name != "Log") 
                 {
-                    NewDefinedNames newNomiDefiniti = new NewDefinedNames(ws.Name, NewDefinedNames.InitType.CheckNaming);
+                    DefinedNames definedNames = new DefinedNames(ws.Name, DefinedNames.InitType.CheckNaming);
 
-                    if (newNomiDefiniti.HasCheck())
+                    if (definedNames.HasCheck())
                     {
-                        foreach (CheckObj check in newNomiDefiniti.Checks)
+                        foreach (CheckObj check in definedNames.Checks)
                         {
-                            CheckOutput o = checkFunctions.ExecuteCheck(ws, newNomiDefiniti, check);
+                            CheckOutput o = checkFunctions.ExecuteCheck(ws, definedNames, check);
 
                             if (o.Node.Nodes.Count > 0)
                             {

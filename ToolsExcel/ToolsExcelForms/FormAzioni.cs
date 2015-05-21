@@ -417,7 +417,7 @@ namespace Iren.ToolsExcel.Forms
                             {
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                 {
-                                    string nomeFoglio = NewDefinedNames.GetSheetName(nodoEntita.Name);
+                                    string nomeFoglio = DefinedNames.GetSheetName(nodoEntita.Name);
                                     bool presente;
 
                                     DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
@@ -425,7 +425,7 @@ namespace Iren.ToolsExcel.Forms
 
                                     if (entitaAzione.Count > 0)
                                     {
-                                        SplashScreen.UpdateStatus(date.ToShortDateString() + " - " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
+                                        SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
                                         switch (nodoAzione.Parent.Name)
                                         {
@@ -450,14 +450,14 @@ namespace Iren.ToolsExcel.Forms
                                         {
                                             string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
 
-                                            NewDefinedNames newNomiDefiniti = new NewDefinedNames("Main");
+                                            DefinedNames definedNames = new DefinedNames("Main");
                                             Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
 
                                             foreach (string relazione in azioneRelazione)
                                             {
                                                 _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
 
-                                                Range rng = new Range(newNomiDefiniti.GetRowByName(nodoEntita.Name), newNomiDefiniti.GetColFromName(relazione, suffissoData));
+                                                Range rng = new Range(definedNames.GetRowByName(nodoEntita.Name), definedNames.GetColFromName(relazione, suffissoData));
                                                 if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
                                                 {
                                                     ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
@@ -487,7 +487,7 @@ namespace Iren.ToolsExcel.Forms
 
                 if (caricaOrGenera)
                 {
-                    SplashScreen.UpdateStatus("Salvataggio");
+                    SplashScreen.UpdateStatus("Salvo su DB");
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
                 }

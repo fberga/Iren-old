@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace Iren.ToolsExcel.Base
 {
-    public class NewDefinedNames
+    public class DefinedNames
     {
         #region Variabili
 
@@ -70,7 +70,7 @@ namespace Iren.ToolsExcel.Base
 
         private void InitNaming()
         {
-            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI_NEW];
+            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI];
             DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
 
             IEnumerable<DataRow> names =
@@ -154,7 +154,7 @@ namespace Iren.ToolsExcel.Base
                  select new CheckObj(r["SiglaEntita"].ToString(), (string)r["Range"], (int)r["Type"])).ToList();
         }
 
-        public NewDefinedNames(string sheet, InitType type = InitType.NamingOnly)
+        public DefinedNames(string sheet, InitType type = InitType.NamingOnly)
         {
             _sheet = sheet;
 
@@ -288,6 +288,7 @@ namespace Iren.ToolsExcel.Base
         {
             return _defNamesIndexByName.ElementAt(0).Value;
         }
+        
         public int GetColFromDate()
         {
             return GetColFromDate(Date.GetSuffissoData(DataBase.DataAttiva));
@@ -308,20 +309,23 @@ namespace Iren.ToolsExcel.Base
         {
             return _defDatesIndexByName[GetName(parts)];
         }
+        
+        public int GetColOffsetRiepilogo()
+        {
+            return _defDatesIndexByName.Count;
+        }
+        
+        public int GetRowOffset()
+        {
+            return _defNamesIndexByName.Count;
+        }
+
         public int GetColOffset()
         {
             if (Struct.tipoVisualizzazione == "O")
                 return _defDatesIndexByName.Count;
 
             return 25;
-        }
-        public int GetColOffsetRiepilogo()
-        {
-            return _defDatesIndexByName.Count;
-        }
-        public int GetRowOffset()
-        {
-            return _defNamesIndexByName.Count;
         }
         public int GetColOffset(DateTime data)
         {
@@ -336,6 +340,7 @@ namespace Iren.ToolsExcel.Base
 
             return date.Count();
         }
+        
         public int GetDayOffset(string suffissoData)
         {
             if (Struct.tipoVisualizzazione == "V")
@@ -352,6 +357,7 @@ namespace Iren.ToolsExcel.Base
         {
             return GetDayOffset(Date.GetSuffissoData(giorno));
         }
+        
         public int GetRowByName(params object[] parts)
         {
             return _defNamesIndexByName[GetName(parts)];
@@ -498,6 +504,98 @@ namespace Iren.ToolsExcel.Base
         public bool HasCheck()
         {
             return _check.Count > 0;
+        }
+
+        public void DumpToDataSet()
+        {
+            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI];
+            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
+            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
+            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_TO];
+            DataTable editable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
+            DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
+            DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
+            DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CHECK];
+
+            ///////// nomi
+            foreach (var ele in _defNamesIndexByName)
+            {
+                DataRow r = definedNames.NewRow();
+                r["Sheet"] = _sheet;
+                r["Name"] = ele.Key;
+                r["Row"] = ele.Value;
+                definedNames.Rows.Add(r);
+            }
+
+            ///////// date
+            foreach (var ele in _defDatesIndexByName)
+            {
+                string[] dateTime = ele.Key.Split(Simboli.UNION[0]);
+
+                DataRow r = definedDates.NewRow();
+                r["Sheet"] = _sheet;
+                r["Date"] = dateTime[0];
+                r["Hour"] = dateTime.Length == 2 ? ele.Key.Split(Simboli.UNION[0])[1] : "";
+                r["Column"] = ele.Value;
+                definedDates.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _addressFrom)
+            {
+                DataRow r = addressFromTable.NewRow();
+                r["Sheet"] = _sheet;
+                r["AddressFrom"] = ele.Key;
+                r["SiglaEntita"] = ele.Value;
+                addressFromTable.Rows.Add(r);
+            }
+            foreach (var ele in _addressTo)
+            {
+                DataRow r = addressToTable.NewRow();
+                r["Sheet"] = _sheet;
+                r["SiglaEntita"] = ele.Key;
+                r["AddressTo"] = ele.Value;
+                addressToTable.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _editable)
+            {
+                DataRow r = editable.NewRow();
+                r["Sheet"] = _sheet;
+                r["Row"] = ele.Key;
+                r["Range"] = ele.Value;
+                editable.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _saveDB)
+            {
+                DataRow r = saveDB.NewRow();
+                r["Sheet"] = _sheet;
+                r["Row"] = ele;
+                saveDB.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _toNote)
+            {
+                DataRow r = toNote.NewRow();
+                r["Sheet"] = _sheet;
+                r["Row"] = ele;
+                toNote.Rows.Add(r);
+            }
+
+
+            foreach (var ele in _check)
+            {
+                DataRow r = check.NewRow();
+                r["Sheet"] = _sheet;
+                r["Range"] = ele.Range;
+                r["SiglaEntita"] = ele.SiglaEntita;
+                r["Type"] = ele.Type;
+                check.Rows.Add(r);
+            }
         }
 
         #endregion
@@ -679,7 +777,7 @@ namespace Iren.ToolsExcel.Base
 
         public static string GetSheetName(object siglaEntita)
         {
-            DataTable dt = DataBase.LocalDB.Tables[DataBase.Tab.NOMI_DEFINITI_NEW];
+            DataTable dt = DataBase.LocalDB.Tables[DataBase.Tab.NOMI_DEFINITI];
 
             string s =
                 (from r in dt.AsEnumerable()
@@ -688,128 +786,6 @@ namespace Iren.ToolsExcel.Base
 
             return s ?? "";
         }
-
-        #endregion
-
-        public void DumpToDataSet()
-        {
-            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI_NEW];
-            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.DATE_DEFINITE];
-            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
-            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_TO];
-            DataTable editable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
-            DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
-            DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
-            DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CHECK];
-
-            ///////// nomi
-            foreach(var ele in _defNamesIndexByName) 
-            {
-                DataRow r = definedNames.NewRow();
-                r["Sheet"] = _sheet;
-                r["Name"] = ele.Key;
-                r["Row"] = ele.Value;
-                definedNames.Rows.Add(r);
-            }
-            
-            ///////// date
-            foreach (var ele in _defDatesIndexByName)
-            {
-                string[] dateTime = ele.Key.Split(Simboli.UNION[0]);
-
-                DataRow r = definedDates.NewRow();
-                r["Sheet"] = _sheet;
-                r["Date"] = dateTime[0];
-                r["Hour"] = dateTime.Length == 2 ? ele.Key.Split(Simboli.UNION[0])[1] : "";
-                r["Column"] = ele.Value;
-                definedDates.Rows.Add(r);
-            }
-            
-
-            foreach (var ele in _addressFrom)
-            {
-                DataRow r = addressFromTable.NewRow();
-                r["Sheet"] = _sheet;
-                r["AddressFrom"] = ele.Key;
-                r["SiglaEntita"] = ele.Value;
-                addressFromTable.Rows.Add(r);
-            }
-            foreach (var ele in _addressTo)
-            {
-                DataRow r = addressToTable.NewRow();
-                r["Sheet"] = _sheet;
-                r["SiglaEntita"] = ele.Key;
-                r["AddressTo"] = ele.Value;
-                addressToTable.Rows.Add(r);
-            }
-
-
-            foreach (var ele in _editable)
-            {
-                DataRow r = editable.NewRow();
-                r["Sheet"] = _sheet;
-                r["Row"] = ele.Key;
-                r["Range"] = ele.Value;
-                editable.Rows.Add(r);
-            }
-
-
-            foreach (var ele in _saveDB)
-            {
-                DataRow r = saveDB.NewRow();
-                r["Sheet"] = _sheet;
-                r["Row"] = ele;
-                saveDB.Rows.Add(r);
-            }
-
-
-            foreach (var ele in _toNote)
-            {
-                DataRow r = toNote.NewRow();
-                r["Sheet"] = _sheet;
-                r["Row"] = ele;
-                toNote.Rows.Add(r);
-            }
-
-
-            foreach (var ele in _check)
-            {
-                DataRow r = check.NewRow();
-                r["Sheet"] = _sheet;
-                r["Range"] = ele.Range;
-                r["SiglaEntita"] = ele.SiglaEntita;
-                r["Type"] = ele.Type;
-                check.Rows.Add(r);
-            }
-        }
-    }
-
-    public class CheckObj
-    {
-        #region Proprietà
-
-        public string SiglaEntita { get; set; }
-        public string Range { get; set; }
-        public int Type { get; set; }
-
-        #endregion
-
-        #region Costruttori
-
-        public CheckObj(string range)
-        {
-            Range = range;
-        }
-        public CheckObj(string siglaEntita, string range, int type)
-        {
-            SiglaEntita = siglaEntita;
-            Range = range;
-            Type = type;
-        }
-
-        #endregion
-
-        #region Metodi
 
         #endregion
     }

@@ -99,8 +99,7 @@ namespace Iren.ToolsExcel.Base
             entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-            NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+            DefinedNames definedNames = new DefinedNames(nomeFoglio);
 
             switch (siglaAzione.ToString())
             {
@@ -123,11 +122,11 @@ namespace Iren.ToolsExcel.Base
                     string suffissoData = Utility.Date.GetSuffissoData(dataRif);
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
-                        object entita = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]);
+                        object siglaEntitaRif = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]);
                         
                         Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
-                        Range range = newNomiDefiniti.Get(entita, info["SiglaInformazione"], suffissoData);
-                        range.Extend(0, newNomiDefiniti.GetDayOffset(suffissoData) - 1);
+                        Range range = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData);
+                        range.Extend(0, definedNames.GetDayOffset(suffissoData) - 1);
                         Excel.Range rng = ws.Range[range.ToString()];
 
                         object[,] tmpVal = rng.Value;
@@ -140,7 +139,7 @@ namespace Iren.ToolsExcel.Base
                             row["Campo1"] = nomeFoglio == "Iren Termo" ? "AHRP" : "AIHRP";
                             row["Campo2"] = "Prod";
                             row["UP"] = codiceIF;
-                            if (DefinedNames.IsDefined(nomeFoglio, DefinedNames.GetName(entita, "UNIT_COMM")))
+                            if (definedNames.IsDefined(siglaEntitaRif, "UNIT_COMM"))
                                 row["Campo3"] = "17";
                             else
                                 row["Campo3"] = "NA";

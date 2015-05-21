@@ -50,8 +50,8 @@ namespace Iren.ToolsExcel
         {
             try
             {
-                string nomeFoglio = NewDefinedNames.GetSheetName(siglaEntita);
-                NewDefinedNames newNomiDefiniti = new NewDefinedNames(nomeFoglio);
+                string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+                DefinedNames definedNames = new DefinedNames(nomeFoglio);
                 Excel.Worksheet ws = Utility.Workbook.WB.Sheets[nomeFoglio];
 
                 string suffissoData = Utility.Date.GetSuffissoData(dataRif);
@@ -76,7 +76,7 @@ namespace Iren.ToolsExcel
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
                         object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                        Range rng = newNomiDefiniti.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                        Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, Utility.Date.GetSuffissoOra(i + 1));
                         values[j++] = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace('.', ',');
 
                     }

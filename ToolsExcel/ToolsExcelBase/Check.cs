@@ -10,26 +10,32 @@ namespace Iren.ToolsExcel.Base
 {
     public class Check
     {
+        #region Variabili
+
         protected Excel.Worksheet _ws;
-        protected NewDefinedNames _newNomiDefiniti;
+        protected DefinedNames _nomiDefiniti;
         protected CheckObj _check;
 
-        public virtual CheckOutput ExecuteCheck(Excel.Worksheet ws, NewDefinedNames newNomiDefiniti, CheckObj check)
+        #endregion
+
+        #region Metodi
+
+        public virtual CheckOutput ExecuteCheck(Excel.Worksheet ws, DefinedNames definedNames, CheckObj check)
         {
             return new CheckOutput();
         }
 
         protected decimal GetDecimal(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
-            return (decimal)(_ws.Range[_newNomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? 0);
+            return (decimal)(_ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? 0);
         }
         protected object GetObject(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
-            return _ws.Range[_newNomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value;
+            return _ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value;
         }
         protected string GetString(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
-            return (string)(_ws.Range[_newNomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? "");
+            return (string)(_ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? "");
         }
         protected virtual void ErrorStyle(ref TreeNode node)
         {
@@ -43,6 +49,8 @@ namespace Iren.ToolsExcel.Base
             node.ForeColor = System.Drawing.Color.Red;
             node.NodeFont = new System.Drawing.Font("Microsoft Sans Serif", 12, System.Drawing.FontStyle.Bold);
         }
+
+        #endregion
     }
 
     public class CheckOutput
@@ -69,6 +77,36 @@ namespace Iren.ToolsExcel.Base
 
         public TreeNode Node { get { return _node; } }
         public CheckStatus Status { get { return _status; } }
+    }
+
+    public class CheckObj
+    {
+        #region Proprietà
+
+        public string SiglaEntita { get; set; }
+        public string Range { get; set; }
+        public int Type { get; set; }
+
+        #endregion
+
+        #region Costruttori
+
+        public CheckObj(string range)
+        {
+            Range = range;
+        }
+        public CheckObj(string siglaEntita, string range, int type)
+        {
+            SiglaEntita = siglaEntita;
+            Range = range;
+            Type = type;
+        }
+
+        #endregion
+
+        #region Metodi
+
+        #endregion
     }
 }
 

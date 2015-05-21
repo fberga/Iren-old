@@ -87,7 +87,7 @@ namespace Iren.ToolsExcel.Forms
             if (comboUP.SelectedIndex != -1) 
             {
                 //non mi serve il nome del foglio perché lavoro direttamente con la siglaEntita
-                NewDefinedNames n = new NewDefinedNames("", NewDefinedNames.InitType.GOTOsOnly);
+                DefinedNames n = new DefinedNames("", DefinedNames.InitType.GOTOsOnly);
                 string address = n.GetGotoFromSiglaEntita(comboUP.SelectedValue);
                 Handler.Goto(address);
             }

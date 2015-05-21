@@ -69,7 +69,7 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Excel.Worksheet _ws;
-        protected NewDefinedNames _newNomiDefiniti;
+        protected DefinedNames _definedNames;
         protected int _rigaAttiva;
         protected int _colonnaInizio;
         protected int _nAzioni;
@@ -93,7 +93,7 @@ namespace Iren.ToolsExcel.Base
             _struttura.colBlock = 59;
             try
             {
-                _newNomiDefiniti = new NewDefinedNames(_ws.Name);
+                _definedNames = new DefinedNames(_ws.Name);
             }
             catch
             {
@@ -137,7 +137,7 @@ namespace Iren.ToolsExcel.Base
 
         public override void InitLabels()
         {
-            //inizializzo i label
+            //inizializzo dimensione e posizione di default dei label
             _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoFalse;
             _ws.Shapes.Item("sfondo").Height = (float)(16.5 * _ws.Rows[5].Height);
             _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoCTrue;
@@ -147,6 +147,19 @@ namespace Iren.ToolsExcel.Base
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utilities.WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
+
+            DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
+            
+            //carico colori dal DB
+            
+
+            //applico colori da DB
+            _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
+            _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
+            _ws.Shapes.Item("sfondo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
+            _ws.Shapes.Item("sfondo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbSfondo[0], Simboli.rgbSfondo[1], Simboli.rgbSfondo[2]));
+            _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
+            _ws.Shapes.Item("lbDataFine").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
 
             //aggiorna la scritta di modifica dati
             Simboli.ModificaDati = false;
@@ -196,36 +209,36 @@ namespace Iren.ToolsExcel.Base
         protected virtual void CreaNomiCelle()
         {
             //inserisco tutte le righe
-            _newNomiDefiniti.AddName(_rigaAttiva++, "DATA");
-            _newNomiDefiniti.AddName(_rigaAttiva++, "AZIONI_PADRE");
-            _newNomiDefiniti.AddName(_rigaAttiva++, "AZIONI");
+            _definedNames.AddName(_rigaAttiva++, "DATA");
+            _definedNames.AddName(_rigaAttiva++, "AZIONI_PADRE");
+            _definedNames.AddName(_rigaAttiva++, "AZIONI");
 
             foreach (DataRowView categoria in _categorie)
             {
-                _newNomiDefiniti.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
+                _definedNames.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
                 _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
                 foreach (DataRowView e in _entita)
                 {
-                    _newNomiDefiniti.AddName(_rigaAttiva, e["SiglaEntita"]);
-                    _newNomiDefiniti.AddGOTO(e["SiglaEntita"], Range.R1C1toA1(_rigaAttiva++, _colonnaInizio));
+                    _definedNames.AddName(_rigaAttiva, e["SiglaEntita"]);
+                    _definedNames.AddGOTO(e["SiglaEntita"], Range.R1C1toA1(_rigaAttiva++, _colonnaInizio));
                 }
             }
             
             //inserisco tutte le colonne
-            _newNomiDefiniti.AddDate(_colonnaInizio++, "COLONNA_ENTITA");
+            _definedNames.AddDate(_colonnaInizio++, "COLONNA_ENTITA");
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {
                 foreach (DataRowView azione in _azioni)
                 {
                     if (azione["Gerarchia"] != DBNull.Value)
-                        _newNomiDefiniti.AddDate(_colonnaInizio++, azione["SiglaAzione"], suffissoData);
+                        _definedNames.AddDate(_colonnaInizio++, azione["SiglaAzione"], suffissoData);
                 }
             });
-            _newNomiDefiniti.DumpToDataSet();
+            _definedNames.DumpToDataSet();
         }
         protected void InitBarraTitolo()
         {
-            Range rngTitleBar = new Range(_newNomiDefiniti.GetFirstRow(), _newNomiDefiniti.GetFirstCol() + 1, 3, _azioni.Count);
+            Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 3, _azioni.Count);
             Range rngData = rngTitleBar.Cells[0, 0];
             Range rngAzioniPadre = rngTitleBar.Cells[1, 0];
             Range rngAzioni = rngTitleBar.Cells[2, 0];
@@ -265,8 +278,8 @@ namespace Iren.ToolsExcel.Base
         }
         protected void FormattaAllDati()
         {
-            Range rngAll = new Range(_newNomiDefiniti.GetFirstRow(), _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset(), _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
-            Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol(), _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo());
+            Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo() - 1);
+            Range rngData = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol(), _definedNames.GetRowOffset() - 3, _definedNames.GetColOffsetRiepilogo());
             
             _ws.Range[rngData.ToString()].Style = "recapAllDatiStyle";
             _ws.Range[rngData.Columns[0].ToString()].Style = "recapEntityBarStyle";
@@ -288,7 +301,7 @@ namespace Iren.ToolsExcel.Base
         {
             foreach (DataRowView categoria in _categorie)
             {
-                Range rng = new Range(_newNomiDefiniti.GetRowByName(categoria["SiglaCategoria"]), _newNomiDefiniti.GetFirstCol(), 1, _newNomiDefiniti.GetColOffsetRiepilogo());
+                Range rng = new Range(_definedNames.GetRowByName(categoria["SiglaCategoria"]), _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
                 Style.RangeStyle(_ws.Range[rng.ToString()], style: "recapCategoryTitle", borders: "[left:medium,top:medium,right:medium]", merge: true);
                 _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
                 _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
@@ -308,7 +321,7 @@ namespace Iren.ToolsExcel.Base
             {
                 foreach (DataRowView azione in _entitaAzioni)
                 {                    
-                    Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(azione["SiglaEntita"]), _newNomiDefiniti.GetColFromName(azione["SiglaAzione"], suffissoData));
+                    Range cellaAzione = new Range(_definedNames.GetRowByName(azione["SiglaEntita"]), _definedNames.GetColFromName(azione["SiglaAzione"], suffissoData));
                     _ws.Range[cellaAzione.ToString()].Interior.Pattern = Excel.XlPattern.xlPatternNone;
                     _ws.Range[cellaAzione.ToString()].Interior.ColorIndex = 2;
                 }
@@ -325,7 +338,7 @@ namespace Iren.ToolsExcel.Base
                         DataView datiRiepilogo = DataBase.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
                         foreach (DataRowView valore in datiRiepilogo)
                         {
-                            Range cellaAzione = new Range(_newNomiDefiniti.GetRowByName(valore["SiglaEntita"]), _newNomiDefiniti.GetColFromName(valore["SiglaAzione"], suffissoData));
+                            Range cellaAzione = new Range(_definedNames.GetRowByName(valore["SiglaEntita"]), _definedNames.GetColFromName(valore["SiglaAzione"], suffissoData));
 
                             Excel.Range rng = _ws.Range[cellaAzione.ToString()];
 
@@ -359,7 +372,7 @@ namespace Iren.ToolsExcel.Base
         {
             if (Struct.visualizzaRiepilogo && !Simboli.EmergenzaForzata)
             {
-                Range cell = _newNomiDefiniti.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
+                Range cell = _definedNames.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
                 Excel.Range rng = _ws.Range[cell.ToString()];
                 if (presente)
                 {
@@ -380,7 +393,7 @@ namespace Iren.ToolsExcel.Base
 
         private void CancellaDati()
         {
-            Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
+            Range rngData = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset() - 3, _definedNames.GetColOffsetRiepilogo() - 1);
             _ws.Range[rngData.ToString()].Value = null;
             _ws.Range[rngData.ToString()].Interior.ColorIndex = 2;
             _ws.Range[rngData.ToString()].ClearComments();
@@ -396,7 +409,7 @@ namespace Iren.ToolsExcel.Base
             
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    Range cell = new Range(_newNomiDefiniti.GetRowByName("DATA"), _newNomiDefiniti.GetColFromName(_azioni[0]["SiglaAzione"], suffissoData));
+                    Range cell = new Range(_definedNames.GetRowByName("DATA"), _definedNames.GetColFromName(_azioni[0]["SiglaAzione"], suffissoData));
                     _ws.Range[cell.ToString()].Value = giorno;
                 });
                 _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
@@ -416,7 +429,7 @@ namespace Iren.ToolsExcel.Base
 
         protected void DisabilitaTutto()
         {
-            Range rngData = new Range(_newNomiDefiniti.GetFirstRow() + 3, _newNomiDefiniti.GetFirstCol() + 1, _newNomiDefiniti.GetRowOffset() - 3, _newNomiDefiniti.GetColOffsetRiepilogo() - 1);
+            Range rngData = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset() - 3, _definedNames.GetColOffsetRiepilogo() - 1);
 
             Style.RangeStyle(_ws.Range[rngData.ToString()], pattern: Excel.XlPattern.xlPatternCrissCross);
         }
