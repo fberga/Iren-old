@@ -169,16 +169,22 @@ namespace Iren.ToolsExcel.Base
 
                 entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (Selezione = 10 AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
 
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+                if(entitaProprieta.Count > 0)
+                    dataFine = DataBase.DataAttiva.AddDays(int.Parse(entitaProprieta[0]["Valore"].ToString()));
+
                 foreach (DataRowView info in entitaInformazione)
                 {
                     object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                    bool considerData0H24 = hasData0H24 && info["Data0H24"].Equals("1");
+                    //bool considerData0H24 = hasData0H24 && info["Data0H24"].Equals("1");
                     DateTime giorno = DataBase.DataAttiva;
 
                     //prima cella della riga da salvare (non considera Data0H24)
-                    Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva));
-                    rng.StartColumn -= considerData0H24 ? 1 : 0;
-                    rng.Extend(colOffset: definedNames.GetColOffset() + (hasData0H24 && !considerData0H24 ? -1 : 0));
+                    Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva)).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                    //rng.StartColumn -= considerData0H24 ? 1 : 0;
+                    //rng.Extend(colOffset: Date.GetOreIntervallo(dataFine) + (hasData0H24 && !considerData0H24 ? -1 : 0));
 
                     Handler.StoreEdit(ws.Range[rng.ToString()], 0);
                 }

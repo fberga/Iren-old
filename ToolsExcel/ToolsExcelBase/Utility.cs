@@ -166,14 +166,19 @@ namespace Iren.ToolsExcel.Utility
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings[key].Value = value;
             config.Save(ConfigurationSaveMode.Minimal);
-            ConfigurationManager.RefreshSection("appSettings");
+            ConfigurationManager.RefreshSection("applicationSettings");
         }
         public static void SwitchEnvironment(string ambiente) 
-        {
+        {            
             RefreshAppSettings("DB", ambiente);
-            ConfigurationManager.RefreshSection("appSettings");
+            ConfigurationManager.RefreshSection("applicationSettings");
+
+            int idA = _db.IdApplicazione;
+            int idU = _db.IdUtenteAttivo;
+            string data = _db.DataAttiva.ToString("yyyyMMdd");
 
             _db = new Core.DataBase(ambiente);
+            _db.SetParameters(data, idU, idA);
         }
         public static void SalvaModificheDB() 
         {
@@ -324,13 +329,13 @@ namespace Iren.ToolsExcel.Utility
 
                 _localDB.Tables[Tab.LOG].Clear();
 
-                if (!sameSchema)
-                {
-                    while (_localDB.Tables[Tab.LOG].Columns.Count > 0)
-                        _localDB.Tables[Tab.LOG].Columns.RemoveAt(0);
-                    foreach (DataColumn col in dt.Columns)
-                        _localDB.Tables[Tab.LOG].Columns.Add(col);
-                }
+                //if (!sameSchema)
+                //{
+                //    while (_localDB.Tables[Tab.LOG].Columns.Count > 0)
+                //        _localDB.Tables[Tab.LOG].Columns.RemoveAt(0);
+                //    foreach (DataColumn col in dt.Columns)
+                //        _localDB.Tables[Tab.LOG].Columns.Add(new DataColumn() { ColumnName = col.ColumnName, DataType = col.DataType });
+                //}
 
                 _localDB.Tables[Tab.LOG].Merge(dt);
 
@@ -1713,19 +1718,19 @@ namespace Iren.ToolsExcel.Utility
         {
             Excel.Worksheet log = _wb.Sheets["Log"];
             bool prot = log.ProtectContents;
-            if (prot) log.Unprotect();
+            if (prot) log.Unprotect(Simboli.pwd);
             DataBase db = new DataBase();
             db.InsertLog(logType, message);
-            if (prot) log.Protect();
+            if (prot) log.Protect(Simboli.pwd);
         }
         public static void RefreshLog()
         {
             Excel.Worksheet log = _wb.Sheets["Log"];
             bool prot = log.ProtectContents;
-            if (prot) log.Unprotect();
+            if (prot) log.Unprotect(Simboli.pwd);
             DataBase db = new DataBase();
             db.RefreshLog();
-            if (prot) log.Protect();
+            if (prot) log.Protect(Simboli.pwd);
         }
         public static void AggiornaLabelStatoDB()
         {
@@ -1767,7 +1772,7 @@ namespace Iren.ToolsExcel.Utility
             Utility.DataBase.LocalDB.WriteXml(xmlWriter, XmlWriteMode.WriteSchema);
 
             XElement root = XElement.Parse(strWriter.ToString());
-            XNamespace ns = Simboli.NameSpace;
+            XNamespace ns = WB.Name;//Simboli.NameSpace;
 
             IEnumerable<XElement> log =
                 from tables in root.Elements(ns + Utility.DataBase.Tab.LOG)
@@ -1780,7 +1785,7 @@ namespace Iren.ToolsExcel.Utility
 
             try
             {
-                _wb.CustomXMLParts[Simboli.NameSpace].Delete();
+                _wb.CustomXMLParts[WB.Name].Delete();
             }
             catch
             {
@@ -1856,7 +1861,7 @@ namespace Iren.ToolsExcel.Utility
         }
         public static bool Init(string dbName, object appID, DateTime dataAttiva, Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion) 
         {
-            Core.CryptHelper.CryptSection("connectionStrings", "appSettings");
+            Core.CryptHelper.CryptSection("connectionStrings", "applicationSettings");
 
             DataBase.InitNewDB(dbName);
             DataBase.DB.PropertyChanged += _db_StatoDBChanged;
@@ -1869,14 +1874,14 @@ namespace Iren.ToolsExcel.Utility
             bool localDBNotPresent = false;
             try
             {
-                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[Simboli.NameSpace];
+                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[WB.Name];
                 StringReader sr = new StringReader(xmlPart.XML);
                 DataBase.LocalDB.ReadXml(sr);
             }
             catch
             {
                 localDBNotPresent = true;
-                DataBase.LocalDB.Namespace = Simboli.NameSpace;
+                DataBase.LocalDB.Namespace = WB.Name;
                 //DataBase.LocalDB.Prefix = DataBase.NAME;
             }
 

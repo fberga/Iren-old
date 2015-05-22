@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitCommitment", "UnitCommi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferteMGP", "OfferteMGP\OfferteMGP.csproj", "{3E16AECC-D55A-465F-9038-31810E47FE7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolsExcelFileCopy", "ToolsExcelFileCopy\ToolsExcelFileCopy.csproj", "{A3DE3B34-D46F-4252-8687-19736E653027}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,16 @@ Global
 		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3E16AECC-D55A-465F-9038-31810E47FE7E}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A3DE3B34-D46F-4252-8687-19736E653027}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -22,21 +22,22 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
-    <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
+    <VSTO_TrustAssembliesLocation>
+    </VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>publish\</PublishUrl>
-    <InstallUrl />
+    <PublishUrl>\\pc1009235\Applicazioni\PSO\Sistema Comandi\</PublishUrl>
+    <InstallUrl>\\pc1009235\Applicazioni\PSO\Sistema Comandi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <ApplicationVersion>1.0.0.1</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
-    <UpdateInterval>7</UpdateInterval>
+    <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
     <ProductName>SistemaComandi</ProductName>
     <PublisherName />
     <SupportUrl />
-    <FriendlyName>SistemaComandi</FriendlyName>
-    <OfficeApplicationDescription />
+    <FriendlyName>Sistema Comandi</FriendlyName>
+    <OfficeApplicationDescription>Registra le variazioni dei dati tecnici da comunicare a Terna.</OfficeApplicationDescription>
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -52,7 +53,7 @@
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
+      <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Office.PIARedist.2007">
       <Visible>False</Visible>
@@ -94,7 +95,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>2A77029A78A06BEA7549E868004812D29898CC43</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>148C0F1E14A07CDF58DB3362B56B65999974E0BC</ManifestCertificateThumbprint>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
@@ -192,24 +193,6 @@
     <None Include="SistemaComandi.xlsm" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="..\ToolsExcelBase\resources\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ThisWorkbook.Designer.xml">
-      <DependentUpon>ThisWorkbook.cs</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Log.Designer.xml">
-      <DependentUpon>Log.cs</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Main.Designer.xml">
-      <DependentUpon>Main.cs</DependentUpon>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">
       <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
       <Name>ToolsExcelBase</Name>
@@ -227,7 +210,21 @@
       <Name>ToolsExcelUserConfig</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="ThisWorkbook.Designer.xml">
+      <DependentUpon>ThisWorkbook.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Log.Designer.xml">
+      <DependentUpon>Log.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Main.Designer.xml">
+      <DependentUpon>Main.cs</DependentUpon>
+    </None>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -238,10 +235,10 @@
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+        <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="D2EF3A6A60CCEBB0164C0994B8DE9ABA6D42A146" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="8A37DF4F0C6108B291A28048FE9CE30D304C8E8D" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="3D9822E37E630B1CE55CF967CA73164D419CC7E2" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

@@ -98,7 +98,7 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        public const string NameSpace = "Iren.ToolsExcel";
+        //public const string NameSpace = "Iren.ToolsExcel";
 
         public static int[] rgbSfondo = { 183, 222, 232 };
         public static int[] rgbLinee = { 33, 89, 104 };

@@ -22,12 +22,13 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
-    <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
+    <VSTO_TrustAssembliesLocation>
+    </VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>publish\</PublishUrl>
-    <InstallUrl />
+    <PublishUrl>\\pc1009235\Applicazioni\PSO\Programmazione Impianti\</PublishUrl>
+    <InstallUrl>\\pc1009235\Applicazioni\PSO\Programmazione Impianti\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <ApplicationVersion>1.0.0.1</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
@@ -91,7 +92,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>2A77029A78A06BEA7549E868004812D29898CC43</ManifestCertificateThumbprint>
@@ -144,7 +145,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Check.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
@@ -160,7 +160,6 @@
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Riepilogo.cs" />
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
@@ -232,10 +231,10 @@
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="ProgrammazioneImpianti.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ProgrammazioneImpianti.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\ProgrammazioneImpianti.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+        <Host Name="Excel Document" Path=".\ProgrammazioneImpianti.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="D2EF3A6A60CCEBB0164C0994B8DE9ABA6D42A146" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="315C31F5F2419A43AE9CB6A7E9CDD2F86A399FB6" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="C5096B86CBA8425A4F2721718EE6BFEDB6CEF51C" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

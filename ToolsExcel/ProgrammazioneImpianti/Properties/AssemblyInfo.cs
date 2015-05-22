@@ -8,9 +8,9 @@ using System.Resources;
 // set di attributi. Modificare i valori degli attributi per modificare le informazioni
 // associate a un assembly.
 [assembly: AssemblyTitle("SistemaComandi")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Calcolo del carico elettrico di funzionamento degli impianti di produzione con ripartizione del calore.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Iren Mercato")]
 [assembly: AssemblyProduct("SistemaComandi")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
@@ -22,7 +22,7 @@ using System.Resources;
 [assembly: ComVisible(false)]
 
 // Se il progetto viene esposto a COM, il GUID che segue verrà utilizzato per creare l'ID della libreria dei tipi
-[assembly: Guid("cebf2268-dafc-4721-93a0-55142121ba55")]
+[assembly: Guid("9154106f-0664-48cf-857f-e358442f261e")]
 
 // Le informazioni sulla versione di un assembly sono costituite dai quattro valori seguenti:
 //

@@ -1,18 +1,16 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security;
-using System.Resources;
 
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
-// set di attributi. Modificare i valori degli attributi per modificare le informazioni
-// associate a un assembly.
-[assembly: AssemblyTitle("SistemaComandi")]
-[assembly: AssemblyDescription("Registra le variazioni dei dati tecnici da comunicare a Terna.")]
+// set di attributi. Per modificare le informazioni associate a un assembly
+// occorre quindi modificare i valori di questi attributi.
+[assembly: AssemblyTitle("SistemaComandi2")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Iren Mercato")]
-[assembly: AssemblyProduct("SistemaComandi")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("SistemaComandi2")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -22,18 +20,17 @@ using System.Resources;
 [assembly: ComVisible(false)]
 
 // Se il progetto viene esposto a COM, il GUID che segue verrà utilizzato per creare l'ID della libreria dei tipi
-[assembly: Guid("24d9a6ff-55fc-4110-9474-def3269b8083")]
+[assembly: Guid("e43f7f85-7a33-4eec-8467-b4d5c298c721")]
 
-// Le informazioni sulla versione di un assembly sono costituite dai quattro valori seguenti:
+// Le informazioni sulla versione di un assembly sono costituite dai seguenti quattro valori:
 //
 //      Numero di versione principale
 //      Numero di versione secondario 
 //      Numero build
 //      Revisione
 //
-// È possibile specificare tutti i valori o impostare come predefiniti i valori Numero revisione e Numero build 
-// utilizzando il carattere "*" come mostrato di seguito:
+// È possibile specificare tutti i valori oppure impostare valori predefiniti per i numeri relativi alla revisione e alla build 
+// utilizzando l'asterisco (*) come descritto di seguito:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: NeutralResourcesLanguageAttribute("it-IT")]

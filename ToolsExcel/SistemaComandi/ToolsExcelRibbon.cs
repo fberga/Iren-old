@@ -188,7 +188,11 @@ namespace Iren.ToolsExcel
         private void btnAggiornaStruttura_Click(object sender, RibbonControlEventArgs e)
         {
             //avviso all'utente
-            var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
+            var response = System.Windows.Forms.DialogResult.Yes;
+            
+            if(sender != null && e != null)
+                response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
+            
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
                 //se risposta positiva, mostro la splash screen
