@@ -283,7 +283,7 @@ namespace Iren.ToolsExcel.Base
         public override void LoadStructure()
         {
             //dimensionamento celle in base ai parametri del DB
-            Struttura.AggiornaParametriApplicazione(Utilities.AppSettings("AppID"));
+            Struttura.AggiornaParametriApplicazione(Workbook.AppSettings("AppID"));
             AggiornaParametriApplicazione();
 
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;

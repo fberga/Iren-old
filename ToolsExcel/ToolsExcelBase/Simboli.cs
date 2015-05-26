@@ -1,10 +1,12 @@
-﻿
-using Iren.ToolsExcel.Core;
+﻿using Iren.ToolsExcel.Core;
+
 namespace Iren.ToolsExcel.Base
 {
     public class Simboli
     {
         public const string UNION = ".";
+
+        public static string nomeFile = "";
 
         public static string nomeApplicazione = "";
         private static bool emergenzaForzata = false;

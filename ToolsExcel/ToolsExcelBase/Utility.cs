@@ -194,7 +194,7 @@ namespace Iren.ToolsExcel.Utility
 
                 bool onLine = DB.OpenConnection();
 
-                var path = Utilities.GetUsrConfigElement("pathExportModifiche");
+                var path = Workbook.GetUsrConfigElement("pathExportModifiche");
 
                 string cartellaRemota = ExportPath.PreparePath(path.Value);
                 string cartellaEmergenza = ExportPath.PreparePath(path.Emergenza);
@@ -423,7 +423,7 @@ namespace Iren.ToolsExcel.Utility
         #endregion
     }
 
-    public class Date
+    public class Date 
     {
         #region Proprietà
 
@@ -502,7 +502,7 @@ namespace Iren.ToolsExcel.Utility
         #endregion
     }
 
-    public class Struttura : DataBase
+    public class Struttura : DataBase 
     {
         #region Metodi
 
@@ -581,8 +581,6 @@ namespace Iren.ToolsExcel.Utility
             _localDB.AcceptChanges();
         }
         #region Aggiorna Struttura Dati
-
-        
 
         private static bool CreaTabellaNomiNew()
         {
@@ -1230,16 +1228,168 @@ namespace Iren.ToolsExcel.Utility
         #region Variabili
 
         protected static Microsoft.Office.Tools.Excel.Workbook _wb;
+        private static System.Version _wbVersion;
+        public static bool fromErrorPane = false;
 
         #endregion
 
         #region Proprietà
 
         public static Microsoft.Office.Tools.Excel.Workbook WB { get { return _wb; } }
+        public static Excel.Worksheet Main { get { return _wb.Sheets["Main"]; } }
+        public static Excel.Worksheet Log { get { return _wb.Sheets["Log"]; } }
+        public static Excel.Worksheet ActiveSheet { get { return _wb.ActiveSheet; } }
+        public static Excel.Application Application { get { return _wb.Application; } }
+        public static Excel.Sheets Sheets { get { return _wb.Sheets; } }
+        public static System.Version WorkbookVersion { get { return _wbVersion; } }
+        public static System.Version CoreVersion { get { return DataBase.DB.GetCurrentV(); } }
+        public static System.Version BaseVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
 
         #endregion
 
         #region Metodi
+
+        public static void InitLog()
+        {
+            DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
+            dtLog.TableName = DataBase.Tab.LOG;
+            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.LOG))
+                DataBase.LocalDB.Tables[DataBase.Tab.LOG].Merge(dtLog);
+            else
+                DataBase.LocalDB.Tables.Add(dtLog);
+
+            DataView dv = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
+            dv.Sort = "Data DESC";
+        }
+        private static int InitUser()
+        {
+            try
+            {
+                DataBase.ResetTable(DataBase.Tab.UTENTE);
+
+                DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
+                dtUtente.TableName = DataBase.Tab.UTENTE;
+
+                if (dtUtente.Rows.Count == 0)
+                {
+                    DataRow r = dtUtente.NewRow();
+                    r["IdUtente"] = 0;
+                    r["Nome"] = "NON CONFIGURATO";
+                    dtUtente.Rows.Add(r);
+                }
+                DataBase.LocalDB.Tables.Add(dtUtente);
+
+                return int.Parse("" + dtUtente.Rows[0]["IdUtente"]);
+            }
+            catch (Exception e)
+            {
+                DataBase.DB.Insert(DataBase.SP.INSERT_LOG, new QryParams() { { "@IdTipologia", Core.DataBase.TipologiaLOG.LogErrore }, { "@Messaggio", "InitUser: " + e.Message } });
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                return -1;
+            }
+        }
+        private static bool Init(string dbName, object appID, DateTime dataAttiva)
+        {
+            //CryptHelper.CryptSection("connectionStrings", "appSettings");
+
+            DataBase.InitNewDB(dbName);
+            DataBase.DB.PropertyChanged += _db_StatoDBChanged;
+            DataBase.InitNewLocalDB();
+
+            Simboli.pwd = AppSettings("pwd");
+
+            bool localDBNotPresent = false;
+            try
+            {
+                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[WB.Name];
+                StringReader sr = new StringReader(xmlPart.XML);
+                DataBase.LocalDB.ReadXml(sr);
+            }
+            catch
+            {
+                localDBNotPresent = true;
+                DataBase.LocalDB.Namespace = WB.Name;
+                //DataBase.LocalDB.Prefix = DataBase.NAME;
+            }
+
+            if (DataBase.OpenConnection())
+            {
+                Struttura.AggiornaParametriApplicazione(appID);
+
+                int usr = InitUser();
+                DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
+
+                DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
+
+                Simboli.rgbSfondo = Workbook.GetRGBFromString(applicazione[0]["BackColorApp"].ToString());
+                Simboli.rgbTitolo = Workbook.GetRGBFromString(applicazione[0]["BackColorFrameApp"].ToString());
+                Simboli.rgbLinee = Workbook.GetRGBFromString(applicazione[0]["BorderColorApp"].ToString());
+
+                InitLog();
+                return false;
+            }
+            else //Emergenza
+            {
+                if (localDBNotPresent)
+                {
+                    System.Windows.Forms.MessageBox.Show("Il foglio non è inizializzato e non c'è connessione ad DB... Impossibile procedere! L'applicazione verrà chiusa.", "ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                    _wb.Close();
+                }
+
+                DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
+                DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
+                Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
+                Struct.intervalloGiorni = applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString());
+                Struct.visualizzaRiepilogo = applicazione[0]["VisRiepilogo"] is DBNull ? true : applicazione[0]["VisRiepilogo"].Equals("1");
+
+                //SetAppConfigEnvironment();
+
+                return true;
+            }
+        }
+        public static void StartUp(Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion)
+        {
+            _wb = wb;
+            _wbVersion = wbVersion;
+            Simboli.nomeFile = _wb.Name;
+
+            Application.ScreenUpdating = false;
+            Application.Iteration = true;
+            Application.MaxIterations = 100;
+
+            foreach (Excel.Worksheet ws in Sheets)
+            {
+                ws.Activate();
+                ws.Range["A1"].Select();
+                Application.ActiveWindow.ScrollRow = 1;
+                if (ws.Name != "Main")
+                    Application.ActiveWindow.ScrollColumn = 1;
+            }
+
+            Main.Select();
+            Application.WindowState = Excel.XlWindowState.xlMaximized;
+
+            DateTime dataAttiva = DateTime.ParseExact(AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
+            bool emergenza = Init(AppSettings("DB"), AppSettings("AppID"), dataAttiva);
+
+            Sheet.Proteggi(false);
+
+            Riepilogo r = new Riepilogo(Main);
+
+            if (emergenza)
+                r.RiepilogoInEmergenza();
+
+            r.InitLabels();
+
+            Style.StdStyles();
+            InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+
+            Sheet.Proteggi(true);
+            Application.ScreenUpdating = true;
+        }
 
         public static void AggiornaFormule(Excel.Worksheet ws)
         {
@@ -1796,131 +1946,7 @@ namespace Iren.ToolsExcel.Utility
             //part.LoadXML(locDBXml);
         }
 
-        #endregion
-    }
-
-    public class Utilities : Workbook 
-    {
-        #region Variabili
-
-        private static System.Version _wbVersion;
-        public static bool fromErrorPane = false;
-
-        #endregion
-
-        #region Proprietà
-
-        public static System.Version WorkbookVersion { get { return _wbVersion; } }
-        public static System.Version CoreVersion { get { return DataBase.DB.GetCurrentV(); } }
-        public static System.Version BaseVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
-
-        #endregion
-
-        #region Metodi
-
-        public static void InitLog() 
-        {
-            DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
-            dtLog.TableName = DataBase.Tab.LOG;
-            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.LOG))
-                DataBase.LocalDB.Tables[DataBase.Tab.LOG].Merge(dtLog);
-            else
-                DataBase.LocalDB.Tables.Add(dtLog);
-
-            DataView dv = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
-            dv.Sort = "Data DESC";
-        }
-        private static int InitUser() 
-        {
-            try
-            {
-                DataBase.ResetTable(DataBase.Tab.UTENTE);
-
-                DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
-                dtUtente.TableName = DataBase.Tab.UTENTE;
-
-                if (dtUtente.Rows.Count == 0)
-                {
-                    DataRow r = dtUtente.NewRow();
-                    r["IdUtente"] = 0;
-                    r["Nome"] = "NON CONFIGURATO";
-                    dtUtente.Rows.Add(r);
-                }
-                DataBase.LocalDB.Tables.Add(dtUtente);
-
-                return int.Parse("" + dtUtente.Rows[0]["IdUtente"]);
-            }
-            catch (Exception e)
-            {
-                DataBase.DB.Insert(DataBase.SP.INSERT_LOG, new QryParams() { { "@IdTipologia", Core.DataBase.TipologiaLOG.LogErrore }, { "@Messaggio", "InitUser: " + e.Message } });
-
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-
-                return -1;
-            }
-        }
-        public static bool Init(string dbName, object appID, DateTime dataAttiva, Microsoft.Office.Tools.Excel.Workbook wb, System.Version wbVersion) 
-        {
-            Core.CryptHelper.CryptSection("connectionStrings", "applicationSettings");
-
-            DataBase.InitNewDB(dbName);
-            DataBase.DB.PropertyChanged += _db_StatoDBChanged;
-            DataBase.InitNewLocalDB();
-            _wb = wb;
-            _wbVersion = wbVersion;
-
-            Simboli.pwd = AppSettings("pwd");
-
-            bool localDBNotPresent = false;
-            try
-            {
-                Office.CustomXMLPart xmlPart = _wb.CustomXMLParts[WB.Name];
-                StringReader sr = new StringReader(xmlPart.XML);
-                DataBase.LocalDB.ReadXml(sr);
-            }
-            catch
-            {
-                localDBNotPresent = true;
-                DataBase.LocalDB.Namespace = WB.Name;
-                //DataBase.LocalDB.Prefix = DataBase.NAME;
-            }
-
-            if (DataBase.OpenConnection())
-            {
-                Struttura.AggiornaParametriApplicazione(appID);
-
-                int usr = InitUser();
-                DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
-
-                DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
-
-                Simboli.rgbSfondo = Utilities.GetRGBFromString(applicazione[0]["BackColorApp"].ToString());
-                Simboli.rgbTitolo = Utilities.GetRGBFromString(applicazione[0]["BackColorFrameApp"].ToString());
-                Simboli.rgbLinee = Utilities.GetRGBFromString(applicazione[0]["BorderColorApp"].ToString());
-
-                InitLog();
-
-                return false;
-            }
-            else //Emergenza
-            {
-                if (localDBNotPresent)
-                {
-                    System.Windows.Forms.MessageBox.Show("Il foglio non è inizializzato e non c'è connessione ad DB... Impossibile procedere! L'applicazione verrà chiusa.", "ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-
-                    _wb.Close();
-                }
-
-                DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
-                DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
-                Simboli.nomeApplicazione = applicazione[0]["DesApplicazione"].ToString();
-                Struct.intervalloGiorni = applicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : int.Parse(applicazione[0]["IntervalloGiorniEntita"].ToString());
-                Struct.visualizzaRiepilogo = applicazione[0]["VisRiepilogo"] is DBNull ? true : applicazione[0]["VisRiepilogo"].Equals("1");
-
-                return true;
-            }
-        }
-        public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) 
+        public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             AggiornaLabelStatoDB();
         }
@@ -1950,7 +1976,31 @@ namespace Iren.ToolsExcel.Utility
 
             return new int[] { int.Parse(rgbComp[0]), int.Parse(rgbComp[1]), int.Parse(rgbComp[2]) };
         }
+        
+        public static void Save()
+        {
+            _wb.Save();
+        }
+        public static void Close()
+        {
+            Application.ScreenUpdating = false;
+            if (WB.Application.DisplayDocumentActionTaskPane)
+                WB.Application.DisplayDocumentActionTaskPane = false;
+
+            Main.Select();
+            if (Simboli.ModificaDati)
+            {
+                Sheet.Proteggi(false);
+                Simboli.ModificaDati = false;
+                Sheet.AbilitaModifica(false);
+                Sheet.SalvaModifiche();
+                Sheet.Proteggi(true);
+            }
+            DataBase.SalvaModificheDB();
+            Save();
+            Application.ScreenUpdating = true;
+        }
 
         #endregion
-    }
+    }   
 }

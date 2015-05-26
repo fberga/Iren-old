@@ -26,7 +26,7 @@ namespace Iren.ToolsExcel
             {
                 case "DATO_TOPICO":
 
-                    var path = Utility.Utilities.GetUsrConfigElement("pathExportDatiTopici");
+                    var path = Utility.Workbook.GetUsrConfigElement("pathExportDatiTopici");
                     string pathStr = Utility.ExportPath.PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))

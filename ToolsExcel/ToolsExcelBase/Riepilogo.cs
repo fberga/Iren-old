@@ -145,7 +145,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utilities.WorkbookVersion.ToString();
+            _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utility.Workbook.WorkbookVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
 
             DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
@@ -165,7 +165,7 @@ namespace Iren.ToolsExcel.Base
             Simboli.ModificaDati = false;
 
             //aggiorna la scritta e il colore del label che mostra l'ambiente
-            Simboli.Ambiente = Utilities.AppSettings("DB");
+            Simboli.Ambiente = Utility.Workbook.AppSettings("DB");
 
             if (Struct.intervalloGiorni > 0)
             {

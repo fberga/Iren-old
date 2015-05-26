@@ -33,7 +33,6 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.Startup += new System.EventHandler(this.Log_Startup);
-            this.Shutdown += new System.EventHandler(this.Log_Shutdown);
 
         }
 

@@ -33,7 +33,6 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.Startup += new System.EventHandler(this.Log_Startup);
-            this.Shutdown += new System.EventHandler(this.Log_Shutdown);
 
         }
 
@@ -71,10 +70,6 @@ namespace Iren.ToolsExcel
                 DataBase.DB.CloseConnection();
             }
             Protect(Simboli.pwd);
-        }
-
-        private void Log_Shutdown(object sender, EventArgs e)
-        {
         }
 
         #endregion

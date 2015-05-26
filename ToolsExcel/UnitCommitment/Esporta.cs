@@ -96,7 +96,7 @@ namespace Iren.ToolsExcel
                         //}
                     }
 
-                    var path = Utility.Utilities.GetUsrConfigElement("pathCaricatoreImpianti");
+                    var path = Utility.Workbook.GetUsrConfigElement("pathCaricatoreImpianti");
 
                     string pathStr = Utility.ExportPath.PreparePath(path.Value);
 

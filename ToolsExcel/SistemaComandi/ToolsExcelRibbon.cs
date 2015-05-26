@@ -11,6 +11,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Collections.Generic;
 using System.Collections;
+using System.IO;
 
 // ***************************************************** SISTEMA COMANDI ***************************************************** //
 
@@ -74,18 +75,15 @@ namespace Iren.ToolsExcel
             }
             Globals.Main.Activate();
 #endif
-
             //se sono al primo avvio dopo un aggiornamento disabilito tutto a parte il tasto per aggiornare la struttura
             if (Workbook.WB.Sheets.Count <= 2)
                 DisabilitaTasti();
 
-            this.RibbonUI.ActivateTab(FrontOffice.ControlId.CustomId);
-
-            DateTime cfgDate = DateTime.ParseExact(Utilities.AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
+            DateTime cfgDate = DateTime.ParseExact(Workbook.AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
             btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
 
             //seleziono l'ambiente attivo
-            ((RibbonToggleButton)Controls["btn" + Utilities.AppSettings("DB")]).Checked = true;
+            ((RibbonToggleButton)Controls["btn" + Workbook.AppSettings("DB")]).Checked = true;
 
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
@@ -127,7 +125,7 @@ namespace Iren.ToolsExcel
         {
             try
             {
-                if (!Utilities.fromErrorPane)
+                if (!Workbook.fromErrorPane)
                 {
                     DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.CheckOnly);
                     Range rng = new Range(Target.Row, Target.Column);
@@ -585,6 +583,15 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
         {
+            TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
+            var path = Utility.Workbook.GetUsrConfigElement("backup");
+            string pathStr = Utility.ExportPath.PreparePath(path.Value);
+            if (!Directory.Exists(pathStr))
+                Directory.CreateDirectory(pathStr);
+
+            string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm"; 
+
+            Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
             Globals.ThisWorkbook.ThisApplication.Quit();
         }
         /// <summary>
@@ -672,7 +679,7 @@ namespace Iren.ToolsExcel
         /// </summary>
         private void CheckTastoApplicativo()
         {
-            switch (Utilities.AppSettings("AppID"))
+            switch (Workbook.AppSettings("AppID"))
             {
                 case "1":
                     btnOfferteMGP.Checked = true;
@@ -786,9 +793,11 @@ namespace Iren.ToolsExcel
 
             SplashScreen.UpdateStatus("Salvo struttura in locale");
             Workbook.DumpDataSet();
-            
-            Workbook.WB.Sheets["Main"].Select();
-            Workbook.WB.ActiveSheet.Range["A1"].Select();
+
+            Globals.Main.Select();
+            //Workbook.WB.Sheets["Main"].Select();
+            Globals.Main.Range["A1"].Select();
+            //Workbook.WB.ActiveSheet.Range["A1"].Select();
             Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
             if (_allDisabled)

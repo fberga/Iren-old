@@ -33,7 +33,7 @@ namespace Iren.ToolsExcel
                     foreach (DataRowView assetto in entitaAssetto)
                         assettoFasce.Add((string)assetto["IdAssetto"], (int)assetto["NumeroFasce"]);
 
-                    var path = Utility.Utilities.GetUsrConfigElement("pathExportSisComTerna");
+                    var path = Utility.Workbook.GetUsrConfigElement("pathExportSisComTerna");
                     string pathStr = Utility.ExportPath.PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
@@ -245,7 +245,7 @@ namespace Iren.ToolsExcel
                     wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel8);
                     wb.Close();
 
-                    var config = Utility.Utilities.GetUsrConfigElement("destMailTest");
+                    var config = Utility.Workbook.GetUsrConfigElement("destMailTest");
                     string mailTo = config.Value;
                     string mailCC = "";
 
@@ -260,9 +260,9 @@ namespace Iren.ToolsExcel
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_CODICE_MAIL'";
                     string codUP = entitaProprieta[0]["Valore"].ToString();
 
-                    config = Utility.Utilities.GetUsrConfigElement("oggettoMail");
+                    config = Utility.Workbook.GetUsrConfigElement("oggettoMail");
                     string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", Utility.DataBase.DataAttiva.ToString("dd-MM-yyyy"));
-                    config = Utility.Utilities.GetUsrConfigElement("messaggioMail");
+                    config = Utility.Workbook.GetUsrConfigElement("messaggioMail");
                     string messaggio = config.Value;
                     messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 

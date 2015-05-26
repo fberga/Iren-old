@@ -152,7 +152,7 @@ namespace Iren.ToolsExcel.Base
                         }
                     }
 
-                    var path = Utility.Utilities.GetUsrConfigElement("pathExportMP_MGP");
+                    var path = Utility.Workbook.GetUsrConfigElement("pathExportMP_MGP");
 
                     string pathStr = Utility.ExportPath.PreparePath(path.Value);
 
