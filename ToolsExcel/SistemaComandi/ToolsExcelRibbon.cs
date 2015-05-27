@@ -114,7 +114,33 @@ namespace Iren.ToolsExcel
 
             //aggiungo un altro handler per cell click
             Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
+            Globals.ThisWorkbook.SheetSelectionChange += SelectionClick;
         }
+
+        private void SelectionClick(object Sh, Excel.Range Target)
+        {
+            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SelectionOnly);
+            Range rng = new Range(Target.Row, Target.Column);
+            SelectionObj sel;
+            int val;
+            if (definedNames.HasSelections() && definedNames.TryGetSelectionByPeer(rng, out sel, out val))
+            {
+                Target.Worksheet.Unprotect(Simboli.pwd);
+                if (sel != null)
+                {
+                    Workbook.WB.SheetChange -= Handler.StoreEdit;
+                    //Workbook.WB.Application.EnableEvents = false;
+                    sel.ClearSelections(Target.Worksheet);
+                    Target.Worksheet.Range[sel.GetByValue(val)].Value = "x";
+                    //Workbook.WB.Application.EnableEvents = true;
+                    Workbook.WB.SheetChange += Handler.StoreEdit;
+                    Target.Worksheet.Range[sel.RifAddress].Value = val;
+                    DataBase.SalvaModificheDB();
+                }
+                Target.Worksheet.Protect(Simboli.pwd);
+            }
+        }
+
         /// <summary>
         /// Handler del SheetSelectionChange. Funzione che controlla se la cella selezionata è un Check. Si trova qui e non dentro la Classe Base.Handler perché deve interagire con l'errorPane 
         /// (non è possibile farlo dal namespace Base in quanto si creerebbe uno using circolare)
@@ -401,6 +427,8 @@ namespace Iren.ToolsExcel
             
             _errorPane.RefreshCheck(_checkFunctions);
 
+
+
             Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             Sheet.Proteggi(true);
             Workbook.WB.Application.ScreenUpdating = true;
@@ -551,30 +579,7 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.WB.SheetChange -= Handler.StoreEdit;
-            Workbook.WB.Application.ScreenUpdating = false;
-            Sheet.Proteggi(false);
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
-
             Simboli.EmergenzaForzata = btnForzaEmergenza.Checked;
-
-            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-            if (btnForzaEmergenza.Checked)
-            {
-                main.RiepilogoInEmergenza();
-            }
-            else
-            {
-                if (DataBase.OpenConnection())
-                {
-                    main.UpdateRiepilogo();
-                }
-            }
-
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-            Sheet.Proteggi(true);
-            Workbook.WB.Application.ScreenUpdating = true;
-            Workbook.WB.SheetChange += Handler.StoreEdit;
         }
         /// <summary>
         /// Handler del click del tasto di chiusura. Chiude l'applicativo.

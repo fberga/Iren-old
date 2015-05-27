@@ -102,6 +102,7 @@ namespace Iren.ToolsExcel.Utility
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
                 SALVADB = "SaveDB",
+                SELECTION = "Selection",
                 TIPOLOGIA_CHECK = "TipologiaCheck",
                 TIPOLOGIA_RAMPA = "TipologiaRampa",
                 UTENTE = "Utente";
@@ -555,6 +556,7 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaSalvaDB();
             CreaTabellaAnnotaModifica();
             CreaTabellaCheck();
+            CreaTabellaSelection();
             CaricaAzioni();
             CaricaCategorie();
             CaricaApplicazioneRibbon();
@@ -724,6 +726,21 @@ namespace Iren.ToolsExcel.Utility
                 string name = Tab.CHECK;
                 ResetTable(name);
                 DataTable dt = DefinedNames.GetDefaultCheckTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CreaTabellaSelection()
+        {
+            try
+            {
+                string name = Tab.SELECTION;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultSelectionTable(name);
                 _localDB.Tables.Add(dt);
                 return true;
             }
@@ -1408,7 +1425,6 @@ namespace Iren.ToolsExcel.Utility
                     {
                         ElaborazioneInformazione(siglaEntita, siglaAzione, nomiDefiniti, giorno);
                         DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
-                        return true;
                     }
                     else
                     {
@@ -1422,9 +1438,12 @@ namespace Iren.ToolsExcel.Utility
                         {
                             ScriviInformazione(siglaEntita, azioneInformazione, nomiDefiniti);
                             DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
-                            return true;
                         }
                     }
+
+                    Sheet s = new Sheet(_wb.Sheets[nomiDefiniti.Sheet]);
+                    s.AggiornaGrafici();
+                    return true;
                 }
                 else
                 {
@@ -1432,7 +1451,9 @@ namespace Iren.ToolsExcel.Utility
                         ElaborazioneInformazione(siglaEntita, siglaAzione, nomiDefiniti, giorno);
                     else if (azionePadre.Equals("CARICA"))
                         carica.RunCarica(siglaEntita, siglaAzione, giorno);
-                    
+
+                    Sheet s = new Sheet(_wb.Sheets[nomiDefiniti.Sheet]);
+                    s.AggiornaGrafici();
                     return true;
                 }
             }
@@ -1983,6 +2004,7 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void Close()
         {
+            Simboli.EmergenzaForzata = false;
             Application.ScreenUpdating = false;
             if (WB.Application.DisplayDocumentActionTaskPane)
                 WB.Application.DisplayDocumentActionTaskPane = false;

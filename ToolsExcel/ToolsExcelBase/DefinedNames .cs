@@ -29,10 +29,11 @@ namespace Iren.ToolsExcel.Base
         protected List<int> _toNote = new List<int>();
 
         protected List<CheckObj> _check = new List<CheckObj>();
+        protected List<SelectionObj> _selections = new List<SelectionObj>();
 
         public enum InitType
         {
-            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB, CheckNaming, CheckOnly
+            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB, CheckNaming, CheckOnly, SelectionOnly
         }
 
         #endregion
@@ -153,6 +154,28 @@ namespace Iren.ToolsExcel.Base
                  where r["Sheet"].Equals(_sheet)
                  select new CheckObj(r["SiglaEntita"].ToString(), (string)r["Range"], (int)r["Type"])).ToList();
         }
+        private void InitSelection()
+        {
+            DataTable selection = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SELECTION];
+
+            var groupings =
+                (from r in selection.AsEnumerable()
+                 where r["Sheet"].Equals(_sheet)
+                 group r by r["Rif"] into g
+                 select g);
+
+            foreach (IGrouping<object, DataRow> g in groupings)
+            {
+                string rif = g.Key.ToString();
+                Dictionary<string, int> peers = new Dictionary<string, int>();
+                foreach (DataRow r in g)
+                {
+                    peers.Add((string)r["Range"], (int)r["Value"]);
+                }
+                _selections.Add(new SelectionObj(rif, peers));
+            }
+        }
+        
 
         public DefinedNames(string sheet, InitType type = InitType.NamingOnly)
         {
@@ -166,10 +189,11 @@ namespace Iren.ToolsExcel.Base
                     InitEditable();
                     InitSaveDB();
                     InitCheck();
+                    InitSelection();
                     break;
                 case InitType.NamingOnly:
                     InitNaming();
-                    //InitEditabili();
+                    InitSelection();
                     break;
                 case InitType.GOTOsOnly:
                     InitGOTOs();
@@ -192,6 +216,9 @@ namespace Iren.ToolsExcel.Base
                     break;
                 case InitType.CheckOnly:
                     InitCheck();
+                    break;
+                case InitType.SelectionOnly:
+                    InitSelection();
                     break;
             }
         }
@@ -250,6 +277,10 @@ namespace Iren.ToolsExcel.Base
                 _editable.Add(row, rng.ToString());
             else
                 _editable[row] += "," + rng.ToString();
+        }
+        public void SetSelection(string rif, Dictionary<string, int> peers)
+        {
+            _selections.Add(new SelectionObj(rif, peers));
         }
         public void SetSaveDB(int row)
         {
@@ -413,6 +444,41 @@ namespace Iren.ToolsExcel.Base
 
             return false;
         }
+        public bool IsSelectionPeer(Range rngPeer)
+        {
+            foreach (SelectionObj s in _selections)
+                if (s.Peers.ContainsKey(rngPeer.ToString()))
+                    return true;
+
+            return false;
+            
+        }
+        public bool TryGetSelectionByPeer(Range rngPeer, out SelectionObj sel, out int value)
+        {
+            foreach (SelectionObj s in _selections)
+            {
+                if(s.Peers.ContainsKey(rngPeer.ToString()))
+                {
+                    sel = s;
+                    value = s.Peers[rngPeer.ToString()];
+                    return true;
+                }
+            }
+            
+            sel = null;
+            value = -1;
+            return false;
+        }
+        public SelectionObj GetSelectionByRif(Range rngRif)
+        {
+            foreach (SelectionObj s in _selections)
+            {
+                Range rng = new Range(s.RifAddress);
+                if (rng.Contains(rngRif))
+                    return s;
+            }
+            return null;
+        }
         public bool IsDefined(int row)
         {
             return _defNamesIndexByRow.Contains(row);
@@ -505,6 +571,10 @@ namespace Iren.ToolsExcel.Base
         {
             return _check.Count > 0;
         }
+        public bool HasSelections()
+        {
+            return _selections.Count > 0;
+        }
 
         public void DumpToDataSet()
         {
@@ -516,6 +586,7 @@ namespace Iren.ToolsExcel.Base
             DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
             DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
             DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CHECK];
+            DataTable selection = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SELECTION];
 
             ///////// nomi
             foreach (var ele in _defNamesIndexByName)
@@ -595,6 +666,20 @@ namespace Iren.ToolsExcel.Base
                 r["SiglaEntita"] = ele.SiglaEntita;
                 r["Type"] = ele.Type;
                 check.Rows.Add(r);
+            }
+            
+
+            foreach (var ele in _selections)
+            {
+                foreach (var kv in ele.Peers)
+                {
+                    DataRow r = selection.NewRow();
+                    r["Sheet"] = _sheet;
+                    r["Rif"] = ele.RifAddress;
+                    r["Range"] = kv.Key;
+                    r["Value"] = kv.Value;
+                    selection.Rows.Add(r);
+                }
             }
         }
 
@@ -774,6 +859,23 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        public static DataTable GetDefaultSelectionTable(string name)
+        {
+            DataTable dt = new DataTable()
+            {
+                Columns =
+                    {
+                        {"Sheet", typeof(string)},
+                        {"Rif", typeof(string)},
+                        {"Range", typeof(string)},
+                        {"Value", typeof(int)}
+                    }
+            };
+
+            dt.PrimaryKey = new DataColumn[] { dt.Columns["Sheet"], dt.Columns["Rif"], dt.Columns["Range"] };
+            dt.TableName = name;
+            return dt;
+        }
 
         public static string GetSheetName(object siglaEntita)
         {
@@ -788,5 +890,31 @@ namespace Iren.ToolsExcel.Base
         }
 
         #endregion
+    }
+
+    public class SelectionObj
+    {
+        string _rif = "";
+        Dictionary<string, int> _peers = new Dictionary<string, int>();
+
+        public string RifAddress { get { return _rif; } }
+        public Dictionary<string, int> Peers { get { return _peers; } }
+
+        public SelectionObj(string rifAddress, Dictionary<string, int> peers)
+        {
+            _rif = rifAddress;
+            _peers = peers;
+        }
+
+        public void ClearSelections(Microsoft.Office.Interop.Excel.Worksheet ws)
+        {
+            foreach (string cell in Peers.Keys)
+                ws.Range[cell].Value = "";            
+        }
+
+        public string GetByValue(int value)
+        {
+            return Peers.First(kv => kv.Value == value).Key;
+        }
     }
 }

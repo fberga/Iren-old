@@ -390,7 +390,7 @@ namespace Iren.ToolsExcel.Forms
                                 if (n1.Checked)
                                     count += (n1.Name == "UP_BUS" ? 2 : 1);
                             });
-                            if (n.Parent.Name == "CARICA")
+                            if (Regex.Match(n.Parent.Name, @"\w[^\d]+").Value == "CARICA")
                                 calcola = true;
                         }
                     });
@@ -427,7 +427,7 @@ namespace Iren.ToolsExcel.Forms
                                     {
                                         SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
-                                        switch (nodoAzione.Parent.Name)
+                                        switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                                         {
                                             case "CARICA":
                                                 presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
@@ -469,7 +469,7 @@ namespace Iren.ToolsExcel.Forms
                                     }
                                 }
                             });
-                            switch (nodoAzione.Parent.Name)
+                            switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                             {
                                 case "CARICA":
                                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Name);

@@ -91,7 +91,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     if (definedNames.SaveDB(row.StartRow))
                     {
-                        bool annota =  annotaModifica == -1 ? definedNames.ToNote(row.StartRow) : annotaModifica == 1;
+                        bool annota = annotaModifica == -1 ? definedNames.ToNote(row.StartRow) : annotaModifica == 1;
                         foreach (Range column in row.Columns)
                         {
                             string[] parts = definedNames.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);

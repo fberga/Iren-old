@@ -189,7 +189,7 @@ namespace Iren.ToolsExcel.Base
                     Handler.StoreEdit(ws.Range[rng.ToString()], 0);
                 }
             }
-        }
+        }        
 
         #endregion
     }
@@ -544,6 +544,10 @@ namespace Iren.ToolsExcel.Base
             int startCol = _definedNames.GetFirstCol();
             int colOffsett = _definedNames.GetColOffset();
             int remove25hour = (Struct.tipoVisualizzazione == "O" ? 0 : 25 - Date.GetOreGiorno(_dataInizio));
+            bool isSelection = false;
+            string rifSel = "";
+            Dictionary<string, int> peers = new Dictionary<string, int>();
+
             foreach (DataRowView info in informazioni)
             {
                 object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
@@ -551,13 +555,32 @@ namespace Iren.ToolsExcel.Base
 
                 int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
 
+                if (isSelection && info["Selezione"].Equals(0))
+                {
+                    //salvo la selezione
+                    _definedNames.SetSelection(rifSel, peers);
+                    //chiudo selezione
+                    isSelection = false;
+                    rifSel = "";
+                    peers = new Dictionary<string, int>();
+                }
+
+                if (isSelection)
+                {
+                    Range rng = new Range(_rigaAttiva, startCol - 1);
+                    peers.Add(rng.ToString(), int.Parse(info["Selezione"].ToString()));
+                    
+                }
+
                 if (info["Selezione"].Equals(10))
                 {
-                    //seleziono la cella sopra gli optionbuttons
-                    Range rng = new Range(_rigaAttiva, startCol - _visParametro + 2);
-                    _definedNames.SetEditable(_rigaAttiva, rng);
+                    Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, _definedNames.GetColOffset(_dataFine) - data0H24 - remove25hour);
+                    isSelection = true;
+                    rifSel = rng.ToString();
+                    //_definedNames.SetEditable(_rigaAttiva, rng);
                 }
-                else if (info["Editabile"].Equals("1"))
+                
+                if (info["Editabile"].Equals("1"))
                 {
                     
                     if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
@@ -568,7 +591,7 @@ namespace Iren.ToolsExcel.Base
                     }
                     else
                     {
-                        Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, colOffsett - data0H24 - remove25hour);
+                        Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, _definedNames.GetColOffset(_dataFine) - data0H24 - remove25hour);
                         _definedNames.SetEditable(_rigaAttiva, rng);
                     }
                 }
@@ -716,37 +739,37 @@ namespace Iren.ToolsExcel.Base
 
             //inserisco groupBox per l'entita
             int i = 1;
-            if (_struttura.visSelezione)
-            {
-                //cerco inizio e fine della selezione
-                List<int> starts = new List<int>();
-                List<int> ends = new List<int>();
-                foreach (DataRowView info in informazioni)
-                {
-                    if (info["Selezione"].Equals(10))
-                        starts.Add(i + 1);
-                    i++;
-                }
+            //if (_struttura.visSelezione)
+            //{
+            //    //cerco inizio e fine della selezione
+            //    List<int> starts = new List<int>();
+            //    List<int> ends = new List<int>();
+            //    foreach (DataRowView info in informazioni)
+            //    {
+            //        if (info["Selezione"].Equals(10))
+            //            starts.Add(i + 1);
+            //        i++;
+            //    }
 
-                foreach (int pos in starts)
-                {
-                    int j = pos;
-                    while (j < informazioni.Count && (int)informazioni[j++]["Selezione"] > 0) ;
-                    ends.Add(j - 1);
-                }
+            //    foreach (int pos in starts)
+            //    {
+            //        int j = pos;
+            //        while (j < informazioni.Count && (int)informazioni[j++]["Selezione"] > 0) ;
+            //        ends.Add(j - 1);
+            //    }
 
-                //aggiungo i groupbox
-                for (i = 0; i < starts.Count; i++)
-                {
-                    Range rng = new Range(row + starts[i] - 1, col - _visParametro + 2, ends[i] - starts[i] + 1);
-                    Excel.Range xlrng = _ws.Range[rng.ToString()];
-                    Excel.GroupBox grpBox = _ws.GroupBoxes().Add(xlrng.Left - xlrng.Width / 2, xlrng.Top - 1, xlrng.Width * 2, xlrng.Height + 2);
-                    grpBox.Caption = "";
-                    grpBox.Visible = false;
-                }
-            }
+            //    //aggiungo i groupbox
+            //    for (i = 0; i < starts.Count; i++)
+            //    {
+            //        Range rng = new Range(row + starts[i] - 1, col - _visParametro + 2, ends[i] - starts[i] + 1);
+            //        Excel.Range xlrng = _ws.Range[rng.ToString()];
+            //        Excel.GroupBox grpBox = _ws.GroupBoxes().Add(xlrng.Left - xlrng.Width / 2, xlrng.Top - 1, xlrng.Width * 2, xlrng.Height + 2);
+            //        grpBox.Caption = "";
+            //        grpBox.Visible = false;
+            //    }
+            //}
 
-            i = 1;
+            //i = 1;
             int selLinkRangeRow = 1;
             foreach (DataRowView info in informazioni)
             {
@@ -754,19 +777,19 @@ namespace Iren.ToolsExcel.Base
 
                 int infoBackColor = info["Editabile"].ToString() == "1" ? 15 : 48;
 
-                if (info["Selezione"].Equals(10))
-                {
-                    selLinkRangeRow = i;
-                    //rngRow.Rows[i].Cells[3].Locked = false;
-                }
+                //if (info["Selezione"].Equals(10))
+                //{
+                //    selLinkRangeRow = i;
+                //    //rngRow.Rows[i].Cells[3].Locked = false;
+                //}
 
                 if ((int)info["Selezione"] > 0 && !info["Selezione"].Equals(10))
                 {
-                    Excel.Range rng = rngRow.Rows[i].Cells[3];
-                    Excel.OptionButton optBtn = _ws.OptionButtons().Add(rng.Left, rng.Top, rng.Width, rng.Height);
-                    optBtn.Caption = "";
-                    optBtn.Name = DefinedNames.GetName(info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"], "SEL" + info["Selezione"]);
-                    optBtn.LinkedCell = rngRow.Rows[selLinkRangeRow].Cells[3].Address;
+                    //Excel.Range rng = rngRow.Rows[i].Cells[3];
+                    //Excel.OptionButton optBtn = _ws.OptionButtons().Add(rng.Left, rng.Top, rng.Width, rng.Height);
+                    //optBtn.Caption = "";
+                    //optBtn.Name = DefinedNames.GetName(info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"], "SEL" + info["Selezione"]);
+                    //optBtn.LinkedCell = rngRow.Rows[selLinkRangeRow].Cells[3].Address;
                 }
                 else if(_struttura.visSelezione)
                     rngRow.Rows[i].Cells[3].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
@@ -854,10 +877,10 @@ namespace Iren.ToolsExcel.Base
                     _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - deltaPos].ToString()].Formula = formula;//Range.GetRange(rng.StartRow, rng.StartColumn + deltaNeg, 1, rng.ColOffset - deltaNeg - deltaPos)].Formula = formula;
                     _ws.Application.ScreenUpdating = false;
                 }
-                else if(info["Selezione"].Equals(10))
-                {
-                    rngData.Formula = "=" + _ws.Cells[rng.StartRow, _definedNames.GetFirstCol() - _visParametro + 2].Address;
-                }
+                //else if(info["Selezione"].Equals(10))
+                //{
+                //    rngData.Formula = "=" + _ws.Cells[rng.StartRow, _definedNames.GetFirstCol() - _visParametro + 2].Address;
+                //}
 
                 if (info["ValoreData0H24"] != DBNull.Value)
                     rngData.Cells[1].Value = info["ValoreData0H24"];
@@ -1165,19 +1188,16 @@ namespace Iren.ToolsExcel.Base
                 else
                 {
                     Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    List<object> o = new List<object>(dato.Row.ItemArray);
+                    o.RemoveRange(o.Count - 3, 3);
+                    _ws.Range[rng.ToString()].Value = o.ToArray();
 
                     //TODO sentire Domenico se va bene così
-                    if (Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
+                    if (giorno == DataBase.DataAttiva && Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
                     {
-                        string sel = dato["H1"].ToString().Substring(0, dato["H1"].ToString().IndexOf('.'));
-                        _ws.OptionButtons(DefinedNames.GetName(dato["SiglaEntita"], "SEL" + sel)).Value = true;
-                    }
-                    else
-                    {
-                        List<object> o = new List<object>(dato.Row.ItemArray);
-                        //elimino i campi inutili
-                        o.RemoveRange(o.Count - 3, 3);
-                        _ws.Range[rng.ToString()].Value = o.ToArray();
+                        SelectionObj s = _definedNames.GetSelectionByRif(rng);
+                        s.ClearSelections(_ws);
+                        _ws.Range[s.GetByValue(int.Parse(o[0].ToString().Split('.')[0]))].Value = "x";
                     }
                 }
             }
