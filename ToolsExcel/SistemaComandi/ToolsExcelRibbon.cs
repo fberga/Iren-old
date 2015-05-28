@@ -121,7 +121,7 @@ namespace Iren.ToolsExcel
         {
             DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SelectionOnly);
             Range rng = new Range(Target.Row, Target.Column);
-            SelectionObj sel;
+            Selection sel;
             int val;
             if (definedNames.HasSelections() && definedNames.TryGetSelectionByPeer(rng, out sel, out val))
             {
@@ -129,11 +129,12 @@ namespace Iren.ToolsExcel
                 if (sel != null)
                 {
                     Workbook.WB.SheetChange -= Handler.StoreEdit;
-                    //Workbook.WB.Application.EnableEvents = false;
+                    
                     sel.ClearSelections(Target.Worksheet);
-                    Target.Worksheet.Range[sel.GetByValue(val)].Value = "x";
-                    //Workbook.WB.Application.EnableEvents = true;
+                    sel.Select(Target.Worksheet, rng.ToString());
+
                     Workbook.WB.SheetChange += Handler.StoreEdit;
+                    //annoto modifiche e le salvo sul DB
                     Target.Worksheet.Range[sel.RifAddress].Value = val;
                     DataBase.SalvaModificheDB();
                 }

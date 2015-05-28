@@ -224,7 +224,7 @@ namespace Iren.ToolsExcel.Utility
                         }
                     }
 
-                    fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                    fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                     dt.WriteXml(fileName);
 
                     executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
@@ -238,7 +238,7 @@ namespace Iren.ToolsExcel.Utility
                 }
                 else
                 {
-                    fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml");
+                    fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                     try
                     {
                         dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
@@ -1645,7 +1645,7 @@ namespace Iren.ToolsExcel.Utility
                     {
                         case "UNIT_COMM":
                             DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
-                            entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Range[cella1.ToString()].Value + "'";
+                            entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND SiglaCommitment = '" + ws.Range[cella1.ToString()].Value + "'";
                             valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0]["IdEntitaCommitment"] : null;
 
                             break;
@@ -1706,13 +1706,13 @@ namespace Iren.ToolsExcel.Utility
             {
                 try
                 {
-                    Range cella2 = nomiDefiniti.Get(siglaEntitaRif1, calcolo["SiglaInformazione2"], suffissoData, Date.GetSuffissoOra(ora2));
+                    Range cella2 = nomiDefiniti.Get(siglaEntitaRif2, calcolo["SiglaInformazione2"], suffissoData, Date.GetSuffissoOra(ora2));
 
                     switch (calcolo["SiglaInformazione2"].ToString())
                     {
                         case "UNIT_COMM":
                             DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
-                            entitaCommitment.RowFilter = "SiglaCommitment = '" + ws.Range[cella2.ToString()].Value + "'";
+                            entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntitaRif2 + "' AND SiglaCommitment = '" + ws.Range[cella2.ToString()].Value + "'";
                             valore2 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
 
                             break;
@@ -2021,6 +2021,16 @@ namespace Iren.ToolsExcel.Utility
             DataBase.SalvaModificheDB();
             Save();
             Application.ScreenUpdating = true;
+        }
+
+
+        public static string[] GetEmbeddedResourceNames()
+        {
+            return Assembly.GetExecutingAssembly().GetManifestResourceNames();
+        }
+        public static Stream GetEmbeddedResourceStream(string resourceName)
+        {
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
         }
 
         #endregion

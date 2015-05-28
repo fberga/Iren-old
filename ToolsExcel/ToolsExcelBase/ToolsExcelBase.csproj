@@ -78,6 +78,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Range.cs" />
+    <Compile Include="Selection.cs" />
     <Compile Include="SplashForm.cs">
       <SubType>Form</SubType>
     </Compile>

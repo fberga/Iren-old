@@ -136,6 +136,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Check.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>ProgrammazioneImpianti.xlsm</DependentUpon>
       <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>

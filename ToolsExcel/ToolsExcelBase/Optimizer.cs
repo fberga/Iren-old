@@ -60,8 +60,8 @@ namespace Iren.ToolsExcel.Base
                     dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
 
                 nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-                
-                if (nomeFoglio != definedNames.Sheet)
+
+                if (definedNames == null || nomeFoglio != definedNames.Sheet)
                     definedNames = new DefinedNames(nomeFoglio);
             }
         }

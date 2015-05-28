@@ -184,9 +184,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <Content Include="Data\SistemaComandi.xlsm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="SistemaComandi.xlsm" />
   </ItemGroup>
   <ItemGroup>

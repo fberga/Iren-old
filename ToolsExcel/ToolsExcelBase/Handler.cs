@@ -35,8 +35,6 @@ namespace Iren.ToolsExcel.Base
             }
             else
             {
-
-
                 try
                 {
                     DefinedNames newDefinedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.GOTOsOnly);

@@ -18,30 +18,33 @@ namespace Iren.ToolsExcel.Base
             }
             set
             {
-                emergenzaForzata = value;
+                if (emergenzaForzata != value)
+                {
+                    emergenzaForzata = value;
 
-                bool screenUpdating = Utility.Workbook.WB.Application.ScreenUpdating;
-                if(screenUpdating)
-                    Utility.Workbook.WB.Application.ScreenUpdating = false;
+                    bool screenUpdating = Utility.Workbook.WB.Application.ScreenUpdating;
+                    if (screenUpdating)
+                        Utility.Workbook.WB.Application.ScreenUpdating = false;
 
-                bool isProtected = Utility.Workbook.Main.ProtectContents;
-                if (isProtected)
-                    Utility.Workbook.Main.Unprotect(pwd);
+                    bool isProtected = Utility.Workbook.Main.ProtectContents;
+                    if (isProtected)
+                        Utility.Workbook.Main.Unprotect(pwd);
 
-                Riepilogo main = new Riepilogo(Utility.Workbook.Main);
-                if (value)
-                    main.RiepilogoInEmergenza();
-                else
-                    if (Utility.DataBase.OpenConnection())
-                        main.UpdateRiepilogo();
+                    Riepilogo main = new Riepilogo(Utility.Workbook.Main);
+                    if (value)
+                        main.RiepilogoInEmergenza();
+                    else
+                        if (Utility.DataBase.OpenConnection())
+                            main.UpdateRiepilogo();
 
-                Utility.Workbook.AggiornaLabelStatoDB();
+                    Utility.Workbook.AggiornaLabelStatoDB();
 
-                if (isProtected)
-                    Utility.Workbook.Main.Protect(pwd);
-                
-                if (screenUpdating)
-                    Utility.Workbook.WB.Application.ScreenUpdating = true;
+                    if (isProtected)
+                        Utility.Workbook.Main.Protect(pwd);
+
+                    if (screenUpdating)
+                        Utility.Workbook.WB.Application.ScreenUpdating = true;
+                }
             }
         }
 
