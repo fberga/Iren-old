@@ -535,6 +535,19 @@ namespace Iren.ToolsExcel.Base
                 return new Range(row, col);
             }
         }
+        public bool TryGet(out Range rng, params object[] parts)
+        {
+            try
+            {
+                rng = Get(parts);
+                return true;
+            }
+            catch
+            {
+                rng = null;
+                return false;
+            }
+        }
         public string GetGotoFromAddress(string addressFrom)
         {
             if (_addressFrom.ContainsKey("'" + _sheet + "'!" + addressFrom))
