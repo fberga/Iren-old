@@ -41,6 +41,7 @@
             this.btnForzaEmergenza = this.Factory.CreateRibbonToggleButton();
             this.groupConfigura = this.Factory.CreateRibbonGroup();
             this.btnConfigura = this.Factory.CreateRibbonButton();
+            this.btnConfiguraParametri = this.Factory.CreateRibbonButton();
             this.groupCalendario = this.Factory.CreateRibbonGroup();
             this.btnCalendar = this.Factory.CreateRibbonButton();
             this.groupAggiorna = this.Factory.CreateRibbonGroup();
@@ -150,6 +151,7 @@
             // groupConfigura
             // 
             this.groupConfigura.Items.Add(this.btnConfigura);
+            this.groupConfigura.Items.Add(this.btnConfiguraParametri);
             this.groupConfigura.Label = "Configura";
             this.groupConfigura.Name = "groupConfigura";
             // 
@@ -161,6 +163,14 @@
             this.btnConfigura.Name = "btnConfigura";
             this.btnConfigura.ShowImage = true;
             this.btnConfigura.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnConfigura_Click);
+            // 
+            // btnConfiguraParametri
+            // 
+            this.btnConfiguraParametri.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.btnConfiguraParametri.Label = "Configura parametri";
+            this.btnConfiguraParametri.Name = "btnConfiguraParametri";
+            this.btnConfiguraParametri.ShowImage = true;
+            this.btnConfiguraParametri.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnConfiguraParametri_Click);
             // 
             // groupCalendario
             // 
@@ -636,6 +646,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnForzaEmergenza;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupErrori;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnMostraErrorPane;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnConfiguraParametri;
     }
 
     partial class ThisRibbonCollection

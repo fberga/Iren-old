@@ -829,6 +829,12 @@ namespace Iren.ToolsExcel
         }
 
         #endregion        
+
+        private void btnConfiguraParametri_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormModificaParametri form = new FormModificaParametri();
+            form.Show();
+        }
     }
 
     #region Controls Collection
