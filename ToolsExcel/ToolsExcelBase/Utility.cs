@@ -66,7 +66,10 @@ namespace Iren.ToolsExcel.Utility
                 INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
                 TIPOLOGIA_CHECK = "spTipologiaCheck",
                 TIPOLOGIA_RAMPA = "spTipologiaRampa",
-                UTENTE = "spUtente";
+                UTENTE = "spUtente",
+
+                ELENCO_PARAMETRI = "PAR.spElencoParametri",
+                VALORI_PARAMETRI = "PAR.spValoriParametri";
         }
         public struct Tab
         {
