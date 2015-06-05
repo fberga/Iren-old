@@ -63,7 +63,7 @@ namespace Iren.ToolsExcel
                 object pressioneMTX = GetObject("CE_MTX", "PRESSIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
                 object pressioneTTX = GetObject("CE_TTX", "PRESSIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
                 object caricoTermico = GetObject("CT_TORINO", "CARICO_TERMICO_PREVISIONE", suffissoData, Utility.Date.GetSuffissoOra(ora));
-                object prezzoZonale = GetObject("ZM_NORD", "PREV_PREZZO", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                object prezzoZonale = GetObject("GRUPPO_TORINO", "PREV_PREZZO", suffissoData, Utility.Date.GetSuffissoOra(ora));
                 object portataCanale = GetObject("CE_MTX", "PREV_PORTATA", suffissoData, Utility.Date.GetSuffissoOra(ora));
                 object gruppoFrigo = GetObject("CE_TTX", "GRUPPO_FRIGO", suffissoData, Utility.Date.GetSuffissoOra(ora));
                 string unitCommMT2R = GetString("UP_MT2R", "UNIT_COMM", suffissoData, Utility.Date.GetSuffissoOra(ora));

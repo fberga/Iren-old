@@ -69,7 +69,8 @@ namespace Iren.ToolsExcel.Utility
                 UTENTE = "spUtente",
 
                 ELENCO_PARAMETRI = "PAR.spElencoParametri",
-                VALORI_PARAMETRI = "PAR.spValoriParametri";
+                VALORI_PARAMETRI = "PAR.spValoriParametri",
+                UPDATE_PARAMETRO = "PAR.spUpdateParametro";
         }
         public struct Tab
         {
