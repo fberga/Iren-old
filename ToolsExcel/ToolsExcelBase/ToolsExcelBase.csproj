@@ -112,6 +112,7 @@
     <None Include="resources\errorpane-icon.png" />
     <Content Include="resources\ottimizzatore-icon.png" />
     <Content Include="resources\calendario-icon.png" />
+    <Content Include="resources\PencilAngled_16xMD_color.png" />
     <Content Include="resources\rampe-icon.png" />
     <Content Include="resources\modificaNO-icon.png" />
     <Content Include="resources\modificaSI-icon.png" />
@@ -122,6 +123,12 @@
     <None Include="resources\invioProgrammi-icon.png" />
     <Content Include="resources\dev-icon.png" />
     <Content Include="resources\prod-icon.png" />
+    <Content Include="resources\Symbols_Critical_16xLG.png" />
+    <Content Include="resources\TableRowDelete.jpg" />
+    <Content Include="resources\TableRowsInsertAbove.jpg" />
+    <Content Include="resources\TableRowsInsertAboveSmall.jpg" />
+    <Content Include="resources\TableRowsInsertBelow.jpg" />
+    <Content Include="resources\TableRowsInsertBelowSmall.jpg" />
     <Content Include="resources\test-icon.png" />
     <None Include="resources\offerteMB-icon.png" />
     <None Include="resources\offerteMGP-icon.png" />

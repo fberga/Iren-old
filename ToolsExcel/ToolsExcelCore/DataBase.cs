@@ -217,7 +217,6 @@ namespace Iren.ToolsExcel.Core
             {
                 using (SqlDataReader dr = cmd.SqlCmd(storedProcedure, parameters, timeout).ExecuteReader())
                 {
-                    
                     DataTable dt = new DataTable();
                     dt.Load(dr);
 

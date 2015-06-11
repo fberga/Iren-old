@@ -69,6 +69,7 @@ namespace Iren.ToolsExcel.Utility
                 UTENTE = "spUtente",
 
                 ELENCO_PARAMETRI = "PAR.spElencoParametri",
+                INSERT_PARAMETRO = "PAR.spInsertParametro",
                 VALORI_PARAMETRI = "PAR.spValoriParametri",
                 UPDATE_PARAMETRO = "PAR.spUpdateParametro";
         }

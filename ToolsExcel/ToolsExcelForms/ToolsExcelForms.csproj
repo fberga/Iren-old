@@ -62,6 +62,12 @@
     <Compile Include="ErrorPane.Designer.cs">
       <DependentUpon>ErrorPane.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormAggiungiParametroD.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormAggiungiParametroD.Designer.cs">
+      <DependentUpon>FormAggiungiParametroD.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormAzioni.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -119,6 +125,9 @@
     </Compile>
     <EmbeddedResource Include="ErrorPane.resx">
       <DependentUpon>ErrorPane.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormAggiungiParametroD.resx">
+      <DependentUpon>FormAggiungiParametroD.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormAzioni.resx">
       <DependentUpon>FormAzioni.cs</DependentUpon>
