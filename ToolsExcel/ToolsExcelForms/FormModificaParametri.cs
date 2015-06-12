@@ -20,6 +20,9 @@ namespace Iren.ToolsExcel.Forms
         DataView _entita;
         bool _fromMenuStrip = false;
         bool _onEdit = false;
+        bool _isUpdate = false;
+        bool _currentCellModified = false;
+        DateTime _currDataIV;
 
         public FormModificaParametri()
         {
@@ -37,7 +40,6 @@ namespace Iren.ToolsExcel.Forms
             cmbEntita.DisplayMember = "DesEntita";
 
             cmbParametriD.DisplayMember = "Descrizione";
-
             cmbParametriH.DisplayMember = "Descrizione";
 
             cmbEntita.DataSource = _entita;
@@ -45,7 +47,7 @@ namespace Iren.ToolsExcel.Forms
             cmbParametriH.DataSource = _parametriH;
 
             //TODO rimuovere quando saranno utilizzati i parametri orari
-            ((Control)tabPageParH).Enabled = false;
+            ((Control)tabPageParH).Visible = false;
         }
 
         private void cmbEntita_SelectedIndexChanged(object sender, EventArgs e)
@@ -305,14 +307,17 @@ namespace Iren.ToolsExcel.Forms
         }
         private void dataGridParametriD_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            if (dataGridParametriD.EditingControl != null)
+            if (dataGridParametriD.IsCurrentCellDirty && dataGridParametriD.EditingControl != null)
             {
                 string value = e.FormattedValue.ToString();
+
+                //salvo la vecchia dataIV per fare l'update
+                _currDataIV = (DateTime)dataGridParametriD["Inizio Validità", e.RowIndex].Value;
+                _currentCellModified = true;
+
                 switch (e.ColumnIndex)
                 {
                     case 0:
-                    case 1:
-
                         DateTime date = new DateTime();
 
                         if (DateTime.TryParseExact(value, "ddMMyyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out date) ||
@@ -352,41 +357,22 @@ namespace Iren.ToolsExcel.Forms
                             MessageBox.Show("Il valore inserito non è un numero valido!", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             e.Cancel = true;
                         }
-                            
-
                         break;
                 }
             }
-            
-            //if (_onEdit)
-            //{
-            //    decimal newValue;
-            //    if (decimal.TryParse(e.FormattedValue.ToString(), NumberStyles.AllowDecimalPoint, CultureInfo.InstalledUICulture, out newValue))
-            //    {
-            //        DataRowView parRow = (DataRowView)cmbParametriH.SelectedValue;
-            //        DataRow valueRow = ((DataTable)dataGridParametriH.DataSource).Rows[e.RowIndex];
-
-            //        if (!Utility.DataBase.Insert(Utility.DataBase.SP.UPDATE_PARAMETRO, new Core.QryParams()
-            //            {
-            //                {"@IdEntita", parRow["IdEntita"]},
-            //                {"@IdTipologiaParametro", parRow["IdParametro"]},
-            //                {"@DataIV", ((DateTime)valueRow["Inizio Validità"]).ToString("yyyyMMdd")},
-            //                {"@DataFV", ((DateTime)valueRow["Fine Validità"]).ToString("yyyyMMdd")},
-            //                {"@Valore", newValue},
-            //                {"@Dettaglio", "D"}
-            //            }))
-            //        {
-            //            MessageBox.Show("Ci sono stati problemi nel salvataggio della modifica... Riprovare più tardi.", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //            e.Cancel = true;
-            //        };
-            //    }
-            //    else
-            //    {
-            //        MessageBox.Show("Il nuovo valore inserito presenta dei caratteri non validi.", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-            //        e.Cancel = true;
-            //    }
-            //}
+            else
+            {
+                _currentCellModified = false;
+            }
+        }
+        private void dataGridParametriD_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!_currentCellModified)
+            {
+                RefreshMenuItems();
+                _onEdit = false;
+                _fromMenuStrip = false;
+            }
         }
         private void dataGridParametriD_CurrentCellChanged(object sender, EventArgs e)
         {
@@ -448,9 +434,44 @@ namespace Iren.ToolsExcel.Forms
         }
         private void dataGridParametriD_RowValidated(object sender, DataGridViewCellEventArgs e)
         {
+            DataRowView parRow = (DataRowView)cmbParametriD.SelectedValue;
+
             if (dataGridParametriD.IsCurrentRowDirty)
             {
+                DateTime precIV = (DateTime)dataGridParametriD["Inizio Validità", e.RowIndex - 1].Value;
+                DateTime newIV = (DateTime)dataGridParametriD["Inizio Validità", e.RowIndex].Value;
+                DateTime newFV = dataGridParametriD["Fine Validità", e.RowIndex].Value is DBNull ? DateTime.MaxValue : (DateTime)dataGridParametriD["Fine Validità", e.RowIndex].Value;
+                decimal value = (decimal)dataGridParametriD["Valore", e.RowIndex].Value;
 
+                //insert or update
+                if (_isUpdate)
+                {
+                    Utility.DataBase.Insert(Utility.DataBase.SP.UPDATE_PARAMETRO, new Core.QryParams()
+                    {
+                        {"@IdEntita", parRow["IdEntita"]},
+                        {"@IdTipologiaParametro", parRow["IdParametro"]},
+                        {"@CurrDataIV", _currDataIV.ToString("yyyyMMdd")},
+                        {"@NewDataIV", newIV.ToString("yyyyMMdd")},
+                        {"@NewDataFV", newFV.ToString("yyyyMMdd")},
+                        {"@Valore", value},
+                        {"@Dettaglio", "D"}
+                    });
+
+
+                }
+                else
+                {
+                    Utility.DataBase.Insert(Utility.DataBase.SP.INSERT_PARAMETRO, new Core.QryParams()
+                    {
+                        {"@IdEntita", parRow["IdEntita"]},
+                        {"@IdTipologiaParametro", parRow["IdParametro"]},
+                        {"@PrecDataIV", precIV.ToString("yyyyMMdd")},
+                        {"@NewDataIV", newIV.ToString("yyyyMMdd")},
+                        {"@NewDataFV", newFV.ToString("yyyyMMdd")},
+                        {"@Valore", value},
+                        {"@Dettaglio", "D"}
+                    });
+                }
             }
             RefreshMenuItems();
             _onEdit = false;
@@ -462,6 +483,7 @@ namespace Iren.ToolsExcel.Forms
             if (dataGridParametriD.CurrentCell.OwningColumn.Name == "Fine Validità")
                 dataGridParametriD.CurrentCell = dataGridParametriD["Inizio Validità", dataGridParametriD.CurrentCell.RowIndex];
 
+            _isUpdate = true;
             _fromMenuStrip = true;
             dataGridParametriD.BeginEdit(false);
         }
@@ -471,6 +493,8 @@ namespace Iren.ToolsExcel.Forms
         }
         private void inserisciSopraContextMenu_Click(object sender, EventArgs e)
         {
+            _isUpdate = false;
+
             int index = dataGridParametriD.CurrentRow.Index;
 
             DataTable dt = (DataTable)dataGridParametriD.DataSource;
@@ -490,6 +514,8 @@ namespace Iren.ToolsExcel.Forms
         }
         private void inserisciSottoContextMenu_Click(object sender, EventArgs e)
         {
+            _isUpdate = false;
+
             int index = dataGridParametriD.CurrentRow.Index;
             
             DataTable dt = (DataTable)dataGridParametriD.DataSource;
@@ -526,20 +552,24 @@ namespace Iren.ToolsExcel.Forms
         {
             if (MessageBox.Show("Eliminare la riga?", Simboli.nomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
             {
-                dataGridParametriD.CurrentCellChanged -= dataGridParametriD_CurrentCellChanged;
-                dataGridParametriD.RowValidating -= dataGridParametriD_RowValidating;
-                dataGridParametriD.RowValidated -= dataGridParametriD_RowValidated;
+                DataRowView parRow = (DataRowView)cmbParametriD.SelectedValue;
 
-                DataTable dt = (DataTable)dataGridParametriD.DataSource;
-                dt.Rows.RemoveAt(dataGridParametriD.CurrentRow.Index);
-
-                dataGridParametriD.RowValidated += dataGridParametriD_RowValidated;
-                dataGridParametriD.RowValidating += dataGridParametriD_RowValidating;
-                dataGridParametriD.CurrentCellChanged += dataGridParametriD_CurrentCellChanged;
+                DateTime dataIV = (DateTime)dataGridParametriD["Inizio Validità", dataGridParametriD.CurrentRow.Index].Value;
+                DateTime dataFV = dataGridParametriD["Fine Validità", dataGridParametriD.CurrentRow.Index].Value is DBNull ? DateTime.MaxValue : (DateTime)dataGridParametriD["Fine Validità", dataGridParametriD.CurrentRow.Index].Value;
 
 
+                Utility.DataBase.Insert(Utility.DataBase.SP.DELETE_PARAMETRO, new Core.QryParams()
+                {
+                    {"@IdEntita", parRow["IdEntita"]},
+                    {"@IdTipologiaParametro", parRow["IdParametro"]},
+                    {"@DataIV", dataIV.ToString("yyyyMMdd")},
+                    {"@DataFV", dataFV.ToString("yyyyMMdd")},
+                    {"@Dettaglio", "D"}
+                });
 
-                dataGridParametriD_RowValidating(dataGridParametriD, new DataGridViewCellCancelEventArgs(dataGridParametriD.CurrentCell.ColumnIndex, dataGridParametriD.CurrentCell.RowIndex));
+                int index = cmbParametriD.SelectedIndex;
+                cmbParametriD.SelectedIndex = -1;
+                cmbParametriD.SelectedIndex = index;
             }
         }
         private void elimiaTopMenu_Click(object sender, EventArgs e)

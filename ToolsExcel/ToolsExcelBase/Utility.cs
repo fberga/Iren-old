@@ -68,6 +68,7 @@ namespace Iren.ToolsExcel.Utility
                 TIPOLOGIA_RAMPA = "spTipologiaRampa",
                 UTENTE = "spUtente",
 
+                DELETE_PARAMETRO = "PAR.spDeleteParametro",
                 ELENCO_PARAMETRI = "PAR.spElencoParametri",
                 INSERT_PARAMETRO = "PAR.spInsertParametro",
                 VALORI_PARAMETRI = "PAR.spValoriParametri",
@@ -550,7 +551,7 @@ namespace Iren.ToolsExcel.Utility
             return dt;
         }
 
-        public static void AggiornaStrutturaDati()
+        private static void AggiornaStrutturaDati()
         {
             CreaTabellaNomiNew();
             CreaTabellaDate();
@@ -1242,6 +1243,70 @@ namespace Iren.ToolsExcel.Utility
 
         #endregion
 
+        public static void Aggiorna(bool logEnabled = true)
+        {
+            SplashScreen.Show();
+            //verifico che la connessione sia funzionante
+            if (DataBase.OpenConnection())
+            {
+                //lancio l'aggiornamento della struttura
+                AggiornaStrutturaFogli();
+                
+                if(logEnabled)
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
+            }
+            SplashScreen.Close();
+        }
+        private static void AggiornaStrutturaFogli()
+        {
+            SplashScreen.UpdateStatus("Carico struttura dal DB");
+            Struttura.AggiornaStrutturaDati();
+
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            categorie.RowFilter = "Operativa = 1";
+
+            foreach (DataRowView categoria in categorie)
+            {
+                Excel.Worksheet ws;
+                try
+                {
+                    ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
+                }
+                catch
+                {
+                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.WB.Worksheets["Log"]);
+                    ws.Name = categoria["DesCategoria"].ToString();
+                    ws.Select();
+                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
+#if !DEBUG
+                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
+#endif
+                }
+            }
+
+            Workbook.WB.Sheets["Main"].Select();
+            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
+            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
+            main.LoadStructure();
+
+            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            {
+                if (ws.Name != "Log" && ws.Name != "Main")
+                {
+                    Sheet s = new Sheet(ws);
+                    SplashScreen.UpdateStatus("Aggiorno struttura " + ws.Name);
+                    s.LoadStructure();
+                }
+            }
+
+            SplashScreen.UpdateStatus("Salvo struttura in locale");
+            Workbook.DumpDataSet();
+
+            Workbook.Main.Select();
+            Workbook.Main.Range["A1"].Select();
+            Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+        }
+
         #endregion
     }
 
@@ -1271,6 +1336,42 @@ namespace Iren.ToolsExcel.Utility
 
         #region Metodi
 
+        private static bool SetMercato(ref string appID, ref DateTime dataAttiva)
+        {
+            string appIDold = appID;
+            DateTime dataAttivaOld = dataAttiva;
+
+            //configuro la data attiva
+            int ora = DateTime.Now.Hour;
+            if (ora > 17)
+                dataAttiva = DateTime.Today.AddDays(1);
+            else if (ora >= 7 && ora <= 17)
+                dataAttiva = DateTime.Today;
+
+            //configuro il mercato attivo
+            string[] mercatiDisp = ConfigurationManager.AppSettings["Mercati"].Split('|');
+            string[] appIDs = ConfigurationManager.AppSettings["AppIDMSD"].Split('|');
+            for(int i = 0; i < mercatiDisp.Length; i++) 
+            {
+                string[] ore = ConfigurationManager.AppSettings["Ore" + mercatiDisp[i]].Split('|');
+                if (ore.Contains(ora.ToString()))
+                {
+                    appID = appIDs[i];
+                    break;
+                }
+            }
+
+            if(appID != appIDold || dataAttivaOld != dataAttiva)
+            {
+                ConfigurationManager.AppSettings["DataAttiva"] = dataAttiva.ToString("yyyyMMdd");
+                ConfigurationManager.AppSettings["AppID"] = appID.ToString();
+
+                return true;
+            }
+
+            return false;
+        }
+        
         public static void InitLog()
         {
             DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
@@ -1312,15 +1413,13 @@ namespace Iren.ToolsExcel.Utility
                 return -1;
             }
         }
-        private static bool Init(string dbName, object appID, DateTime dataAttiva)
+        private static bool Init(string dbName, string appID, DateTime dataAttiva)
         {
             //CryptHelper.CryptSection("connectionStrings", "appSettings");
 
             DataBase.InitNewDB(dbName);
             DataBase.DB.PropertyChanged += _db_StatoDBChanged;
             DataBase.InitNewLocalDB();
-
-            Simboli.pwd = AppSettings("pwd");
 
             bool localDBNotPresent = false;
             try
@@ -1336,12 +1435,18 @@ namespace Iren.ToolsExcel.Utility
                 //DataBase.LocalDB.Prefix = DataBase.NAME;
             }
 
+            bool aggiornaMercato = false;
+            if (ConfigurationManager.AppSettings["Mercati"] != null)
+            {
+                aggiornaMercato = SetMercato(ref appID, ref dataAttiva);
+            }
+
             if (DataBase.OpenConnection())
             {
                 Struttura.AggiornaParametriApplicazione(appID);
 
                 int usr = InitUser();
-                DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID.ToString()));
+                DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID));
 
                 DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
@@ -1350,6 +1455,15 @@ namespace Iren.ToolsExcel.Utility
                 Simboli.rgbLinee = Workbook.GetRGBFromString(applicazione[0]["BorderColorApp"].ToString());
 
                 InitLog();
+
+
+                if (aggiornaMercato)
+                {
+                    Workbook.WB.SheetChange -= Handler.StoreEdit;
+                    Struttura.Aggiorna(false);
+                    Workbook.WB.SheetChange += Handler.StoreEdit;
+                }
+
                 return false;
             }
             else //Emergenza
@@ -1382,6 +1496,8 @@ namespace Iren.ToolsExcel.Utility
             Application.Iteration = true;
             Application.MaxIterations = 100;
 
+            Style.StdStyles();
+
             foreach (Excel.Worksheet ws in Sheets)
             {
                 ws.Activate();
@@ -1394,10 +1510,12 @@ namespace Iren.ToolsExcel.Utility
             Main.Select();
             Application.WindowState = Excel.XlWindowState.xlMaximized;
 
-            DateTime dataAttiva = DateTime.ParseExact(AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
-            bool emergenza = Init(AppSettings("DB"), AppSettings("AppID"), dataAttiva);
+            Simboli.pwd = AppSettings("pwd");
 
             Sheet.Proteggi(false);
+
+            DateTime dataAttiva = DateTime.ParseExact(AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
+            bool emergenza = Init(AppSettings("DB"), AppSettings("AppID"), dataAttiva);
 
             Riepilogo r = new Riepilogo(Main);
 
@@ -1406,7 +1524,6 @@ namespace Iren.ToolsExcel.Utility
 
             r.InitLabels();
 
-            Style.StdStyles();
             InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
 
             Sheet.Proteggi(true);

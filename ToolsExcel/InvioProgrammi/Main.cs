@@ -9,9 +9,6 @@ using Microsoft.Office.Tools.Excel;
 using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
-using System.Configuration;
-using System.Globalization;
-using Iren.ToolsExcel.Base;
 
 namespace Iren.ToolsExcel
 {
@@ -25,7 +22,6 @@ namespace Iren.ToolsExcel
         /// </summary>
         private void InternalStartup()
         {
-
         }
 
         #endregion

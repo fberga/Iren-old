@@ -221,7 +221,7 @@ namespace Iren.ToolsExcel
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
                 //se risposta positiva, mostro la splash screen
-                SplashScreen.Show();
+                //SplashScreen.Show();
 
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 Workbook.WB.Application.ScreenUpdating = false;
@@ -229,15 +229,20 @@ namespace Iren.ToolsExcel
                 Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
                 //verifico che la connessione sia funzionante
-                if (DataBase.OpenConnection())
-                {
-                    //lancio l'aggiornamento della struttura
-                    AggiornaStruttura();
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
-                }
+                //if (DataBase.OpenConnection())
+                //{
+                //    //lancio l'aggiornamento della struttura
+                //    AggiornaStruttura();
+                //    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
+                //}
 
                 //refresh delle funzioni di check nel caso ci fossero
+
+                Struttura.Aggiorna();
                 _errorPane.RefreshCheck(_checkFunctions);
+                
+                if (_allDisabled)
+                    AbilitaTasti();
 
                 Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                 Sheet.Proteggi(true);
@@ -284,7 +289,7 @@ namespace Iren.ToolsExcel
                     SplashScreen.Show();
 
                     if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
-                        AggiornaStruttura();
+                        Struttura.Aggiorna();
                     else
                         AggiornaDati();
 
@@ -755,60 +760,60 @@ namespace Iren.ToolsExcel
         ///  - lanciare la routine per ri-creare la struttura
         ///  - caricare la struttura del riepilogo.
         /// </summary>
-        private void AggiornaStruttura()
-        {
-            SplashScreen.UpdateStatus("Carico struttura dal DB");
-            Struttura.AggiornaStrutturaDati();
+//        private void AggiornaStruttura()
+//        {
+//            SplashScreen.UpdateStatus("Carico struttura dal DB");
+//            Struttura.AggiornaStrutturaDati();
 
-            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "Operativa = 1";
+//            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+//            categorie.RowFilter = "Operativa = 1";
 
-            foreach (DataRowView categoria in categorie)
-            {
-                Excel.Worksheet ws;
-                try
-                {
-                    ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
-                }
-                catch
-                {
-                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.WB.Worksheets["Log"]);
-                    ws.Name = categoria["DesCategoria"].ToString();
-                    ws.Select();
-                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
-#if !DEBUG
-                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
-#endif
-                }
-            }
+//            foreach (DataRowView categoria in categorie)
+//            {
+//                Excel.Worksheet ws;
+//                try
+//                {
+//                    ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
+//                }
+//                catch
+//                {
+//                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.WB.Worksheets["Log"]);
+//                    ws.Name = categoria["DesCategoria"].ToString();
+//                    ws.Select();
+//                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
+//#if !DEBUG
+//                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
+//#endif
+//                }
+//            }
 
-            Workbook.WB.Sheets["Main"].Select();
-            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
-            main.LoadStructure();            
+//            Workbook.WB.Sheets["Main"].Select();
+//            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
+//            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
+//            main.LoadStructure();            
 
-            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
-            {
-                if (ws.Name != "Log" && ws.Name != "Main")
-                {
-                    Sheet s = new Sheet(ws);
-                    SplashScreen.UpdateStatus("Aggiorno struttura " + ws.Name);
-                    s.LoadStructure();
-                }
-            }
+//            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+//            {
+//                if (ws.Name != "Log" && ws.Name != "Main")
+//                {
+//                    Sheet s = new Sheet(ws);
+//                    SplashScreen.UpdateStatus("Aggiorno struttura " + ws.Name);
+//                    s.LoadStructure();
+//                }
+//            }
 
-            SplashScreen.UpdateStatus("Salvo struttura in locale");
-            Workbook.DumpDataSet();
+//            SplashScreen.UpdateStatus("Salvo struttura in locale");
+//            Workbook.DumpDataSet();
 
-            Globals.Main.Select();
-            //Workbook.WB.Sheets["Main"].Select();
-            Globals.Main.Range["A1"].Select();
-            //Workbook.WB.ActiveSheet.Range["A1"].Select();
-            Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
+//            Globals.Main.Select();
+//            //Workbook.WB.Sheets["Main"].Select();
+//            Globals.Main.Range["A1"].Select();
+//            //Workbook.WB.ActiveSheet.Range["A1"].Select();
+//            Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
-            if (_allDisabled)
-                AbilitaTasti();
-        }
+//            if (_allDisabled)
+//                AbilitaTasti();
+//        }
         /// <summary>
         /// Attiva l'aggiornamento dei dati contenuti nel foglio senza però alterare la struttura del foglio stesso.
         /// </summary>

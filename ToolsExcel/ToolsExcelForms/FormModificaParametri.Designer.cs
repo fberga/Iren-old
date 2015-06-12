@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormModificaParametri));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.cmbEntita = new System.Windows.Forms.ComboBox();
             this.tabParametri = new System.Windows.Forms.TabControl();
             this.tabPageParD = new System.Windows.Forms.TabPage();
@@ -41,6 +41,7 @@
             this.cancellaParametroContextMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.inserisciSopraContextMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.inserisciSottoContextMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.panelTopMenu = new System.Windows.Forms.Panel();
             this.menuParD = new System.Windows.Forms.ToolStrip();
             this.elimiaTopMenu = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -62,11 +63,11 @@
             this.cmbParametriH = new System.Windows.Forms.ComboBox();
             this.panelTop = new System.Windows.Forms.Panel();
             this.labelSelEntita = new System.Windows.Forms.Label();
-            this.panelTopMenu = new System.Windows.Forms.Panel();
             this.tabParametri.SuspendLayout();
             this.tabPageParD.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridParametriD)).BeginInit();
             this.contextMenuParD.SuspendLayout();
+            this.panelTopMenu.SuspendLayout();
             this.menuParD.SuspendLayout();
             this.panelTopParD.SuspendLayout();
             this.tabPageParH.SuspendLayout();
@@ -74,7 +75,6 @@
             this.contextMenuParH.SuspendLayout();
             this.panelTopParH.SuspendLayout();
             this.panelTop.SuspendLayout();
-            this.panelTopMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmbEntita
@@ -118,8 +118,8 @@
             this.dataGridParametriD.AllowUserToDeleteRows = false;
             this.dataGridParametriD.AllowUserToResizeColumns = false;
             this.dataGridParametriD.AllowUserToResizeRows = false;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(251)))), ((int)(((byte)(252)))));
-            this.dataGridParametriD.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(251)))), ((int)(((byte)(252)))));
+            this.dataGridParametriD.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridParametriD.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridParametriD.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridParametriD.ContextMenuStrip = this.contextMenuParD;
@@ -131,6 +131,7 @@
             this.dataGridParametriD.TabIndex = 6;
             this.dataGridParametriD.VirtualMode = true;
             this.dataGridParametriD.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridParametriD_CellBeginEdit);
+            this.dataGridParametriD.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridParametriD_CellEndEdit);
             this.dataGridParametriD.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.dataGridParametriD_CellValidating);
             this.dataGridParametriD.CurrentCellChanged += new System.EventHandler(this.dataGridParametriD_CurrentCellChanged);
             this.dataGridParametriD.RowDirtyStateNeeded += new System.Windows.Forms.QuestionEventHandler(this.dataGridParametriD_RowDirtyStateNeeded);
@@ -182,6 +183,15 @@
             this.inserisciSottoContextMenu.Size = new System.Drawing.Size(232, 22);
             this.inserisciSottoContextMenu.Text = "Inserisci sotto riga selezionata";
             this.inserisciSottoContextMenu.Click += new System.EventHandler(this.inserisciSottoContextMenu_Click);
+            // 
+            // panelTopMenu
+            // 
+            this.panelTopMenu.Controls.Add(this.menuParD);
+            this.panelTopMenu.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelTopMenu.Location = new System.Drawing.Point(3, 47);
+            this.panelTopMenu.Name = "panelTopMenu";
+            this.panelTopMenu.Size = new System.Drawing.Size(762, 37);
+            this.panelTopMenu.TabIndex = 11;
             // 
             // menuParD
             // 
@@ -301,8 +311,8 @@
             this.dataGridParametriH.AllowUserToDeleteRows = false;
             this.dataGridParametriH.AllowUserToResizeColumns = false;
             this.dataGridParametriH.AllowUserToResizeRows = false;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(251)))), ((int)(((byte)(252)))));
-            this.dataGridParametriH.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(251)))), ((int)(((byte)(252)))));
+            this.dataGridParametriH.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridParametriH.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridParametriH.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridParametriH.ContextMenuStrip = this.contextMenuParH;
@@ -387,15 +397,6 @@
             this.labelSelEntita.TabIndex = 1;
             this.labelSelEntita.Text = "Seleziona l\'UP:";
             // 
-            // panelTopMenu
-            // 
-            this.panelTopMenu.Controls.Add(this.menuParD);
-            this.panelTopMenu.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panelTopMenu.Location = new System.Drawing.Point(3, 47);
-            this.panelTopMenu.Name = "panelTopMenu";
-            this.panelTopMenu.Size = new System.Drawing.Size(762, 37);
-            this.panelTopMenu.TabIndex = 11;
-            // 
             // FormModificaParametri
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -414,6 +415,8 @@
             this.tabPageParD.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridParametriD)).EndInit();
             this.contextMenuParD.ResumeLayout(false);
+            this.panelTopMenu.ResumeLayout(false);
+            this.panelTopMenu.PerformLayout();
             this.menuParD.ResumeLayout(false);
             this.menuParD.PerformLayout();
             this.panelTopParD.ResumeLayout(false);
@@ -425,8 +428,6 @@
             this.panelTopParH.PerformLayout();
             this.panelTop.ResumeLayout(false);
             this.panelTop.PerformLayout();
-            this.panelTopMenu.ResumeLayout(false);
-            this.panelTopMenu.PerformLayout();
             this.ResumeLayout(false);
 
         }
