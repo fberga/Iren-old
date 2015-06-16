@@ -1,4 +1,6 @@
 ﻿using Iren.ToolsExcel.Core;
+using System.Collections.Generic;
+using System.Configuration;
 
 namespace Iren.ToolsExcel.Base
 {
@@ -6,7 +8,7 @@ namespace Iren.ToolsExcel.Base
     {
         public const string UNION = ".";
 
-        public static string nomeFile = "";
+        //public static string nomeFile = "";
 
         public static string nomeApplicazione = "";
         private static bool emergenzaForzata = false;
@@ -22,9 +24,9 @@ namespace Iren.ToolsExcel.Base
                 {
                     emergenzaForzata = value;
 
-                    bool screenUpdating = Utility.Workbook.WB.Application.ScreenUpdating;
+                    bool screenUpdating = Utility.Workbook.Application.ScreenUpdating;
                     if (screenUpdating)
-                        Utility.Workbook.WB.Application.ScreenUpdating = false;
+                        Utility.Workbook.Application.ScreenUpdating = false;
 
                     bool isProtected = Utility.Workbook.Main.ProtectContents;
                     if (isProtected)
@@ -35,7 +37,7 @@ namespace Iren.ToolsExcel.Base
                         main.RiepilogoInEmergenza();
                     else
                         if (Utility.DataBase.OpenConnection())
-                            main.UpdateRiepilogo();
+                            main.UpdateData();
 
                     Utility.Workbook.AggiornaLabelStatoDB();
 
@@ -122,6 +124,22 @@ namespace Iren.ToolsExcel.Base
             {
                 elsagOnline = value;
                 Handler.ChangeStatoDB(DataBase.NomiDB.ELSAG, elsagOnline);
+            }
+        }
+
+        //private static string mercatoAttivo = "";
+        private static string appID = "";
+        public static string AppID
+        {
+            get { return appID; }
+            set 
+            {
+                List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
+                List<string> appIDs = new List<string>(ConfigurationManager.AppSettings["AppIDMSD"].Split('|'));
+
+                //int index = appIDs.IndexOf(value);
+                //mercatoAttivo = mercati[index];
+                Handler.ChangeMercatoAttivo(mercati[appIDs.IndexOf(value)]);
             }
         }
 

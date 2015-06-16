@@ -42,6 +42,8 @@ namespace Iren.ToolsExcel
         /// </summary>
         private Check _checkFunctions = new Check();
 
+        
+
         #endregion
 
         #region Proprietà
@@ -65,6 +67,8 @@ namespace Iren.ToolsExcel
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
             Initialize();
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
 
             //se non sono in debug toglie le intestazioni
 #if !DEBUG
@@ -75,15 +79,17 @@ namespace Iren.ToolsExcel
             }
             Globals.Main.Activate();
 #endif
-            //se sono al primo avvio dopo un aggiornamento disabilito tutto a parte il tasto per aggiornare la struttura
-            if (Workbook.WB.Sheets.Count <= 2)
-                DisabilitaTasti();
+            //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
+            if (Workbook.Sheets.Count == 0 || Repository.DaAggiornare)
+            {
+                Aggiorna aggiorna = new Aggiorna();
+                aggiorna.Struttura();
+            }
 
-            DateTime cfgDate = DateTime.ParseExact(Workbook.AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
-            btnCalendar.Label = cfgDate.ToString("dddd dd MMM yyyy");
+            btnCalendar.Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
 
             //seleziono l'ambiente attivo
-            ((RibbonToggleButton)Controls["btn" + Workbook.AppSettings("DB")]).Checked = true;
+            ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
 
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
@@ -104,17 +110,15 @@ namespace Iren.ToolsExcel
             Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
             Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
 
-            try
-            {
-                Sheet.Proteggi(false);
-                _errorPane.RefreshCheck(_checkFunctions);
-                Sheet.Proteggi(true);
-            }
-            catch { }
+
+            RefreshChecks();
 
             //aggiungo un altro handler per cell click
             Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
             Globals.ThisWorkbook.SheetSelectionChange += SelectionClick;
+
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
 
         private void SelectionClick(object Sh, Excel.Range Target)
@@ -127,19 +131,22 @@ namespace Iren.ToolsExcel
             {
                 Target.Worksheet.Unprotect(Simboli.pwd);
                 if (sel != null)
-                {
-                    Workbook.WB.SheetChange -= Handler.StoreEdit;
-                    
+                {   
                     sel.ClearSelections(Target.Worksheet);
                     sel.Select(Target.Worksheet, rng.ToString());
 
-                    Workbook.WB.SheetChange += Handler.StoreEdit;
                     //annoto modifiche e le salvo sul DB
                     Target.Worksheet.Range[sel.RifAddress].Value = val;
                     DataBase.SalvaModificheDB();
                 }
                 Target.Worksheet.Protect(Simboli.pwd);
             }
+        }
+
+        private void btnConfiguraParametri_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormModificaParametri form = new FormModificaParametri();
+            form.Show();
         }
 
         /// <summary>
@@ -183,7 +190,6 @@ namespace Iren.ToolsExcel
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
-            Workbook.WB.SheetChange -= Handler.StoreEdit;
 
             int count = 0;
             foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
@@ -202,7 +208,6 @@ namespace Iren.ToolsExcel
                 btnAggiornaStruttura_Click(null, null);
             }
 
-            Workbook.WB.SheetChange += Handler.StoreEdit;
             ambienteScelto.Checked = true;
         }
         /// <summary>
@@ -217,38 +222,23 @@ namespace Iren.ToolsExcel
             
             if(sender != null && e != null)
                 response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
-            
+
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
-                //se risposta positiva, mostro la splash screen
-                //SplashScreen.Show();
+                Workbook.ScreenUpdating = false;
+                Sheet.Protected = false;
 
-                Workbook.WB.SheetChange -= Handler.StoreEdit;
-                Workbook.WB.Application.ScreenUpdating = false;
-                Sheet.Proteggi(false);
-                Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+                Aggiorna aggiorna = new Aggiorna();
+                if(aggiorna.Struttura())
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
-                //verifico che la connessione sia funzionante
-                //if (DataBase.OpenConnection())
-                //{
-                //    //lancio l'aggiornamento della struttura
-                //    AggiornaStruttura();
-                //    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
-                //}
+                RefreshChecks();
 
-                //refresh delle funzioni di check nel caso ci fossero
-
-                Struttura.Aggiorna();
-                _errorPane.RefreshCheck(_checkFunctions);
+                Sheet.Protected = true;
+                Workbook.ScreenUpdating = true;
                 
                 if (_allDisabled)
                     AbilitaTasti();
-
-                Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-                Sheet.Proteggi(true);
-                Workbook.WB.Application.ScreenUpdating = true;
-                Workbook.WB.SheetChange += Handler.StoreEdit;
-                SplashScreen.Close();
             }
         }
         /// <summary>
@@ -259,69 +249,49 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.WB.SheetChange -= Handler.StoreEdit;
-            Workbook.WB.Application.ScreenUpdating = false;
-            Sheet.Proteggi(false);
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
-
             DateTime dataOld = DataBase.DataAttiva;
 
             //apro il form calendario
             Forms.FormCalendar cal = new FormCalendar();
-            object calDate = cal.ShowDialog();
+            DateTime calDate = cal.ShowDialog();
 
             //verifico che la data sia stata cambiata
-            if (calDate != null)
+            if (calDate != dataOld)
             {
-                DateTime date = (DateTime)calDate;
-                if (DataBase.OpenConnection())
-                {
-                    DataBase.RefreshAppSettings("DataInizio", date.ToString("yyyyMMdd"));
-                    btnCalendar.Label = date.ToString("dddd dd MMM yyyy");
+                Workbook.ScreenUpdating = false;
+                Sheet.Protected = false;
 
+                DataBase.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
+                btnCalendar.Label = calDate.ToString("dddd dd MMM yyyy");
+
+                Aggiorna aggiorna = new Aggiorna();
+                if (DataBase.OpenConnection())
+                {                    
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
 
-                    DataBase.RefreshDate(date);
+                    DataBase.ChangeDate(calDate);
                     DataBase.ConvertiParametriInformazioni();
 
-                    DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + date.ToString("yyyyMMdd")).DefaultView;
-
-                    SplashScreen.Show();
+                    DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd")).DefaultView;
 
                     if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
-                        Struttura.Aggiorna();
+                        aggiorna.Struttura();
                     else
-                        AggiornaDati();
+                        aggiorna.Dati();
 
                     Workbook.RefreshLog();
-                    SplashScreen.Close();
                 }
                 else  //emergenza
                 {
-                    DataBase.RefreshAppSettings("DataInizio", date.ToString("yyyyMMdd"));
-                    btnCalendar.Label = date.ToString("dddd dd MMM yyyy");
-                    DataBase.RefreshDate(date);
-
-                    foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
-                    {
-                        if (ws.Name != "Log" && ws.Name != "Main")
-                        {
-                            Sheet s = new Sheet(ws);
-                            s.AggiornaDateTitoli();
-                        }
-                    }
-
-                    Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-                    main.RiepilogoInEmergenza();
+                    DataBase.ChangeDate(calDate);
+                    aggiorna.Emergenza();
                 }
 
-                _errorPane.RefreshCheck(_checkFunctions);
-            }
+                RefreshChecks();
 
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-            Sheet.Proteggi(true);
-            Workbook.WB.Application.ScreenUpdating = true;
-            Workbook.WB.SheetChange += Handler.StoreEdit;
+                Sheet.Protected = true;
+                Workbook.ScreenUpdating = true;
+            }
         }
         /// <summary>
         /// Handler del click del tasto di selezione rampe. Apre il form per la selezione delle rampe ed esegue il refresh dei check.
@@ -330,10 +300,8 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnRampe_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.WB.SheetChange -= Handler.StoreEdit;
-            Workbook.WB.Application.ScreenUpdating = false;
-            Sheet.Proteggi(false);
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
 
             //prendo il nome sheet e il range selezionato (per poter lavorare su più giorni nel caso ci fosse necessità)
             string sheet = Workbook.WB.ActiveSheet.Name;
@@ -379,10 +347,8 @@ namespace Iren.ToolsExcel
                 rampe.Dispose();
             }
 
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-            Sheet.Proteggi(true);
-            Workbook.WB.Application.ScreenUpdating = true;
-            Workbook.WB.SheetChange += Handler.StoreEdit;
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di aggiornamento dei dati. Aziona la funzione AggiornaDati ed esegue il refresh dei check.
@@ -394,27 +360,17 @@ namespace Iren.ToolsExcel
             var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento dei dati?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
-                SplashScreen.Show();
+                Workbook.ScreenUpdating = false;
+                Sheet.Protected = false;
 
-                Workbook.WB.SheetChange -= Handler.StoreEdit;
-                Workbook.WB.Application.ScreenUpdating = false;
-                Sheet.Proteggi(false);
-                Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
-
-                if (DataBase.OpenConnection())
-                {
-                    AggiornaDati();
+                Aggiorna aggiorna = new Aggiorna();
+                if (aggiorna.Dati())
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
-                }
 
-                _errorPane.RefreshCheck(_checkFunctions);
+                RefreshChecks();
 
-                SplashScreen.Close();
-
-                Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-                Sheet.Proteggi(true);
-                Workbook.WB.Application.ScreenUpdating = true;
-                Workbook.WB.SheetChange += Handler.StoreEdit;
+                Sheet.Protected = true;
+                Workbook.ScreenUpdating = true;
             }
         }
         /// <summary>
@@ -424,20 +380,16 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.WB.Application.ScreenUpdating = false;
-            Sheet.Proteggi(false);
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
             
             FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
             frmAz.ShowDialog();
-            
-            _errorPane.RefreshCheck(_checkFunctions);
 
+            RefreshChecks();
 
-
-            Workbook.WB.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-            Sheet.Proteggi(true);
-            Workbook.WB.Application.ScreenUpdating = true;
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di modifica. Attiva e disattiva la modifica foglio. Nel caso di disattivazione, aggiorna i check.
@@ -446,29 +398,32 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.WB.Application.ScreenUpdating = false;
-            Sheet.Proteggi(false);
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
             Simboli.ModificaDati = btnModifica.Checked;
 
             if (btnModifica.Checked) 
             {
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI_icon;
                 btnModifica.Label = "Modifica SI";
+                Workbook.WB.SheetChange += Handler.StoreEdit;
             }
             else
             {
-                _errorPane.RefreshCheck(_checkFunctions);
+                RefreshChecks();
 
                 //salva modifiche sul db
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
                 btnModifica.Label = "Modifica NO";
+                Workbook.WB.SheetChange -= Handler.StoreEdit;
             }
             Sheet.AbilitaModifica(btnModifica.Checked);
 
-            Sheet.Proteggi(true);
-            Workbook.WB.Application.ScreenUpdating = true;
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di Ottimizzazione.
@@ -477,9 +432,8 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnOttimizza_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.WB.Application.ScreenUpdating = false;
-            Workbook.WB.SheetChange -= Handler.StoreEdit;
-            Sheet.Proteggi(false);
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
 
             Excel.Range rng = Workbook.WB.Application.Selection;
 
@@ -545,9 +499,8 @@ namespace Iren.ToolsExcel
                     SplashScreen.Close();
                 }
             }
-            Sheet.Proteggi(true);
-            Workbook.WB.SheetChange += Handler.StoreEdit;
-            Workbook.WB.Application.ScreenUpdating = true;
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di modifica parametri. Mostra il form di modifica dei parametri utente.
@@ -611,23 +564,31 @@ namespace Iren.ToolsExcel
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnMostraErrorPane_Click(object sender, RibbonControlEventArgs e)
-        {
-            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = false;
-            Sheet.Proteggi(false);
+        {            
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
             if (!Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane)
                 Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = true;
             
             _errorPane.SetDimension(Globals.ThisWorkbook.ActionsPane.Width, Globals.ThisWorkbook.ActionsPane.Height);
             
-            //Check checkFunctions = new Check();
-            //_errorPane.RefreshCheck(checkFunctions);
-            Sheet.Proteggi(true);
-            Globals.ThisWorkbook.ThisApplication.ScreenUpdating = true;
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
 
         #endregion
 
         #region Metodi
+
+        private void RefreshChecks()
+        {
+            try
+            {
+                _errorPane.RefreshCheck(_checkFunctions);                
+            }
+            catch { }
+        }
 
         /// <summary>
         /// Metodo di inizializzazione della Tab Front Office. Visualizza e abilita i tasti in base alle specifiche da DB. Da notare che se ci sono aggiornamenti, bisogna caricare la struttura e riavviare l'applicativo.
@@ -639,7 +600,7 @@ namespace Iren.ToolsExcel
             
             if (DataBase.OpenConnection())
             {
-                Struttura.CaricaApplicazioneRibbon();
+                Repository.CaricaApplicazioneRibbon();
                 controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
                 DataBase.CloseConnection();
             }
@@ -763,7 +724,7 @@ namespace Iren.ToolsExcel
 //        private void AggiornaStruttura()
 //        {
 //            SplashScreen.UpdateStatus("Carico struttura dal DB");
-//            Struttura.AggiornaStrutturaDati();
+//            Repository.AggiornaStrutturaDati();
 
 //            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
 //            categorie.RowFilter = "Operativa = 1";
@@ -777,7 +738,7 @@ namespace Iren.ToolsExcel
 //                }
 //                catch
 //                {
-//                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.WB.Worksheets["Log"]);
+//                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.Log);
 //                    ws.Name = categoria["DesCategoria"].ToString();
 //                    ws.Select();
 //                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
@@ -787,12 +748,12 @@ namespace Iren.ToolsExcel
 //                }
 //            }
 
-//            Workbook.WB.Sheets["Main"].Select();
-//            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
+//            Workbook.Sheets["Main"].Select();
+//            Riepilogo main = new Riepilogo(Workbook.Main);
 //            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
-//            main.LoadStructure();            
+//            main.LoadStructure();
 
-//            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+//            foreach (Excel.Worksheet ws in Workbook.Sheets)
 //            {
 //                if (ws.Name != "Log" && ws.Name != "Main")
 //                {
@@ -801,6 +762,8 @@ namespace Iren.ToolsExcel
 //                    s.LoadStructure();
 //                }
 //            }
+
+
 
 //            SplashScreen.UpdateStatus("Salvo struttura in locale");
 //            Workbook.DumpDataSet();
@@ -817,29 +780,23 @@ namespace Iren.ToolsExcel
         /// <summary>
         /// Attiva l'aggiornamento dei dati contenuti nel foglio senza però alterare la struttura del foglio stesso.
         /// </summary>
-        private void AggiornaDati()
-        {
-            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
-            {
-                if (ws.Name != "Log" && ws.Name != "Main")
-                {
-                    Sheet s = new Sheet(ws);
-                    SplashScreen.UpdateStatus("Aggiornamento dati " + ws.Name);
-                    s.UpdateData(true);
-                }
-            }
-            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-            SplashScreen.UpdateStatus("Aggiornamento Riepilogo");
-            main.UpdateRiepilogo();
-        }
+        //private void AggiornaDati()
+        //{
+        //    foreach (Excel.Worksheet ws in Workbook.Sheets)
+        //    {
+        //        if (ws.Name != "Log" && ws.Name != "Main")
+        //        {
+        //            Sheet s = new Sheet(ws);
+        //            SplashScreen.UpdateStatus("Aggiornamento dati " + ws.Name);
+        //            s.UpdateData(true);
+        //        }
+        //    }
+        //    Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
+        //    SplashScreen.UpdateStatus("Aggiornamento Riepilogo");
+        //    main.UpdateData();
+        //}
 
         #endregion        
-
-        private void btnConfiguraParametri_Click(object sender, RibbonControlEventArgs e)
-        {
-            FormModificaParametri form = new FormModificaParametri();
-            form.Show();
-        }
     }
 
     #region Controls Collection

@@ -29,11 +29,11 @@ namespace Iren.ToolsExcel.Forms
         /// Override del metodo ShowDialog di Windows Forms. Restituisce l'oggetto data selezionato se l'utente ha cambiato la selezione, null altrimenti.
         /// </summary>
         /// <returns>Restituisce l'oggetto data selezionato se l'utente ha cambiato la selezione, null altrimenti.</returns>
-        public new object ShowDialog()
+        public new DateTime ShowDialog()
         {
             base.ShowDialog();
-            if (calObj.SelectionStart == Utility.DataBase.DataAttiva)
-                return null;
+            //if (calObj.SelectionStart == Utility.DataBase.DataAttiva)
+            //    return null;
 
             return calObj.SelectionStart;
         }

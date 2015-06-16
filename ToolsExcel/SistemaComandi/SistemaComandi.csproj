@@ -142,6 +142,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggiorna.cs" />
     <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>

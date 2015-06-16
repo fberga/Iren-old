@@ -93,7 +93,7 @@
     <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </Reference>
-	<Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </Reference>
@@ -114,7 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.Office.Tools.Excel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" >
+    <Reference Include="Microsoft.Office.Tools.Excel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
@@ -127,6 +127,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggiorna.cs" />
     <Compile Include="Log.cs">
       <DependentUpon>InvioProgrammi.xlsm</DependentUpon>
     </Compile>
@@ -140,10 +141,13 @@
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-	<Compile Include="ThisWorkbook.cs">
+    <Compile Include="Riepilogo.cs" />
+    <Compile Include="Sheet.cs" />
+    <Compile Include="SheetExport.cs" />
+    <Compile Include="ThisWorkbook.cs">
       <DependentUpon>InvioProgrammi.xlsm</DependentUpon>
     </Compile>
-	<Compile Include="ThisWorkbook.Designer.cs">
+    <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="..\SistemaComandi\ToolsExcelRibbon.cs">
@@ -156,8 +160,6 @@
     <EmbeddedResource Include="..\SistemaComandi\ToolsExcelRibbon.resx">
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
-    
-   
     <None Include="App.config" />
     <None Include="InvioProgrammi_TemporaryKey.pfx" />
     <None Include="InvioProgrammi.xlsm" />

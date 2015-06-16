@@ -164,11 +164,11 @@ namespace Iren.ToolsExcel.Utility
                 _localDB.Tables.Remove(name);
             }
         }
-        public static void RefreshDate(DateTime dataAttiva) 
+        public static void ChangeDate(DateTime dataAttiva) 
         {
             _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
         }
-        public static void RefreshAppSettings(string key, string value) 
+        public static void ChangeAppSettings(string key, string value) 
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings[key].Value = value;
@@ -177,7 +177,7 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void SwitchEnvironment(string ambiente) 
         {            
-            RefreshAppSettings("DB", ambiente);
+            ChangeAppSettings("DB", ambiente);
             ConfigurationManager.RefreshSection("applicationSettings");
 
             int idA = _db.IdApplicazione;
@@ -509,49 +509,23 @@ namespace Iren.ToolsExcel.Utility
         #endregion
     }
 
-    public class Struttura : DataBase 
+    public class Repository : DataBase
     {
+        #region Variabili
+
+        private static bool _daAggiornare = true;
+
+        #endregion
+
+        #region Proprietà
+
+        public static bool DaAggiornare { get { return _daAggiornare; } set { _daAggiornare = value; } }
+
+        #endregion
+
         #region Metodi
 
-        public static void AggiornaParametriApplicazione(object appID)
-        {
-            DataTable dt = CaricaApplicazione(appID);
-            if (dt.Rows.Count == 0)
-                throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
-
-            Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
-            Struct.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
-            Struct.tipoVisualizzazione = dt.Rows[0]["TipoVisualizzazione"] is DBNull ? "O" : dt.Rows[0]["TipoVisualizzazione"].ToString();
-            Struct.visualizzaRiepilogo = dt.Rows[0]["VisRiepilogo"] is DBNull ? true : dt.Rows[0]["VisRiepilogo"].Equals("1");
-
-            Struct.cell.width.empty = double.Parse(dt.Rows[0]["ColVuotaWidth"].ToString());
-            Struct.cell.width.dato = double.Parse(dt.Rows[0]["ColDatoWidth"].ToString());
-            Struct.cell.width.entita = double.Parse(dt.Rows[0]["ColEntitaWidth"].ToString());
-            Struct.cell.width.informazione = double.Parse(dt.Rows[0]["ColInformazioneWidth"].ToString());
-            Struct.cell.width.unitaMisura = double.Parse(dt.Rows[0]["ColUMWidth"].ToString());
-            Struct.cell.width.parametro = double.Parse(dt.Rows[0]["ColParametroWidth"].ToString());
-            Struct.cell.width.jolly1 = double.Parse(dt.Rows[0]["ColJolly1Width"].ToString());
-            Struct.cell.height.normal = double.Parse(dt.Rows[0]["RowHeight"].ToString());
-            Struct.cell.height.empty = double.Parse(dt.Rows[0]["RowVuotaHeight"].ToString());
-
-            DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
-            DataBase.LocalDB.Tables.Add(dt);
-        }
-        private static DataTable CaricaApplicazione(object idApplicazione)
-        {
-            string name = DataBase.Tab.APPLICAZIONE;
-            DataBase.ResetTable(name);
-            QryParams parameters = new QryParams() 
-            {
-                {"@IdApplicazione", idApplicazione},
-
-            };
-            DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE, parameters);
-            dt.TableName = name;
-            return dt;
-        }
-
-        private static void AggiornaStrutturaDati()
+        public static void Aggiorna()
         {
             CreaTabellaNomiNew();
             CreaTabellaDate();
@@ -1243,70 +1217,6 @@ namespace Iren.ToolsExcel.Utility
 
         #endregion
 
-        public static void Aggiorna(bool logEnabled = true)
-        {
-            SplashScreen.Show();
-            //verifico che la connessione sia funzionante
-            if (DataBase.OpenConnection())
-            {
-                //lancio l'aggiornamento della struttura
-                AggiornaStrutturaFogli();
-                
-                if(logEnabled)
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
-            }
-            SplashScreen.Close();
-        }
-        private static void AggiornaStrutturaFogli()
-        {
-            SplashScreen.UpdateStatus("Carico struttura dal DB");
-            Struttura.AggiornaStrutturaDati();
-
-            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "Operativa = 1";
-
-            foreach (DataRowView categoria in categorie)
-            {
-                Excel.Worksheet ws;
-                try
-                {
-                    ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
-                }
-                catch
-                {
-                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.WB.Worksheets["Log"]);
-                    ws.Name = categoria["DesCategoria"].ToString();
-                    ws.Select();
-                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
-#if !DEBUG
-                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
-#endif
-                }
-            }
-
-            Workbook.WB.Sheets["Main"].Select();
-            Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
-            main.LoadStructure();
-
-            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
-            {
-                if (ws.Name != "Log" && ws.Name != "Main")
-                {
-                    Sheet s = new Sheet(ws);
-                    SplashScreen.UpdateStatus("Aggiorno struttura " + ws.Name);
-                    s.LoadStructure();
-                }
-            }
-
-            SplashScreen.UpdateStatus("Salvo struttura in locale");
-            Workbook.DumpDataSet();
-
-            Workbook.Main.Select();
-            Workbook.Main.Range["A1"].Select();
-            Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
-        }
-
         #endregion
     }
 
@@ -1327,14 +1237,53 @@ namespace Iren.ToolsExcel.Utility
         public static Excel.Worksheet Log { get { return _wb.Sheets["Log"]; } }
         public static Excel.Worksheet ActiveSheet { get { return _wb.ActiveSheet; } }
         public static Excel.Application Application { get { return _wb.Application; } }
-        public static Excel.Sheets Sheets { get { return _wb.Sheets; } }
+        public static IList<Excel.Worksheet> Sheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name != "Log" && ws.Name != "Main").ToList(); } }
         public static System.Version WorkbookVersion { get { return _wbVersion; } }
         public static System.Version CoreVersion { get { return DataBase.DB.GetCurrentV(); } }
         public static System.Version BaseVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+        public static bool ScreenUpdating { get { return Application.ScreenUpdating; } set { Application.ScreenUpdating = value; } }
 
         #endregion
 
         #region Metodi
+
+        private static DataTable CaricaApplicazione(object idApplicazione)
+        {
+            string name = DataBase.Tab.APPLICAZIONE;
+            DataBase.ResetTable(name);
+            QryParams parameters = new QryParams() 
+            {
+                {"@IdApplicazione", idApplicazione},
+
+            };
+            DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE, parameters);
+            dt.TableName = name;
+            return dt;
+        }
+        public static void AggiornaParametriApplicazione()
+        {
+            DataTable dt = CaricaApplicazione(Workbook.AppSettings("AppID"));
+            if (dt.Rows.Count == 0)
+                throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
+
+            Simboli.nomeApplicazione = dt.Rows[0]["DesApplicazione"].ToString();
+            Struct.intervalloGiorni = (dt.Rows[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)dt.Rows[0]["IntervalloGiorniEntita"]);
+            Struct.tipoVisualizzazione = dt.Rows[0]["TipoVisualizzazione"] is DBNull ? "O" : dt.Rows[0]["TipoVisualizzazione"].ToString();
+            Struct.visualizzaRiepilogo = dt.Rows[0]["VisRiepilogo"] is DBNull ? true : dt.Rows[0]["VisRiepilogo"].Equals("1");
+
+            Struct.cell.width.empty = double.Parse(dt.Rows[0]["ColVuotaWidth"].ToString());
+            Struct.cell.width.dato = double.Parse(dt.Rows[0]["ColDatoWidth"].ToString());
+            Struct.cell.width.entita = double.Parse(dt.Rows[0]["ColEntitaWidth"].ToString());
+            Struct.cell.width.informazione = double.Parse(dt.Rows[0]["ColInformazioneWidth"].ToString());
+            Struct.cell.width.unitaMisura = double.Parse(dt.Rows[0]["ColUMWidth"].ToString());
+            Struct.cell.width.parametro = double.Parse(dt.Rows[0]["ColParametroWidth"].ToString());
+            Struct.cell.width.jolly1 = double.Parse(dt.Rows[0]["ColJolly1Width"].ToString());
+            Struct.cell.height.normal = double.Parse(dt.Rows[0]["RowHeight"].ToString());
+            Struct.cell.height.empty = double.Parse(dt.Rows[0]["RowVuotaHeight"].ToString());
+
+            DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
+            DataBase.LocalDB.Tables.Add(dt);
+        }
 
         private static bool SetMercato(ref string appID, ref DateTime dataAttiva)
         {
@@ -1361,10 +1310,12 @@ namespace Iren.ToolsExcel.Utility
                 }
             }
 
+            Simboli.AppID = appID;
+
             if(appID != appIDold || dataAttivaOld != dataAttiva)
             {
-                ConfigurationManager.AppSettings["DataAttiva"] = dataAttiva.ToString("yyyyMMdd");
-                ConfigurationManager.AppSettings["AppID"] = appID.ToString();
+                DataBase.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
+                DataBase.ChangeAppSettings("AppID", appID);
 
                 return true;
             }
@@ -1443,7 +1394,7 @@ namespace Iren.ToolsExcel.Utility
 
             if (DataBase.OpenConnection())
             {
-                Struttura.AggiornaParametriApplicazione(appID);
+                Workbook.AggiornaParametriApplicazione();
 
                 int usr = InitUser();
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), usr, int.Parse(appID));
@@ -1456,13 +1407,7 @@ namespace Iren.ToolsExcel.Utility
 
                 InitLog();
 
-
-                if (aggiornaMercato)
-                {
-                    Workbook.WB.SheetChange -= Handler.StoreEdit;
-                    Struttura.Aggiorna(false);
-                    Workbook.WB.SheetChange += Handler.StoreEdit;
-                }
+                Repository.DaAggiornare = aggiornaMercato;
 
                 return false;
             }
@@ -1490,7 +1435,6 @@ namespace Iren.ToolsExcel.Utility
         {
             _wb = wb;
             _wbVersion = wbVersion;
-            Simboli.nomeFile = _wb.Name;
 
             Application.ScreenUpdating = false;
             Application.Iteration = true;
@@ -1512,9 +1456,13 @@ namespace Iren.ToolsExcel.Utility
 
             Simboli.pwd = AppSettings("pwd");
 
-            Sheet.Proteggi(false);
+            bool wasProtected = Sheet.Protected;
+            if (wasProtected)
+                Sheet.Protected = false;
 
-            DateTime dataAttiva = DateTime.ParseExact(AppSettings("DataInizio"), "yyyyMMdd", CultureInfo.InvariantCulture);
+            Workbook.ScreenUpdating = false;
+
+            DateTime dataAttiva = DateTime.ParseExact(AppSettings("DataAttiva"), "yyyyMMdd", CultureInfo.InvariantCulture);
             bool emergenza = Init(AppSettings("DB"), AppSettings("AppID"), dataAttiva);
 
             Riepilogo r = new Riepilogo(Main);
@@ -1526,14 +1474,11 @@ namespace Iren.ToolsExcel.Utility
 
             InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
 
-            Sheet.Proteggi(true);
+            if (wasProtected)
+                Sheet.Protected = true;
             Application.ScreenUpdating = true;
         }
 
-        public static void AggiornaFormule(Excel.Worksheet ws)
-        {
-            ws.Application.CalculateFull();
-        }
         public static bool CaricaAzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, ACarica carica, object parametro = null)
         {
             DefinedNames nomiDefiniti = new DefinedNames(DefinedNames.GetSheetName(siglaEntita));
@@ -2030,10 +1975,10 @@ namespace Iren.ToolsExcel.Utility
             bool isProtected = true;
             try
             {
-                isProtected = _wb.Sheets["Main"].ProtectContents;
+                isProtected = Main.ProtectContents;
                 
                 if (isProtected)
-                    _wb.Sheets["Main"].Unprotect(Simboli.pwd);
+                    Main.Unprotect(Simboli.pwd);
 
                 if (DataBase.OpenConnection())
                 {
@@ -2053,7 +1998,7 @@ namespace Iren.ToolsExcel.Utility
 
 
                 if (isProtected)
-                    _wb.Sheets["Main"].Protect(Simboli.pwd);
+                    Main.Protect(Simboli.pwd);
             }
             catch
             { }
@@ -2134,11 +2079,11 @@ namespace Iren.ToolsExcel.Utility
             Main.Select();
             if (Simboli.ModificaDati)
             {
-                Sheet.Proteggi(false);
+                Sheet.Protected = false;
                 Simboli.ModificaDati = false;
                 Sheet.AbilitaModifica(false);
                 Sheet.SalvaModifiche();
-                Sheet.Proteggi(true);
+                Sheet.Protected = true;
             }
             DataBase.SalvaModificheDB();
             Save();
@@ -2146,14 +2091,14 @@ namespace Iren.ToolsExcel.Utility
         }
 
 
-        public static string[] GetEmbeddedResourceNames()
-        {
-            return Assembly.GetExecutingAssembly().GetManifestResourceNames();
-        }
-        public static Stream GetEmbeddedResourceStream(string resourceName)
-        {
-            return Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
-        }
+        //public static string[] GetEmbeddedResourceNames()
+        //{
+        //    return Assembly.GetExecutingAssembly().GetManifestResourceNames();
+        //}
+        //public static Stream GetEmbeddedResourceStream(string resourceName)
+        //{
+        //    return Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+        //}
 
         #endregion
     }   

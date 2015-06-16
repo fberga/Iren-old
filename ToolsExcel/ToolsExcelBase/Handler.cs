@@ -69,7 +69,7 @@ namespace Iren.ToolsExcel.Base
                 ws.Unprotect(Simboli.pwd);
 
             if (screenUpdating)
-                Target.Application.ScreenUpdating = false;
+               Workbook.ScreenUpdating = false;
 
             DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
             DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
@@ -164,34 +164,33 @@ namespace Iren.ToolsExcel.Base
         }
         public static void ChangeAmbiente(string ambiente)
         {
-            Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
-            ws.Shapes.Item("lbTest").Locked = false;
+            Workbook.Main.Shapes.Item("lbTest").Locked = false;
             switch (ambiente)
             {
                 case "Dev":
-                    ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: DEVELOPMENT";
+                    Workbook.Main.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: DEVELOPMENT";
                     //rosso
-                    ws.Shapes.Item("lbTest").Line.Weight = 2f;
-                    ws.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
-                    ws.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
+                    Workbook.Main.Shapes.Item("lbTest").Line.Weight = 2f;
+                    Workbook.Main.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
+                    Workbook.Main.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
                     break;
                 case "Test":
-                    ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: TEST";
+                    Workbook.Main.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: TEST";
                     //giallo
-                    ws.Shapes.Item("lbTest").Line.Weight = 2f;
-                    ws.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 204, 0));
-                    ws.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 102));
+                    Workbook.Main.Shapes.Item("lbTest").Line.Weight = 2f;
+                    Workbook.Main.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 204, 0));
+                    Workbook.Main.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 102));
                     break;
                 case "Produzione":
-                    ws.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: PRODUZIONE";
+                    Workbook.Main.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: PRODUZIONE";
                     //bianco normale
-                    ws.Shapes.Item("lbTest").Line.Weight = 0.75f;
-                    ws.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
-                    ws.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
-                    ws.Shapes.Item("lbTest").Line.ForeColor.Brightness = +0.75f;
+                    Workbook.Main.Shapes.Item("lbTest").Line.Weight = 0.75f;
+                    Workbook.Main.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                    Workbook.Main.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
+                    Workbook.Main.Shapes.Item("lbTest").Line.ForeColor.Brightness = +0.75f;
                     break;
             }
-            ws.Shapes.Item("lbTest").Locked = true;
+            Workbook.Main.Shapes.Item("lbTest").Locked = true;
         }
         public static void ChangeStatoDB(Core.DataBase.NomiDB db, bool online)
         {
@@ -236,6 +235,13 @@ namespace Iren.ToolsExcel.Base
 
             if (locked)
                 ws.Protect(Simboli.pwd);
+        }
+
+        public static void ChangeMercatoAttivo(string mercato)
+        {
+            Workbook.Main.Shapes.Item("lbMercato").Locked = false;
+            Workbook.Main.Shapes.Item("lbMercato").TextFrame.Characters().Text = mercato;
+            Workbook.Main.Shapes.Item("lbMercato").Locked = true;
         }
 
         public static void SwitchWorksheet(string name)

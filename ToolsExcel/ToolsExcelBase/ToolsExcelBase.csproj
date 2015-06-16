@@ -85,6 +85,7 @@
     <Compile Include="SplashForm.Designer.cs">
       <DependentUpon>SplashForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Aggiorna.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Esporta.cs" />
     <Compile Include="Optimizer.cs" />

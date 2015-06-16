@@ -55,6 +55,7 @@ namespace Iren.ToolsExcel.Core
             {NomiDB.ELSAG, ConnectionState.Closed}
         };
 
+        private string _ambiente;
         public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
@@ -64,6 +65,7 @@ namespace Iren.ToolsExcel.Core
         public DateTime DataAttiva { get { return DateTime.ParseExact(_dataAttiva, "yyyyMMdd", CultureInfo.InvariantCulture); } }
         public int IdUtenteAttivo { get { return _idUtenteAttivo; } }
         public int IdApplicazione { get { return _idApplicazione; } }
+        public string Ambiente { get { return _ambiente; } }
 
         public Dictionary<NomiDB, ConnectionState> StatoDB { get { return _statoDB; } }
 
@@ -73,11 +75,15 @@ namespace Iren.ToolsExcel.Core
 
         public DataBase(string dbName)
         {
+            _ambiente = dbName;
             try
             {
                 _connStr = ConfigurationManager.ConnectionStrings[dbName].ConnectionString;
                 _sqlConn = new SqlConnection(_connStr);
                 _internalsqlConn = new SqlConnection(_connStr);
+
+                _cmd = new Command(_sqlConn);
+                _internalCmd = new Command(_internalsqlConn);
 
                 checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
 
@@ -87,9 +93,6 @@ namespace Iren.ToolsExcel.Core
             {
                 System.Windows.Forms.MessageBox.Show(e.Message, "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
-
-            _cmd = new Command(_sqlConn);
-            _internalCmd = new Command(_internalsqlConn);
         }
 
         #endregion

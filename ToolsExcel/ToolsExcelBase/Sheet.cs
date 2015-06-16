@@ -21,6 +21,8 @@ namespace Iren.ToolsExcel.Base
         protected DateTime _dataFine;
         protected int _visParametro;
 
+        protected static bool _protetto = true;
+
         #endregion
 
         #region Metodi
@@ -54,32 +56,46 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
-        #region Metodi Statici
+        #region Proprietà Statiche
 
-        public static void Proteggi(bool proteggi)
+        public static bool Protected
         {
-            if(proteggi)
-                Workbook.WB.Protect(Simboli.pwd);
-            else
-                Workbook.WB.Unprotect(Simboli.pwd);
-
-            foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+            get { return _protetto; }
+            set
             {
-                if (proteggi)
-                    if (ws.Name == "Log")
-                        ws.Protect(Simboli.pwd, AllowSorting: true, AllowFiltering: true);
+                if (_protetto != value)
+                {
+                    _protetto = value;
+
+                    if (value)
+                        Workbook.WB.Protect(Simboli.pwd);
                     else
-                        ws.Protect(Simboli.pwd);
-                else
-                    ws.Unprotect(Simboli.pwd);
+                        Workbook.WB.Unprotect(Simboli.pwd);
+
+                    foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+                    {
+                        if (value)
+                            if (ws.Name == "Log")
+                                ws.Protect(Simboli.pwd, AllowSorting: true, AllowFiltering: true);
+                            else
+                                ws.Protect(Simboli.pwd);
+                        else
+                            ws.Unprotect(Simboli.pwd);
+                    }
+                }
             }
         }
+
+        #endregion
+
+        #region Metodi Statici
+
         public static void AbilitaModifica(bool abilita)
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = '1'";
 
-            Proteggi(false);
+            Protected = false;
             foreach (DataRowView categoria in categorie)
             {
                 Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
@@ -101,7 +117,7 @@ namespace Iren.ToolsExcel.Base
                     }
                 }
             }
-            Proteggi(true);
+            Protected = true;
         }
         //public static void SalvaModifiche(DateTime inizio, DateTime fine)
         //{
@@ -207,7 +223,7 @@ namespace Iren.ToolsExcel.Base
 
             _siglaCategoria = categorie[0]["SiglaCategoria"];
 
-            AggiornaParametriApplicazione();
+            AggiornaParametriSheet();
             _definedNames = new DefinedNames(_ws.Name);
         }
         ~Sheet()
@@ -219,7 +235,7 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
-        protected void AggiornaParametriApplicazione()
+        protected void AggiornaParametriSheet()
         {
             DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
 
@@ -241,7 +257,7 @@ namespace Iren.ToolsExcel.Base
                 }
             }
 
-            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"] + (paramApplicazione[0]["TipoVisualizzazione"].Equals("O") ? 2 : 0);
+            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"];// +(paramApplicazione[0]["TipoVisualizzazione"].Equals("O") ? 2 : 0);
             _struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
             _struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
             _struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
@@ -270,9 +286,9 @@ namespace Iren.ToolsExcel.Base
 
         public override void LoadStructure()
         {
+            SplashScreen.UpdateStatus("Aggiorno struttura " + _ws.Name);
             //dimensionamento celle in base ai parametri del DB
-            Struttura.AggiornaParametriApplicazione(Workbook.AppSettings("AppID"));
-            AggiornaParametriApplicazione();
+            //AggiornaParametriSheet();
 
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -349,12 +365,6 @@ namespace Iren.ToolsExcel.Base
             if (_ws.ChartObjects().Count > 0)
                 _ws.ChartObjects().Delete();
 
-            if (_ws.GroupBoxes().Count > 0)
-                _ws.GroupBoxes().Delete();
-
-            if (_ws.OptionButtons().Count > 0)
-                _ws.OptionButtons().Delete();
-
             _ws.UsedRange.EntireColumn.Delete();
             _ws.UsedRange.FormatConditions.Delete();
             _ws.UsedRange.EntireRow.Hidden = false;
@@ -379,7 +389,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.ScrollColumn = 1;
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;
-            Workbook.WB.Sheets["Main"].Select();
+            Workbook.Main.Select();
             _ws.Application.ScreenUpdating = false;
 
             int colInfo = _struttura.colBlock - _visParametro;
@@ -398,17 +408,29 @@ namespace Iren.ToolsExcel.Base
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
             int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
-            //int numElementiMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
                 
             Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + _struttura.numRigheMenu, _struttura.colBlock + dataOreTot - 1]];
             gotoBar.Style = "gotoBarStyle";
             gotoBar.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
 
             //scrivo nome applicazione in alto a sinistra
-            Range title = new Range(_struttura.rigaGoto, 2, 1, _struttura.colBlock - 2);
-            Style.RangeStyle(_ws.Range[title.ToString()], merge: true, bold: true, fontSize: 12, align: Excel.XlHAlign.xlHAlignCenter);
+            Range title = new Range(_struttura.rigaGoto, 2, _struttura.numRigheMenu, _struttura.colBlock - 2);
+
+            int fontSize = 12;
+            double rangeSize = _ws.Range[title.ToString()].Width;
+            for (; fontSize > 0; fontSize--)
+            {
+                Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
+                grfx.PageUnit = GraphicsUnit.Point;
+                SizeF sizeMax = grfx.MeasureString(Simboli.nomeApplicazione.ToUpper(), new Font("Verdana", fontSize, FontStyle.Bold));
+                if (rangeSize > sizeMax.Width)
+                    break;
+            }
+
+            Style.RangeStyle(_ws.Range[title.ToString()], merge: true, bold: true, fontSize: fontSize, align: Excel.XlHAlign.xlHAlignCenter);
             _ws.Range[title.ToString()].Value = Simboli.nomeApplicazione.ToUpper();
 
+            //calcolo numero elementi per riga
             double numEleRiga = _struttura.numEleMenu / Convert.ToDouble(_struttura.numRigheMenu);
 
             int j = 0;
@@ -1348,6 +1370,7 @@ namespace Iren.ToolsExcel.Base
 
             foreach (DataRowView entita in categoriaEntita)
             {
+                SplashScreen.UpdateStatus("Cancello dati " + entita["DesEntita"]);
                 DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
                 informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0'";// AND ValoreDefault IS NULL";
 
@@ -1384,6 +1407,8 @@ namespace Iren.ToolsExcel.Base
 
                         CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
                         {
+                            SplashScreen.UpdateStatus("Cancello dati " + g.ToShortDateString());
+
                             int row = _definedNames.GetRowByName(siglaEntita, info["SiglaInformazione"], suffData);
                             if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                             {

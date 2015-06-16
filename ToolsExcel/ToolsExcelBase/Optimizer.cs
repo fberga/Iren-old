@@ -271,6 +271,7 @@ namespace Iren.ToolsExcel.Base
             AddAdjust(siglaEntita);
             AddConstraints(siglaEntita);
             AddOpt(siglaEntita);
+            SplashScreen.Close();
             Execute(siglaEntita);
             DeleteExistingAdjust();
         }

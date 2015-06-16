@@ -58,7 +58,7 @@ namespace Iren.ToolsExcel.Base
             AggiornaRiepilogo(siglaEntita, siglaAzione, presente, DataBase.DataAttiva);
         }
         public abstract void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif);
-        public abstract void UpdateRiepilogo();
+        public abstract void UpdateData();
         public abstract void RiepilogoInEmergenza();
 
         #endregion
@@ -79,7 +79,7 @@ namespace Iren.ToolsExcel.Base
 
         #region Costruttori
 
-        public Riepilogo() : this((Excel.Worksheet)Utility.Workbook.WB.Sheets["Main"])  { }
+        public Riepilogo() : this(Utility.Workbook.Main)  { }
 
         public Riepilogo(Excel.Worksheet ws)
         {
@@ -149,10 +149,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
 
             DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
-            
-            //carico colori dal DB
-            
-
+           
             //applico colori da DB
             _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
             _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
@@ -160,6 +157,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Shapes.Item("sfondo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbSfondo[0], Simboli.rgbSfondo[1], Simboli.rgbSfondo[2]));
             _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
             _ws.Shapes.Item("lbDataFine").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
+            _ws.Shapes.Item("lbMercato").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
 
             //aggiorna la scritta di modifica dati
             Simboli.ModificaDati = false;
@@ -415,7 +413,7 @@ namespace Iren.ToolsExcel.Base
                 _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
             }
         }
-        public override void UpdateRiepilogo()
+        public override void UpdateData()
         {
             if (_definedNames != null)
             {
