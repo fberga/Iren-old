@@ -365,13 +365,13 @@ namespace Iren.ToolsExcel.Base
             if (_ws.ChartObjects().Count > 0)
                 _ws.ChartObjects().Delete();
 
-            _ws.UsedRange.EntireColumn.Delete();
-            _ws.UsedRange.FormatConditions.Delete();
-            _ws.UsedRange.EntireRow.Hidden = false;
-            _ws.UsedRange.Font.Size = 10;
-            _ws.UsedRange.NumberFormat = "General";
-            _ws.UsedRange.Font.Name = "Verdana";
-            _ws.UsedRange.RowHeight = Struct.cell.height.normal;
+            _ws.Rows.Delete();
+            _ws.Rows.FormatConditions.Delete();
+            _ws.Rows.EntireRow.Hidden = false;
+            _ws.Rows.Font.Size = 10;
+            _ws.Rows.NumberFormat = "General";
+            _ws.Rows.Font.Name = "Verdana";
+            _ws.Rows.RowHeight = Struct.cell.height.normal;
 
             _ws.Columns.ColumnWidth = Struct.cell.width.dato;
 
@@ -666,7 +666,7 @@ namespace Iren.ToolsExcel.Base
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            Range rngTitolo = new Range(_definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visParametro - 1, informazioni.Count);
+            Range rngTitolo = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visParametro - 1, informazioni.Count);
 
             Excel.Range titoloVert = _ws.Range[rngTitolo.ToString()];
             titoloVert.Style = "titoloVertStyle";
@@ -687,7 +687,7 @@ namespace Iren.ToolsExcel.Base
             informazioni.RowFilter += " AND SiglaTipologiaInformazione <> 'GIORNALIERA'";
 
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            Range rng = new Range(_definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol() - _visParametro, informazioni.Count, _definedNames.GetColOffset(_dataFine) + _visParametro);
+            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol() - _visParametro, informazioni.Count, _definedNames.GetColOffset(_dataFine) + _visParametro);
 
             Excel.Range bloccoEntita = _ws.Range[rng.ToString()];
             bloccoEntita.Style = "allDatiStyle";
@@ -725,7 +725,7 @@ namespace Iren.ToolsExcel.Base
             int col = _definedNames.GetFirstCol();
             int colOffset = _definedNames.GetColOffset(_dataFine);
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            int row = _definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio));
+            int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio));
 
             Excel.Range rngRow = _ws.Range[Range.GetRange(row, col - _visParametro, informazioni.Count, colOffset + _visParametro)];
             Excel.Range rngInfo = _ws.Range[Range.GetRange(row, col - _visParametro, informazioni.Count, 2)];
@@ -819,7 +819,7 @@ namespace Iren.ToolsExcel.Base
                 //tolgo la colonna della DATA0H24 dove non serve
                 int offsetAdjust = (_struttura.visData0H24 && info["Data0H24"].Equals("0") ? 1 : 0);
 
-                Range rng = new Range(_definedNames.GetRowByName(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol());
+                Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol());
 
                 if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                     rng.StartColumn -= _visParametro - 1;
@@ -843,10 +843,10 @@ namespace Iren.ToolsExcel.Base
 
                     if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
                     {
-                        rngData.Cells[1].Formula = "=SUM(" + rng.Columns[1, rng.Columns.Count] + ")";
+                        rngData.Cells[1].Formula = "=SUM(" + rng.Columns[1, rng.Columns.Count - 1] + ")";
                         deltaNeg = 1;
                     }
-                    _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - deltaPos].ToString()].Formula = formula;
+                    _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - 1 - deltaPos].ToString()].Formula = formula;
                     _ws.Application.ScreenUpdating = false;
                 }
 
@@ -899,7 +899,7 @@ namespace Iren.ToolsExcel.Base
                 object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 
                 int offsetAdjust = (_struttura.visData0H24 && info["Data0H24"].Equals("0") ? 1 : 0);
-                Range rng = new Range(_definedNames.GetRowByName(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol() + offsetAdjust, 1, colOffset - offsetAdjust);
+                Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol() + offsetAdjust, 1, colOffset - offsetAdjust);
 
                 Excel.Range rngData = _ws.Range[rng.ToString()];
 
@@ -909,7 +909,7 @@ namespace Iren.ToolsExcel.Base
                     string[] valore = format["Valore"].ToString().Replace("\"", "").Split('|');
                     if (format["NomeCella"] != DBNull.Value)
                     {
-                        int refRow = _definedNames.GetRowByName(siglaEntita, format["NomeCella"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
+                        int refRow = _definedNames.GetRowByNameSuffissoData(siglaEntita, format["NomeCella"], Date.GetSuffissoData(_dataInizio));
                         string address = Range.GetRange(refRow, rng.StartColumn);
                         string formula = "";
                         switch ((int)format["Operatore"])
@@ -1009,7 +1009,7 @@ namespace Iren.ToolsExcel.Base
 
                 foreach (DataRowView info in graficiInfo)
                 {
-                    Range rngDati = new Range(_definedNames.GetRowByName(grafico["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), col, 1, colOffset);
+                    Range rngDati = new Range(_definedNames.GetRowByNameSuffissoData(grafico["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), col, 1, colOffset);
                     Excel.Series serie = chart.SeriesCollection().NewSeries();
                     serie.Name = info["DesInformazione"].ToString();
                     serie.Values = _ws.Range[rngDati.ToString()];
@@ -1128,7 +1128,7 @@ namespace Iren.ToolsExcel.Base
 
                     foreach (DataRowView dato in datiApplicazioneD)
                     {
-                        Range rng = new Range(_definedNames.GetRowByName(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _definedNames.GetFirstCol() - 1);
+                        Range rng = new Range(_definedNames.GetRowByNameSuffissoData(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _definedNames.GetFirstCol() - 1);
 
                         _ws.Range[rng.ToString()].Value = dato["Valore"];
                     }
@@ -1409,7 +1409,7 @@ namespace Iren.ToolsExcel.Base
                         {
                             SplashScreen.UpdateStatus("Cancello dati " + g.ToShortDateString());
 
-                            int row = _definedNames.GetRowByName(siglaEntita, info["SiglaInformazione"], suffData);
+                            int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], suffData);
                             if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                             {
                                 Excel.Range rngData = _ws.Range[Range.GetRange(row, col - 1)];
@@ -1435,12 +1435,12 @@ namespace Iren.ToolsExcel.Base
 
                     CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
                     {
-                        Range rngData = new Range(_definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], suffData), _definedNames.GetFirstCol(), informazioni.Count, oreGiorno);                        
+                        Range rngData = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], suffData), _definedNames.GetFirstCol(), informazioni.Count, oreGiorno);                        
 
                         int ore = Date.GetOreGiorno(g);
                         if (ore == 23) 
                         {
-                            _ws.Range[rngData.Columns[rngData.Columns.Count - 2, rngData.Columns.Count].ToString()].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                            _ws.Range[rngData.Columns[rngData.Columns.Count - 2, rngData.Columns.Count - 1].ToString()].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
                         }
                         else if (ore == 24)
                         {

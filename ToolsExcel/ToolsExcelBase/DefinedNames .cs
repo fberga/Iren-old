@@ -260,7 +260,7 @@ namespace Iren.ToolsExcel.Base
             _defNamesIndexByName.Add(GetName(parts), riga);
             //_defNamesIndexByRow(riga, GetName(parts));
         }
-        public void AddDate(int col, params object[] parts)
+        public void AddCol(int col, params object[] parts)
         {
             _defDatesIndexByName.Add(GetName(parts), col);
             _defDatesIndexByCol.Add(col, GetName(parts));
@@ -400,7 +400,7 @@ namespace Iren.ToolsExcel.Base
         {
             return _defNamesIndexByName[name];
         }
-        public int GetRowByName(object siglaEntita, object siglaInformazione, string suffissoData)
+        public int GetRowByNameSuffissoData(object siglaEntita, object siglaInformazione, string suffissoData)
         {
             string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
             return GetRowByName(name);

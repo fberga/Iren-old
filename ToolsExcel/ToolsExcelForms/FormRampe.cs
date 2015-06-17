@@ -56,7 +56,7 @@ namespace Iren.ToolsExcel.Forms
                 _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_RAMPA].DefaultView;
                 _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
                 _sigleRampa = 
-                    (from r in _entitaRampa.ToTable().AsEnumerable()
+                    (from DataRowView r in _entitaRampa
                      select r["SiglaRampa"]).ToList();
 
                 int assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(_siglaEntita));

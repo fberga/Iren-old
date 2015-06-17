@@ -223,13 +223,13 @@ namespace Iren.ToolsExcel.Base
             }
             
             //inserisco tutte le colonne
-            _definedNames.AddDate(_colonnaInizio++, "COLONNA_ENTITA");
+            _definedNames.AddCol(_colonnaInizio++, "COLONNA_ENTITA");
             CicloGiorni((oreGiorno, suffissoData, giorno) => 
             {
                 foreach (DataRowView azione in _azioni)
                 {
                     if (azione["Gerarchia"] != DBNull.Value)
-                        _definedNames.AddDate(_colonnaInizio++, azione["SiglaAzione"], suffissoData);
+                        _definedNames.AddCol(_colonnaInizio++, azione["SiglaAzione"], suffissoData);
                 }
             });
             _definedNames.DumpToDataSet();
@@ -283,15 +283,15 @@ namespace Iren.ToolsExcel.Base
             _ws.Range[rngData.Columns[0].ToString()].Style = "recapEntityBarStyle";
             _ws.Range[rngData.Columns[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
-            Excel.Range xlrng = _ws.Range[rngAll.Rows[1, rngAll.Rows.Count].ToString()];
+            Excel.Range xlrng = _ws.Range[rngAll.Rows[1, rngAll.Rows.Count - 1].ToString()];
             //trovo tutte le aree unite e creo il blocco col bordo grosso
             int i = 0;
             int colspan = 0;
             while (i < xlrng.Columns.Count)
             {
                 colspan = xlrng.Cells[1, i + 1].MergeArea().Columns.Count;
-                _ws.Range[rngAll.Columns[i, i + colspan].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-                _ws.Range[rngAll.Columns[i, i + colspan].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
+                _ws.Range[rngAll.Columns[i, colspan - 1].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+                _ws.Range[rngAll.Columns[i, colspan - 1].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
                 i += colspan;
             }
         }

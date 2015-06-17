@@ -219,11 +219,11 @@ namespace Iren.ToolsExcel.Base
                     return new Range(_r.StartRow + row, _r.StartColumn, 1, _r.ColOffset);
                 }
             }
-            public Range this[int row1, int offset]
+            public Range this[int row1, int row2]
             {
                 get
                 {
-                    return new Range(_r.StartRow + row1, _r.StartColumn, offset - row1, _r.ColOffset);
+                    return new Range(_r.StartRow + row1, _r.StartColumn, row2 - row1 + 1, _r.ColOffset);
                 }
             }
             public int Count
@@ -254,11 +254,11 @@ namespace Iren.ToolsExcel.Base
                     return new Range(_r.StartRow, _r.StartColumn + column, _r.RowOffset, 1);
                 }
             }
-            public Range this[int col1, int offset]
+            public Range this[int col1, int col2]
             {
                 get
                 {
-                    return new Range(_r.StartRow, _r.StartColumn + col1, _r.RowOffset, offset - col1);
+                    return new Range(_r.StartRow, _r.StartColumn + col1, _r.RowOffset, col2 - col1 + 1);
                 }
             }
             public int Count

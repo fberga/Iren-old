@@ -26,7 +26,7 @@ namespace Iren.ToolsExcel
 
             int col = _definedNames.GetFirstCol();
             siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            int row = _definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
+            int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio));
 
             Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row + 1, col + 25, informazioni.Count - 1)];
 
@@ -57,7 +57,7 @@ namespace Iren.ToolsExcel
 
                     foreach (DataRowView nota in note)
                     {
-                        int row = _definedNames.GetRowByName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
+                        int row = _definedNames.GetRowByNameSuffissoData(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
                         int col = _definedNames.GetFirstCol();
                         _ws.Range[Range.GetRange(row, col + 25)].Value = nota["Note"];
                     }
@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel
 
                     CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
                     {
-                        int row = _definedNames.GetRowByName(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
+                        int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
                         _ws.Range[Range.GetRange(row, col, informazioni.Count)].Value = "";
                     });
                 }
