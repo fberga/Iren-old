@@ -564,236 +564,109 @@ namespace Iren.ToolsExcel.Utility
         }
         #region Aggiorna Struttura Dati
 
-        private static bool CreaTabellaNomi(params string[] sheets)
+        private static bool CreaTabellaNomi()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.NOMI_DEFINITI;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultNameTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach(string sheet in sheets) 
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.NOMI_DEFINITI].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.NOMI_DEFINITI;
-
-                    _localDB.Tables.Remove(Tab.NOMI_DEFINITI);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.NOMI_DEFINITI;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultNameTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
             }
-            
-        }
-        private static bool CreaTabellaDate(params string[] sheets)
-        {
-            if (sheets == null)
+            catch (Exception)
             {
-                try
-                {
-                    string name = Tab.DATE_DEFINITE;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultDateTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.DATE_DEFINITE].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.DATE_DEFINITE;
-
-                    _localDB.Tables.Remove(Tab.DATE_DEFINITE);
-                    _localDB.Tables.Add(tmp);
-                }
-                return true;
+                return false;
             }
         }
-        private static bool CreaTabellaAddressFrom(params string[] sheets)
+        private static bool CreaTabellaDate()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.ADDRESS_FROM;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultAddressFromTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.ADDRESS_FROM].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.ADDRESS_FROM;
-
-                    _localDB.Tables.Remove(Tab.ADDRESS_FROM);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.DATE_DEFINITE;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultDateTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
-        private static bool CreaTabellaAddressTo(params string[] sheets)
+        private static bool CreaTabellaAddressFrom()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.ADDRESS_TO;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultAddressToTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.ADDRESS_TO].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.ADDRESS_TO;
-
-                    _localDB.Tables.Remove(Tab.ADDRESS_TO);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.ADDRESS_FROM;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultAddressFromTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
-        private static bool CreaTabellaEditabili(params string[] sheets)
+        private static bool CreaTabellaAddressTo()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.EDITABILI;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultEditableTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.EDITABILI].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.EDITABILI;
-
-                    _localDB.Tables.Remove(Tab.EDITABILI);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.ADDRESS_TO;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultAddressToTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
-        private static bool CreaTabellaSalvaDB(params string[] sheets)
+        private static bool CreaTabellaEditabili()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.SALVADB;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultSaveTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.SALVADB].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.SALVADB;
-
-                    _localDB.Tables.Remove(Tab.SALVADB);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.EDITABILI;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultEditableTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
-        private static bool CreaTabellaAnnotaModifica(params string[] sheets)
+        private static bool CreaTabellaSalvaDB()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.ANNOTA;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultToNoteTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.ANNOTA].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.ANNOTA;
-
-                    _localDB.Tables.Remove(Tab.ANNOTA);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.SALVADB;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultSaveTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CreaTabellaAnnotaModifica()
+        {
+            try
+            {
+                string name = Tab.ANNOTA;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultToNoteTable(name);
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
         private static bool CreaTabellaModifica()
@@ -826,70 +699,34 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
-        private static bool CreaTabellaCheck(params string[] sheets)
+        private static bool CreaTabellaCheck()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.CHECK;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultCheckTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.CHECK].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.CHECK;
-
-                    _localDB.Tables.Remove(Tab.CHECK);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.CHECK;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultCheckTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
-        private static bool CreaTabellaSelection(params string[] sheets)
+        private static bool CreaTabellaSelection()
         {
-            if (sheets == null)
+            try
             {
-                try
-                {
-                    string name = Tab.SELECTION;
-                    ResetTable(name);
-                    DataTable dt = DefinedNames.GetDefaultSelectionTable(name);
-                    _localDB.Tables.Add(dt);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                foreach (string sheet in sheets)
-                {
-                    DataTable tmp =
-                        (from r in _localDB.Tables[Tab.SELECTION].AsEnumerable()
-                         where r["Sheet"] != sheets[1]
-                         select r).CopyToDataTable();
-                    tmp.TableName = Tab.SELECTION;
-
-                    _localDB.Tables.Remove(Tab.SELECTION);
-                    _localDB.Tables.Add(tmp);
-                }
+                string name = Tab.SELECTION;
+                ResetTable(name);
+                DataTable dt = DefinedNames.GetDefaultSelectionTable(name);
+                _localDB.Tables.Add(dt);
                 return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
         private static bool CaricaPathApplicativi()
