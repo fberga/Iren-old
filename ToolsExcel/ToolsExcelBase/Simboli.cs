@@ -140,7 +140,14 @@ namespace Iren.ToolsExcel.Base
                 //int index = appIDs.IndexOf(value);
                 //mercatoAttivo = mercati[index];
                 Handler.ChangeMercatoAttivo(mercati[appIDs.IndexOf(value)]);
+                mercato = mercati[appIDs.IndexOf(value)];
             }
+        }
+
+        private static string mercato;
+        public static string Mercato
+        {
+            get { return mercato; }
         }
 
         //public const string NameSpace = "Iren.ToolsExcel";

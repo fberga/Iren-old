@@ -1071,7 +1071,7 @@ namespace Iren.ToolsExcel.Base
             {
                 if (DataBase.OpenConnection())
                 {
-                    SplashScreen.UpdateStatus("Carico informazioni");
+                    //SplashScreen.UpdateStatus("Carico informazioni");
 
                     DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                     DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
@@ -1106,6 +1106,7 @@ namespace Iren.ToolsExcel.Base
 
                             datiApplicazioneH.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
 
+                            SplashScreen.UpdateStatus("Carico informazioni " + entita["SiglaEntita"]);
                             CaricaInformazioniEntita(datiApplicazioneH);
                             if (all)
                             {
@@ -1140,12 +1141,10 @@ namespace Iren.ToolsExcel.Base
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
-        private void CaricaInformazioniEntita(DataView datiApplicazione)
+        protected virtual void CaricaInformazioniEntita(DataView datiApplicazione)
         {
             foreach (DataRowView dato in datiApplicazione)
             {
-                SplashScreen.UpdateStatus("Carico informazioni " + dato["SiglaEntita"]);
-
                 DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
                 //sono nel caso DATA0H24
                 if (giorno < DataBase.DataAttiva)
@@ -1169,7 +1168,7 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-        private void CaricaCommentiEntita(DataView insertManuali)
+        protected virtual void CaricaCommentiEntita(DataView insertManuali)
         {
             foreach (DataRowView commento in insertManuali)
             {

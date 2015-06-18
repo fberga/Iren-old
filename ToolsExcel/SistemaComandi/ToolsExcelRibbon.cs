@@ -274,6 +274,9 @@ namespace Iren.ToolsExcel
 
                     DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd")).DefaultView;
 
+                    //if (ConfigurationManager.AppSettings["Mercati"] != null)
+                    //    aggiorna.Struttura();
+                    //else 
                     if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
                         aggiorna.Struttura();
                     else
@@ -577,6 +580,19 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = true;
         }
 
+        private void cmbMSD_TextChanged(object sender, RibbonControlEventArgs e)
+        {
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
+            Workbook.ChangeMercato(cmbMSD.Text);
+            Aggiorna aggiorna = new Aggiorna();
+            aggiorna.Struttura();
+
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
+        }
+
         #endregion
 
         #region Metodi
@@ -634,6 +650,25 @@ namespace Iren.ToolsExcel
                 List<RibbonGroup> groups = FrontOffice.Groups.ToList();
                 foreach (RibbonGroup group in groups)
                     group.Visible = group.Items.Any(c => c.Visible);
+
+                if (groupMSD.Visible)
+                {
+                    if (ConfigurationManager.AppSettings["Mercati"] != null)
+                    {
+                        string[] mercati = ConfigurationManager.AppSettings["Mercati"].Split('|');
+                        cmbMSD.Items.Clear();
+                        foreach (string mercato in mercati)
+                        {
+                            RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                            i.Label = mercato;
+                            cmbMSD.Items.Add(i);
+                            cmbMSD.TextChanged -= cmbMSD_TextChanged;
+                            cmbMSD.Text = mercato;
+                            cmbMSD.TextChanged += cmbMSD_TextChanged;
+                        }
+                    }
+
+                }
             }
             else
             {
@@ -713,6 +748,7 @@ namespace Iren.ToolsExcel
 
             _allDisabled = false;
         }
+
         /// <summary>
         /// Attiva l'aggiornamento della struttura del foglio che consiste in:
         ///  - azzerare il dataset locale 

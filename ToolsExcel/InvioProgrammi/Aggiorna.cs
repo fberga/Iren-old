@@ -66,7 +66,7 @@ namespace Iren.ToolsExcel
                     Excel.Worksheet ws;
                     try
                     {
-                        ws = Workbook.WB.Worksheets[msd];
+                        ws = Workbook.WB.Sheets[msd];
                     }
                     catch
                     {
@@ -74,6 +74,10 @@ namespace Iren.ToolsExcel
                         ws.Name = msd;
                         ws.Select();
                         Workbook.WB.Application.Windows[1].DisplayGridlines = false;
+                        
+                        //aggiorno la struttura del foglio appena creato
+                        //SheetExport se = new SheetExport(ws);
+                        //se.LoadStructure();
                     }
                 }
 
@@ -85,6 +89,8 @@ namespace Iren.ToolsExcel
 
                 SplashScreen.UpdateStatus("Salvo struttura in locale");
                 Workbook.DumpDataSet();
+
+                AggiornaColoriVariazioni();
 
                 Workbook.Main.Select();
                 Workbook.Main.Range["A1"].Select();
@@ -108,22 +114,16 @@ namespace Iren.ToolsExcel
 
         protected override void StrutturaFogli()
         {
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.MSDSheets)
             {
-                if (!ws.Name.StartsWith("MSD"))
-                {
-                    Sheet s = new Sheet(ws);
-                    s.LoadStructure();
-                }
+                SheetExport se = new SheetExport(ws);
+                se.LoadStructure();
             }
 
             foreach (Excel.Worksheet ws in Workbook.Sheets)
             {
-                if (ws.Name.StartsWith("MSD"))
-                {
-                    SheetExport s = new SheetExport(ws);
-                    s.LoadStructure();
-                }
+                Sheet s = new Sheet(ws);
+                s.LoadStructure();    
             }
         }
 
@@ -132,6 +132,128 @@ namespace Iren.ToolsExcel
             Riepilogo riepilogo = new Riepilogo();
             riepilogo.LoadStructure();
         }
+
+        private void AggiornaColoriVariazioni()
+        {
+            string mercatoPrec = "";
+            if (Simboli.Mercato == "MSD2")
+                mercatoPrec = "MSD1";
+            else if (Simboli.Mercato == "MSD3")
+                mercatoPrec = "MSD2";
+            else if (Simboli.Mercato == "MSD4")
+                mercatoPrec = "MSD3";
+
+            if (mercatoPrec != "")
+            {
+                DefinedNames defNamesMercatoPrec = new DefinedNames(mercatoPrec);
+                DefinedNames definedNames = new DefinedNames();
+
+                DataTable categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
+                DataView categoria = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+                DataView categoriaEntitaView = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA]);
+                DataView informazioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE]);
+
+                categoriaEntitaView.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
+                string desCategoria = "";
+
+                foreach (DataRowView entita in categoriaEntitaView)
+                {
+                    categoria.RowFilter = "SiglaCategoria = '" + entita["SiglaCategoria"] + "' AND Operativa = '1'";
+
+                    if (!desCategoria.Equals(categoria[0]["DesCategoria"])) 
+                    {
+                        desCategoria = categoria[0]["DesCategoria"].ToString();
+                        definedNames = new DefinedNames(desCategoria);
+                    }
+                    SplashScreen.UpdateStatus("Aggiorno i colori delle variazioni di " + entita["DesEntita"]);
+
+                    List<DataRow> entitaRif =
+                        (from r in categoriaEntita.AsEnumerable()
+                         where r["Gerarchia"].Equals(entita["SiglaEntita"])
+                         select r).ToList();
+
+                    bool hasEntitaRif = entitaRif.Count > 0;
+                    int numEntita = Math.Max(entitaRif.Count, 1);
+
+                    for (int i = 0; i < numEntita; i++)
+                    {
+                        informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Visibile = '1' " + (hasEntitaRif ? "AND SiglaEntitaRif = '" + entitaRif[i]["SiglaEntita"] + "'" : "");
+
+                        for (int j = 0; j < informazioni.Count; j++)
+                        {
+                            Range rngMercatoAttuale = definedNames.Get(hasEntitaRif ? entitaRif[i]["SiglaEntita"] : entita["SiglaEntita"], informazioni[j]["SiglaInformazione"]).Extend(colOffset: Date.GetOreGiorno(DataBase.DataAttiva));
+
+                            Range rngMercatoPrec = new Range(defNamesMercatoPrec.GetRowByName(entita["SiglaEntita"], "UM", "T") + 2, defNamesMercatoPrec.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ" + (j + 1)), rowOffset: Date.GetOreGiorno(DataBase.DataAttiva));
+
+                            for (int k = 0; k < rngMercatoAttuale.Columns.Count; k++)
+                            {
+                                decimal valMercatoAttuale = (decimal)(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()].Value ?? 0);
+                                decimal valMercatoPrec = (decimal)(Workbook.WB.Sheets[mercatoPrec].Range[rngMercatoPrec.Rows[k].ToString()].Value ?? 0);
+
+                                if (valMercatoPrec > valMercatoAttuale)
+                                {
+                                    Style.RangeStyle(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 38);
+                                    Style.RangeStyle(Workbook.WB.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 38);
+                                }
+                                else if (valMercatoPrec < valMercatoAttuale)
+                                {
+                                    Style.RangeStyle(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 4);
+                                    Style.RangeStyle(Workbook.WB.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 4);
+                                }
+                                else
+                                {
+                                    Style.RangeStyle(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 2);
+                                    Style.RangeStyle(Workbook.WB.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        //public override bool Dati()
+        //{
+        //    if (DataBase.OpenConnection())
+        //    {
+        //        SplashScreen.Show();
+
+        //        bool wasProtected = Sheet.Protected;
+        //        if (wasProtected)
+        //            Sheet.Protected = false;
+
+        //        Workbook.ScreenUpdating = false;
+
+        //        SplashScreen.UpdateStatus("Aggiorno dati Riepilogo");
+        //        DatiRiepilogo();
+        //        SplashScreen.UpdateStatus("Aggiorno dati Fogli");
+        //        DatiFogli();
+
+        //        if (wasProtected)
+        //            Sheet.Protected = true;
+        //        Workbook.ScreenUpdating = true;
+        //        SplashScreen.Close();
+
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        System.Windows.Forms.MessageBox.Show("Impossibile aggiornare i dati: ci sono problemi di connessione o la funzione Forza Emergenza è attiva.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+        //        return false;
+        //    }
+        //}
+        //protected override void DatiFogli()
+        //{
+        //    foreach (Excel.Worksheet ws in Workbook.Sheets)
+        //    {
+        //        Sheet s = new Sheet(ws);
+        //        s.UpdateData(true);
+        //    }
+        //}
+
     }
 
 }

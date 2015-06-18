@@ -289,6 +289,17 @@ namespace Iren.ToolsExcel.Base
                     return new Range(_r.StartRow + row, _r.StartColumn + column);
                 }
             }
+            public int Count
+            {
+                get
+                {
+                    return _r.ColOffset * _r.RowOffset;
+                }
+            }
+            public IEnumerator GetEnumerator()
+            {
+                return new CellsEnum(_r);
+            }
         }
 
         public class RowsEnum : IEnumerator
@@ -349,7 +360,44 @@ namespace Iren.ToolsExcel.Base
                 _position = -1;
             }
         }
+        public class CellsEnum : IEnumerator
+        {
+            Range _r;
+            int _xPosition = -1;
+            int _yPosition = 0;
+            int _xOffset = -1;
+            int _yOffset = -1;
 
+            public CellsEnum(Range r)
+            {
+                _r = r;
+                _xOffset = _r.ColOffset;
+                _yOffset = _r.RowOffset;
+
+            }
+
+            public object Current
+            {
+                get { return _r.Cells[_yPosition, _xPosition]; }
+            }
+
+            public bool MoveNext()
+            {
+                _xPosition++;
+                if (_xPosition == _xOffset)
+                {
+                    _xPosition = 0;
+                    _yPosition++;
+                }
+                return _yPosition < _yOffset;
+            }
+
+            public void Reset()
+            {
+                _xPosition = -1;
+                _yPosition = 0;
+            }
+        }
         #endregion
 
     }

@@ -154,7 +154,7 @@ namespace Iren.ToolsExcel.Forms
 
             string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
 
-            bool gone = Workbook.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, _carica,  dataEmissione);
+            bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif,  dataEmissione);
 
             Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
             r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);

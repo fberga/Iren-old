@@ -103,7 +103,7 @@ namespace Iren.ToolsExcel
             {
                 colonnaAttiva++;
                 for (int j = 0; j < 4; j++)
-                    _definedNames.AddCol(colonnaAttiva++, "RIF" + (i + 1), "Q" + (j + 1));
+                    _definedNames.AddCol(colonnaAttiva++, "RIF" + (i + 1), "PROGRAMMAQ" + (j + 1));
             }
         }
 
@@ -119,15 +119,9 @@ namespace Iren.ToolsExcel
             _rigaAttiva = _struttura.rigaBlock + 1;
 
             foreach (DataRowView entita in categoriaEntita)
-            {
                 InitBloccoEntita(entita);
 
-
-
-            }
-
-
-
+            _definedNames.DumpToDataSet();
         }
 
         protected void InitBloccoEntita(DataRowView entita)
@@ -142,23 +136,31 @@ namespace Iren.ToolsExcel
         }
         protected void CreaNomiCelle(object siglaEntita)
         {
-            _definedNames.AddName(_rigaAttiva, siglaEntita, _mercato, "T");
+            _definedNames.AddName(_rigaAttiva, siglaEntita, "T");
             _rigaAttiva += 2;
-            _definedNames.AddName(_rigaAttiva, siglaEntita, _mercato, "DATA");
+            _definedNames.AddName(_rigaAttiva, siglaEntita, "DATA");
             _rigaAttiva += 2;
-            _definedNames.AddName(_rigaAttiva, siglaEntita, _mercato, "UM", "T");
+            _definedNames.AddName(_rigaAttiva, siglaEntita, "UM", "T");
+            
+            //definisco dei nomi fittizi per collegare l'entitàRif all'entità in gerarchia ad essa collegata
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            DataTable entitaRif = informazioni.ToTable(true, "SiglaEntita", "SiglaEntitaRif");
+
+            for (int i = 0; i < entitaRif.Rows.Count; i++)
+                _definedNames.AddName(_rigaAttiva + i + 1, entitaRif.Rows[i]["SiglaEntitaRif"] is DBNull ? siglaEntita : entitaRif.Rows[i]["SiglaEntitaRif"], siglaEntita, "RIF" + (i + 1));
+
             _rigaAttiva += Date.GetOreGiorno(DataBase.DataAttiva) + 5;
         }
         protected void FormattaBloccoEntita(object siglaEntita, object desEntita, object codiceRUP)
         {
             //Titolo
-            Range rng = new Range(_definedNames.GetRowByName(siglaEntita, _mercato, "T"), _struttura.colBlock, 1, 10);
+            Range rng = new Range(_definedNames.GetRowByName(siglaEntita, "T"), _struttura.colBlock, 1, 10);
             Style.RangeStyle(_ws.Range[rng.ToString()], fontSize: 12, merge: true, bold: true, align: Excel.XlHAlign.xlHAlignCenter, borders: "[top:medium,right:medium,bottom:medium,left:medium]");
             _ws.Range[rng.ToString()].Value = "PROGRAMMA A 15 MINUTI " + desEntita;
             _ws.Range[rng.ToString()].RowHeight = 25;
 
             //Data
-            rng = new Range(_definedNames.GetRowByName(siglaEntita, _mercato, "DATA"), _struttura.colBlock, 1, 5);
+            rng = new Range(_definedNames.GetRowByName(siglaEntita, "DATA"), _struttura.colBlock, 1, 5);
             Style.RangeStyle(_ws.Range[rng.ToString()], fontSize: 10, bold: true, align: Excel.XlHAlign.xlHAlignCenter, borders: "[top:medium,right:medium,bottom:medium,left:medium,insidev:medium]", numberFormat: "dd/MM/yyyy");
             _ws.Range[rng.ToString()].RowHeight = 18;
             _ws.Range[rng.Columns[0].ToString()].Value = "Data";
@@ -170,7 +172,6 @@ namespace Iren.ToolsExcel
             DataTable categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
-            //Calcolo il massimo numero di entità da mettere affiancate
             List<DataRow> entitaRif =
                 (from r in categoriaEntita.AsEnumerable()
                  where r["Gerarchia"].Equals(siglaEntita)
@@ -179,13 +180,13 @@ namespace Iren.ToolsExcel
             bool hasEntitaRif = entitaRif.Count > 0;
             int numEntita = Math.Max(entitaRif.Count, 1);
 
-            rng = new Range(_definedNames.GetRowByName(siglaEntita, _mercato, "UM", "T"), _struttura.colBlock, 1, 5 * numEntita);
+            rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _struttura.colBlock, 1, 5 * numEntita);
             for (int i = 0; i < numEntita; i++)
             {
                 informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND Visibile = '1' " + (hasEntitaRif ? "AND SiglaEntitaRif = '" + entitaRif[i]["SiglaEntita"] + "'" : "");
                 
                 //range grande come tutta la tabella
-                rng = new Range(_definedNames.GetRowByName(siglaEntita, _mercato, "UM", "T"), _definedNames.GetColFromName("RIF" + (i + 1), "Q1") - 1, Date.GetOreGiorno(DataBase.DataAttiva) + 2, 5);
+                rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _definedNames.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1") - 1, Date.GetOreGiorno(DataBase.DataAttiva) + 2, 5);
 
                 Style.RangeStyle(_ws.Range[rng.ToString()], borders: "[top:medium,right:medium,bottom:medium,left:medium,insideH:thin,insideV:thin]", align: Excel.XlHAlign.xlHAlignCenter);
                 Style.RangeStyle(_ws.Range[rng.Rows[1, rng.Rows.Count - 1].Columns[0].ToString()], backColor: 15, bold: true, align: Excel.XlHAlign.xlHAlignLeft);
@@ -199,7 +200,6 @@ namespace Iren.ToolsExcel
 
                 for (int h = 1; h <= Date.GetOreGiorno(DataBase.DataAttiva); h++)
                     _ws.Range[rng.Columns[0].Rows[h + 1].ToString()].Value = "Ora " + h;
-
 
                 if (informazioni.Count == 4)
                 {

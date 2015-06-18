@@ -35,10 +35,6 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ToolsExcelRibbon));
-            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl1 = this.Factory.CreateRibbonDropDownItem();
-            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl2 = this.Factory.CreateRibbonDropDownItem();
-            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl3 = this.Factory.CreateRibbonDropDownItem();
-            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl4 = this.Factory.CreateRibbonDropDownItem();
             this.FrontOffice = this.Factory.CreateRibbonTab();
             this.groupChiudi = this.Factory.CreateRibbonGroup();
             this.btnChiudi = this.Factory.CreateRibbonButton();
@@ -76,6 +72,9 @@
             this.btnSistemaComandi = this.Factory.CreateRibbonToggleButton();
             this.groupErrori = this.Factory.CreateRibbonGroup();
             this.btnMostraErrorPane = this.Factory.CreateRibbonButton();
+            this.groupMSD = this.Factory.CreateRibbonGroup();
+            this.labelMSD = this.Factory.CreateRibbonLabel();
+            this.cmbMSD = this.Factory.CreateRibbonComboBox();
             this.TabHome = this.Factory.CreateRibbonTab();
             this.TabInsert = this.Factory.CreateRibbonTab();
             this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
@@ -88,9 +87,6 @@
             this.TabPrintPreview = this.Factory.CreateRibbonTab();
             this.TabBackgroundRemoval = this.Factory.CreateRibbonTab();
             this.TabSmartArtToolsDesign = this.Factory.CreateRibbonTab();
-            this.groupMSD = this.Factory.CreateRibbonGroup();
-            this.cmbMSD = this.Factory.CreateRibbonComboBox();
-            this.labelMSD = this.Factory.CreateRibbonLabel();
             this.FrontOffice.SuspendLayout();
             this.groupChiudi.SuspendLayout();
             this.groupConfigura.SuspendLayout();
@@ -102,6 +98,7 @@
             this.groupFileRete.SuspendLayout();
             this.groupFileLocali.SuspendLayout();
             this.groupErrori.SuspendLayout();
+            this.groupMSD.SuspendLayout();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -114,7 +111,6 @@
             this.TabPrintPreview.SuspendLayout();
             this.TabBackgroundRemoval.SuspendLayout();
             this.TabSmartArtToolsDesign.SuspendLayout();
-            this.groupMSD.SuspendLayout();
             // 
             // FrontOffice
             // 
@@ -446,6 +442,25 @@
             this.btnMostraErrorPane.ShowImage = true;
             this.btnMostraErrorPane.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnMostraErrorPane_Click);
             // 
+            // groupMSD
+            // 
+            this.groupMSD.Items.Add(this.labelMSD);
+            this.groupMSD.Items.Add(this.cmbMSD);
+            this.groupMSD.Label = "MSD";
+            this.groupMSD.Name = "groupMSD";
+            // 
+            // labelMSD
+            // 
+            this.labelMSD.Label = "Mercato MSD";
+            this.labelMSD.Name = "labelMSD";
+            // 
+            // cmbMSD
+            // 
+            this.cmbMSD.Label = "Mercato MSD";
+            this.cmbMSD.Name = "cmbMSD";
+            this.cmbMSD.ShowLabel = false;
+            this.cmbMSD.Text = null;
+            // 
             // TabHome
             // 
             this.TabHome.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
@@ -537,32 +552,6 @@
             this.TabSmartArtToolsDesign.Label = "TabSmartArtToolsDesign";
             this.TabSmartArtToolsDesign.Name = "TabSmartArtToolsDesign";
             // 
-            // groupMSD
-            // 
-            this.groupMSD.Items.Add(this.labelMSD);
-            this.groupMSD.Items.Add(this.cmbMSD);
-            this.groupMSD.Label = "MSD";
-            this.groupMSD.Name = "groupMSD";
-            // 
-            // cmbMSD
-            // 
-            ribbonDropDownItemImpl1.Label = "MSD1";
-            ribbonDropDownItemImpl2.Label = "MSD2";
-            ribbonDropDownItemImpl3.Label = "MSD3";
-            ribbonDropDownItemImpl4.Label = "MSD4";
-            this.cmbMSD.Items.Add(ribbonDropDownItemImpl1);
-            this.cmbMSD.Items.Add(ribbonDropDownItemImpl2);
-            this.cmbMSD.Items.Add(ribbonDropDownItemImpl3);
-            this.cmbMSD.Items.Add(ribbonDropDownItemImpl4);
-            this.cmbMSD.Label = "Mercato MSD";
-            this.cmbMSD.Name = "cmbMSD";
-            this.cmbMSD.ShowLabel = false;
-            // 
-            // labelMSD
-            // 
-            this.labelMSD.Label = "Mercato MSD";
-            this.labelMSD.Name = "labelMSD";
-            // 
             // ToolsExcelRibbon
             // 
             this.Name = "ToolsExcelRibbon";
@@ -604,6 +593,8 @@
             this.groupFileLocali.PerformLayout();
             this.groupErrori.ResumeLayout(false);
             this.groupErrori.PerformLayout();
+            this.groupMSD.ResumeLayout(false);
+            this.groupMSD.PerformLayout();
             this.TabHome.ResumeLayout(false);
             this.TabHome.PerformLayout();
             this.TabInsert.ResumeLayout(false);
@@ -628,8 +619,6 @@
             this.TabBackgroundRemoval.PerformLayout();
             this.TabSmartArtToolsDesign.ResumeLayout(false);
             this.TabSmartArtToolsDesign.PerformLayout();
-            this.groupMSD.ResumeLayout(false);
-            this.groupMSD.PerformLayout();
 
         }
 

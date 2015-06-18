@@ -178,8 +178,8 @@ namespace Iren.ToolsExcel.Base
                 _selections.Add(new Selection(rif, peers));
             }
         }
-        
 
+        public DefinedNames() { }
         public DefinedNames(string sheet, InitType type = InitType.NamingOnly)
         {
             _sheet = sheet;
@@ -490,6 +490,15 @@ namespace Iren.ToolsExcel.Base
         {
             string name = GetName(parts);
             return _defNamesIndexByName.Count(kv => kv.Key.StartsWith(name)) > 0;
+        }
+
+        public string[] GetFullNameByParts(params object[] parts)
+        {
+            string name = GetName(parts);
+            return
+                (from kv in _defNamesIndexByName
+                 where kv.Key.StartsWith(name)
+                 select kv.Key).ToArray();
         }
 
         public Range Get(params object[] parts)

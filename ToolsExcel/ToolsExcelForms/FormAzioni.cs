@@ -430,12 +430,12 @@ namespace Iren.ToolsExcel.Forms
                                         switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                                         {
                                             case "CARICA":
-                                                presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
+                                                presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
                                                 _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                 caricaOrGenera = true;
                                                 break;
                                             case "GENERA":
-                                                presente = Workbook.CaricaAzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, carica: _carica);
+                                                presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
                                                 _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                 caricaOrGenera = true;
                                                 break;
