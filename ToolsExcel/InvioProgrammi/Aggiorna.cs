@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel
                 SplashScreen.UpdateStatus("Salvo struttura in locale");
                 Workbook.DumpDataSet();
 
-                AggiornaColoriVariazioni();
+                //AggiornaColoriVariazioni();
 
                 Workbook.Main.Select();
                 Workbook.Main.Range["A1"].Select();
@@ -111,7 +111,6 @@ namespace Iren.ToolsExcel
                 return false;
             }
         }
-
         protected override void StrutturaFogli()
         {
             foreach (Excel.Worksheet ws in Workbook.MSDSheets)
@@ -126,7 +125,6 @@ namespace Iren.ToolsExcel
                 s.LoadStructure();    
             }
         }
-
         protected override void StrutturaRiepilogo()
         {
             Riepilogo riepilogo = new Riepilogo();
@@ -135,15 +133,9 @@ namespace Iren.ToolsExcel
 
         private void AggiornaColoriVariazioni()
         {
-            string mercatoPrec = "";
-            if (Simboli.Mercato == "MSD2")
-                mercatoPrec = "MSD1";
-            else if (Simboli.Mercato == "MSD3")
-                mercatoPrec = "MSD2";
-            else if (Simboli.Mercato == "MSD4")
-                mercatoPrec = "MSD3";
-
-            if (mercatoPrec != "")
+            string mercatoPrec = Simboli.GetMercatoPrec();
+            
+            if (mercatoPrec != null)
             {
                 DefinedNames defNamesMercatoPrec = new DefinedNames(mercatoPrec);
                 DefinedNames definedNames = new DefinedNames();
@@ -212,6 +204,52 @@ namespace Iren.ToolsExcel
             }
         }
 
+
+        public override bool Dati()
+        {
+            if (DataBase.OpenConnection())
+            {
+                SplashScreen.Show();
+
+                bool wasProtected = Sheet.Protected;
+                if (wasProtected)
+                    Sheet.Protected = false;
+
+                Workbook.ScreenUpdating = false;
+
+                SplashScreen.UpdateStatus("Aggiorno dati Riepilogo");
+                DatiRiepilogo();
+                SplashScreen.UpdateStatus("Aggiorno dati Fogli");
+                DatiFogli();
+
+                if (wasProtected)
+                    Sheet.Protected = true;
+                Workbook.ScreenUpdating = true;
+                SplashScreen.Close();
+
+                return true;
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("Impossibile aggiornare i dati: ci sono problemi di connessione o la funzione Forza Emergenza è attiva.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+
+                return false;
+            }
+        }
+        protected override void DatiFogli()
+        {
+            foreach (Excel.Worksheet ws in Workbook.MSDSheets)
+            {
+                SheetExport se = new SheetExport(ws);
+                se.UpdateData(true);
+            }
+
+            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            {
+                Sheet s = new Sheet(ws);
+                s.UpdateData(true);
+            }
+        }
 
 
         //public override bool Dati()

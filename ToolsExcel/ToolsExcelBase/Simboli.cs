@@ -134,13 +134,8 @@ namespace Iren.ToolsExcel.Base
             get { return appID; }
             set 
             {
-                List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
-                List<string> appIDs = new List<string>(ConfigurationManager.AppSettings["AppIDMSD"].Split('|'));
-
-                //int index = appIDs.IndexOf(value);
-                //mercatoAttivo = mercati[index];
-                Handler.ChangeMercatoAttivo(mercati[appIDs.IndexOf(value)]);
-                mercato = mercati[appIDs.IndexOf(value)];
+                mercato = GetMercatoByAppID(value);
+                Handler.ChangeMercatoAttivo(mercato);
             }
         }
 
@@ -150,7 +145,33 @@ namespace Iren.ToolsExcel.Base
             get { return mercato; }
         }
 
-        //public const string NameSpace = "Iren.ToolsExcel";
+        public static string GetMercatoByAppID(string id)
+        {
+            List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
+            List<string> appIDs = new List<string>(ConfigurationManager.AppSettings["AppIDMSD"].Split('|'));
+
+            return mercati[appIDs.IndexOf(id)];
+        }
+        public static string GetAppIDByMercato(string mercato)
+        {
+            List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
+            List<string> appIDs = new List<string>(ConfigurationManager.AppSettings["AppIDMSD"].Split('|'));
+
+            return appIDs[mercati.IndexOf(mercato)];
+        }
+        public static string GetMercatoPrec()
+        {
+            return GetMercatoPrec(mercato);
+        }
+        public static string GetMercatoPrec(string mercato)
+        {
+            List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
+            int index = mercati.IndexOf(mercato);
+            if(index > 0)
+                return mercati[index - 1];
+
+            return null;
+        }
 
         public static int[] rgbSfondo = { 183, 222, 232 };
         public static int[] rgbLinee = { 33, 89, 104 };

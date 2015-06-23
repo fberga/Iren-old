@@ -1071,7 +1071,7 @@ namespace Iren.ToolsExcel.Base
             {
                 if (DataBase.OpenConnection())
                 {
-                    //SplashScreen.UpdateStatus("Carico informazioni");
+                    SplashScreen.UpdateStatus("Carico informazioni " + _ws.Name);
 
                     DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                     DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;

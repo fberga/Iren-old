@@ -2,9 +2,11 @@
 using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
@@ -39,7 +41,7 @@ namespace Iren.ToolsExcel
         }
 
         private void Clear()
-        {
+        {            
             if (_ws.ChartObjects().Count > 0)
                 _ws.ChartObjects().Delete();
 
@@ -70,8 +72,6 @@ namespace Iren.ToolsExcel
         }
         protected void InitBarraNavigazione()
         {
-            SplashScreen.UpdateStatus("Inizializzo barra di navigazione '" + _mercato + "'");
-
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
 
             Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, categoriaEntita.Count + 3]];
@@ -109,6 +109,8 @@ namespace Iren.ToolsExcel
 
         public override void LoadStructure()
         {
+            SplashScreen.UpdateStatus("Creo struttura " + _mercato);
+
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
 
@@ -122,6 +124,8 @@ namespace Iren.ToolsExcel
                 InitBloccoEntita(entita);
 
             _definedNames.DumpToDataSet();
+
+            CaricaInformazioni(all: true);
         }
 
         protected void InitBloccoEntita(DataRowView entita)
@@ -132,7 +136,6 @@ namespace Iren.ToolsExcel
             CreaNomiCelle(entita["SiglaEntita"]);
             FormattaBloccoEntita(entita["SiglaEntita"], entita["DesEntita"], entita["CodiceRUP"]);
 
-
         }
         protected void CreaNomiCelle(object siglaEntita)
         {
@@ -141,14 +144,6 @@ namespace Iren.ToolsExcel
             _definedNames.AddName(_rigaAttiva, siglaEntita, "DATA");
             _rigaAttiva += 2;
             _definedNames.AddName(_rigaAttiva, siglaEntita, "UM", "T");
-            
-            //definisco dei nomi fittizi per collegare l'entitàRif all'entità in gerarchia ad essa collegata
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-            DataTable entitaRif = informazioni.ToTable(true, "SiglaEntita", "SiglaEntitaRif");
-
-            for (int i = 0; i < entitaRif.Rows.Count; i++)
-                _definedNames.AddName(_rigaAttiva + i + 1, entitaRif.Rows[i]["SiglaEntitaRif"] is DBNull ? siglaEntita : entitaRif.Rows[i]["SiglaEntitaRif"], siglaEntita, "RIF" + (i + 1));
-
             _rigaAttiva += Date.GetOreGiorno(DataBase.DataAttiva) + 5;
         }
         protected void FormattaBloccoEntita(object siglaEntita, object desEntita, object codiceRUP)
@@ -188,7 +183,7 @@ namespace Iren.ToolsExcel
                 //range grande come tutta la tabella
                 rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _definedNames.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1") - 1, Date.GetOreGiorno(DataBase.DataAttiva) + 2, 5);
 
-                Style.RangeStyle(_ws.Range[rng.ToString()], borders: "[top:medium,right:medium,bottom:medium,left:medium,insideH:thin,insideV:thin]", align: Excel.XlHAlign.xlHAlignCenter);
+                Style.RangeStyle(_ws.Range[rng.ToString()], borders: "[top:medium,right:medium,bottom:medium,left:medium,insideH:thin,insideV:thin]", align: Excel.XlHAlign.xlHAlignCenter, numberFormat: informazioni[0]["Formato"]);
                 Style.RangeStyle(_ws.Range[rng.Rows[1, rng.Rows.Count - 1].Columns[0].ToString()], backColor: 15, bold: true, align: Excel.XlHAlign.xlHAlignLeft);
                 Style.RangeStyle(_ws.Range[rng.Rows[0].ToString()], backColor: 15, bold: true, fontSize: 11);
                 Style.RangeStyle(_ws.Range[rng.Rows[1].ToString()], backColor: 15, bold: true);
@@ -209,33 +204,106 @@ namespace Iren.ToolsExcel
                 else
                     _ws.Range[rng.Cells[1,1].ToString()].Value = "0-60";
 
+                if (_mercato != "MSD1")
+                {
+                    string mercatoPrec = Simboli.GetMercatoPrec(_mercato);
+
+                    Excel.FormatCondition condGreater = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " > '" + mercatoPrec + "'!" + rng.Cells[2, 1]);
+                    condGreater.Interior.ColorIndex = 4;
+
+                    Excel.FormatCondition condLess = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " < '" + mercatoPrec + "'!" + rng.Cells[2, 1]);
+                    condLess.Interior.ColorIndex = 38;
+                }
+                
+
             }
         }
 
-
         public override void UpdateData(bool all = true)
         {
-            throw new NotImplementedException();
+            SplashScreen.UpdateStatus("Aggiorno informazioni");
+            if (all)
+            {
+                CancellaDati();
+                AggiornaDateTitoli();
+            }
+            CaricaInformazioni(all);            
         }
+        private void CancellaDati()
+        {
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
 
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                List<DataRow> entitaRif =
+                   (from r in categoriaEntita.Table.AsEnumerable()
+                    where r["Gerarchia"].Equals(entita["SiglaEntita"])
+                    select r).ToList();
+
+                int numEntita = Math.Max(entitaRif.Count, 1);
+
+                for (int i = 0; i < numEntita; i++)
+                {
+                    Range rng = new Range(_definedNames.GetRowByName(entita["SiglaEntita"], "UM", "T") + 2, _definedNames.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1"), Date.GetOreGiorno(DataBase.DataAttiva) + 2, 4);
+
+                    _ws.Range[rng.ToString()].Value = null;
+                }
+            }
+        }
         public override void AggiornaDateTitoli()
         {
-            throw new NotImplementedException();
-        }
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
 
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                Range rng = new Range(_definedNames.GetRowByName(entita["SiglaEntita"], "DATA"), _struttura.colBlock + 1);
+                _ws.Range[rng.ToString()].Value = DataBase.DataAttiva;
+            }
+        }
         public override void AggiornaGrafici()
         {
-            throw new NotImplementedException();
         }
-
         protected override void InsertPersonalizzazioni(object siglaEntita)
-        {
-            throw new NotImplementedException();
+        {            
         }
 
         public override void CaricaInformazioni(bool all)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (DataBase.OpenConnection())
+                {
+                    SplashScreen.UpdateStatus("Carico informazioni " + _mercato);
+                    _dataInizio = DataBase.DB.DataAttiva;
+
+                    DataView datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + Simboli.GetAppIDByMercato(_ws.Name) + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")).DefaultView;
+
+                    var listaEntitaInfo =
+                        (from DataRowView r in datiApplicazioneH
+                         group r by new { SiglaEntita = r["SiglaEntita"], SiglaInformazione = r["SiglaInformazione"], Riferimento = r["Riferimento"] } into g
+                         select new { SiglaEntita = g.Key.SiglaEntita.ToString(), SiglaInformazione = g.Key.SiglaInformazione.ToString(), Riferimento = g.Key.Riferimento.ToString() }).ToList();
+
+                    foreach (var entitaInfo in listaEntitaInfo)
+                    {
+                        datiApplicazioneH.RowFilter = "SiglaEntita = '" + entitaInfo.SiglaEntita + "' AND SiglaInformazione = '" + entitaInfo.SiglaInformazione + "' AND Riferimento = " + entitaInfo.Riferimento;
+
+                        string quarter = Regex.Match(entitaInfo.SiglaInformazione, @"Q\d").Value;
+                        quarter = quarter == "" ? "Q1" : quarter;
+
+                        Range rng = new Range(_definedNames.GetRowByName(entitaInfo.SiglaEntita, "UM", "T") + 2, _definedNames.GetColFromName("RIF" + datiApplicazioneH[0]["Riferimento"], "PROGRAMMA" + quarter)).Extend(rowOffset: datiApplicazioneH.Count);
+
+                        for (int i = 0; i <rng.Rows.Count; i++)
+                            _ws.Range[rng.Rows[i].ToString()].Value = datiApplicazioneH[i]["Valore"];
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni InvioProgrammi SheetExport [all = " + all + "]: " + e.Message);
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
     }
 }

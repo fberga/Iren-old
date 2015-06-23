@@ -130,8 +130,8 @@ namespace Iren.ToolsExcel.Forms
             DateTime precedingFV = r == 0 ? DateTime.MinValue : (DateTime)dt.Rows[r - 1]["Fine Validità"];
 
             return
-                currentIV > DateTime.Today.AddDays(1)                       //posso inserire un parametro con IV >= domani
-                && precedingFV > DateTime.Today                             //posso arretrare di 1 giorno la fine validità della riga sopra
+                currentIV > DateTime.Today                                  //posso inserire un parametro con IV >= oggi
+                && precedingFV > DateTime.Today.AddDays(-1)                 //posso arretrare di 1 giorno la fine validità della riga sopra
                 && precedingIV != precedingFV;                              //ho spazio per ridimensionare la fine validità della riga sopra
         }
         private bool CheckIfInsertAfterAllowed(DataTable dt, int r)
@@ -147,8 +147,8 @@ namespace Iren.ToolsExcel.Forms
             DateTime subsequentIV = (DateTime)dt.Rows[r + 1]["Inizio Validità"];
 
             return
-                subsequentIV > DateTime.Today.AddDays(1)                    //posso inserire un parametro con IV >= domani
-                && currentFV > DateTime.Today                               //posso arretrare di 1 giorno la fine validità della riga corrente
+                subsequentIV > DateTime.Today                               //posso inserire un parametro con IV >= oggi
+                && currentFV > DateTime.Today.AddDays(-1)                   //posso arretrare di 1 giorno la fine validità della riga corrente
                 && currentIV < currentFV;                                   //ho spazio per ridimensionare la fine validità della riga corrente
         }
         private void RefreshMenuItems()
@@ -180,7 +180,7 @@ namespace Iren.ToolsExcel.Forms
                         inserisciSopraTopMenu.Enabled = false;
                     }
 
-                    if ((DateTime)dataGridParametriD["Inizio Validità", index].Value > DateTime.Today)
+                    if ((DateTime)dataGridParametriD["Inizio Validità", index].Value > DateTime.Today.AddDays(-1))
                     {
                         modificareValoreContextMenu.Enabled = true;
                         cancellaParametroContextMenu.Enabled = true;
@@ -328,9 +328,9 @@ namespace Iren.ToolsExcel.Forms
                         {
                             dataGridParametriD.EditingControl.Text = date.ToString("dd/MM/yyyy");
 
-                            if (date < DateTime.Today.AddDays(1))
+                            if (date < DateTime.Today)
                             {
-                                MessageBox.Show("La data di inizio vaidità non può essere antecedente a domani!", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("La data di inizio vaidità non può essere antecedente a oggi!", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 e.Cancel = true;
                             }
                         }
@@ -520,7 +520,7 @@ namespace Iren.ToolsExcel.Forms
             
             DataTable dt = (DataTable)dataGridParametriD.DataSource;
 
-            DateTime precedingFV = dt.Rows[index]["Fine Validità"] is DBNull ? DateTime.Today : (DateTime)dt.Rows[index]["Fine Validità"];
+            DateTime precedingFV = dt.Rows[index]["Fine Validità"] is DBNull ? DateTime.Today.AddDays(-1) : (DateTime)dt.Rows[index]["Fine Validità"];
             DateTime iv = precedingFV.AddDays(1);
             DateTime fv = dt.Rows[index]["Fine Validità"] is DBNull ? DateTime.MaxValue : ((DateTime)dt.Rows[index + 1]["Inizio Validità"]).AddDays(-1);
 
