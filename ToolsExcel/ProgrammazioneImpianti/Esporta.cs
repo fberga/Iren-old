@@ -19,33 +19,6 @@ namespace Iren.ToolsExcel
 {
     public class Esporta : AEsporta
     {
-        public override bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
-        {
-            try
-            {
-                if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif))
-                {
-                    if(_db.OpenConnection())
-                        Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
-                    
-                    _db.CloseConnection();
-                    
-                    return true;
-                }
-
-                return false;
-            }
-            catch (Exception e)
-            {
-                if (_db.OpenConnection())
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
-
-                _db.CloseConnection();
-
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                return false;
-            }
-        }
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
@@ -90,7 +63,7 @@ namespace Iren.ToolsExcel
                     {
                         object siglaEntitaRif = (info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"]);
                         
-                        Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
+                        Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
                         Range range = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData);
                         range.Extend(0, definedNames.GetDayOffset(suffissoData) - 1);
                         Excel.Range rng = ws.Range[range.ToString()];

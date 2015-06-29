@@ -18,7 +18,7 @@ namespace Iren.ToolsExcel
 
         protected override void StrutturaFogli()
         {
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.LoadStructure();
@@ -32,7 +32,7 @@ namespace Iren.ToolsExcel
 
         protected override void DatiFogli()
         {
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.UpdateData(true);

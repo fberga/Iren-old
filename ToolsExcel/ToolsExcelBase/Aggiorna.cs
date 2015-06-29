@@ -57,16 +57,16 @@ namespace Iren.ToolsExcel.Base
                     Excel.Worksheet ws;
                     try
                     {
-                        ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
+                        ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
                     }
                     catch
                     {
-                        ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.Log);
+                        ws = (Excel.Worksheet)Workbook.Sheets.Add(Workbook.Log);
                         ws.Name = categoria["DesCategoria"].ToString();
                         ws.Select();
-                        Workbook.WB.Application.Windows[1].DisplayGridlines = false;
+                        Workbook.Application.Windows[1].DisplayGridlines = false;
 #if !DEBUG
-                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
+                    Workbook.Application.ActiveWindow.DisplayHeadings = false;
 #endif
                     }
                 }
@@ -82,7 +82,7 @@ namespace Iren.ToolsExcel.Base
 
                 Workbook.Main.Select();
                 Workbook.Main.Range["A1"].Select();
-                Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
+                Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
                 
                 if (wasProtected)
                     Sheet.Protected = true;
@@ -106,7 +106,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected override void StrutturaFogli()
         {
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.LoadStructure();
@@ -146,7 +146,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected override void DatiFogli()
         {
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.UpdateData(true);
@@ -178,10 +178,9 @@ namespace Iren.ToolsExcel.Base
             Workbook.ScreenUpdating = true;
             SplashScreen.Close();
         }
-
         protected override void EmergenzaFogli()
         {
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.AggiornaDateTitoli();

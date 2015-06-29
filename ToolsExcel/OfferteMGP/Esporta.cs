@@ -52,7 +52,7 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.WB.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
 
                 string suffissoData = Utility.Date.GetSuffissoData(dataRif);
                 int oreGiorno = Utility.Date.GetOreGiorno(dataRif);

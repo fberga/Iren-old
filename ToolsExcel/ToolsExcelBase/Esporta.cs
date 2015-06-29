@@ -22,7 +22,33 @@ namespace Iren.ToolsExcel.Base
         protected Core.DataBase _db = Utility.DataBase.DB;
         protected DataSet _localDB = Utility.DataBase.LocalDB;
 
-        public abstract bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
+        public virtual bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
+        {
+            try
+            {
+                if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif))
+                {
+                    if (_db.OpenConnection())
+                        Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+
+                    _db.CloseConnection();
+
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                if (_db.OpenConnection())
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+
+                _db.CloseConnection();
+
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                return false;
+            }
+        }
         protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
 
         protected Outlook.Application GetOutlookInstance()
@@ -79,12 +105,10 @@ namespace Iren.ToolsExcel.Base
 
     public class Esporta : AEsporta
     {
-
         public override bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             return true;
         }
-
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             return true;

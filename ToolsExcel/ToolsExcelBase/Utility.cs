@@ -347,7 +347,7 @@ namespace Iren.ToolsExcel.Utility
 
                 _localDB.Tables[Tab.LOG].Merge(dt);
 
-                Excel.Worksheet ws = Workbook.WB.Sheets["Log"];
+                Excel.Worksheet ws = Workbook.Log;
                 if (ws.ListObjects.Count > 0)
                     ws.ListObjects[1].Range.EntireColumn.AutoFit();
             }
@@ -408,7 +408,7 @@ namespace Iren.ToolsExcel.Utility
     {
         #region Metodi
 
-        public static string PreparePath(string path) 
+        public static string PreparePath(string path, string codRup = "") 
         {
             Regex options = new Regex(@"\[\w+\]");
             path = options.Replace(path, match =>
@@ -419,6 +419,17 @@ namespace Iren.ToolsExcel.Utility
                 {
                     case "appname":
                         o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
+                        break;
+                    case "msd":
+                        o = Simboli.Mercato;
+                        break;
+                    case "codrup":
+                        o = codRup;
+                        break;
+                    //aggiungere qui tutti i formati data da considerare nella forma
+                    //case "formato data":
+                    case "yyyymmdd":
+                        o = DataBase.DataAttiva.ToString(opt);
                         break;
                 }
 
@@ -1238,7 +1249,8 @@ namespace Iren.ToolsExcel.Utility
         public static Excel.Worksheet Log { get { return _wb.Sheets["Log"]; } }
         public static Excel.Worksheet ActiveSheet { get { return _wb.ActiveSheet; } }
         public static Excel.Application Application { get { return _wb.Application; } }
-        public static IList<Excel.Worksheet> Sheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name != "Log" && ws.Name != "Main" && !ws.Name.StartsWith("MSD")).ToList(); } }
+        public static IList<Excel.Worksheet> CategorySheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name != "Log" && ws.Name != "Main" && !ws.Name.StartsWith("MSD")).ToList(); } }
+        public static Excel.Sheets Sheets { get { return _wb.Sheets; } }
         public static IList<Excel.Worksheet> MSDSheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name.StartsWith("MSD")).ToList(); } }
         public static System.Version WorkbookVersion { get { return _wbVersion; } }
         public static System.Version CoreVersion { get { return DataBase.DB.GetCurrentV(); } }
@@ -1317,7 +1329,7 @@ namespace Iren.ToolsExcel.Utility
             if(appID != appIDold || dataAttivaOld != dataAttiva)
             {
                 DataBase.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
-                DataBase.ChangeAppSettings("AppID", appID);
+                Simboli.AppID = appID;
 
                 return true;
             }
@@ -1328,17 +1340,8 @@ namespace Iren.ToolsExcel.Utility
         public static void ChangeMercato(string mercato)
         {
             //configuro il mercato attivo
-            string[] mercatiDisp = ConfigurationManager.AppSettings["Mercati"].Split('|');
-            string[] appIDs = ConfigurationManager.AppSettings["AppIDMSD"].Split('|');
-            for (int i = 0; i < mercatiDisp.Length; i++)
-            {
-                if (mercatiDisp[i] == mercato)
-                {
-                    Simboli.AppID = appIDs[i];
-                    DataBase.ChangeAppSettings("AppID", appIDs[i]);
-                    break;
-                }
-            }
+            Simboli.AppID = Simboli.GetAppIDByMercato(mercato);
+            
         }
         
         public static void InitLog()
@@ -1460,7 +1463,7 @@ namespace Iren.ToolsExcel.Utility
 
             Style.StdStyles();
 
-            foreach (Excel.Worksheet ws in Sheets)
+            foreach (Excel.Worksheet ws in CategorySheets)
             {
                 ws.Activate();
                 ws.Range["A1"].Select();

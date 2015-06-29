@@ -1,4 +1,5 @@
 ﻿using Iren.ToolsExcel.Core;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 
@@ -45,7 +46,7 @@ namespace Iren.ToolsExcel.Base
                         Utility.Workbook.Main.Protect(pwd);
 
                     if (screenUpdating)
-                        Utility.Workbook.WB.Application.ScreenUpdating = true;
+                        Utility.Workbook.Application.ScreenUpdating = true;
                 }
             }
         }
@@ -127,13 +128,14 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        //private static string mercatoAttivo = "";
         private static string appID = "";
         public static string AppID
         {
             get { return appID; }
             set 
             {
+                appID = value;
+                Utility.DataBase.ChangeAppSettings("AppID", value);
                 mercato = GetMercatoByAppID(value);
                 Handler.ChangeMercatoAttivo(mercato);
             }

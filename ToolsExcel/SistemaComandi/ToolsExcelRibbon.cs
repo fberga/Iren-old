@@ -80,7 +80,7 @@ namespace Iren.ToolsExcel
             Globals.Main.Activate();
 #endif
             //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
-            if (Workbook.Sheets.Count == 0 || Repository.DaAggiornare)
+            if (Workbook.CategorySheets.Count == 0 || Repository.DaAggiornare)
             {
                 Aggiorna aggiorna = new Aggiorna();
                 aggiorna.Struttura();
@@ -307,8 +307,8 @@ namespace Iren.ToolsExcel
             Sheet.Protected = false;
 
             //prendo il nome sheet e il range selezionato (per poter lavorare su più giorni nel caso ci fosse necessità)
-            string sheet = Workbook.WB.ActiveSheet.Name;
-            Excel.Range rng = Workbook.WB.Application.Selection;
+            string sheet = Workbook.ActiveSheet.Name;
+            Excel.Range rng = Workbook.Application.Selection;
             
             DefinedNames definedNames = new DefinedNames(sheet);
             FormSelezioneUP selUP = new FormSelezioneUP("PQNR_PROFILO");
@@ -329,14 +329,14 @@ namespace Iren.ToolsExcel
                     if (System.Windows.Forms.MessageBox.Show("L'operazione selezionata non è disponibile per l'UP selezionata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                         && selUP.ShowDialog().ToString() != "")
                     {
-                        Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
+                        Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
                         rampe.ShowDialog();
                         rampe.Dispose();
                     }
                 }
                 else
                 {
-                    Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
+                    Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
                     rampe.ShowDialog();
                     rampe.Dispose();
                 }
@@ -345,7 +345,7 @@ namespace Iren.ToolsExcel
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                 && selUP.ShowDialog().ToString() != "")
             {
-                Forms.FormRampe rampe = new FormRampe(Workbook.WB.Application.Selection);
+                Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
                 rampe.ShowDialog();
                 rampe.Dispose();
             }
@@ -438,9 +438,9 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Excel.Range rng = Workbook.WB.Application.Selection;
+            Excel.Range rng = Workbook.Application.Selection;
 
-            DefinedNames definedNames = new DefinedNames(Workbook.WB.ActiveSheet.Name, DefinedNames.InitType.NamingOnly);
+            DefinedNames definedNames = new DefinedNames(Workbook.ActiveSheet.Name, DefinedNames.InitType.NamingOnly);
 
             //inizializzo ottimizzatore e il form di selezione entità per l'ottimo.
             Optimizer opt = new Optimizer();
@@ -662,10 +662,11 @@ namespace Iren.ToolsExcel
                             RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
                             i.Label = mercato;
                             cmbMSD.Items.Add(i);
-                            cmbMSD.TextChanged -= cmbMSD_TextChanged;
-                            cmbMSD.Text = mercato;
-                            cmbMSD.TextChanged += cmbMSD_TextChanged;
                         }
+
+                        cmbMSD.TextChanged -= cmbMSD_TextChanged;
+                        cmbMSD.Text = Simboli.Mercato;
+                        cmbMSD.TextChanged += cmbMSD_TextChanged;
                     }
 
                 }

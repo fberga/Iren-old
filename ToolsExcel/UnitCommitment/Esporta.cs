@@ -12,7 +12,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
-    public class Esporta : Base.Esporta
+    public class Esporta : AEsporta
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
@@ -35,7 +35,7 @@ namespace Iren.ToolsExcel
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
             DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.NamingOnly);
 
-            Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
+            Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
             switch (siglaAzione.ToString())
             {

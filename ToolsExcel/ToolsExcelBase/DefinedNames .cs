@@ -322,6 +322,11 @@ namespace Iren.ToolsExcel.Base
         {
             return _defNamesIndexByName.ElementAt(0).Value;
         }
+
+        public int GetLastCol()
+        {
+            return _defDatesIndexByCol.Last().Key;
+        }
         
         public int GetColFromDate()
         {

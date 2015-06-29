@@ -17,14 +17,20 @@ namespace Iren.ToolsExcel
     {
         #region Variabili
 
-        DefinedNames _definedNamesMercatoAttivo = new DefinedNames(Simboli.Mercato);
+        DefinedNames _definedNamesSheetMercato = new DefinedNames("MSD1");  //non mi interessa sapere il mercato... sono tutti uguali
+        string _mercatoPrec = Simboli.GetMercatoPrec();
+        Excel.Worksheet _wsMercatoPrec;
 
         #endregion
 
         #region Costruttori
 
         public Sheet(Excel.Worksheet ws) 
-            : base(ws) {}
+            : base(ws) 
+        {
+            _wsMercatoPrec = Workbook.Sheets[this._mercatoPrec ?? "MSD1"];
+        
+        }
         
         #endregion
 
@@ -44,30 +50,37 @@ namespace Iren.ToolsExcel
             titoloVert.Value = null;
         }
 
+        protected override void InsertInformazioniEntita()
+        {
+            base.InsertInformazioniEntita();
+        }
+
         protected override void CaricaInformazioniEntita(DataView datiApplicazione)
         {
-            foreach (DataRowView dato in datiApplicazione)
+            base.CaricaInformazioniEntita(datiApplicazione);
+            if (_mercatoPrec != null)
             {
-                DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
-                //sono nel caso DATA0H24
-                if (giorno < DataBase.DataAttiva)
-                {
-                    Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24));
-                    _ws.Range[rng.ToString()].Value = dato["H24"];
-                }
-                else
-                {
-                    Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
-                    List<object> o = new List<object>(dato.Row.ItemArray);
-                    o.RemoveRange(o.Count - 3, 3);
-                    _ws.Range[rng.ToString()].Value = o.ToArray();
+                SplashScreen.UpdateStatus("Aggiorno colori");
+                DataTable entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
 
-                    if (giorno == DataBase.DataAttiva && Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
-                    {
-                        Selection s = _definedNames.GetSelectionByRif(rng);
-                        s.ClearSelections(_ws);
-                        s.Select(_ws, int.Parse(o[0].ToString().Split('.')[0]));
-                    }
+                foreach (DataRowView dato in datiApplicazione)
+                {
+                    DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                    Range rngMercato = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
+
+                    string quarter = Regex.Match(dato["SiglaInformazione"].ToString(), @"Q\d").Value;
+                    quarter = quarter == "" ? "Q1" : quarter;
+
+                    var rif =
+                        (from r in entita.AsEnumerable()
+                         where r["SiglaEntita"].Equals(dato["SiglaEntita"])
+                         select new {SiglaEntita = r["Gerarchia"] is DBNull ? r["SiglaEntita"] : r["Gerarchia"], Riferimento = r["Riferimento"]}).First();
+
+
+                    Range rngMercatoPrec = new Range(_definedNamesSheetMercato.GetRowByName(rif.SiglaEntita, "UM", "T") + 2, _definedNamesSheetMercato.GetColFromName("RIF" + rif.Riferimento, "PROGRAMMA" + quarter)).Extend(rowOffset: Date.GetOreGiorno(giorno));
+
+                    for (int j = 0; j < rngMercatoPrec.Rows.Count; j++)
+                        _ws.Range[rngMercato.Columns[j].ToString()].Interior.ColorIndex = _wsMercatoPrec.Range[rngMercatoPrec.Rows[j].ToString()].DisplayFormat.Interior.ColorIndex;
                 }
             }
         }

@@ -53,10 +53,10 @@ namespace Iren.ToolsExcel.Base
         {
             if (address != "")
             {
-                Excel.Range rng = (Excel.Range)Workbook.WB.Application.Range[address];
+                Excel.Range rng = (Excel.Range)Workbook.Application.Range[address];
                 rng.Worksheet.Activate();
                 rng.Select();
-                Workbook.WB.Application.ActiveWindow.SmallScroll(rng.Row - Workbook.WB.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
+                Workbook.Application.ActiveWindow.SmallScroll(rng.Row - Workbook.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
             }
         }
 
@@ -142,7 +142,7 @@ namespace Iren.ToolsExcel.Base
 
         public static void ChangeModificaDati(bool modifica)
         {
-            Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+            Excel.Worksheet ws = Workbook.Sheets["Main"];
             ws.Shapes.Item("lbModifica").Locked = false;
             ws.Shapes.Item("lbModifica").TextFrame.Characters().Text = "Modifica dati: " + (modifica ? "SI" : "NO");
             if (modifica) 
@@ -212,7 +212,7 @@ namespace Iren.ToolsExcel.Base
                     break;
             }
 
-            Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+            Excel.Worksheet ws = Workbook.Main;
             var locked = ws.ProtectContents;
             if (locked)
                 ws.Unprotect(Simboli.pwd);
@@ -255,17 +255,17 @@ namespace Iren.ToolsExcel.Base
 #endif
             if (!IsWorkbookOpen(name))
             {
-                Workbook.WB.Application.Workbooks.Open(path);
+                Workbook.Application.Workbooks.Open(path);
             }
             else
             {
                 try
                 {
-                    Workbook.WB.Application.Workbooks[name + ".xlsm"].Activate();
+                    Workbook.Application.Workbooks[name + ".xlsm"].Activate();
                 }
                 catch(Exception)
                 {
-                    Workbook.WB.Application.Workbooks[name].Activate();
+                    Workbook.Application.Workbooks[name].Activate();
                 }
             }
         }
@@ -274,7 +274,7 @@ namespace Iren.ToolsExcel.Base
         {
             try
             {
-                Microsoft.Office.Interop.Excel._Workbook wb = Workbook.WB.Application.Workbooks[name + ".xlsm"];
+                Microsoft.Office.Interop.Excel._Workbook wb = Workbook.Application.Workbooks[name + ".xlsm"];
                 return true;
             }
             catch

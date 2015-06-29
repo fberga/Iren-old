@@ -156,7 +156,7 @@ namespace Iren.ToolsExcel.Forms
 
             bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif,  dataEmissione);
 
-            Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
+            Riepilogo r = new Riepilogo(Workbook.Main);
             r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
 
             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");

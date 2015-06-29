@@ -44,16 +44,16 @@ namespace Iren.ToolsExcel
                     Excel.Worksheet ws;
                     try
                     {
-                        ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
+                        ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
                     }
                     catch
                     {
-                        ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.Log);
+                        ws = (Excel.Worksheet)Workbook.Sheets.Add(Workbook.Log);
                         ws.Name = categoria["DesCategoria"].ToString();
                         ws.Select();
-                        Workbook.WB.Application.Windows[1].DisplayGridlines = false;
+                        Workbook.Application.Windows[1].DisplayGridlines = false;
 #if !DEBUG
-                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
+                    Workbook.Application.ActiveWindow.DisplayHeadings = false;
 #endif
                     }
                 }
@@ -66,14 +66,14 @@ namespace Iren.ToolsExcel
                     Excel.Worksheet ws;
                     try
                     {
-                        ws = Workbook.WB.Sheets[msd];
+                        ws = Workbook.Sheets[msd];
                     }
                     catch
                     {
-                        ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.Log);
+                        ws = (Excel.Worksheet)Workbook.Sheets.Add(Workbook.Log);
                         ws.Name = msd;
                         ws.Select();
-                        Workbook.WB.Application.Windows[1].DisplayGridlines = false;
+                        Workbook.Application.Windows[1].DisplayGridlines = false;
                         
                         //aggiorno la struttura del foglio appena creato
                         //SheetExport se = new SheetExport(ws);
@@ -94,7 +94,7 @@ namespace Iren.ToolsExcel
 
                 Workbook.Main.Select();
                 Workbook.Main.Range["A1"].Select();
-                Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
+                Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
                 if (wasProtected)
                     Sheet.Protected = true;
@@ -119,7 +119,7 @@ namespace Iren.ToolsExcel
                 se.LoadStructure();
             }
 
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.LoadStructure();    
@@ -179,23 +179,23 @@ namespace Iren.ToolsExcel
 
                             for (int k = 0; k < rngMercatoAttuale.Columns.Count; k++)
                             {
-                                decimal valMercatoAttuale = (decimal)(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()].Value ?? 0);
-                                decimal valMercatoPrec = (decimal)(Workbook.WB.Sheets[mercatoPrec].Range[rngMercatoPrec.Rows[k].ToString()].Value ?? 0);
+                                decimal valMercatoAttuale = (decimal)(Workbook.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()].Value ?? 0);
+                                decimal valMercatoPrec = (decimal)(Workbook.Sheets[mercatoPrec].Range[rngMercatoPrec.Rows[k].ToString()].Value ?? 0);
 
                                 if (valMercatoPrec > valMercatoAttuale)
                                 {
-                                    Style.RangeStyle(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 38);
-                                    Style.RangeStyle(Workbook.WB.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 38);
+                                    Style.RangeStyle(Workbook.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 38);
+                                    Style.RangeStyle(Workbook.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 38);
                                 }
                                 else if (valMercatoPrec < valMercatoAttuale)
                                 {
-                                    Style.RangeStyle(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 4);
-                                    Style.RangeStyle(Workbook.WB.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 4);
+                                    Style.RangeStyle(Workbook.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 4);
+                                    Style.RangeStyle(Workbook.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 4);
                                 }
                                 else
                                 {
-                                    Style.RangeStyle(Workbook.WB.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 2);
-                                    Style.RangeStyle(Workbook.WB.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 2);
+                                    Style.RangeStyle(Workbook.Sheets[desCategoria].Range[rngMercatoAttuale.Columns[k].ToString()], backColor: 2);
+                                    Style.RangeStyle(Workbook.Sheets[Simboli.Mercato].Range[rngMercatoPrec.Rows[k].ToString()], backColor: 2);
                                 }
                             }
                         }
@@ -244,7 +244,7 @@ namespace Iren.ToolsExcel
                 se.UpdateData(true);
             }
 
-            foreach (Excel.Worksheet ws in Workbook.Sheets)
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
                 s.UpdateData(true);

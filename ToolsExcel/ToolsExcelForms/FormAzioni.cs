@@ -451,7 +451,7 @@ namespace Iren.ToolsExcel.Forms
                                             string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
 
                                             DefinedNames definedNames = new DefinedNames("Main");
-                                            Excel.Worksheet ws = Workbook.WB.Sheets["Main"];
+                                            Excel.Worksheet ws = Workbook.Main;
 
                                             foreach (string relazione in azioneRelazione)
                                             {

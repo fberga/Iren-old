@@ -88,7 +88,7 @@ namespace Iren.ToolsExcel.Base
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
 
-                Workbook.WB.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
+                Workbook.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
             }
         }
         /// <summary>
@@ -102,16 +102,16 @@ namespace Iren.ToolsExcel.Base
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 Range rng = _definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
-                Workbook.WB.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
+                Workbook.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
 
                 for (DateTime giorno = DataBase.DataAttiva; giorno <= _dataFine; giorno = giorno.AddDays(1))
                 {
                     Range rng1 = new Range(rng.StartRow, _definedNames.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
-                    Workbook.WB.Sheets[_sheet].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                    Workbook.Sheets[_sheet].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                 }
 
                 if (info["WB"].Equals("2"))
-                    Workbook.WB.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
+                    Workbook.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
             }
         }
         /// <summary>
@@ -142,9 +142,9 @@ namespace Iren.ToolsExcel.Base
                 Range rng = new Range(_definedNames.GetRowByName(siglaEntitaInfo, _entitaInformazioni[0]["SiglaInformazione"]), _definedNames.GetFirstCol());
                 try { Workbook.WB.Names.Item("WBMAX").Delete(); }
                 catch { }
-                double width = Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth;
-                Workbook.WB.Application.Run("wbBest", "'" + _sheet + "'!" + rng.ToString(), "Maximize");
-                Workbook.WB.Sheets[_sheet].Range[rng.ToString()].ColumnWidth = width;
+                double width = Workbook.Sheets[_sheet].Range[rng.ToString()].ColumnWidth;
+                Workbook.Application.Run("wbBest", "'" + _sheet + "'!" + rng.ToString(), "Maximize");
+                Workbook.Sheets[_sheet].Range[rng.ToString()].ColumnWidth = width;
             }
         }
         /// <summary>
@@ -177,7 +177,7 @@ namespace Iren.ToolsExcel.Base
             if (_entitaInformazioni.Count > 0)
             {
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
-                Excel.Worksheet ws = Workbook.WB.Sheets[_sheet];
+                Excel.Worksheet ws = Workbook.Sheets[_sheet];
 
 
                 if (siglaEntitaInfo.Equals("GRUPPO_TORINO"))
@@ -188,25 +188,25 @@ namespace Iren.ToolsExcel.Base
 
                     //eseguo con prezzi a 0
                     ws.Range[rng.ToString()].Value = 1;
-                    res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    res = Workbook.Application.Run("wbsolve", Arg3: "1");
 
                     ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 0)");
 
                     //eseguo con prezzi a 500
                     ws.Range[rng.ToString()].Value = 2;
-                    res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    res = Workbook.Application.Run("wbsolve", Arg3: "1");
 
                     ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 500)");
 
                     //eseguo con previsione prezzi
                     ws.Range[rng.ToString()].Value = 3;
-                    res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    res = Workbook.Application.Run("wbsolve", Arg3: "1");
 
                     ShowErrorMessageBox(res, "Calcolo dell'ottimo (previsione prezzi)");
                 }
                 else
                 {
-                    int res = Workbook.WB.Application.Run("wbsolve", Arg3: "1");
+                    int res = Workbook.Application.Run("wbsolve", Arg3: "1");
 
                     ShowErrorMessageBox(res, "Calcolo dell'ottimo");
                 }                
@@ -229,15 +229,15 @@ namespace Iren.ToolsExcel.Base
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref definedNames);
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
                 Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
-                double width = Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
-                Workbook.WB.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
-                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
-                Workbook.WB.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
+                double width = Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
+                Workbook.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
+                Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
+                Workbook.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
 
                 for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                 {
                     Range rng1 = new Range(rng.StartRow, definedNames.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
-                    Workbook.WB.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                    Workbook.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                 }
 
                 if (info["WB"].Equals("2"))
@@ -256,7 +256,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
-            Workbook.WB.Application.Run("wbSetGeneralOptions", Arg13: "1");
+            Workbook.Application.Run("wbSetGeneralOptions", Arg13: "1");
 
             _sheet = DefinedNames.GetSheetName(siglaEntita);
             _definedNames = new DefinedNames(_sheet);

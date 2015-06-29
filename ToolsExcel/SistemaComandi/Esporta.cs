@@ -14,7 +14,7 @@ using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace Iren.ToolsExcel
 {
-    class Esporta : Base.Esporta
+    class Esporta : AEsporta
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
@@ -97,7 +97,7 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.WB.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
 
                 DateTime giorno = Utility.DataBase.DataAttiva;
                 string suffissoData = Utility.Date.GetSuffissoData(giorno);

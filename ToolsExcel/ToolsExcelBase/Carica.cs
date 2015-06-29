@@ -47,7 +47,7 @@ namespace Iren.ToolsExcel.Base
                         }
                     }
 
-                    Sheet s = new Sheet(Workbook.WB.Sheets[definedNames.Sheet]);
+                    Sheet s = new Sheet(Workbook.Sheets[definedNames.Sheet]);
                     s.AggiornaGrafici();
                     return true;
                 }
@@ -58,7 +58,7 @@ namespace Iren.ToolsExcel.Base
                     else if (azionePadre.Equals("CARICA")) 
                     { /*TODO per invio programmi un caricamento da XML*/ }
 
-                    Sheet s = new Sheet(Workbook.WB.Sheets[definedNames.Sheet]);
+                    Sheet s = new Sheet(Workbook.Sheets[definedNames.Sheet]);
                     s.AggiornaGrafici();
                     return true;
                 }
@@ -73,7 +73,7 @@ namespace Iren.ToolsExcel.Base
         
         protected virtual void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno)
         {
-            Excel.Worksheet ws = Workbook.WB.Sheets[definedNames.Sheet];
+            Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
 
             string suffissoData = Date.GetSuffissoData(giorno);
 
@@ -100,7 +100,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected virtual void ScriviInformazione(object siglaEntita, DataView azioneInformazione, DefinedNames definedNames)
         {
-            Excel.Worksheet ws = Workbook.WB.Sheets[definedNames.Sheet];
+            Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
 
             foreach (DataRowView azione in azioneInformazione)
             {
@@ -134,7 +134,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected void ElaborazioneInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno, int oraInizio = -1, int oraFine = -1)
         {
-            Excel.Worksheet ws = Workbook.WB.Sheets[definedNames.Sheet];
+            Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
 
             Dictionary<string, int> entitaRiferimento = new Dictionary<string, int>();
             List<int> oreDaCalcolare = new List<int>();
@@ -228,7 +228,7 @@ namespace Iren.ToolsExcel.Base
         }
         protected object GetRisultatoCalcolo(object siglaEntita, DefinedNames definedNames, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)
         {
-            Excel.Worksheet ws = Workbook.WB.Sheets[definedNames.Sheet];
+            Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
 
             string suffissoData = Date.GetSuffissoData(giorno);
 

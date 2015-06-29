@@ -72,7 +72,7 @@ namespace Iren.ToolsExcel.Base
                     else
                         Workbook.WB.Unprotect(Simboli.pwd);
 
-                    foreach (Excel.Worksheet ws in Workbook.WB.Sheets)
+                    foreach (Excel.Worksheet ws in Workbook.Sheets)
                     {
                         if (value)
                             if (ws.Name == "Log")
@@ -98,7 +98,7 @@ namespace Iren.ToolsExcel.Base
             Protected = false;
             foreach (DataRowView categoria in categorie)
             {
-                Excel.Worksheet ws = Workbook.WB.Sheets[categoria["DesCategoria"].ToString()];
+                Excel.Worksheet ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
                 DefinedNames definedNames = new DefinedNames(categoria["DesCategoria"].ToString(), DefinedNames.InitType.EditableOnly);
 
                 foreach (string range in definedNames.Editable.Values)
@@ -169,7 +169,7 @@ namespace Iren.ToolsExcel.Base
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
 
-                Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
                 bool hasData0H24 = definedNames.HasData0H24;
 
@@ -1071,8 +1071,6 @@ namespace Iren.ToolsExcel.Base
             {
                 if (DataBase.OpenConnection())
                 {
-                    SplashScreen.UpdateStatus("Carico informazioni " + _ws.Name);
-
                     DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                     DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                     categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
@@ -1092,6 +1090,7 @@ namespace Iren.ToolsExcel.Base
                         dataFineMax = new DateTime(Math.Max(dataFineMax.Ticks, dateFineUP[entita["SiglaEntita"]].Ticks));
                     }
 
+                    SplashScreen.UpdateStatus("Carico informazioni dal DB per " + _siglaCategoria);
                     DataView datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=" + _siglaCategoria + ";@SiglaEntita=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + dataFineMax.ToString("yyyyMMdd") + ";@Tipo=1;@All=" + (all ? "1" : "0")).DefaultView;
 
                     DataView insertManuali = new DataView();
@@ -1102,11 +1101,8 @@ namespace Iren.ToolsExcel.Base
                     {
                         foreach (DataRowView entita in categoriaEntita)
                         {
-                            SplashScreen.UpdateStatus("Carico informazioni " + entita["DesEntita"]);
-
+                            SplashScreen.UpdateStatus("Scrivo informazioni " + entita["DesEntita"]);
                             datiApplicazioneH.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + dateFineUP[entita["SiglaEntita"]].ToString("yyyyMMdd");
-
-                            SplashScreen.UpdateStatus("Carico informazioni " + entita["SiglaEntita"]);
                             CaricaInformazioniEntita(datiApplicazioneH);
                             if (all)
                             {

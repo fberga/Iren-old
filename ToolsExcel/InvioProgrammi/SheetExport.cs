@@ -209,10 +209,10 @@ namespace Iren.ToolsExcel
                     string mercatoPrec = Simboli.GetMercatoPrec(_mercato);
 
                     Excel.FormatCondition condGreater = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " > '" + mercatoPrec + "'!" + rng.Cells[2, 1]);
-                    condGreater.Interior.ColorIndex = 4;
+                    condGreater.Interior.ColorIndex = Struct.COLORE_VARIAZIONE_POSITIVA;
 
                     Excel.FormatCondition condLess = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " < '" + mercatoPrec + "'!" + rng.Cells[2, 1]);
-                    condLess.Interior.ColorIndex = 38;
+                    condLess.Interior.ColorIndex = Struct.COLORE_VARIAZIONE_NEGATIVA;
                 }
                 
 
@@ -275,7 +275,7 @@ namespace Iren.ToolsExcel
             {
                 if (DataBase.OpenConnection())
                 {
-                    SplashScreen.UpdateStatus("Carico informazioni " + _mercato);
+                    SplashScreen.UpdateStatus("Carico informazioni dal DB per " + _mercato);
                     _dataInizio = DataBase.DB.DataAttiva;
 
                     DataView datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + Simboli.GetAppIDByMercato(_ws.Name) + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")).DefaultView;
@@ -287,6 +287,7 @@ namespace Iren.ToolsExcel
 
                     foreach (var entitaInfo in listaEntitaInfo)
                     {
+                        SplashScreen.UpdateStatus("Scrivo informazioni " + entitaInfo.SiglaEntita);
                         datiApplicazioneH.RowFilter = "SiglaEntita = '" + entitaInfo.SiglaEntita + "' AND SiglaInformazione = '" + entitaInfo.SiglaInformazione + "' AND Riferimento = " + entitaInfo.Riferimento;
 
                         string quarter = Regex.Match(entitaInfo.SiglaInformazione, @"Q\d").Value;
