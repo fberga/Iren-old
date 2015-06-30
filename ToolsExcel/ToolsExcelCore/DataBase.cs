@@ -118,6 +118,11 @@ namespace Iren.ToolsExcel.Core
         {
             _dataAttiva = dataAttiva;
         }
+        public void ChangeAppID(int appID)
+        {
+            _idApplicazione = appID;
+        }
+
 
         public bool Insert(string storedProcedure, QryParams parameters)
         {

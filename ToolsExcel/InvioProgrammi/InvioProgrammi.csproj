@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggiorna.cs" />
+    <Compile Include="Carica.cs" />
     <Compile Include="Esporta.cs" />
     <Compile Include="Log.cs">
       <DependentUpon>InvioProgrammi.xlsm</DependentUpon>

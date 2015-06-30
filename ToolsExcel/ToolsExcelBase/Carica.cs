@@ -193,23 +193,7 @@ namespace Iren.ToolsExcel.Base
 
                         if (step == 0)
                         {
-                            object siglaEntitaRif = calcolo["SiglaEntitaRif"] is DBNull ? siglaEntita : calcolo["SiglaEntitaRif"];
-                            Range rng = definedNames.Get(siglaEntitaRif, calcolo["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(ora));
-                            Excel.Range xlRng = ws.Range[rng.ToString()];
-
-                            xlRng.Formula = calcolo["SiglaInformazione"].Equals("CHECKINFO") ? DataBase.GetMessaggioCheck(risultato) : risultato;
-
-                            if (calcolo["BackColor"] != DBNull.Value)
-                                xlRng.Interior.ColorIndex = calcolo["BackColor"];
-                            if (calcolo["ForeColor"] != DBNull.Value)
-                                xlRng.Font.ColorIndex = calcolo["ForeColor"];
-
-                            xlRng.ClearComments();
-
-                            if (calcolo["Commento"] != DBNull.Value)
-                                xlRng.AddComment(calcolo["Commento"]).Visible = false;
-
-                            Handler.StoreEdit(xlRng, 0);
+                            ScriviCella(ws, definedNames, calcolo, suffissoData, Date.GetSuffissoOra(ora), risultato, true);
                         }
 
                         if (calcolo["FineCalcolo"].Equals("1") || step == -1)
@@ -226,6 +210,30 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        //TODO
+        protected virtual void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB) 
+        {
+            object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
+            Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, suffissoOra);
+            Excel.Range xlRng = ws.Range[rng.ToString()];
+
+            xlRng.Value = risultato;
+
+            if (info["BackColor"] != DBNull.Value)
+                xlRng.Interior.ColorIndex = info["BackColor"];
+            if (info["ForeColor"] != DBNull.Value)
+                xlRng.Font.ColorIndex = info["ForeColor"];
+
+            xlRng.ClearComments();
+
+            if (info["Commento"] != DBNull.Value)
+                xlRng.AddComment(info["Commento"]).Visible = false;
+
+            if(saveToDB)
+                Handler.StoreEdit(xlRng, 0);
+        }
+
         protected object GetRisultatoCalcolo(object siglaEntita, DefinedNames definedNames, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];

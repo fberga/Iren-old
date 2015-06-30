@@ -165,6 +165,11 @@ namespace Iren.ToolsExcel.Utility
                 _localDB.Tables.Remove(name);
             }
         }
+        public static void ChangeAppID(string appID)
+        {
+            Utility.DataBase.ChangeAppSettings("AppID", appID);
+            _db.ChangeAppID(int.Parse(appID));
+        }
         public static void ChangeDate(DateTime dataAttiva) 
         {
             _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
@@ -517,6 +522,14 @@ namespace Iren.ToolsExcel.Utility
         {
             int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
             return DataBase.DB.DataAttiva.AddDays(giorno - 1);
+        }
+        public static int GetOraFromDataOra(string dataOra)
+        {
+            string dtO = dataOra.ToString();
+            if (dtO.Length != 10)
+                return -1;
+
+            return int.Parse(dtO.Substring(dtO.Length - 2, 2));
         }
         #endregion
     }

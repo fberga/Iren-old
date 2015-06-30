@@ -128,14 +128,12 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        private static string appID = "";
         public static string AppID
         {
-            get { return appID; }
+            get { return Utility.DataBase.DB.IdApplicazione.ToString(); }
             set 
             {
-                appID = value;
-                Utility.DataBase.ChangeAppSettings("AppID", value);
+                Utility.DataBase.ChangeAppID(value);
                 mercato = GetMercatoByAppID(value);
                 Handler.ChangeMercatoAttivo(mercato);
             }

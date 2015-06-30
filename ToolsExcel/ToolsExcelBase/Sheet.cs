@@ -565,7 +565,7 @@ namespace Iren.ToolsExcel.Base
 
                 int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
 
-                //selezione - Mantenere in questo ordine: alla prima volta entra nel selezione = 10, poi in isSelection e alla fine chiude la selezione e salta gli altri (a meno di essere in presenza di un altro 10
+                //selezione - Mantenere in questo ordine: alla prima volta entra nel selezione = 10, poi in isSelection e alla fine chiude la selezione e salta gli altri (se non in presenza di un altro 10)
                 if (isSelection && (info["Selezione"].Equals(0) || info["Selezione"].Equals(10)))
                 {
                     //salvo la selezione

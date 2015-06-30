@@ -274,9 +274,6 @@ namespace Iren.ToolsExcel
 
                     DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd")).DefaultView;
 
-                    //if (ConfigurationManager.AppSettings["Mercati"] != null)
-                    //    aggiorna.Struttura();
-                    //else 
                     if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
                         aggiorna.Struttura();
                     else

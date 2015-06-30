@@ -55,26 +55,18 @@ namespace Iren.ToolsExcel
 
                     Range rng = new Range(_defNamesMercato.GetRowByName(siglaEntita, "DATA"), 1, Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva) + 5, _defNamesMercato.GetLastCol());
 
-                    if (InviaMail(Simboli.Mercato, siglaEntita, rng))
-                    {
-
-                    }
-
+                    InviaMail(Simboli.Mercato, siglaEntita, rng);
+                 
                     oldActiveWindow.Activate();
-
-
 
                     Globals.ThisWorkbook.Application.ScreenUpdating = true;
                     break;
             }
             return true;
         }
-
         protected bool CreaOutputXLS(Excel.Worksheet ws, string fileName, bool deleteOrco, Range rng)
         {
             bool hasVariations = false;
-
-            
 
             Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
             ws.Range[rng.ToString()].Copy();
@@ -113,7 +105,6 @@ namespace Iren.ToolsExcel
 
             return hasVariations;
         }
-
         protected bool InviaMail(string nomeFoglio, object siglaEntita, Range rng) 
         {
             List<string> attachments = new List<string>();

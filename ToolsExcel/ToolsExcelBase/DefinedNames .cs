@@ -230,6 +230,13 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        /// <summary>
+        /// Inizializza le colonne "in un'unica soluzione". Calcola il numero di ore nell'intervallo di giorni e a partire dalla colonna di inizio genera tutti i riferimenti DATAORA-COLONNA. (Vale solo per i "fogli normali")
+        /// </summary>
+        /// <param name="dataInizio">Data iniziale dell'intervallo.</param>
+        /// <param name="dataFine">Data finale dell'intervallo.</param>
+        /// <param name="colStart">Prima colonna da inizializzare</param>
+        /// <param name="data0H24">Indica se esiste o no la DATA0H24</param>
         public void DefineDates(DateTime dataInizio, DateTime dataFine, int colStart, bool data0H24)
         {
             if (data0H24)
@@ -255,25 +262,60 @@ namespace Iren.ToolsExcel.Base
                 _days.Add(suffissoData);
             }
         }
+        /// <summary>
+        /// Collega il nome, costituito dall'insieme delle componenti in parts, con la riga in input.
+        /// </summary>
+        /// <param name="riga">Riga da collegare.</param>
+        /// <param name="parts">Lista delle componenti del nome.</param>
         public void AddName(int riga, params object[] parts)
         {
             _defNamesIndexByName.Add(GetName(parts), riga);
             //_defNamesIndexByRow(riga, GetName(parts));
         }
+        /// <summary>
+        /// Collega il nome, costituito dall'insieme delle componenti in parts, con la colonna in input. (Utilizzato nelle customizzazioni dei fogli e nel riepilogo)
+        /// </summary>
+        /// <param name="col">Colonna da collegare.</param>
+        /// <param name="parts">Lista delle componenti del nome.</param>
         public void AddCol(int col, params object[] parts)
         {
             _defDatesIndexByName.Add(GetName(parts), col);
             _defDatesIndexByCol.Add(col, GetName(parts));
         }
+        /// <summary>
+        /// Collega l'entità alla cella GOTO dove è posizionato il tasto da cliccare.
+        /// </summary>
+        /// <param name="siglaEntita">L'entità a cui si riferisce il goto.</param>
+        /// <param name="addressFrom">L'indirizzo deve è posizionato il tasto.</param>
         public void AddGOTO(object siglaEntita, string addressFrom)
         {
             _addressFrom.Add("'" + _sheet + "'!" + addressFrom, siglaEntita);
         }
+        /// <summary>
+        /// Collega l'entita alla cella GOTO del tasto e alla cella da richiamare quando si clicca il tasto.
+        /// </summary>
+        /// <param name="siglaEntita">L'entità a cui si riferisce il goto.</param>
+        /// <param name="addressFrom">L'indirizzo deve è posizionato il tasto.</param>
+        /// <param name="addressTo">L'indirizzo a cui punta l'azione del GOTO.</param>
         public void AddGOTO(object siglaEntita, string addressFrom, string addressTo)
         {
             AddGOTO(siglaEntita, addressFrom);
             _addressTo.Add(siglaEntita, "'" + _sheet + "'!" + addressTo);
         }
+        /// <summary>
+        /// Nel caso in cui non sia stato assegnato un indirizzo di destinazione al GOTO, collega all'entità questo indirizzo.
+        /// </summary>
+        /// <param name="siglaEntita">Entità a cui collegare il GOTO.</param>
+        /// <param name="addressTo">Indirizzo di arrivo dell'azione.</param>
+        public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
+        {
+            _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
+        }
+        /// <summary>
+        /// Marca la il range come editabile suddividendo il tutto per righe.
+        /// </summary>
+        /// <param name="row">Riga a cui si riferisce il range.</param>
+        /// <param name="rng">Range editabile.</param>
         public void SetEditable(int row, Range rng)
         {
             if (!_editable.ContainsKey(row))
@@ -281,61 +323,108 @@ namespace Iren.ToolsExcel.Base
             else
                 _editable[row] += "," + rng.ToString();
         }
+        /// <summary>
+        /// Marca l'insieme di celle come appartenenti ad una selezione.
+        /// </summary>
+        /// <param name="rif">Cella di riferimento dove scrivere il valore di selezione</param>
+        /// <param name="peers">Celle in cui cliccare per cambiare la selezione</param>
         public void SetSelection(string rif, Dictionary<string, int> peers)
         {
             _selections.Add(new Selection(rif, peers));
         }
+        /// <summary>
+        /// Marca la riga come da salvare sul database.
+        /// </summary>
+        /// <param name="row">Riga da salvare.</param>
         public void SetSaveDB(int row)
         {
             if (!_saveDB.Contains(row))
                 _saveDB.Add(row);
         }
+        /// <summary>
+        /// Marca la riga come da annotare (ovvero su cui verrà aggiunta la nota da segnalare all'utente) sul database.
+        /// </summary>
+        /// <param name="row">Riga da annotare.</param>
         public void SetToNote(int row)
         {
             if (!_toNote.Contains(row))
                 _toNote.Add(row);
         }
+        /// <summary>
+        /// Marca la riga come check.
+        /// </summary>
+        /// <param name="siglaEntita">Entità a cui appartiene il check.</param>
+        /// <param name="range">Range delle celle di check.</param>
+        /// <param name="type">Tipo di check (estratto dal DB).</param>
         public void AddCheck(string siglaEntita, string range, int type)
         {            
                 _check.Add(new CheckObj(siglaEntita, range, type));
         }
-
-        public void ChangeGOTOAddressTo(object siglaEntita, string addressTo)
-        {
-            _addressTo[siglaEntita] = "'" + _sheet + "'!" + addressTo;
-        }
-
+        /// <summary>
+        /// Verifica se la riga sia da salvare sul Database.
+        /// </summary>
+        /// <param name="row">Riga da verificare.</param>
+        /// <returns>True se la riga è da salvare, False altrimenti.</returns>
         public bool SaveDB(int row)
         {
             return _saveDB.Contains(row);
         }
+        /// <summary>
+        /// Verifica se la riga sia da annotare o no.
+        /// </summary>
+        /// <param name="row">Riga da verificare.</param>
+        /// <returns>True se la riga è da annotare, False altrimenti</returns>
         public bool ToNote(int row)
         {
             return _toNote.Contains(row);
         }
-
+        /// <summary>
+        /// Restituisce la prima colonna definita. Solitamente coinciderà con la colonna "colBlock" definita nella struttura del foglio.
+        /// </summary>
+        /// <returns>L'indirizzo della prima colonna definita.</returns>
         public int GetFirstCol()
         {
             return _defDatesIndexByCol.ElementAt(0).Key;
         }
+        /// <summary>
+        /// Restituisce la prima riga definita. Solitamente coinciderà con la riga "rowBlock" definita nella struttura del foglio.
+        /// </summary>
+        /// <returns>L'indirizzo della prima riga definita.</returns>
         public int GetFirstRow()
         {
             return _defNamesIndexByName.ElementAt(0).Value;
         }
-
+        /// <summary>
+        /// Restituisce l'indirizzo dell'ultima colonna definita.
+        /// </summary>
+        /// <returns>Indirizzo dell'ultima colonna definita.</returns>
         public int GetLastCol()
         {
             return _defDatesIndexByCol.Last().Key;
         }
-        
+        /// <summary>
+        /// Restituisce l'indirizzo della colonna a partire dalla DataAttiva del foglio all'ora uno.
+        /// </summary>
+        /// <returns>L'indirizzo della colonna corrispondente a DATA1.H1.</returns>
         public int GetColFromDate()
         {
             return GetColFromDate(Date.GetSuffissoData(DataBase.DataAttiva));
         }
+        /// <summary>
+        /// Restituisce l'indirizzo della colonna a partire da giorno del foglio all'ora uno. (Utilizzato nei fogli normali)
+        /// </summary>
+        /// <param name="giorno">Il giorno di cui trovare la colonna H1.</param>
+        /// <returns>L'indirizzo della colonna corrispondente a SuffissoData(giorno).H1</returns>
         public int GetColFromDate(DateTime giorno)
         {
             return GetColFromDate(Date.GetSuffissoData(giorno));
         }
+        /// <summary>
+        /// Restituisce l'indirizzo della colonna a partire dal suffisso data e dal suffisso ora. (Utilizzato nei fogli normali)
+        /// </summary>
+        /// <param name="suffissoData">Suffisso data di cui trovare la colonna.</param>
+        /// <param name="suffissoOra">Suffisso ora di cui trovare la colonna.</param>
+        /// <returns>L'indirizzo della colonna suffissoData.suffissoOra.</returns>
         public int GetColFromDate(string suffissoData, string suffissoOra = "H1")
         {
             if (Struct.tipoVisualizzazione == "V")
@@ -344,16 +433,27 @@ namespace Iren.ToolsExcel.Base
             string name = GetName(suffissoData, suffissoOra);
             return _defDatesIndexByName[name];
         }
+        /// <summary>
+        /// Restituisce l'indirizzo della colonna a partire da un nome. (Utilizzato nel Riepilogo e fogli custom)
+        /// </summary>
+        /// <param name="parts">Parti che compongono il nome</param>
+        /// <returns>L'indirizzo della colonna indicata dal nome.</returns>
         public int GetColFromName(params object[] parts)
         {
             return _defDatesIndexByName[GetName(parts)];
         }
-        
+        /// <summary>
+        /// Restituisce il numero di colonne totali del Riepilogo.
+        /// </summary>
+        /// <returns>Restituisce il numero di colonne totali del Riepilogo.</returns>
         public int GetColOffsetRiepilogo()
         {
             return _defDatesIndexByName.Count;
         }
-        
+        /// <summary>
+        /// Restituisce il numero totale de
+        /// </summary>
+        /// <returns></returns>
         public int GetRowOffset()
         {
             return _defNamesIndexByName.Count;
@@ -721,11 +821,23 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi Statici
 
+        /// <summary>
+        /// Restituisce il nome unito da Simboli.UNION dalle parti che lo compongono.
+        /// </summary>
+        /// <param name="parts">Lista di elementi</param>
+        /// <param name="name">Ultima parte del nome</param>
+        /// <returns>Stringa contenente il nome.</returns>
         public static string GetName(List<string> parts, string name)
         {            
             parts.Add(name);
             return GetName(parts);
         }
+        /// <summary>
+        /// Restituisce il nome unito da Simboli.UNION dalle parti che lo compongono.
+        /// </summary>
+        /// <param name="name">Prima parte del nome</param>
+        /// <param name="parts">Lista di elementi</param>
+        /// <returns>Stringa contenente il nome.</returns>
         public static string GetName(string name, List<string> parts)
         {
             List<string> list = new List<string>();
@@ -734,6 +846,11 @@ namespace Iren.ToolsExcel.Base
 
             return GetName(list);
         }
+        /// <summary>
+        /// Restituisce il nome unito da Simboli.UNION dalle parti che lo compongono.
+        /// </summary>
+        /// <param name="parts">Array di liste di elementi</param>
+        /// <returns>Stringa contenente il nome.</returns>
         public static string GetName(params List<string>[] parts)
         {
             string o = "";
@@ -751,6 +868,11 @@ namespace Iren.ToolsExcel.Base
             }
             return o;
         }
+        /// <summary>
+        /// Restituisce il nome unito da Simboli.UNION dalle parti che lo compongono.
+        /// </summary>
+        /// <param name="parts">Lista di oggetti che compongono il nome. Se sono oggetti validi si andrà a richiamare la funzione giusta tra gli overload.</param>
+        /// <returns>Stringa contenente il nome.</returns>
         public static string GetName(params object[] parts)
         {
             List<string> list = new List<string>();
@@ -765,6 +887,11 @@ namespace Iren.ToolsExcel.Base
 
             return GetName(list);
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei nomi. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultNameTable(string name)
         {
             DataTable dt = new DataTable()
@@ -781,6 +908,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella delle colonne (date per sheet normali, nomi per particolari). (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultDateTable(string name)
         {
             DataTable dt = new DataTable()
@@ -798,6 +930,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei GOTO Address From. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultAddressFromTable(string name)
         {
             DataTable dt = new DataTable()
@@ -814,6 +951,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei GOTO Address To. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultAddressToTable(string name)
         {
             DataTable dt = new DataTable()
@@ -830,6 +972,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei campi editabili. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultEditableTable(string name)
         {
             DataTable dt = new DataTable()
@@ -846,6 +993,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei campi salvabili. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultSaveTable(string name)
         {
             DataTable dt = new DataTable()
@@ -861,6 +1013,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei campi da annotare. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultToNoteTable(string name)
         {
             DataTable dt = new DataTable()
@@ -876,6 +1033,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei campi di check. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultCheckTable(string name)
         {
             DataTable dt = new DataTable()
@@ -893,6 +1055,11 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
+        /// <summary>
+        /// Restituisce la struttura di default della tabella dei campi selezione. (NON MODIFICABILE SE NON CAMBIANDO TUTTO IL CODICE)
+        /// </summary>
+        /// <param name="name">Nome con cui inizializzare la tabella</param>
+        /// <returns>Restituisce la tabella vuota.</returns>
         public static DataTable GetDefaultSelectionTable(string name)
         {
             DataTable dt = new DataTable()
@@ -910,14 +1077,24 @@ namespace Iren.ToolsExcel.Base
             dt.TableName = name;
             return dt;
         }
-
+        /// <summary>
+        /// Restituisce il nome del foglio in base alla sigla entità in input.
+        /// </summary>
+        /// <param name="siglaEntita"></param>
+        /// <returns>Nome del foglio che contiene l'entità in ingresso.</returns>
         public static string GetSheetName(object siglaEntita)
         {
             DataTable dt = DataBase.LocalDB.Tables[DataBase.Tab.NOMI_DEFINITI];
 
+            List<Microsoft.Office.Interop.Excel.Worksheet> msdSheets = new List<Microsoft.Office.Interop.Excel.Worksheet>();
+
+            foreach (var ws in Workbook.MSDSheets)
+                msdSheets.Add(ws);
+
+
             string s =
                 (from r in dt.AsEnumerable()
-                 where r["Name"].ToString().Contains(siglaEntita.ToString()) && !r["Sheet"].Equals("Main")
+                 where r["Name"].ToString().Contains(siglaEntita.ToString()) && !r["Sheet"].Equals("Main") && !msdSheets.Contains(Workbook.Sheets[r["Sheet"]])
                  select r["Sheet"].ToString()).First();
 
             return s ?? "";

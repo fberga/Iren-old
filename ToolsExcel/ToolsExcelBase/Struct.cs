@@ -30,6 +30,13 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
+        #region Costanti
+
+        public const int COLORE_VARIAZIONE_POSITIVA = 4;
+        public const int COLORE_VARIAZIONE_NEGATIVA = 38;
+
+        #endregion
+
         #region Variabili
 
         public static string tipoVisualizzazione = "O";
