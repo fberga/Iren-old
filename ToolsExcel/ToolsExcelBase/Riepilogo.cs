@@ -368,23 +368,27 @@ namespace Iren.ToolsExcel.Base
 
         public override void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif)
         {
-            if (Struct.visualizzaRiepilogo && !Simboli.EmergenzaForzata)
+
+            if (dataRif - DataBase.DataAttiva <= new TimeSpan(Struct.intervalloGiorni, 0, 0, 0))
             {
-                Range cell = _definedNames.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
-                Excel.Range rng = _ws.Range[cell.ToString()];
-                if (presente)
+                if (Struct.visualizzaRiepilogo && !Simboli.EmergenzaForzata)
                 {
-                    string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
-                    rng.ClearComments();
-                    rng.AddComment(commento).Visible = false;
-                    rng.Value = "OK";
-                    Style.RangeStyle(rng, foreColor: 1, bold: true, fontSize: 9, backColor: 4, align: Excel.XlHAlign.xlHAlignCenter);
-                }
-                else
-                {
-                    rng.ClearComments();
-                    rng.Value = "Non presente";
-                    Style.RangeStyle(rng, foreColor: 3, bold: false, fontSize: 7, backColor: 2, align: Excel.XlHAlign.xlHAlignCenter);
+                    Range cell = _definedNames.Get(siglaEntita, siglaAzione, Date.GetSuffissoData(dataRif));
+                    Excel.Range rng = _ws.Range[cell.ToString()];
+                    if (presente)
+                    {
+                        string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                        rng.ClearComments();
+                        rng.AddComment(commento).Visible = false;
+                        rng.Value = "OK";
+                        Style.RangeStyle(rng, foreColor: 1, bold: true, fontSize: 9, backColor: 4, align: Excel.XlHAlign.xlHAlignCenter);
+                    }
+                    else
+                    {
+                        rng.ClearComments();
+                        rng.Value = "Non presente";
+                        Style.RangeStyle(rng, foreColor: 3, bold: false, fontSize: 7, backColor: 2, align: Excel.XlHAlign.xlHAlignCenter);
+                    }
                 }
             }
         }

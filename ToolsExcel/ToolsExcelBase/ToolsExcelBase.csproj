@@ -68,6 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modifica.cs" />
     <Compile Include="Carica.cs" />
     <Compile Include="Check.cs" />
     <Compile Include="DefinedNames .cs" />

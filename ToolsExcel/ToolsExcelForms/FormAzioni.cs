@@ -379,30 +379,33 @@ namespace Iren.ToolsExcel.Forms
 
                 foreach (DateTime date in _toProcessDates)
                 {
-                    bool calcola = false;
-                    int count = 0;
-                    ThroughAllNodes(treeViewAzioni.Nodes, n =>
-                    {
-                        if (n.Nodes.Count == 0 && n.Checked)
-                        {
-                            ThroughAllNodes(treeViewUP.Nodes, n1 =>
-                            {
-                                if (n1.Checked)
-                                    count += (n1.Name == "UP_BUS" ? 2 : 1);
-                            });
-                            if (Regex.Match(n.Parent.Name, @"\w[^\d]+").Value == "CARICA")
-                                calcola = true;
-                        }
-                    });
+                    //bool calcola = false;
+                    //int count = 0;
+                    //ThroughAllNodes(treeViewAzioni.Nodes, n =>
+                    //{
+                    //    if (n.Nodes.Count == 0 && n.Checked)
+                    //    {
+                    //        ThroughAllNodes(treeViewUP.Nodes, n1 =>
+                    //        {
+                    //            if (n1.Checked)
+                    //                count += (n1.Name == "UP_BUS" ? 2 : 1);
+                    //        });
+                    //        if (Regex.Match(n.Parent.Name, @"\w[^\d]+").Value == "CARICA")
+                    //            calcola = true;
+                    //    }
+                    //});
 
-                    if (calcola)
-                    {
-                        ThroughAllNodes(treeViewUP.Nodes, n =>
-                        {
-                            if (n.Checked)
-                                count++;
-                        });
-                    }
+                    //if (calcola)
+                    //{
+                    //    ThroughAllNodes(treeViewUP.Nodes, n =>
+                    //    {
+                    //        if (n.Checked)
+                    //            count++;
+                    //    });
+                    //}
+                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                    
+
 
                     string suffissoData = Date.GetSuffissoData(date);
 
@@ -417,54 +420,63 @@ namespace Iren.ToolsExcel.Forms
                             {
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                 {
-                                    string nomeFoglio = DefinedNames.GetSheetName(nodoEntita.Name);
-                                    bool presente;
 
-                                    DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
-                                    entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "'";
+                                    entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                                    int intervalloGiorni = Struct.intervalloGiorni;
+                                    if (entitaProprieta.Count > 0)
+                                        intervalloGiorni = int.Parse("" + entitaProprieta[0]["Valore"]);
 
-                                    if (entitaAzione.Count > 0)
+                                    if (date > DataBase.DataAttiva.AddDays(intervalloGiorni))
                                     {
-                                        SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
+                                        string nomeFoglio = DefinedNames.GetSheetName(nodoEntita.Name);
+                                        bool presente;
 
-                                        switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
+                                        DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
+                                        entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "'";
+
+                                        if (entitaAzione.Count > 0)
                                         {
-                                            case "CARICA":
-                                                presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
-                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
-                                                caricaOrGenera = true;
-                                                break;
-                                            case "GENERA":
-                                                presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
-                                                _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
-                                                caricaOrGenera = true;
-                                                break;
-                                            case "ESPORTA":
-                                                presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date);
-                                                if (presente)
-                                                    _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
-                                                break;
-                                        }
+                                            SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
-                                        if (_azioni[0]["Relazione"] != DBNull.Value && Struct.visualizzaRiepilogo)
-                                        {
-                                            string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
-
-                                            DefinedNames definedNames = new DefinedNames("Main");
-                                            Excel.Worksheet ws = Workbook.Main;
-
-                                            foreach (string relazione in azioneRelazione)
+                                            switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                                             {
-                                                _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
-
-                                                Range rng = new Range(definedNames.GetRowByName(nodoEntita.Name), definedNames.GetColFromName(relazione, suffissoData));
-                                                if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
-                                                {
-                                                    ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                    Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
-                                                }
+                                                case "CARICA":
+                                                    presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
+                                                    _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
+                                                    caricaOrGenera = true;
+                                                    break;
+                                                case "GENERA":
+                                                    presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
+                                                    _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
+                                                    caricaOrGenera = true;
+                                                    break;
+                                                case "ESPORTA":
+                                                    presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date);
+                                                    if (presente)
+                                                        _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
+                                                    break;
                                             }
-                                            _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+
+                                            if (_azioni[0]["Relazione"] != DBNull.Value && Struct.visualizzaRiepilogo)
+                                            {
+                                                string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
+
+                                                DefinedNames definedNames = new DefinedNames("Main");
+                                                Excel.Worksheet ws = Workbook.Main;
+
+                                                foreach (string relazione in azioneRelazione)
+                                                {
+                                                    _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
+
+                                                    Range rng = new Range(definedNames.GetRowByName(nodoEntita.Name), definedNames.GetColFromName(relazione, suffissoData));
+                                                    if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
+                                                    {
+                                                        ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                        Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
+                                                    }
+                                                }
+                                                _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+                                            }
                                         }
                                     }
                                 }

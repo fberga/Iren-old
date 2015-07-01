@@ -13,6 +13,9 @@ namespace Iren.ToolsExcel
 {
     class SheetExport : Base.ASheet
     {
+        private static Dictionary<string, DateTime> _dataCaricaStruttura = new Dictionary<string, DateTime>();
+
+
         protected Excel.Worksheet _ws;
         protected DefinedNames _definedNames;
         protected int _rigaAttiva;
@@ -114,8 +117,12 @@ namespace Iren.ToolsExcel
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
 
-            Clear();
-            InitBarraNavigazione();
+            if (DataCaricamentoStruttura != DataBase.DataAttiva)
+            {
+                Clear();
+                InitBarraNavigazione();
+            }
+
             InitColumns();
 
             _rigaAttiva = _struttura.rigaBlock + 1;
@@ -125,16 +132,25 @@ namespace Iren.ToolsExcel
 
             _definedNames.DumpToDataSet();
 
-            CaricaInformazioni(all: true);
+            if (DataCaricamentoStruttura != DataBase.DataAttiva || Simboli.Mercato == _ws.Name)
+                CaricaInformazioni(all: true);
+
+            if (_dataCaricaStruttura.ContainsKey(_ws.Name))
+                _dataCaricaStruttura[_ws.Name] = DataBase.DataAttiva;
+            else
+                _dataCaricaStruttura.Add(_ws.Name, DataBase.DataAttiva);
         }
 
         protected void InitBloccoEntita(DataRowView entita)
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-
             CreaNomiCelle(entita["SiglaEntita"]);
-            FormattaBloccoEntita(entita["SiglaEntita"], entita["DesEntita"], entita["CodiceRUP"]);
+            
+            if (DataCaricamentoStruttura != DataBase.DataAttiva)
+            {
+                FormattaBloccoEntita(entita["SiglaEntita"], entita["DesEntita"], entita["CodiceRUP"]);
+            }
 
         }
         protected void CreaNomiCelle(object siglaEntita)
@@ -304,6 +320,17 @@ namespace Iren.ToolsExcel
             {
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni InvioProgrammi SheetExport [all = " + all + "]: " + e.Message);
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
+        }
+
+        public DateTime DataCaricamentoStruttura
+        {
+            get 
+            {
+                if (_dataCaricaStruttura.ContainsKey(_ws.Name))
+                    return _dataCaricaStruttura[_ws.Name];
+                else
+                    return DateTime.MinValue;
             }
         }
     }

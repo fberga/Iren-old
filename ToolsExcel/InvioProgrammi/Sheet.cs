@@ -50,7 +50,7 @@ namespace Iren.ToolsExcel
             titoloVert.Value = null;
         }
 
-        protected void AggiornaColori()
+        public void AggiornaColori()
         {
             if (Simboli.Mercato != "MSD1")
             {

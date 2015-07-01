@@ -117,19 +117,7 @@ namespace Iren.ToolsExcel.Base
                     suffissoOra = Date.GetSuffissoOra(azione["Data"]);
                 }
 
-                Range rng = definedNames.Get(siglaEntita, azione["SiglaInformazione"], suffissoData, suffissoOra);
-
-                Excel.Range xlRng = ws.Range[rng.ToString()];
-                xlRng.Value = azione["Valore"];
-                if (azione["BackColor"] != DBNull.Value)
-                    xlRng.Interior.ColorIndex = azione["BackColor"];
-                if (azione["BackColor"] != DBNull.Value)
-                    xlRng.Font.ColorIndex = azione["ForeColor"];
-
-                xlRng.ClearComments();
-
-                if (azione["Commento"] != DBNull.Value)
-                    xlRng.AddComment(azione["Commento"]).Visible = false;
+                ScriviCella(ws, definedNames, azione["SiglaEntita"], azione, suffissoData, suffissoOra, azione["Valore"], false);
             }
         }
         protected void ElaborazioneInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno, int oraInizio = -1, int oraFine = -1)
@@ -179,12 +167,18 @@ namespace Iren.ToolsExcel.Base
                         DataRowView calcolo = calcoloInformazione[i];
                         if (calcolo["OraInizio"] != DBNull.Value)
                             if (ora < int.Parse(calcolo["OraInizio"].ToString()) || ora > int.Parse(calcolo["OraFine"].ToString()))
+                            {
+                                i++;
                                 continue;
+                            }
 
                         if (calcolo["OraFine"] != DBNull.Value)
                             if (ora != Date.GetOreGiorno(giorno))
                                 if (calcolo["FineCalcolo"].Equals("1"))
+                                {
+                                    i++;
                                     continue;
+                                }
                                 else
                                     break;
 
@@ -193,7 +187,7 @@ namespace Iren.ToolsExcel.Base
 
                         if (step == 0)
                         {
-                            ScriviCella(ws, definedNames, calcolo, suffissoData, Date.GetSuffissoOra(ora), risultato, true);
+                            ScriviCella(ws, definedNames, siglaEntita, calcolo, suffissoData, Date.GetSuffissoOra(ora), risultato, true);
                         }
 
                         if (calcolo["FineCalcolo"].Equals("1") || step == -1)
@@ -210,10 +204,12 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-        //TODO
-        protected virtual void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB) 
+        protected virtual void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB) 
         {
-            object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+            object siglaEntitaRif = siglaEntita;
+
+            if(info.DataView.Table.Columns.Contains("SiglaEntitaRif") && info["SiglaEntitaRif"] != DBNull.Value)
+                info["SiglaEntitaRif"] = info["SiglaEntitaRif"];
 
             Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, suffissoOra);
             Excel.Range xlRng = ws.Range[rng.ToString()];

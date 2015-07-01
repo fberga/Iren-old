@@ -42,6 +42,8 @@ namespace Iren.ToolsExcel
         /// </summary>
         private Check _checkFunctions = new Check();
 
+        public Modifica _modificaCustom = new Modifica();
+
         
 
         #endregion
@@ -402,12 +404,15 @@ namespace Iren.ToolsExcel
             Sheet.Protected = false;
 
             Simboli.ModificaDati = btnModifica.Checked;
+            
 
             if (btnModifica.Checked) 
             {
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI_icon;
                 btnModifica.Label = "Modifica SI";
                 Workbook.WB.SheetChange += Handler.StoreEdit;
+                //Aggiungo handler per azioni custom nel caso servisse
+                Workbook.WB.SheetChange += _modificaCustom.Range; 
             }
             else
             {
@@ -419,6 +424,8 @@ namespace Iren.ToolsExcel
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
                 btnModifica.Label = "Modifica NO";
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
+                //Rimuovo handler per azioni custom nel caso servisse
+                Workbook.WB.SheetChange -= _modificaCustom.Range; 
             }
             Sheet.AbilitaModifica(btnModifica.Checked);
 

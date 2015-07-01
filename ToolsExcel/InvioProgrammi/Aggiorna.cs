@@ -90,8 +90,6 @@ namespace Iren.ToolsExcel
                 SplashScreen.UpdateStatus("Salvo struttura in locale");
                 Workbook.DumpDataSet();
 
-                //AggiornaColoriVariazioni();
-
                 Workbook.Main.Select();
                 Workbook.Main.Range["A1"].Select();
                 Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;

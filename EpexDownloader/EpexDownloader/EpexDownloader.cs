@@ -75,7 +75,7 @@ namespace Iren.EpexDownloader
                 foreach (HtmlNode col in dateRow.SelectNodes("th"))
                 {
                     DateTime d = new DateTime();
-                    if (DateTime.TryParseExact(col.InnerText + " " + day.Year, "ddd, MM/dd yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out d))
+                    if (DateTime.TryParseExact(col.InnerText + " " + day.Year, "ddd, dd/MM yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out d))
                         days.Add(d);
                 }
 

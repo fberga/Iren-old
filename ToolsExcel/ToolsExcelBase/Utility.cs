@@ -531,6 +531,11 @@ namespace Iren.ToolsExcel.Utility
 
             return int.Parse(dtO.Substring(dtO.Length - 2, 2));
         }
+        public static int GetOraFromSuffissoOra(string suffissoOra)
+        {
+            string match = Regex.Match(suffissoOra, @"\d+").Value;
+            return int.Parse(match);
+        }
         #endregion
     }
 
@@ -538,7 +543,7 @@ namespace Iren.ToolsExcel.Utility
     {
         #region Variabili
 
-        private static bool _daAggiornare = true;
+        private static bool _daAggiornare = false;
 
         #endregion
 

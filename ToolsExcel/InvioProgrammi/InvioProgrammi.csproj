@@ -145,6 +145,7 @@
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
+    <Compile Include="Modifica.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Riepilogo.cs" />
     <Compile Include="Sheet.cs" />
