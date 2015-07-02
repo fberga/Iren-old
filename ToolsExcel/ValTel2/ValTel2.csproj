@@ -7,48 +7,49 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <RootNamespace>Iren.ToolsExcel</RootNamespace>
-    <AssemblyName>InvioProgrammi</AssemblyName>
-    <VSTO_HostDocumentName>InvioProgrammi.xlsm</VSTO_HostDocumentName>
+    <RootNamespace>ValTel2</RootNamespace>
+    <AssemblyName>ValTel2</AssemblyName>
+    <VSTO_HostDocumentName>ValTel2.xlsx</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
     <OfficeApplication>Excel</OfficeApplication>
+    <ProjectGuid>{1261C5CA-BF10-4441-864B-A90A22BEFBFB}</ProjectGuid>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <ProjectGuid>{C244A4EC-24B8-405A-914C-15AC11397260}</ProjectGuid>
-    <SolutionID>d668019f-7594-4111-9fd7-48142a560ee0</SolutionID>
-    <IsWebBootstrapper>False</IsWebBootstrapper>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>4.0</OldToolsVersion>
-    <VSTO_TrustAssembliesLocation>
-    </VSTO_TrustAssembliesLocation>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\pc1009235\Applicazioni\PSO\Invio Programmi\</PublishUrl>
-    <InstallUrl>\\pc1009235\Applicazioni\PSO\Invio Programmi\</InstallUrl>
+    <PublishUrl>\\ddd\vvv\vvv\</PublishUrl>
+    <InstallUrl>\\ddd\vvv\vvv\</InstallUrl>
     <TargetCulture>it</TargetCulture>
     <ApplicationVersion>1.0.0.0</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <ProductName>OfferteMSD</ProductName>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
+    <ProductName>ValTel2</ProductName>
     <PublisherName />
     <SupportUrl />
-    <FriendlyName>OfferteMSD</FriendlyName>
+    <FriendlyName>ValTel2</FriendlyName>
     <OfficeApplicationDescription />
   </PropertyGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 e x64%29</ProductName>
       <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
       <Visible>False</Visible>
-      <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft Visual Studio 2010 Tools per Office Runtime %28x86 e x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
@@ -81,34 +82,10 @@
     This section specifies references for the project.
   -->
   <ItemGroup>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <Private>False</Private>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Outlook, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Office.Tools, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <Private>False</Private>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <Private>False</Private>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -120,9 +97,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.Office.Tools.Excel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Office.Tools, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Office.Tools.Excel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.Common.v4.0.Utilities, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -133,47 +111,68 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aggiorna.cs" />
-    <Compile Include="Carica.cs" />
-    <Compile Include="Esporta.cs" />
-    <Compile Include="Log.cs">
-      <DependentUpon>InvioProgrammi.xlsm</DependentUpon>
+    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <Private>False</Private>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <Private>False</Private>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <Private>False</Private>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Foglio1.cs">
+      <DependentUpon>ValTel2.xlsx</DependentUpon>
     </Compile>
-    <Compile Include="Log.Designer.cs">
-      <DependentUpon>Log.Designer.xml</DependentUpon>
+    <Compile Include="Foglio1.Designer.cs">
+      <DependentUpon>Foglio1.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="Main.cs">
-      <DependentUpon>InvioProgrammi.xlsm</DependentUpon>
+    <Compile Include="Foglio2.cs">
+      <DependentUpon>ValTel2.xlsx</DependentUpon>
     </Compile>
-    <Compile Include="Main.Designer.cs">
-      <DependentUpon>Main.Designer.xml</DependentUpon>
+    <Compile Include="Foglio2.Designer.cs">
+      <DependentUpon>Foglio2.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="Modifica.cs" />
+    <Compile Include="Foglio3.cs">
+      <DependentUpon>ValTel2.xlsx</DependentUpon>
+    </Compile>
+    <Compile Include="Foglio3.Designer.cs">
+      <DependentUpon>Foglio3.Designer.xml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Riepilogo.cs" />
-    <Compile Include="Sheet.cs" />
-    <Compile Include="SheetExport.cs" />
     <Compile Include="ThisWorkbook.cs">
-      <DependentUpon>InvioProgrammi.xlsm</DependentUpon>
+      <DependentUpon>ValTel2.xlsx</DependentUpon>
     </Compile>
     <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="..\SistemaComandi\ToolsExcelRibbon.cs">
-      <link>ToolsExcelRibbon.cs</link>
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="..\SistemaComandi\ToolsExcelRibbon.designer.cs">
-      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="..\SistemaComandi\ToolsExcelRibbon.resx">
-      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
-    </EmbeddedResource>
-    <None Include="App.config">
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="InvioProgrammi_TemporaryKey.pfx" />
-    <None Include="InvioProgrammi.xlsm" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="ValTel2.xlsx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ThisWorkbook.Designer.xml">
@@ -181,13 +180,18 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Main.Designer.xml">
-      <DependentUpon>Main.cs</DependentUpon>
+    <None Include="Foglio1.Designer.xml">
+      <DependentUpon>Foglio1.cs</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Log.Designer.xml">
-      <DependentUpon>Log.cs</DependentUpon>
+    <None Include="Foglio2.Designer.xml">
+      <DependentUpon>Foglio2.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Foglio3.Designer.xml">
+      <DependentUpon>Foglio3.cs</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -212,24 +216,16 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>true</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>InvioProgrammi_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>47ADCA93542E0E5BB3223888E62ECE5BE9C22805</ManifestCertificateThumbprint>
-  </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="InvioProgrammi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]InvioProgrammi.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\InvioProgrammi.xlsm" GeneratedCodeNamespace="InvioProgrammi">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
+        <ProjectProperties HostName="ValTel2.xlsx" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ValTel2.xlsx&quot;" />
+        <Host Name="Excel Document" Path=".\ValTel2.xlsx" GeneratedCodeNamespace="ValTel2">
+          <HostItem Name="Foglio1" Code="Foglio1.cs" CanonicalName="Foglio1" DisplayName="Foglio1" Blueprint="Foglio1.Designer.xml" GeneratedCode="Foglio1.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Foglio2.cs" CanonicalName="Foglio2" DisplayName="Foglio2" Blueprint="Foglio2.Designer.xml" GeneratedCode="Foglio2.Designer.cs" />
+          <HostItem Name="Foglio3" Code="Foglio3.cs" CanonicalName="Foglio3" DisplayName="Foglio3" Blueprint="Foglio3.Designer.xml" GeneratedCode="Foglio3.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>

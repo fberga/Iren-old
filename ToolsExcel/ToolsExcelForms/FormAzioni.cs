@@ -354,7 +354,7 @@ namespace Iren.ToolsExcel.Forms
             {
                 if ((_toProcessDates.Count > 1 && MessageBox.Show("Ci sono più date selezionate. Procedere con la prima?", Simboli.nomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes) || _toProcessDates.Count == 1)
                 {
-                    FormMeteo meteo = new FormMeteo(_toProcessDates[0], _carica);
+                    FormMeteo meteo = new FormMeteo(_toProcessDates[0], _carica, _r);
                     meteo.ShowDialog();
                 }
             }
@@ -426,7 +426,7 @@ namespace Iren.ToolsExcel.Forms
                                     if (entitaProprieta.Count > 0)
                                         intervalloGiorni = int.Parse("" + entitaProprieta[0]["Valore"]);
 
-                                    if (date > DataBase.DataAttiva.AddDays(intervalloGiorni))
+                                    if (date <= DataBase.DataAttiva.AddDays(intervalloGiorni))
                                     {
                                         string nomeFoglio = DefinedNames.GetSheetName(nodoEntita.Name);
                                         bool presente;

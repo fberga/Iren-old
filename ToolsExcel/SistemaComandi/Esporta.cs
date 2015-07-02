@@ -60,7 +60,7 @@ namespace Iren.ToolsExcel
                     List<Range> export = new List<Range>();
 
                     //titolo entità
-                    export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, "T", Utility.Date.GetSuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, "T", Utility.Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
 
                     //data
                     export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow - 1, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
@@ -73,7 +73,7 @@ namespace Iren.ToolsExcel
                     entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
-                        export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Utility.Date.GetSuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                        export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Utility.Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
                     }
 
                     if (InviaMail(nomeFoglio, siglaEntita, export))

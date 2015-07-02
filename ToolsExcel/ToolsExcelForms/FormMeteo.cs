@@ -14,8 +14,9 @@ namespace Iren.ToolsExcel.Forms
         DataView _entitaProprieta;
         DateTime _dataRif;
         ACarica _carica;
+        ARiepilogo _riepilogo;
 
-        public FormMeteo(object dataRif, ACarica carica)
+        public FormMeteo(object dataRif, ACarica carica, ARiepilogo riepilogo)
         {
             InitializeComponent();
 
@@ -23,6 +24,7 @@ namespace Iren.ToolsExcel.Forms
             _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
+            _riepilogo = riepilogo;
 
             labelData.Text = "Data Riferimento:   " + _dataRif.ToString("dddd dd MMMM yyyy");
             this.Text = Simboli.nomeApplicazione + " - Meteo";
@@ -156,22 +158,12 @@ namespace Iren.ToolsExcel.Forms
 
             bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif,  dataEmissione);
 
-            Riepilogo r = new Riepilogo(Workbook.Main);
-            r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
+            _riepilogo.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
 
             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
 
             btnCarica.Enabled = true;
             btnAnnulla.Enabled = true;
-        }
-    }
-
-    class Riepilogo : Base.Riepilogo
-    {
-        public Riepilogo(Microsoft.Office.Interop.Excel.Worksheet ws)
-            : base(ws)
-        {
-
         }
     }
 }

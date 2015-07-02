@@ -18,7 +18,7 @@ using System.Globalization;
 using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
-// ************************************************************* UNIT COMMITMENT ************************************************************* //
+// ************************************************************* PREVISIONE CARICO TERMICO ************************************************************* //
 
 namespace Iren.ToolsExcel
 {

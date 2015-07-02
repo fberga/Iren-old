@@ -136,12 +136,7 @@ namespace Iren.ToolsExcel.Base
         }
 
         public override void InitLabels()
-        {
-            //inizializzo dimensione e posizione di default dei label
-            //_ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoFalse;
-            //_ws.Shapes.Item("sfondo").Height = (float)(16.5 * _ws.Rows[5].Height);
-            //_ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoCTrue;
-
+        {            
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
@@ -293,6 +288,19 @@ namespace Iren.ToolsExcel.Base
                 _ws.Range[rngAll.Columns[i, colspan - 1].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
                 _ws.Range[rngAll.Columns[i, colspan - 1].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
                 i += colspan;
+            }
+
+            
+            _ws.Range[rngAll.ToString()].EntireColumn.AutoFit();
+            if(rngAll.ColOffset > 1)
+            {
+                //calcolo la massima dimensione delle colonne e la riapplico a tutto il riepilogo
+                double maxWidth = double.MinValue;
+                foreach (Range col in rngAll.Columns)
+                    maxWidth = Math.Max(_ws.Range[col.ToString()].ColumnWidth, maxWidth);
+
+                foreach (Range col in rngAll.Columns)
+                    _ws.Range[col.ToString()].ColumnWidth = maxWidth;
             }
         }
         protected void InitBarraEntita()

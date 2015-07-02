@@ -9,16 +9,11 @@ using Microsoft.Office.Tools.Excel;
 using Microsoft.VisualStudio.Tools.Applications.Runtime;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
-using Microsoft.Office.Core;
-using System.Configuration;
-using System.IO;
 using System.Deployment.Application;
 using System.Reflection;
-using System.Globalization;
-using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 
-// ************************************************************* UNIT COMMITMENT ************************************************************* //
+// ************************************************************* VALIDAZIONE TELERISCALDAMENTO ************************************************************* //
 
 namespace Iren.ToolsExcel
 {

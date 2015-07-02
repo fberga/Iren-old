@@ -286,7 +286,7 @@ namespace Iren.ToolsExcel.Base
             else if (calcolo["IdProprieta"] != DBNull.Value)
             {
                 DataView entitaProprieta = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdProprieta = " + calcolo["IdProprieta"];
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdProprieta = " + calcolo["IdProprieta"];
 
                 if (entitaProprieta.Count > 0)
                     valore1 = entitaProprieta[0]["Valore"];
@@ -294,22 +294,22 @@ namespace Iren.ToolsExcel.Base
             else if (calcolo["IdParametroD"] != DBNull.Value)
             {
                 DataView entitaParametro = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdParametro = " + calcolo["IdParametroD"];
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"];
 
                 if (entitaParametro.Count > 0)
-                    valore1 = entitaParametro[0]["Valore"].ToString().Replace('.', ',');
+                    valore1 =entitaParametro[0]["Valore"];
             }
             else if (calcolo["IdParametroH"] != DBNull.Value)
             {
                 DataView entitaParametro = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_H].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' IdParametro = " + calcolo["IdParametroH"];
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"];
 
                 if (entitaParametro.Count > 0)
-                    valore1 = entitaParametro[0]["Valore"].ToString().Replace('.', ',');
+                    valore1 = entitaParametro[0]["Valore"];
             }
             else if (calcolo["Valore"] != DBNull.Value)
             {
-                valore1 = Convert.ToDouble(calcolo["Valore"]);
+                valore1 = calcolo["Valore"];
             }
 
             if (calcolo["SiglaInformazione2"] != DBNull.Value)
@@ -405,6 +405,10 @@ namespace Iren.ToolsExcel.Base
                     {
                         Range rng = definedNames.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
                         object[,] tmpVal = ws.Range[rng.ToString()].Value;
+                        for (int i = 1; i <= tmpVal.GetLength(1); i++)
+                            if (tmpVal[1, i] == null)
+                                tmpVal[1, i] = 0d;
+
                         double[] values = tmpVal.Cast<double>().ToArray();
                         retVal = values.Max();
                     }
@@ -412,6 +416,10 @@ namespace Iren.ToolsExcel.Base
                     {
                         Range rng = definedNames.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
                         object[,] tmpVal = ws.Range[rng.ToString()].Value;
+                        for (int i = 1; i <= tmpVal.GetLength(1); i++)
+                            if (tmpVal[1, i] == null)
+                                tmpVal[1, i] = 0d;
+
                         double[] values = tmpVal.Cast<double>().ToArray();
                         retVal = values.Min();
                     }

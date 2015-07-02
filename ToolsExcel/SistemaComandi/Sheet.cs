@@ -47,7 +47,7 @@ namespace Iren.ToolsExcel
 
                     int oreIntervallo = Date.GetOreIntervallo(dataFine);
 
-                    Range rngPQNR = _definedNames.Get(entita["SiglaEntita"], "PQNR_PROFILO", Date.GetSuffissoDATA1).Extend(colOffset: oreIntervallo);
+                    Range rngPQNR = _definedNames.Get(entita["SiglaEntita"], "PQNR_PROFILO", Date.SuffissoDATA1).Extend(colOffset: oreIntervallo);
 
                     if (_ws.Range[rngPQNR.Columns[0].ToString()].Value != null)
                     {
@@ -58,7 +58,7 @@ namespace Iren.ToolsExcel
 
                         for (int i = 0; i < assetti; i++)
                         {
-                            Range rngPmin = _definedNames.Get(entita["SiglaEntita"], "PMIN_TERNA_ASSETTO" + (i + 1), Date.GetSuffissoDATA1).Extend(colOffset: oreIntervallo);
+                            Range rngPmin = _definedNames.Get(entita["SiglaEntita"], "PMIN_TERNA_ASSETTO" + (i + 1), Date.SuffissoDATA1).Extend(colOffset: oreIntervallo);
                             for (int j = 0; j < oreIntervallo; j++)
                                 pMin[j] = Math.Min(pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
                         }
@@ -79,7 +79,7 @@ namespace Iren.ToolsExcel
                                 }
                             }
                         }
-                        Range rngPQNRVal = _definedNames.Get(entita["SiglaEntita"], "PQNR1", Date.GetSuffissoDATA1).Extend(rowOffset: 24, colOffset: oreIntervallo);
+                        Range rngPQNRVal = _definedNames.Get(entita["SiglaEntita"], "PQNR1", Date.SuffissoDATA1).Extend(rowOffset: 24, colOffset: oreIntervallo);
                         _ws.Range[rngPQNRVal.ToString()].Value = valori;
                     }
                 }

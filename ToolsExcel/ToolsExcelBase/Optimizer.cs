@@ -86,7 +86,7 @@ namespace Iren.ToolsExcel.Base
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref definedNames);
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
 
                 Workbook.Application.Run("WBOMIT", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + nomeFoglio + "'!" + rng.ToString());
             }
@@ -101,7 +101,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                Range rng = _definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+                Range rng = _definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
                 Workbook.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
 
                 for (DateTime giorno = DataBase.DataAttiva; giorno <= _dataFine; giorno = giorno.AddDays(1))
@@ -182,7 +182,7 @@ namespace Iren.ToolsExcel.Base
 
                 if (siglaEntitaInfo.Equals("GRUPPO_TORINO"))
                 {
-                    Range rng = _definedNames.Get(siglaEntitaInfo, "TEMP_PROG15", Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+                    Range rng = _definedNames.Get(siglaEntitaInfo, "TEMP_PROG15", Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
                     int res = 0;
 
@@ -228,7 +228,7 @@ namespace Iren.ToolsExcel.Base
             {
                 Helper(info, ref siglaEntita, ref nomeFoglio, ref dataFine, ref definedNames);
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.GetSuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                Range rng = definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
                 double width = Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
                 Workbook.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
                 Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;

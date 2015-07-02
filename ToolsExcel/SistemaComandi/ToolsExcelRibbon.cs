@@ -41,10 +41,10 @@ namespace Iren.ToolsExcel
         /// Variabile per svolgere delle azioni custom coi ceck.
         /// </summary>
         private Check _checkFunctions = new Check();
-
+        /// <summary>
+        /// Classe per l'aggiunta di azioni custom dopo la modifica di un Range.
+        /// </summary>
         public Modifica _modificaCustom = new Modifica();
-
-        
 
         #endregion
 
@@ -589,10 +589,21 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Workbook.ChangeMercato(cmbMSD.Text);
+            Simboli.AppID = Simboli.GetAppIDByMercato(cmbMSD.Text);
             Aggiorna aggiorna = new Aggiorna();
             aggiorna.Struttura();
 
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
+        }
+
+        private void cmbStagione_TextChanged(object sender, RibbonControlEventArgs e)
+        {
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
+            Simboli.Stagione = cmbStagione.Text;
+            
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
@@ -632,11 +643,11 @@ namespace Iren.ToolsExcel
                 }
                 catch
                 {
-                    controlli = null;
+                    controlli = new DataView();
                 }
             }
 
-            if (controlli != null)
+            if (controlli.Count > 0)
             {
                 foreach (DataRowView controllo in controlli)
                 {
@@ -654,35 +665,61 @@ namespace Iren.ToolsExcel
                 List<RibbonGroup> groups = FrontOffice.Groups.ToList();
                 foreach (RibbonGroup group in groups)
                     group.Visible = group.Items.Any(c => c.Visible);
-
-                if (groupMSD.Visible)
-                {
-                    if (ConfigurationManager.AppSettings["Mercati"] != null)
-                    {
-                        string[] mercati = ConfigurationManager.AppSettings["Mercati"].Split('|');
-                        cmbMSD.Items.Clear();
-                        foreach (string mercato in mercati)
-                        {
-                            RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-                            i.Label = mercato;
-                            cmbMSD.Items.Add(i);
-                        }
-
-                        cmbMSD.TextChanged -= cmbMSD_TextChanged;
-                        cmbMSD.Text = Simboli.Mercato;
-                        cmbMSD.TextChanged += cmbMSD_TextChanged;
-                    }
-
-                }
             }
             else
             {
                 foreach (RibbonControl control in Controls)
                 {
+#if !DEBUG
+                    control.Visible = true;
+                    control.Enabled = false;
+#else
                     control.Visible = true;
                     control.Enabled = true;
+#endif
+
                     if (control.GetType().ToString().Contains("ToggleButton"))
                         ((RibbonToggleButton)control).Checked = false;
+                }
+            }
+
+            //ComboBox mercati
+            if (groupMSD.Visible)
+            {
+                if (ConfigurationManager.AppSettings["Mercati"] != null)
+                {
+                    string[] mercati = ConfigurationManager.AppSettings["Mercati"].Split('|');
+                    cmbMSD.Items.Clear();
+                    foreach (string mercato in mercati)
+                    {
+                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                        i.Label = mercato;
+                        cmbMSD.Items.Add(i);
+                    }
+
+                    cmbMSD.TextChanged -= cmbMSD_TextChanged;
+                    cmbMSD.Text = Simboli.Mercato;
+                    cmbMSD.TextChanged += cmbMSD_TextChanged;
+                }
+            }
+
+            //ComboBox stagioni
+            if (groupStagione.Visible)
+            {
+                if (ConfigurationManager.AppSettings["Stagioni"] != null)
+                {
+                    string[] stagioni = ConfigurationManager.AppSettings["Stagioni"].Split('|');
+                    cmbStagione.Items.Clear();
+                    foreach (string stagione in stagioni)
+                    {
+                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                        i.Label = stagione;
+                        cmbStagione.Items.Add(i);
+                    }
+
+                    cmbStagione.TextChanged -= cmbStagione_TextChanged;
+                    cmbStagione.Text = Simboli.Stagione;
+                    cmbStagione.TextChanged += cmbStagione_TextChanged;
                 }
             }
         }
@@ -753,89 +790,6 @@ namespace Iren.ToolsExcel
 
             _allDisabled = false;
         }
-
-        /// <summary>
-        /// Attiva l'aggiornamento della struttura del foglio che consiste in:
-        ///  - azzerare il dataset locale 
-        ///  - caricarlo nuovamente dal DB 
-        ///  - generare i fogli che non esistono
-        ///  - lanciare la routine per ri-creare la struttura
-        ///  - caricare la struttura del riepilogo.
-        /// </summary>
-//        private void AggiornaStruttura()
-//        {
-//            SplashScreen.UpdateStatus("Carico struttura dal DB");
-//            Repository.AggiornaStrutturaDati();
-
-//            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-//            categorie.RowFilter = "Operativa = 1";
-
-//            foreach (DataRowView categoria in categorie)
-//            {
-//                Excel.Worksheet ws;
-//                try
-//                {
-//                    ws = Workbook.WB.Worksheets[categoria["DesCategoria"].ToString()];
-//                }
-//                catch
-//                {
-//                    ws = (Excel.Worksheet)Workbook.WB.Worksheets.Add(Workbook.Log);
-//                    ws.Name = categoria["DesCategoria"].ToString();
-//                    ws.Select();
-//                    Workbook.WB.Application.Windows[1].DisplayGridlines = false;
-//#if !DEBUG
-//                    Workbook.WB.Application.ActiveWindow.DisplayHeadings = false;
-//#endif
-//                }
-//            }
-
-//            Workbook.Sheets["Main"].Select();
-//            Riepilogo main = new Riepilogo(Workbook.Main);
-//            SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
-//            main.LoadStructure();
-
-//            foreach (Excel.Worksheet ws in Workbook.Sheets)
-//            {
-//                if (ws.Name != "Log" && ws.Name != "Main")
-//                {
-//                    Sheet s = new Sheet(ws);
-//                    SplashScreen.UpdateStatus("Aggiorno struttura " + ws.Name);
-//                    s.LoadStructure();
-//                }
-//            }
-
-
-
-//            SplashScreen.UpdateStatus("Salvo struttura in locale");
-//            Workbook.DumpDataSet();
-
-//            Globals.Main.Select();
-//            //Workbook.WB.Sheets["Main"].Select();
-//            Globals.Main.Range["A1"].Select();
-//            //Workbook.WB.ActiveSheet.Range["A1"].Select();
-//            Workbook.WB.Application.WindowState = Excel.XlWindowState.xlMaximized;
-
-//            if (_allDisabled)
-//                AbilitaTasti();
-//        }
-        /// <summary>
-        /// Attiva l'aggiornamento dei dati contenuti nel foglio senza però alterare la struttura del foglio stesso.
-        /// </summary>
-        //private void AggiornaDati()
-        //{
-        //    foreach (Excel.Worksheet ws in Workbook.Sheets)
-        //    {
-        //        if (ws.Name != "Log" && ws.Name != "Main")
-        //        {
-        //            Sheet s = new Sheet(ws);
-        //            SplashScreen.UpdateStatus("Aggiornamento dati " + ws.Name);
-        //            s.UpdateData(true);
-        //        }
-        //    }
-        //    Riepilogo main = new Riepilogo(Workbook.WB.Sheets["Main"]);
-        //    SplashScreen.UpdateStatus("Aggiornamento Riepilogo");
-        //    main.UpdateData();
-        //}
 
         #endregion        
     }

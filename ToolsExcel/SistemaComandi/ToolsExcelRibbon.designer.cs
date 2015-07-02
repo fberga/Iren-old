@@ -35,6 +35,10 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ToolsExcelRibbon));
+            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl1 = this.Factory.CreateRibbonDropDownItem();
+            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl2 = this.Factory.CreateRibbonDropDownItem();
+            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl3 = this.Factory.CreateRibbonDropDownItem();
+            Microsoft.Office.Tools.Ribbon.RibbonDropDownItem ribbonDropDownItemImpl4 = this.Factory.CreateRibbonDropDownItem();
             this.FrontOffice = this.Factory.CreateRibbonTab();
             this.groupChiudi = this.Factory.CreateRibbonGroup();
             this.btnChiudi = this.Factory.CreateRibbonButton();
@@ -75,6 +79,9 @@
             this.groupMSD = this.Factory.CreateRibbonGroup();
             this.labelMSD = this.Factory.CreateRibbonLabel();
             this.cmbMSD = this.Factory.CreateRibbonComboBox();
+            this.groupStagione = this.Factory.CreateRibbonGroup();
+            this.labelStagione = this.Factory.CreateRibbonLabel();
+            this.cmbStagione = this.Factory.CreateRibbonComboBox();
             this.TabHome = this.Factory.CreateRibbonTab();
             this.TabInsert = this.Factory.CreateRibbonTab();
             this.TabPageLayoutExcel = this.Factory.CreateRibbonTab();
@@ -99,6 +106,7 @@
             this.groupFileLocali.SuspendLayout();
             this.groupErrori.SuspendLayout();
             this.groupMSD.SuspendLayout();
+            this.groupStagione.SuspendLayout();
             this.TabHome.SuspendLayout();
             this.TabInsert.SuspendLayout();
             this.TabPageLayoutExcel.SuspendLayout();
@@ -125,6 +133,7 @@
             this.FrontOffice.Groups.Add(this.groupFileLocali);
             this.FrontOffice.Groups.Add(this.groupErrori);
             this.FrontOffice.Groups.Add(this.groupMSD);
+            this.FrontOffice.Groups.Add(this.groupStagione);
             this.FrontOffice.Label = "Front Office";
             this.FrontOffice.Name = "FrontOffice";
             // 
@@ -461,6 +470,33 @@
             this.cmbMSD.ShowLabel = false;
             this.cmbMSD.Text = null;
             // 
+            // groupStagione
+            // 
+            this.groupStagione.Items.Add(this.labelStagione);
+            this.groupStagione.Items.Add(this.cmbStagione);
+            this.groupStagione.Label = "Parametri";
+            this.groupStagione.Name = "groupStagione";
+            // 
+            // labelStagione
+            // 
+            this.labelStagione.Label = "Stagione";
+            this.labelStagione.Name = "labelStagione";
+            // 
+            // cmbStagione
+            // 
+            ribbonDropDownItemImpl1.Label = "Primavera";
+            ribbonDropDownItemImpl2.Label = "Estate";
+            ribbonDropDownItemImpl3.Label = "Autunno";
+            ribbonDropDownItemImpl4.Label = "Inverno";
+            this.cmbStagione.Items.Add(ribbonDropDownItemImpl1);
+            this.cmbStagione.Items.Add(ribbonDropDownItemImpl2);
+            this.cmbStagione.Items.Add(ribbonDropDownItemImpl3);
+            this.cmbStagione.Items.Add(ribbonDropDownItemImpl4);
+            this.cmbStagione.Label = "Mercato MSD";
+            this.cmbStagione.Name = "cmbStagione";
+            this.cmbStagione.ShowLabel = false;
+            this.cmbStagione.Text = null;
+            // 
             // TabHome
             // 
             this.TabHome.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
@@ -595,6 +631,8 @@
             this.groupErrori.PerformLayout();
             this.groupMSD.ResumeLayout(false);
             this.groupMSD.PerformLayout();
+            this.groupStagione.ResumeLayout(false);
+            this.groupStagione.PerformLayout();
             this.TabHome.ResumeLayout(false);
             this.TabHome.PerformLayout();
             this.TabInsert.ResumeLayout(false);
@@ -676,6 +714,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSD;
         internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelMSD;
         internal Microsoft.Office.Tools.Ribbon.RibbonComboBox cmbMSD;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupStagione;
+        internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelStagione;
+        internal Microsoft.Office.Tools.Ribbon.RibbonComboBox cmbStagione;
     }
 
     partial class ThisRibbonCollection

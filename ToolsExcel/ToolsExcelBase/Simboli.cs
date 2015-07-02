@@ -173,6 +173,39 @@ namespace Iren.ToolsExcel.Base
             return null;
         }
 
+        public static string Stagione
+        {
+            get { return GetStagione(); }
+            set
+            {
+                string idStagione = GetIdStagione(value);
+                Utility.DataBase.ChangeAppSettings("Stagione", idStagione);
+                DefinedNames definedNames = new DefinedNames("Previsione");
+                DateTime dataFine = Utility.DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+                Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Utility.Date.SuffissoDATA1, Utility.Date.GetSuffissoOra(1)).Extend(colOffset: Utility.Date.GetOreIntervallo(dataFine));
+                Utility.Workbook.Sheets["Previsione"].Range[rng.ToString()].Value = idStagione;
+            }
+        }
+
+        private static string GetIdStagione(string stagione) 
+        {
+            List<string> stagioni = new List<string>(ConfigurationManager.AppSettings["Stagioni"].Split('|'));
+            List<string> idStagioni = new List<string>(ConfigurationManager.AppSettings["IdStagioni"].Split('|'));
+
+            return idStagioni[stagioni.IndexOf(stagione)];
+        }
+        public static string GetStagione(string id)
+        {
+            List<string> stagioni = new List<string>(ConfigurationManager.AppSettings["Stagioni"].Split('|'));
+            List<string> idStagioni = new List<string>(ConfigurationManager.AppSettings["IdStagioni"].Split('|'));
+
+            return stagioni[idStagioni.IndexOf(id)];
+        }
+        private static string GetStagione()
+        {
+            return GetStagione(ConfigurationManager.AppSettings["Stagione"]);
+        }
+
         public static int[] rgbSfondo = { 183, 222, 232 };
         public static int[] rgbLinee = { 33, 89, 104 };
         public static int[] rgbTitolo = { 49, 133, 156 };
