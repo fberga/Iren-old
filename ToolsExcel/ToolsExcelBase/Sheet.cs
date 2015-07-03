@@ -1004,8 +1004,11 @@ namespace Iren.ToolsExcel.Base
                 chart.ChartArea.Border.ColorIndex = 1;
                 chart.ChartArea.Border.Weight = 3;
                 chart.ChartArea.Border.LineStyle = 0;
+                chart.PlotVisibleOnly = false;
 
                 chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+
+                graficiInfo.RowFilter = "SiglaGrafico = '" + grafico["SiglaGrafico"] + "'";
 
                 foreach (DataRowView info in graficiInfo)
                 {

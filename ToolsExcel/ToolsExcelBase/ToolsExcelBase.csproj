@@ -114,7 +114,9 @@
     <None Include="resources\errorpane-icon.png" />
     <Content Include="resources\ottimizzatore-icon.png" />
     <Content Include="resources\calendario-icon.png" />
+    <Content Include="resources\params-config-icon.png" />
     <Content Include="resources\PencilAngled_16xMD_color.png" />
+    <Content Include="resources\PSO.png" />
     <Content Include="resources\rampe-icon.png" />
     <Content Include="resources\modificaNO-icon.png" />
     <Content Include="resources\modificaSI-icon.png" />

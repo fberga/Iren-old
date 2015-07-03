@@ -60,7 +60,7 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1)
+        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false)
         {
             Excel.Worksheet ws = Target.Worksheet;
             bool wasProtected = ws.ProtectContents;
@@ -74,7 +74,7 @@ namespace Iren.ToolsExcel.Base
             DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
             DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
 
-            if (ws.ChartObjects().Count > 0)
+            if (ws.ChartObjects().Count > 0 && !fromCalcolo)
             {
                 Sheet s = new Sheet(ws);
                 s.AggiornaGrafici();

@@ -213,6 +213,16 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap params_config_icon {
+            get {
+                object obj = ResourceManager.GetObject("params_config_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap previsioneCT_icon {
             get {
                 object obj = ResourceManager.GetObject("previsioneCT_icon", resourceCulture);
@@ -246,6 +256,16 @@ namespace Iren.ToolsExcel.Base.Properties {
         public static System.Drawing.Bitmap progrImpianti_icon {
             get {
                 object obj = ResourceManager.GetObject("progrImpianti_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap PSO {
+            get {
+                object obj = ResourceManager.GetObject("PSO", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

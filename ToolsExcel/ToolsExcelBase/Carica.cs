@@ -227,7 +227,7 @@ namespace Iren.ToolsExcel.Base
                 xlRng.AddComment(info["Commento"]).Visible = false;
 
             if(saveToDB)
-                Handler.StoreEdit(xlRng, 0);
+                Handler.StoreEdit(xlRng, 0, true);
         }
 
         protected object GetRisultatoCalcolo(object siglaEntita, DefinedNames definedNames, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)

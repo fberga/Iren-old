@@ -1354,6 +1354,32 @@ namespace Iren.ToolsExcel.Utility
 
             return false;
         }
+        private static bool AggiornaData(string appID, ref DateTime dataAttiva)
+        {            
+            DateTime dataAttivaOld = dataAttiva;
+
+            if (appID == "12")
+            {
+                //configuro la data attiva
+                int ora = DateTime.Now.Hour;
+                if (ora <= 15)
+                    dataAttiva = DateTime.Today.AddDays(1);
+                else
+                    dataAttiva = DateTime.Today.AddDays(2);
+            }
+            else
+            {
+                dataAttiva = DateTime.Today.AddDays(-1);
+            }
+            
+
+            if (dataAttivaOld != dataAttiva)
+            {
+                DataBase.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
+                return true;
+            }
+            return false;
+        }
 
         public static void InitLog()
         {
@@ -1417,11 +1443,15 @@ namespace Iren.ToolsExcel.Utility
                 DataBase.LocalDB.Namespace = WB.Name;
             }
 
-            bool aggiornaMercato = false;
+            bool toUpdate = false;
+
+            //per Invio Programmi
             if (ConfigurationManager.AppSettings["Mercati"] != null)
-            {
-                aggiornaMercato = SetMercato(ref appID, ref dataAttiva);
-            }
+                toUpdate = SetMercato(ref appID, ref dataAttiva);
+
+            //per Previsione Carico Termico & Validazione Teleriscaldamento
+            if (appID == "11" || appID == "12")
+                toUpdate = AggiornaData(appID, ref dataAttiva);
 
             if (DataBase.OpenConnection())
             {
@@ -1438,7 +1468,7 @@ namespace Iren.ToolsExcel.Utility
 
                 InitLog();
 
-                Repository.DaAggiornare = aggiornaMercato;
+                Repository.DaAggiornare = toUpdate;
 
                 return false;
             }
