@@ -33,7 +33,7 @@ namespace Iren.ToolsExcel
             entitaAzioneInformazione.RowFilter = "SiglaEntitaRif = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-            DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.NamingOnly);
+            DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.Naming);
 
             Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 

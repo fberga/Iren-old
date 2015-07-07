@@ -40,7 +40,7 @@ namespace Iren.ToolsExcel.Forms
             if (DataBase.OpenConnection())
             {
                 _ws = (Excel.Worksheet)Workbook.ActiveSheet;
-                _definedNames = new DefinedNames(_ws.Name, DefinedNames.InitType.NamingOnly);
+                _definedNames = new DefinedNames(_ws.Name, DefinedNames.InitType.Naming);
 
                 string nome = _definedNames.GetNameByAddress(rng.Row, rng.Column);
                 _siglaEntita = nome.Split(Simboli.UNION[0])[0];

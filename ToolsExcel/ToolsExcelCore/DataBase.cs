@@ -245,37 +245,40 @@ namespace Iren.ToolsExcel.Core
         private void CheckDB(object state)
         {
             Dictionary<NomiDB, ConnectionState> oldStatoDB = new Dictionary<NomiDB, ConnectionState>(_statoDB);
-            if (OpenConnection(_internalsqlConn))
+            
+            OpenConnection(_internalsqlConn);
+            
+            _statoDB[NomiDB.SQLSERVER] = _internalsqlConn.State;
+
+            if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                _statoDB[NomiDB.SQLSERVER] = _internalsqlConn.State;
+                DataView imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3).DefaultView;
+                //se va in timeout la connessione si chiude
+                OpenConnection(_internalsqlConn);
+                DataView elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3).DefaultView;
+                //se va in timeout la connessione si chiude
+                //OpenConnection(_internalsqlConn);
 
-                if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
-                {
-                    DataView imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3).DefaultView;
-                    //se va in timeout la connessione si chiude
-                    OpenConnection(_internalsqlConn);
-                    DataView elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3).DefaultView;
-                    //se va in timeout la connessione si chiude
-                    OpenConnection(_internalsqlConn);
+                if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
+                    _statoDB[NomiDB.IMP] = ConnectionState.Open;
+                else
+                    _statoDB[NomiDB.IMP] = ConnectionState.Closed;
 
-                    if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
-                        _statoDB[NomiDB.IMP] = ConnectionState.Open;
-                    else
-                        _statoDB[NomiDB.IMP] = ConnectionState.Closed;
-
-                    if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
-                        _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
-                    else
-                        _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
-                }
-
-                if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
-                    || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
-                    || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
-                {
-                    NotifyPropertyChanged("StatoDB");
-                }
+                if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
+                    _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+                else
+                    _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
             }
+
+            if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
+                || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
+                || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
+            {
+                NotifyPropertyChanged("StatoDB");
+            }
+
+            CloseConnection(_internalsqlConn);
+            
         }
         private void NotifyPropertyChanged(String propertyName = "")
         {

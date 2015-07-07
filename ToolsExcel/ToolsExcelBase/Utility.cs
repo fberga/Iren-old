@@ -265,16 +265,16 @@ namespace Iren.ToolsExcel.Utility
                 modifiche.Clear();
             }
         }
-        public static object GetMessaggioCheck(object id) 
-        {
-            DataView tipologiaCheck = _localDB.Tables[Tab.TIPOLOGIA_CHECK].DefaultView;
-            tipologiaCheck.RowFilter = "IdTipologiaCheck = " + id;
+        //public static object GetMessaggioCheck(object id) 
+        //{
+        //    DataView tipologiaCheck = _localDB.Tables[Tab.TIPOLOGIA_CHECK].DefaultView;
+        //    tipologiaCheck.RowFilter = "IdTipologiaCheck = " + id;
 
-            if (tipologiaCheck.Count > 0)
-                return tipologiaCheck[0]["Messaggio"];
+        //    if (tipologiaCheck.Count > 0)
+        //        return tipologiaCheck[0]["Messaggio"];
 
-            return null;
-        }
+        //    return null;
+        //}
         public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true) 
         {
             dataRif = dataRif ?? DataAttiva;
@@ -1247,6 +1247,21 @@ namespace Iren.ToolsExcel.Utility
 
         #endregion
 
+
+        public static DataTable CaricaApplicazione(object idApplicazione)
+        {
+            string name = DataBase.Tab.APPLICAZIONE;
+            DataBase.ResetTable(name);
+            QryParams parameters = new QryParams() 
+            {
+                {"@IdApplicazione", idApplicazione},
+
+            };
+            DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE, parameters);
+            dt.TableName = name;
+            return dt;
+        }
+
         #endregion
     }
 
@@ -1279,22 +1294,10 @@ namespace Iren.ToolsExcel.Utility
 
         #region Metodi
 
-        private static DataTable CaricaApplicazione(object idApplicazione)
-        {
-            string name = DataBase.Tab.APPLICAZIONE;
-            DataBase.ResetTable(name);
-            QryParams parameters = new QryParams() 
-            {
-                {"@IdApplicazione", idApplicazione},
-
-            };
-            DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE, parameters);
-            dt.TableName = name;
-            return dt;
-        }
+        
         public static void AggiornaParametriApplicazione()
         {
-            DataTable dt = CaricaApplicazione(Workbook.AppSettings("AppID"));
+            DataTable dt = Repository.CaricaApplicazione(Workbook.AppSettings("AppID"));
             if (dt.Rows.Count == 0)
                 throw new ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
@@ -1479,6 +1482,7 @@ namespace Iren.ToolsExcel.Utility
                     System.Windows.Forms.MessageBox.Show("Il foglio non è inizializzato e non c'è connessione ad DB... Impossibile procedere! L'applicazione verrà chiusa.", "ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                     _wb.Close();
+                    return false;
                 }
 
                 DataBase.DB.SetParameters(dataAttiva.ToString("yyyyMMdd"), 0, 0);
@@ -1581,7 +1585,6 @@ namespace Iren.ToolsExcel.Utility
                     Simboli.ImpiantiOnline = false;
                     Simboli.ElsagOnline = false;
                 }
-
 
                 if (isProtected)
                     Main.Protect(Simboli.pwd);

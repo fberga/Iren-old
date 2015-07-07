@@ -71,7 +71,10 @@ namespace Iren.ToolsExcel
             Initialize();
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
-
+            
+            //forzo aggiornamento label iniziale
+            Utility.Workbook.AggiornaLabelStatoDB();
+            
             //se non sono in debug toglie le intestazioni
 #if !DEBUG
             foreach(Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
@@ -125,7 +128,8 @@ namespace Iren.ToolsExcel
 
         private void SelectionClick(object Sh, Excel.Range Target)
         {
-            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SelectionOnly);
+            Workbook.ScreenUpdating = false;
+            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.Selection);
             Range rng = new Range(Target.Row, Target.Column);
             Selection sel;
             int val;
@@ -143,6 +147,7 @@ namespace Iren.ToolsExcel
                 }
                 Target.Worksheet.Protect(Simboli.pwd);
             }
+            Workbook.ScreenUpdating = true;
         }
 
         private void btnConfiguraParametri_Click(object sender, RibbonControlEventArgs e)
@@ -163,7 +168,7 @@ namespace Iren.ToolsExcel
             {
                 if (!Workbook.fromErrorPane)
                 {
-                    DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.CheckOnly);
+                    DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.Check);
                     Range rng = new Range(Target.Row, Target.Column);
                     if (definedNames.HasCheck() && definedNames.IsCheck(rng))
                     {
@@ -444,7 +449,7 @@ namespace Iren.ToolsExcel
 
             Excel.Range rng = Workbook.Application.Selection;
 
-            DefinedNames definedNames = new DefinedNames(Workbook.ActiveSheet.Name, DefinedNames.InitType.NamingOnly);
+            DefinedNames definedNames = new DefinedNames(Workbook.ActiveSheet.Name, DefinedNames.InitType.Naming);
 
             //inizializzo ottimizzatore e il form di selezione entità per l'ottimo.
             Optimizer opt = new Optimizer();

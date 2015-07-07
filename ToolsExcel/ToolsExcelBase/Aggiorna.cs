@@ -8,32 +8,78 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
+    /// <summary>
+    /// Classe astratta che copre le funzionalità di aggiornamento della struttura e del riepilogo dei fogli di lavoro e del riepilogo.
+    /// </summary>
     public abstract class AAggiorna
     {
+        /// <summary>
+        /// Launcher dell'aggiornamento in emergenza.
+        /// </summary>
         public abstract void Emergenza();
+        /// <summary>
+        /// Aggiornamento dei fogli in emergenza.
+        /// </summary>
         protected abstract void EmergenzaFogli();
+        /// <summary>
+        /// Aggiornamento del riepilogo in emergenza.
+        /// </summary>
         protected abstract void EmergenzaRiepilogo();
 
+        /// <summary>
+        /// Launcher dell'aggiornamento dati.
+        /// </summary>
+        /// <returns></returns>
         public abstract bool Dati();
+        /// <summary>
+        /// Aggiornamento dei dati contenuti nei fogli.
+        /// </summary>
         protected abstract void DatiFogli();
+        /// <summary>
+        /// Aggiornamento dei dati contenuti nel riepilogo.
+        /// </summary>
         protected abstract void DatiRiepilogo();
 
+        /// <summary>
+        /// Launcher dell'aggiornamento della struttura.
+        /// </summary>
+        /// <returns></returns>
         public abstract bool Struttura();
+        /// <summary>
+        /// Aggiornamento della struttura dei fogli.
+        /// </summary>
         protected abstract void StrutturaFogli();
+        /// <summary>
+        /// Aggiornamento della struttura del riepilogo.
+        /// </summary>
         protected abstract void StrutturaRiepilogo();
     }
 
+    /// <summary>
+    /// Implementazione di base della classe AAggiorna. Nel caso nell'applicativo specifico ci fosse la necessità di variare la struttura di uno dei fogli, va fatto l'override dei questa classe ed eventualmente delle classi Scheet/Riepilogo a seconda del livello di personalizzazione.
+    /// </summary>
     public class Aggiorna : AAggiorna
     {
+        #region Costruttori
+
         public Aggiorna()
         {
             Workbook.Main.Select();
         }
+        
+        #endregion
 
+        #region Metodi
+
+        /// <summary>
+        /// Launcher dell'aggiornamento della struttura.
+        /// </summary>
+        /// <returns>True se l'aggiornamento è andato a buon fine.</returns>
         public override bool Struttura()
         {
             if (DataBase.OpenConnection())
             {
+                //aggiorno i parametri di base dell'applicazione
                 Workbook.AggiornaParametriApplicazione();
 
                 SplashScreen.Show();
@@ -99,11 +145,17 @@ namespace Iren.ToolsExcel.Base
                 return false;
             }
         }
+        /// <summary>
+        /// Aggiornamento della struttura del riepilogo.
+        /// </summary>
         protected override void StrutturaRiepilogo()
         {
             Riepilogo riepilogo = new Riepilogo();
             riepilogo.LoadStructure();
         }
+        /// <summary>
+        /// Aggiornamento della struttura dei fogli.
+        /// </summary>
         protected override void StrutturaFogli()
         {
             foreach (Excel.Worksheet ws in Workbook.CategorySheets)
@@ -113,6 +165,10 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
+        /// <summary>
+        /// Launcher dell'aggiornamento dati.
+        /// </summary>
+        /// <returns>True se l'aggiornamento è andato a buon fine.</returns>
         public override bool Dati()
         {
             if (DataBase.OpenConnection())
@@ -144,6 +200,9 @@ namespace Iren.ToolsExcel.Base
                 return false;
             }
         }
+        /// <summary>
+        /// Aggiornamento dei dati contenuti nei fogli.
+        /// </summary>
         protected override void DatiFogli()
         {
             foreach (Excel.Worksheet ws in Workbook.CategorySheets)
@@ -152,12 +211,18 @@ namespace Iren.ToolsExcel.Base
                 s.UpdateData(true);
             }
         }
+        /// <summary>
+        /// Aggiornamento dei dati contenuti nel riepilogo.
+        /// </summary>
         protected override void DatiRiepilogo()
         {
             Riepilogo main = new Riepilogo();
             main.UpdateData();
         }
 
+        /// <summary>
+        /// Launcher dell'aggiornamento in emergenza.
+        /// </summary>
         public override void Emergenza()
         {
             SplashScreen.Show();
@@ -178,6 +243,9 @@ namespace Iren.ToolsExcel.Base
             Workbook.ScreenUpdating = true;
             SplashScreen.Close();
         }
+        /// <summary>
+        /// Aggiornamento dei fogli in emergenza.
+        /// </summary>
         protected override void EmergenzaFogli()
         {
             foreach (Excel.Worksheet ws in Workbook.CategorySheets)
@@ -186,11 +254,15 @@ namespace Iren.ToolsExcel.Base
                 s.AggiornaDateTitoli();
             }
         }
+        /// <summary>
+        /// Aggiornamento del riepilogo in emergenza.
+        /// </summary>
         protected override void EmergenzaRiepilogo()
         {
             Riepilogo main = new Riepilogo();
             main.RiepilogoInEmergenza();
         }
 
+        #endregion
     }
 }

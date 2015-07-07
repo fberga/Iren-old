@@ -18,6 +18,8 @@ namespace Iren.ToolsExcel.Base
         string _sheet;
         List<string> _days;
 
+        InitType _initType;
+
         protected Dictionary<string, int> _defDatesIndexByName = new Dictionary<string,int>();
         protected Dictionary<int, string> _defDatesIndexByCol = new Dictionary<int, string>();
 
@@ -34,44 +36,121 @@ namespace Iren.ToolsExcel.Base
         protected List<CheckObj> _check = new List<CheckObj>();
         protected List<Selection> _selections = new List<Selection>();
 
+        /// <summary>
+        /// Specifica le varie tipologie di inizializzazione utilizzate.
+        /// </summary>
         public enum InitType
         {
-            All, NamingOnly, GOTOsOnly, GOTOsThisSheetOnly, EditableOnly, SaveDB, CheckNaming, CheckOnly, SelectionOnly
+            /// <summary>
+            /// Inizializza l'oggetto con tutte le funzionalità annesse.
+            /// </summary>
+            All, 
+            /// <summary>
+            /// Inizializza l'oggetto con la struttura dei nomi e dei campi per le selection.
+            /// </summary>
+            Naming, 
+            /// <summary>
+            /// Inizializza l'oggetto con la sola struttura dei GOTO di tutti i fogli.
+            /// </summary>
+            GOTOs, 
+            /// <summary>
+            /// Inizializza l'oggetto con i GOTO di un solo foglio (quello utilizzato per inizializzare l'oggetto).
+            /// </summary>
+            GOTOsThisSheet, 
+            /// <summary>
+            /// Inizializza l'oggetto con la sola struttura dei campi editabili.
+            /// </summary>
+            Editable, 
+            /// <summary>
+            /// Inizializza l'oggetto con la sola struttura dei campi da salvare sul database in seguito a modifica.
+            /// </summary>
+            SaveDB, 
+            /// <summary>
+            /// Inizializza l'oggetto con la struttura dei check e, se presenti, anche quella dei nomi.
+            /// </summary>
+            CheckNaming, 
+            /// <summary>
+            /// Inizializza l'oggetto con la sola struttura dei check.
+            /// </summary>
+            Check, 
+            /// <summary>
+            /// Inizializza l'oggetto con la sola struttura dei campi per le selezioni.
+            /// </summary>
+            Selection
         }
 
         #endregion
 
         #region Proprietà
 
+        /// <summary>
+        /// Restituisce tutti i suffissi dei giorni definiti nella struttura. Ad esempio se l'intervallo dei giorni è 2, restituirà una lista composta da { "DATA1", "DATA2" }. (Deve essere inizializzato con Naming, All)
+        /// </summary>
         public string[] DaySuffx
         {
             get
             {
-                return _days.ToArray();
+                if (_initType == InitType.Naming || _initType == InitType.All)
+                    return _days.ToArray();
+                else
+                    throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Naming, CheckNaming oppure All.");
             }
         }
+        /// <summary>
+        /// Restituisce il nome del foglio a cui i nomi definiti fanno riferimento. (Read Only)
+        /// </summary>
         public string Sheet
         {
             get { return _sheet; }
         }
+        /// <summary>
+        /// Restituisce la lista di di range editabili: sono indicizzati per riga e contengono la stringa di indirizzo del range. (Deve essere inizializzato con Editable, All)
+        /// </summary>
         public Dictionary<int, string> Editable
         {
-            get { return _editable; }
+            get 
+            {
+                if (_initType == InitType.Editable || _initType == InitType.All)
+                    return _editable; 
+                else
+                    throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Editable oppure All.");
+            }
         }
+        /// <summary>
+        /// Verifica se è presente la DATA0H24 ovvero l'ora 24 del giorno prima di quello di inizio. (Deve essere inizializzato con Naming, All, C)
+        /// </summary>
         public bool HasData0H24
         {
-            get { return _defDatesIndexByName.First().Key == GetName(Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24)); }
+            //se è definita la colonna DATA0H24, sarà la prima.
+            get 
+            {
+                if (_initType == InitType.Naming || _initType == InitType.All)
+                    return _defDatesIndexByName.First().Key == GetName(Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24)); 
+                else
+                    throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Naming, CheckNaming, oppure All.");
+            }
         }
-
+        /// <summary>
+        /// Restituisce la lista di tutti i check definiti (Deve essere inizializzato con Check, CheckNaming, All)
+        /// </summary>
         public List<CheckObj> Checks
         {
-            get { return _check; }
+            get 
+            {
+                if (_initType == InitType.Naming || _initType == InitType.All)
+                    return _check;
+                else
+                    throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Check, CheckNaming, oppure All.");
+            }
         }
 
         #endregion
 
         #region Costruttori
 
+        /// <summary>
+        /// Inizializza la struttura di indicizzazione con i nomi.
+        /// </summary>
         private void InitNaming()
         {
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI];
@@ -100,6 +179,10 @@ namespace Iren.ToolsExcel.Base
             _defDatesIndexByCol = dates.ToDictionary(r => (int)r["Column"], r => GetName(r["Date"].ToString(), r["Hour"].ToString()));
 
         }
+        /// <summary>
+        /// Inizializza la struttura per i GOTO.
+        /// </summary>
+        /// <param name="thisSheet">Se true limita l'azione alla sola sheet corrente.</param>
         private void InitGOTOs(bool thisSheet = false)
         {
             DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ADDRESS_FROM];
@@ -121,6 +204,9 @@ namespace Iren.ToolsExcel.Base
                     r => r["AddressTo"].ToString()
                 );
         }
+        /// <summary>
+        /// Inizializza la struttura per riconoscere le celle editabili.
+        /// </summary>
         private void InitEditable()
         {
             DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.EDITABILI];
@@ -130,6 +216,9 @@ namespace Iren.ToolsExcel.Base
                  where r["Sheet"].Equals(_sheet)
                  select r).ToDictionary(r => (int)r["Row"], r => r["Range"].ToString());
         }
+        /// <summary>
+        /// Inizialissa la struttura per riconoscere le celle da salvare sul DB.
+        /// </summary>
         private void InitSaveDB()
         {
             DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SALVADB];
@@ -139,6 +228,9 @@ namespace Iren.ToolsExcel.Base
                  where r["Sheet"].Equals(_sheet)
                  select (int)r["Row"]).ToList();
         }
+        /// <summary>
+        /// Inizializza la struttura per riconoscere le celle su cui apporre commenti.
+        /// </summary>
         private void InitToNote()
         {
             DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ANNOTA];
@@ -148,6 +240,9 @@ namespace Iren.ToolsExcel.Base
                  where r["Sheet"].Equals(_sheet)
                  select (int)r["Row"]).ToList();
         }
+        /// <summary>
+        /// Inizializza la struttura per riconoscere le celle di check.
+        /// </summary>
         private void InitCheck()
         {
             DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CHECK];
@@ -157,6 +252,9 @@ namespace Iren.ToolsExcel.Base
                  where r["Sheet"].Equals(_sheet)
                  select new CheckObj(r["SiglaEntita"].ToString(), (string)r["Range"], (int)r["Type"])).ToList();
         }
+        /// <summary>
+        /// inizializza la struttura per riconoscere le righe che sono parte di una selezione.
+        /// </summary>
         private void InitSelection()
         {
             DataTable selection = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.SELECTION];
@@ -180,10 +278,10 @@ namespace Iren.ToolsExcel.Base
         }
 
         public DefinedNames() { }
-        public DefinedNames(string sheet, InitType type = InitType.NamingOnly)
+        public DefinedNames(string sheet, InitType type = InitType.Naming)
         {
             _sheet = sheet;
-
+            _initType = type;
             switch (type)
             {
                 case InitType.All:
@@ -194,17 +292,17 @@ namespace Iren.ToolsExcel.Base
                     InitCheck();
                     InitSelection();
                     break;
-                case InitType.NamingOnly:
+                case InitType.Naming:
                     InitNaming();
                     InitSelection();
                     break;
-                case InitType.GOTOsOnly:
+                case InitType.GOTOs:
                     InitGOTOs();
                     break;
-                case InitType.GOTOsThisSheetOnly:
+                case InitType.GOTOsThisSheet:
                     InitGOTOs(true);
                     break;
-                case InitType.EditableOnly:
+                case InitType.Editable:
                     InitEditable();
                     break;
                 case InitType.SaveDB:
@@ -217,10 +315,10 @@ namespace Iren.ToolsExcel.Base
                     if(_check.Count > 0)
                         InitNaming();
                     break;
-                case InitType.CheckOnly:
+                case InitType.Check:
                     InitCheck();
                     break;
-                case InitType.SelectionOnly:
+                case InitType.Selection:
                     InitSelection();
                     break;
             }
@@ -458,7 +556,10 @@ namespace Iren.ToolsExcel.Base
         {
             return _defNamesIndexByName.Count;
         }
-
+        /// <summary>
+        /// Restituisce il numero di colonne definite da utilizzare come offset sul foglio. Da utilizzare solo nei fogli in cui le colonne sono tutte contigue altrimenti il risultato non rappresenterà l'offset effettivo sul foglio.
+        /// </summary>
+        /// <returns>Il numero di colonne definite</returns>
         public int GetColOffset()
         {
             if (Struct.tipoVisualizzazione == "O")
@@ -466,10 +567,20 @@ namespace Iren.ToolsExcel.Base
 
             return 25;
         }
+        /// <summary>
+        /// Restituisce il numero di colonne che vanno dalla data iniziale a quella passata come parametro. Può essere utilizzato in alternativa al metodo Utility.Date.GetDayOffset(dataInizio, dataFine). Da ricordare che questo metodo, dove presente, conteggia la colonna della DATA0H24.
+        /// </summary>
+        /// <param name="data">La data fino a cui conteggiare le colonne definite.</param>
+        /// <returns>Il numero di colonne definite fino a data</returns>
         public int GetColOffset(DateTime data)
         {
             return GetColOffset(Date.GetSuffissoData(data));
         }
+        /// <summary>
+        /// Restituisce il numero di colonne che vanno dalla data iniziale a quella passata come parametro. Può essere utilizzato in alternativa al metodo Utility.Date.GetOreIntervallo(dataInizio, dataFine). Da ricordare che questo metodo, dove presente, conteggia la colonna della DATA0H24.
+        /// </summary>
+        /// <param name="suffissoData">Il suffisso della data fino a cui conteggiare le colonne definite.</param>
+        /// <returns>Il numero di colonne definite fino a data</returns>
         public int GetColOffset(string suffissoData)
         {
             var date =
@@ -479,7 +590,11 @@ namespace Iren.ToolsExcel.Base
 
             return date.Count();
         }
-        
+        /// <summary>
+        /// Restituisce il numero di colonne definite per il giorno indicato dal parametro suffissoData. Se la tipologia di visualizzazione è Verticale, il numero restituito sarà sempre 25. Può essere utilizzato in alternativa a Utility.Date.GetOreGiorno(suffissoData).
+        /// </summary>
+        /// <param name="suffissoData">Il suffisso della data di cui conteggiare le colonne.</param>
+        /// <returns>Numero di colonne definite per il giorno.</returns>
         public int GetDayOffset(string suffissoData)
         {
             if (Struct.tipoVisualizzazione == "V")
@@ -492,28 +607,59 @@ namespace Iren.ToolsExcel.Base
 
             return date.Count();
         }
+        /// <summary>
+        /// Restituisce il numero di colonne definite per il giorno indicato dal parametro giorno. Se la tipologia di visualizzazione è Verticale, il numero restituito sarà sempre 25. Può essere utilizzato in alternativa a Utility.Date.GetOreGiorno(giorno).
+        /// </summary>
+        /// <param name="giorno">Data di cui conteggiare le colonne.</param>
+        /// <returns>Numero di colonne definite per il giorno.</returns>
         public int GetDayOffset(DateTime giorno)
         {
             return GetDayOffset(Date.GetSuffissoData(giorno));
         }
-        
+        /// <summary>
+        /// Restituisce la riga collegata al nome passato come parametro.
+        /// </summary>
+        /// <param name="parts">Le componenti del nome di cui cercare la riga.</param>
+        /// <returns>La riga del nome passato come parametro.</returns>
         public int GetRowByName(params object[] parts)
         {
             return _defNamesIndexByName[GetName(parts)];
         }
+        /// <summary>
+        /// Restituisce la riga collegata al nome passato come parametro.
+        /// </summary>
+        /// <param name="name">Il nome di cui cercare la riga.</param>
+        /// <returns>La riga del nome passato come parametro.</returns>
         public int GetRowByName(string name)
         {
             return _defNamesIndexByName[name];
         }
+        /// <summary>
+        /// Caso particolare di GetRowByName in cui si presuppone che il nome sia composto da sigleEntita, siglaInformazione e suffissoData
+        /// </summary>
+        /// <param name="siglaEntita">La sigla dell'entità.</param>
+        /// <param name="siglaInformazione">La sigla dell'informasione.</param>
+        /// <param name="suffissoData">Il suffisso della data.</param>
+        /// <returns>La riga del nome passato come parametro.</returns>
         public int GetRowByNameSuffissoData(object siglaEntita, object siglaInformazione, string suffissoData)
         {
             string name = GetName(siglaEntita, siglaInformazione, Struct.tipoVisualizzazione == "O" ? "" : suffissoData);
             return GetRowByName(name);
         }
+        /// <summary>
+        /// Restituisce tutti i nomi definiti per quella riga.
+        /// </summary>
+        /// <param name="row">La riga dove sono definiti i nomi.</param>
+        /// <returns>Lista dei nomi definiti nella riga row.</returns>
         public List<string> GetNameByRow(int row)
         {
             return _defNamesIndexByRow[row].ToList();
         }
+        /// <summary>
+        /// Restituisce la data definita per la colonna column.
+        /// </summary>
+        /// <param name="column">La colonna dove è definita la data.</param>
+        /// <returns>La stringa che rappresenta la data nel formato SuffissoData.SuffissoOra.</returns>
         public string GetDateByCol(int column)
         {
             if (IsDataColumn(column))
@@ -521,6 +667,12 @@ namespace Iren.ToolsExcel.Base
             else
                 return Date.GetSuffissoData(DataBase.DataAttiva);
         }
+        /// <summary>
+        /// Restituisce il nome definito nella cella indicata dall'indirizzo RC.
+        /// </summary>
+        /// <param name="row">Riga dell'indirizzo.</param>
+        /// <param name="column">Colonna dell'indirizzo.</param>
+        /// <returns>Restituisce il nome definito in quella cella.</returns>
         public string GetNameByAddress(int row, int column)
         {
             if(Struct.tipoVisualizzazione == "O")
@@ -536,11 +688,20 @@ namespace Iren.ToolsExcel.Base
 
             return name;
         }
-
+        /// <summary>
+        /// Verifica se la colonna column fa parte del range dei dati oppure no. Ovvero maggiore di DATA1.H1 e minore di DATAn.H24.
+        /// </summary>
+        /// <param name="column">Colonna da verificare</param>
+        /// <returns>True se è una colonna di dati, false altrimenti.</returns>
         public bool IsDataColumn(int column)
         {
             return column >= GetFirstCol() && column < GetFirstCol() + GetColOffset();
         }
+        /// <summary>
+        /// Verifica se il range passato contiene delle celle di check.
+        /// </summary>
+        /// <param name="rng">Range da verificare.</param>
+        /// <returns>True se è un range contenente check, false altrimenti.</returns>
         public bool IsCheck(Range rng)
         {
             foreach (CheckObj chk in _check)
@@ -597,14 +758,14 @@ namespace Iren.ToolsExcel.Base
             return _defNamesIndexByName.Count(kv => kv.Key.StartsWith(name)) > 0;
         }
 
-        public string[] GetFullNameByParts(params object[] parts)
-        {
-            string name = GetName(parts);
-            return
-                (from kv in _defNamesIndexByName
-                 where kv.Key.StartsWith(name)
-                 select kv.Key).ToArray();
-        }
+        //public string[] GetFullNameByParts(params object[] parts)
+        //{
+        //    string name = GetName(parts);
+        //    return
+        //        (from kv in _defNamesIndexByName
+        //         where kv.Key.StartsWith(name)
+        //         select kv.Key).ToArray();
+        //}
 
         public Range Get(params object[] parts)
         {

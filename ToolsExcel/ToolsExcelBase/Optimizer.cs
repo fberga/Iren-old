@@ -112,6 +112,8 @@ namespace Iren.ToolsExcel.Base
 
                 if (info["WB"].Equals("2"))
                     Workbook.Application.Run("WBFREE", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
+                else if(info["WB"].Equals("3"))
+                    Workbook.Application.Run("WBBIN", DefinedNames.GetName(siglaEntitaInfo, info["SiglaInformazione"]), "'" + _sheet + "'!" + rng.ToString());
             }
         }
         /// <summary>

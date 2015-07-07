@@ -125,9 +125,9 @@
             this.FrontOffice.Groups.Add(this.groupChiudi);
             this.FrontOffice.Groups.Add(this.groupConfigura);
             this.FrontOffice.Groups.Add(this.groupCalendario);
+            this.FrontOffice.Groups.Add(this.groupModifica);
             this.FrontOffice.Groups.Add(this.groupAggiorna);
             this.FrontOffice.Groups.Add(this.groupAzioni);
-            this.FrontOffice.Groups.Add(this.groupModifica);
             this.FrontOffice.Groups.Add(this.groupAmbienti);
             this.FrontOffice.Groups.Add(this.groupFileRete);
             this.FrontOffice.Groups.Add(this.groupFileLocali);
@@ -504,7 +504,7 @@
             this.TabHome.ControlId.OfficeId = "TabHome";
             this.TabHome.Label = "TabHome";
             this.TabHome.Name = "TabHome";
-            this.TabHome.Visible = false;
+            this.TabHome.Visible = true;
             // 
             // TabInsert
             // 
@@ -550,7 +550,7 @@
             this.TabView.ControlId.OfficeId = "TabView";
             this.TabView.Label = "TabView";
             this.TabView.Name = "TabView";
-            this.TabView.Visible = false;
+            this.TabView.Visible = true;
             // 
             // TabDeveloper
             // 

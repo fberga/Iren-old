@@ -73,11 +73,8 @@ namespace Iren.ToolsExcel
                         ws = (Excel.Worksheet)Workbook.Sheets.Add(Workbook.Log);
                         ws.Name = msd;
                         ws.Select();
+                        ws.Visible = Excel.XlSheetVisibility.xlSheetVeryHidden;
                         Workbook.Application.Windows[1].DisplayGridlines = false;
-                        
-                        //aggiorno la struttura del foglio appena creato
-                        //SheetExport se = new SheetExport(ws);
-                        //se.LoadStructure();
                     }
                 }
 

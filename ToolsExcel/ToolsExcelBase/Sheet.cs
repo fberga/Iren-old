@@ -99,7 +99,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView categoria in categorie)
             {
                 Excel.Worksheet ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
-                DefinedNames definedNames = new DefinedNames(categoria["DesCategoria"].ToString(), DefinedNames.InitType.EditableOnly);
+                DefinedNames definedNames = new DefinedNames(categoria["DesCategoria"].ToString(), DefinedNames.InitType.Editable);
 
                 foreach (string range in definedNames.Editable.Values)
                 {
@@ -1008,7 +1008,8 @@ namespace Iren.ToolsExcel.Base
 
                 chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
 
-                graficiInfo.RowFilter = "SiglaGrafico = '" + grafico["SiglaGrafico"] + "'";
+                string rowFilter = graficiInfo.RowFilter;
+                graficiInfo.RowFilter = rowFilter + " AND SiglaGrafico = '" + grafico["SiglaGrafico"] + "'";
 
                 foreach (DataRowView info in graficiInfo)
                 {
@@ -1022,6 +1023,7 @@ namespace Iren.ToolsExcel.Base
                     serie.Border.Weight = info["BorderWeight"];
                     serie.Border.LineStyle = info["BorderLineStyle"];
                 }
+                graficiInfo.RowFilter = rowFilter;
             }
             _ws.Application.ScreenUpdating = false;
         }
@@ -1470,7 +1472,7 @@ namespace Iren.ToolsExcel.Base
             }
             else
             {
-                DefinedNames gotos = new DefinedNames(_ws.Name, DefinedNames.InitType.GOTOsThisSheetOnly);
+                DefinedNames gotos = new DefinedNames(_ws.Name, DefinedNames.InitType.GOTOsThisSheet);
 
                 for (int i = 0; i <= Struct.intervalloGiorni; i++)
                 {

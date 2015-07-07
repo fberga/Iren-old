@@ -9,15 +9,39 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
 {
+    /// <summary>
+    /// Classe astratta che copre le funzionalità dell'azione di caricamento e generazione dei dati
+    /// </summary>
     public abstract class ACarica
     {
+        /// <summary>
+        /// Launcher dell'azione di caricamento/generazione dei dati.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità di cui caricare/generare i dati.</param>
+        /// <param name="siglaAzione">Sigla dell'azione per cui è richiesto il caricamento dei dati.</param>
+        /// <param name="azionePadre">Sigla dell'azione padre (di solito CARICAx o GENERA).</param>
+        /// <param name="giorno">Data di riferimento.</param>
+        /// <param name="parametro">Parametro da specificare alla storedProcedure CARICA_AZIONE_INFORMAZIONE nel caso sia necessario.</param>
+        /// <returns></returns>
         public abstract bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null);
-        /*public abstract void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames nomiDefiniti, DateTime giorno);
-        public abstract void ScriviInformazione(object siglaEntita, DataView azioneInformazione, DefinedNames nomiDefiniti);*/
     }
 
+    /// <summary>
+    /// Implementazione base della routine di caricamento/generazione delle informazioni in seguito ad un'azione dell'utente.
+    /// </summary>
     public class Carica : ACarica
     {
+        #region Metodi
+
+        /// <summary>
+        /// Launcher dell'azione di caricamento/generazione dei dati.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità di cui caricare/generare i dati.</param>
+        /// <param name="siglaAzione">Sigla dell'azione per cui è richiesto il caricamento dei dati.</param>
+        /// <param name="azionePadre">Sigla dell'azione padre (di solito CARICAx o GENERA).</param>
+        /// <param name="giorno">Data di riferimento.</param>
+        /// <param name="parametro">Parametro da specificare alla storedProcedure CARICA_AZIONE_INFORMAZIONE nel caso sia necessario.</param>
+        /// <returns>True se il caricamento va a buon fine.</returns>
         public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null)
         {
             DefinedNames definedNames = new DefinedNames(DefinedNames.GetSheetName(siglaEntita));
@@ -70,7 +94,13 @@ namespace Iren.ToolsExcel.Base
                 return false;
             }
         }
-        
+        /// <summary>
+        /// Funzione che pulisce i campi di lavoro necessari al caricamento/generazione.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità di cui caricare/generare i dati.</param>
+        /// <param name="siglaAzione">Sigla dell'azione per cui sono richieste la generazione o il caricamento dei dati.</param>
+        /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
+        /// <param name="giorno">Data di riferimento.</param>
         protected virtual void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
@@ -82,22 +112,23 @@ namespace Iren.ToolsExcel.Base
 
             foreach (DataRowView info in azioneInformazione)
             {
+                //cancella tutte le informazioni collegate all'azione che non contengono formule
                 if (info["FormulaInCella"].Equals("0"))
                 {
                     siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                    Range rng;
-                    //if(info["Selezione"].Equals(0))
-                    rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
-                    //else
-                    //    rng = nomiDefiniti.Get(siglaEntita, "SEL", info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
-
-                    Excel.Range xlRng = ws.Range[rng.ToString()];
-                    xlRng.Value = null;
-                    Style.RangeStyle(xlRng, backColor: info["BackColor"], foreColor: info["ForeColor"]);
-                    xlRng.ClearComments();
+                    Range rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    ws.Range[rng.ToString()].Value = null;
+                    Style.RangeStyle(ws.Range[rng.ToString()], backColor: info["BackColor"], foreColor: info["ForeColor"]);
+                    ws.Range[rng.ToString()].ClearComments();
                 }
             }
         }
+        /// <summary>
+        /// Scrive le informazioni reperite dal database.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entita di cui sono state caricate le informazioni.</param>
+        /// <param name="azioneInformazione">DataView contenente tutte le informazioni da inserire.</param>
+        /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
         protected virtual void ScriviInformazione(object siglaEntita, DataView azioneInformazione, DefinedNames definedNames)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
@@ -120,6 +151,15 @@ namespace Iren.ToolsExcel.Base
                 ScriviCella(ws, definedNames, azione["SiglaEntita"], azione, suffissoData, suffissoOra, azione["Valore"], false);
             }
         }
+        /// <summary>
+        /// Funzione che elabora le informazioni correlate ad un azione per restituire il risultato richiesto.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità di cui generare i dati.</param>
+        /// <param name="siglaAzione">Sigla dell'azione per cui è richiesta la generazione dei dati.</param>
+        /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
+        /// <param name="giorno">Data di riferimento.</param>
+        /// <param name="oraInizio">Vincolo sull'orario di inizio della generazione</param>
+        /// <param name="oraFine">Vincolo sull'orario di fine della generazione</param>
         protected void ElaborazioneInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno, int oraInizio = -1, int oraFine = -1)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
@@ -129,11 +169,14 @@ namespace Iren.ToolsExcel.Base
 
             string suffissoData = Date.GetSuffissoData(giorno);
 
+            //controllo se ci sono dei vincoli di orario
             oraInizio = oraInizio < 0 ? 1 : oraInizio;
             oraFine = oraFine < 0 ? Date.GetOreGiorno(giorno) : oraFine;
 
+            //cerco le entita che appartengono a quella in input
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "'";
+            //salvo il numero di riferimento
             foreach (DataRowView entita in categoriaEntita)
                 entitaRiferimento.Add(entita["SiglaEntita"].ToString(), (int)entita["Riferimento"]);
 
@@ -204,6 +247,17 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        /// <summary>
+        /// Funzione che scrive le informazioni nella cella indicata dai parametri in input.
+        /// </summary>
+        /// <param name="ws">Foglio a cui appartengono le celle da scrivere.</param>
+        /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
+        /// <param name="siglaEntita">Sigla dell'entità su cui scrivere i dati.</param>
+        /// <param name="info">DataRow contenente le informazioni da scrivere nella cella</param>
+        /// <param name="suffissoData">Suffisso della data di riferimento necessario per l'indirizzamento.</param>
+        /// <param name="suffissoOra">Suffisso dell'ora di riferimento necessario per l'indirizzamento.</param>
+        /// <param name="risultato">Risultato del calcolo da scrivere nella cella.</param>
+        /// <param name="saveToDB">Flag che indica se l'informazione deve essere salvata o no sul DB in modo da attivare la routine di salvataggio della modifica.</param>
         protected virtual void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB) 
         {
             object siglaEntitaRif = siglaEntita;
@@ -229,7 +283,17 @@ namespace Iren.ToolsExcel.Base
             if(saveToDB)
                 Handler.StoreEdit(xlRng, 0, true);
         }
-
+        /// <summary>
+        /// Funzione che esegue step by step il calcolo.
+        /// </summary>
+        /// <param name="siglaEntita">La sigla dell'entità da considerare.</param>
+        /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
+        /// <param name="giorno">Data di riferimento.</param>
+        /// <param name="ora">Ora di riferimento.</param>
+        /// <param name="calcolo">Informazioni dello step corrente del calcolo.</param>
+        /// <param name="entitaRiferimento">Struttura che contiene la lista delle entità di riferimento con annesso il codice del riferimento.</param>
+        /// <param name="step">Lo step successivo a cui lo step corrente porta.</param>
+        /// <returns>Il valore del calcolo effettuato.</returns>
         protected object GetRisultatoCalcolo(object siglaEntita, DefinedNames definedNames, DateTime giorno, int ora, DataRowView calcolo, Dictionary<string, int> entitaRiferimento, out int step)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
@@ -273,7 +337,6 @@ namespace Iren.ToolsExcel.Base
                                 valore1 = 2d;
                             break;
                         default:
-                            //if (cella != null)
                             valore1 = ws.Range[cella1.ToString()].Value ?? 0d;
                             break;
                     }
@@ -340,10 +403,7 @@ namespace Iren.ToolsExcel.Base
                                 valore2 = 2d;
                             break;
                         default:
-                            //if (cella != null)
                             valore2 = ws.Range[cella2.ToString()].Value ?? 0d;
-                            //else
-                            //    valore2 = 0d;
                             break;
                     }
                 }
@@ -502,5 +562,7 @@ namespace Iren.ToolsExcel.Base
             step = 0;
             return retVal;
         }
+
+        #endregion
     }
 }

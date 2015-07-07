@@ -37,7 +37,7 @@ namespace Iren.ToolsExcel.Base
             {
                 try
                 {
-                    DefinedNames newDefinedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.GOTOsOnly);
+                    DefinedNames newDefinedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.GOTOs);
                     string address = newDefinedNames.GetGotoFromAddress(Range.R1C1toA1(Target.Row, Target.Column));
                     Goto(address);
                 }

@@ -39,7 +39,7 @@ namespace Iren.ToolsExcel.Forms
         public void RefreshCheck(Check checkFunctions)
         {
             SplashScreen.UpdateStatus("Aggiorno Check");
-            DefinedNames gotos = new DefinedNames("Main", DefinedNames.InitType.GOTOsOnly);
+            DefinedNames gotos = new DefinedNames("Main", DefinedNames.InitType.GOTOs);
 
             //Reset delle celle GOTO di tutto il Workbook
             List<string> gotoRanges = gotos.GetAllFromAddressGOTO();

@@ -66,7 +66,9 @@ namespace Iren.ToolsExcel
 
             ((Excel._Worksheet)_ws).Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
-            _ws.Cells[_struttura.rigaBlock, 1].Select();
+            //if(_ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
+            //    _ws.Cells[_struttura.rigaBlock, 1].Select();
+            
             _ws.Application.ActiveWindow.ScrollColumn = 1;
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;

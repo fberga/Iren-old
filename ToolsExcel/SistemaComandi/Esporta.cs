@@ -52,7 +52,7 @@ namespace Iren.ToolsExcel
                 case "MAIL":
                     Globals.ThisWorkbook.Application.ScreenUpdating = false;
                     string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-                    DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.NamingOnly);
+                    DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.Naming);
 
                     var oldActiveWindow = Globals.ThisWorkbook.Application.ActiveWindow;
                     Globals.ThisWorkbook.Worksheets[nomeFoglio].Activate();
