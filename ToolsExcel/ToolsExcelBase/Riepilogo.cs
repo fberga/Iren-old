@@ -132,6 +132,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
                 }
+                Utility.Workbook.ScreenUpdating = false;
             }
         }
 
@@ -177,6 +178,7 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
                 _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
+            Utility.Workbook.ScreenUpdating = false;
         }
         protected virtual void Clear()
         {
@@ -201,6 +203,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.ScrollColumn = 1;
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;
+            Utility.Workbook.ScreenUpdating = false;
         }
         protected virtual void CreaNomiCelle()
         {
@@ -288,8 +291,8 @@ namespace Iren.ToolsExcel.Base
             while (i < xlrng.Columns.Count)
             {
                 colspan = xlrng.Cells[1, i + 1].MergeArea().Columns.Count;
-                _ws.Range[rngAll.Columns[i, colspan - 1].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-                _ws.Range[rngAll.Columns[i, colspan - 1].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
+                _ws.Range[rngAll.Columns[i, i + colspan - 1].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+                _ws.Range[rngAll.Columns[i, i + colspan - 1].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
                 i += colspan;
             }
 

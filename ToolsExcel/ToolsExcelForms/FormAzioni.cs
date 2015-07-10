@@ -373,36 +373,13 @@ namespace Iren.ToolsExcel.Forms
                 MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
+                Workbook.Application.EnableEvents = false;
                 SplashScreen.Show();
 
                 bool caricaOrGenera = false;
 
                 foreach (DateTime date in _toProcessDates)
                 {
-                    //bool calcola = false;
-                    //int count = 0;
-                    //ThroughAllNodes(treeViewAzioni.Nodes, n =>
-                    //{
-                    //    if (n.Nodes.Count == 0 && n.Checked)
-                    //    {
-                    //        ThroughAllNodes(treeViewUP.Nodes, n1 =>
-                    //        {
-                    //            if (n1.Checked)
-                    //                count += (n1.Name == "UP_BUS" ? 2 : 1);
-                    //        });
-                    //        if (Regex.Match(n.Parent.Name, @"\w[^\d]+").Value == "CARICA")
-                    //            calcola = true;
-                    //    }
-                    //});
-
-                    //if (calcola)
-                    //{
-                    //    ThroughAllNodes(treeViewUP.Nodes, n =>
-                    //    {
-                    //        if (n.Checked)
-                    //            count++;
-                    //    });
-                    //}
                     DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                     
 
@@ -463,7 +440,7 @@ namespace Iren.ToolsExcel.Forms
 
                                                 DefinedNames definedNames = new DefinedNames("Main");
                                                 Excel.Worksheet ws = Workbook.Main;
-
+                                                
                                                 foreach (string relazione in azioneRelazione)
                                                 {
                                                     _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
@@ -484,13 +461,13 @@ namespace Iren.ToolsExcel.Forms
                             switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                             {
                                 case "CARICA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Text);
                                     break;
                                 case "GENERA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + nodoAzione.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + nodoAzione.Text);
                                     break;
                                 case "ESPORTA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + nodoAzione.Name);
+                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + nodoAzione.Text);
                                     break;
                             }
                         }
@@ -505,6 +482,7 @@ namespace Iren.ToolsExcel.Forms
                 }
 
                 SplashScreen.Close();
+                Workbook.Application.EnableEvents = true;
             }
 
             btnApplica.Enabled = true;

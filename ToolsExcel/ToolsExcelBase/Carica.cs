@@ -263,7 +263,7 @@ namespace Iren.ToolsExcel.Base
             object siglaEntitaRif = siglaEntita;
 
             if(info.DataView.Table.Columns.Contains("SiglaEntitaRif") && info["SiglaEntitaRif"] != DBNull.Value)
-                info["SiglaEntitaRif"] = info["SiglaEntitaRif"];
+                siglaEntitaRif = info["SiglaEntitaRif"];
 
             Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, suffissoOra);
             Excel.Range xlRng = ws.Range[rng.ToString()];

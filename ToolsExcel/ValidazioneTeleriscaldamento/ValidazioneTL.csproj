@@ -9,7 +9,7 @@
     <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>Iren.ToolsExcel</RootNamespace>
     <AssemblyName>ValidazioneTeleriscaldamento</AssemblyName>
-    <VSTO_HostDocumentName>ValidazioniTeleriscaldamento.xlsm</VSTO_HostDocumentName>
+    <VSTO_HostDocumentName>ValidazioniTL.xlsm</VSTO_HostDocumentName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
@@ -138,13 +138,13 @@
   <ItemGroup>
     <Compile Include="Aggiorna.cs" />
     <Compile Include="Log.cs">
-      <DependentUpon>ValidazioniTeleriscaldamento.xlsm</DependentUpon>
+      <DependentUpon>ValidazioniTL.xlsm</DependentUpon>
     </Compile>
     <Compile Include="Log.Designer.cs">
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Main.cs">
-      <DependentUpon>ValidazioniTeleriscaldamento.xlsm</DependentUpon>
+      <DependentUpon>ValidazioniTL.xlsm</DependentUpon>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
@@ -152,7 +152,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Riepilogo.cs" />
     <Compile Include="ThisWorkbook.cs">
-      <DependentUpon>ValidazioniTeleriscaldamento.xlsm</DependentUpon>
+      <DependentUpon>ValidazioniTL.xlsm</DependentUpon>
     </Compile>
     <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
@@ -169,7 +169,7 @@
     </EmbeddedResource>
     <None Include="App.config" />
     <None Include="ValidazioneTeleriscaldamento_TemporaryKey.pfx" />
-    <None Include="ValidazioniTeleriscaldamento.xlsm" />
+    <None Include="ValidazioniTL.xlsm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ThisWorkbook.Designer.xml">
@@ -222,8 +222,8 @@
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
-        <ProjectProperties HostName="ValidazioniTeleriscaldamento.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ValidazioniTeleriscaldamento.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\ValidazioniTeleriscaldamento.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
+        <ProjectProperties HostName="ValidazioniTL.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ValidazioniTL.xlsm&quot;" />
+        <Host Name="Excel Document" Path=".\ValidazioniTL.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
           <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
           <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
           <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />

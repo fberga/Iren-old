@@ -2,6 +2,7 @@
 using System.Data;
 using Excel = Microsoft.Office.Interop.Excel;
 using Iren.ToolsExcel.Utility;
+using System.Linq;
 
 namespace Iren.ToolsExcel.Base
 {
@@ -263,6 +264,11 @@ namespace Iren.ToolsExcel.Base
             _sheet = DefinedNames.GetSheetName(siglaEntita);
             _definedNames = new DefinedNames(_sheet);
 
+            string desEntita =
+                (from r in DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].AsEnumerable()
+                 where r["SiglaEntita"].Equals(siglaEntita)
+                 select r["DesEntita"].ToString()).First();
+
             _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
             if (_entitaProprieta.Count > 0)
                 _dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
@@ -276,6 +282,8 @@ namespace Iren.ToolsExcel.Base
             SplashScreen.Close();
             Execute(siglaEntita);
             DeleteExistingAdjust();
+
+            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Eseguita ottimizzazione " + desEntita);
         }
 
         #endregion

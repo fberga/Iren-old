@@ -1502,6 +1502,7 @@ namespace Iren.ToolsExcel.Utility
             Application.ScreenUpdating = false;
             Application.Iteration = true;
             Application.MaxIterations = 100;
+            Application.EnableEvents = false;
 
             Style.StdStyles();
 
@@ -1540,6 +1541,7 @@ namespace Iren.ToolsExcel.Utility
             if (wasProtected)
                 Sheet.Protected = true;
             Application.ScreenUpdating = true;
+            Application.EnableEvents = true;
         }
 
         public static void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
@@ -1675,7 +1677,9 @@ namespace Iren.ToolsExcel.Utility
                 Sheet.Protected = true;
             }
             DataBase.SalvaModificheDB();
+            InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log off - " + Environment.UserName + " - " + Environment.MachineName);
             Save();
+
             Application.ScreenUpdating = true;
         }
 

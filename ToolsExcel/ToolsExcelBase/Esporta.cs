@@ -105,10 +105,6 @@ namespace Iren.ToolsExcel.Base
 
     public class Esporta : AEsporta
     {
-        public override bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
-        {
-            return true;
-        }
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             return true;

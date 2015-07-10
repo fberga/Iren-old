@@ -60,12 +60,11 @@
             this.groupAmbienti = this.Factory.CreateRibbonGroup();
             this.btnProduzione = this.Factory.CreateRibbonToggleButton();
             this.btnTest = this.Factory.CreateRibbonToggleButton();
-            this.btnDev = this.Factory.CreateRibbonToggleButton();
-            this.groupFileRete = this.Factory.CreateRibbonGroup();
+            this.btnDev = this.Factory.CreateRibbonToggleButton();            
             this.btnPrevisioneGas = this.Factory.CreateRibbonToggleButton();
             this.btnUnitCommitment = this.Factory.CreateRibbonToggleButton();
             this.btnPrezziMSD = this.Factory.CreateRibbonToggleButton();
-            this.groupFileLocali = this.Factory.CreateRibbonGroup();
+            this.groupApplicativi = this.Factory.CreateRibbonGroup();
             this.btnValidazioneTL = this.Factory.CreateRibbonToggleButton();
             this.btnPrevisioneCT = this.Factory.CreateRibbonToggleButton();
             this.btnProgrammazioneImpianti = this.Factory.CreateRibbonToggleButton();
@@ -102,8 +101,7 @@
             this.groupAzioni.SuspendLayout();
             this.groupModifica.SuspendLayout();
             this.groupAmbienti.SuspendLayout();
-            this.groupFileRete.SuspendLayout();
-            this.groupFileLocali.SuspendLayout();
+            this.groupApplicativi.SuspendLayout();
             this.groupErrori.SuspendLayout();
             this.groupMSD.SuspendLayout();
             this.groupStagione.SuspendLayout();
@@ -129,8 +127,7 @@
             this.FrontOffice.Groups.Add(this.groupAggiorna);
             this.FrontOffice.Groups.Add(this.groupAzioni);
             this.FrontOffice.Groups.Add(this.groupAmbienti);
-            this.FrontOffice.Groups.Add(this.groupFileRete);
-            this.FrontOffice.Groups.Add(this.groupFileLocali);
+            this.FrontOffice.Groups.Add(this.groupApplicativi);
             this.FrontOffice.Groups.Add(this.groupErrori);
             this.FrontOffice.Groups.Add(this.groupMSD);
             this.FrontOffice.Groups.Add(this.groupStagione);
@@ -250,7 +247,7 @@
             // 
             this.btnOttimizza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.btnOttimizza.Image = global::Iren.ToolsExcel.Base.Properties.Resources.ottimizzatore_icon;
-            this.btnOttimizza.Label = "Esegui Ottimizzazione";
+            this.btnOttimizza.Label = "Ottimizza";
             this.btnOttimizza.Name = "btnOttimizza";
             this.btnOttimizza.ShowImage = true;
             this.btnOttimizza.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnOttimizza_Click);
@@ -259,7 +256,7 @@
             // 
             this.btnRampe.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.btnRampe.Image = global::Iren.ToolsExcel.Base.Properties.Resources.rampe_icon;
-            this.btnRampe.Label = "Seleziona Rampa";
+            this.btnRampe.Label = "Rampe";
             this.btnRampe.Name = "btnRampe";
             this.btnRampe.ShowImage = true;
             this.btnRampe.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnRampe_Click);
@@ -317,13 +314,21 @@
             this.btnProduzione.Visible = false;
             this.btnProduzione.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnSelezionaAmbiente_Click);
             // 
-            // groupFileRete
+            // groupFileLocali
             // 
-            this.groupFileRete.Items.Add(this.btnPrevisioneGas);
-            this.groupFileRete.Items.Add(this.btnUnitCommitment);
-            this.groupFileRete.Items.Add(this.btnPrezziMSD);
-            this.groupFileRete.Label = "File in rete";
-            this.groupFileRete.Name = "groupFileRete";
+            this.groupApplicativi.Items.Add(this.btnPrevisioneGas);
+            this.groupApplicativi.Items.Add(this.btnUnitCommitment);
+            this.groupApplicativi.Items.Add(this.btnPrezziMSD);
+            this.groupApplicativi.Items.Add(this.btnValidazioneTL);
+            this.groupApplicativi.Items.Add(this.btnPrevisioneCT);
+            this.groupApplicativi.Items.Add(this.btnProgrammazioneImpianti);
+            this.groupApplicativi.Items.Add(this.btnOfferteMGP);
+            this.groupApplicativi.Items.Add(this.btnOfferteMSD);
+            this.groupApplicativi.Items.Add(this.btnOfferteMB);
+            this.groupApplicativi.Items.Add(this.btnInvioProgrammi);
+            this.groupApplicativi.Items.Add(this.btnSistemaComandi);
+            this.groupApplicativi.Label = "Applicativi";
+            this.groupApplicativi.Name = "groupApplicativi";
             // 
             // btnPrevisioneGas
             // 
@@ -351,19 +356,6 @@
             this.btnPrezziMSD.Name = "btnPrezziMSD";
             this.btnPrezziMSD.ShowImage = true;
             this.btnPrezziMSD.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnProgrammi_Click);
-            // 
-            // groupFileLocali
-            // 
-            this.groupFileLocali.Items.Add(this.btnValidazioneTL);
-            this.groupFileLocali.Items.Add(this.btnPrevisioneCT);
-            this.groupFileLocali.Items.Add(this.btnProgrammazioneImpianti);
-            this.groupFileLocali.Items.Add(this.btnOfferteMGP);
-            this.groupFileLocali.Items.Add(this.btnOfferteMSD);
-            this.groupFileLocali.Items.Add(this.btnOfferteMB);
-            this.groupFileLocali.Items.Add(this.btnInvioProgrammi);
-            this.groupFileLocali.Items.Add(this.btnSistemaComandi);
-            this.groupFileLocali.Label = "File in locale";
-            this.groupFileLocali.Name = "groupFileLocali";
             // 
             // btnValidazioneTL
             // 
@@ -504,7 +496,11 @@
             this.TabHome.ControlId.OfficeId = "TabHome";
             this.TabHome.Label = "TabHome";
             this.TabHome.Name = "TabHome";
+#if DEBUG
             this.TabHome.Visible = true;
+#else
+            this.TabHome.Visible = false;
+#endif
             // 
             // TabInsert
             // 
@@ -512,7 +508,11 @@
             this.TabInsert.ControlId.OfficeId = "TabInsert";
             this.TabInsert.Label = "TabInsert";
             this.TabInsert.Name = "TabInsert";
+#if DEBUG
+            this.TabInsert.Visible = true;
+#else
             this.TabInsert.Visible = false;
+#endif
             // 
             // TabPageLayoutExcel
             // 
@@ -528,6 +528,11 @@
             this.TabFormulas.ControlId.OfficeId = "TabFormulas";
             this.TabFormulas.Label = "TabFormulas";
             this.TabFormulas.Name = "TabFormulas";
+#if DEBUG
+            this.TabFormulas.Visible = true;
+#else
+            this.TabFormulas.Visible = false;
+#endif
             // 
             // TabData
             // 
@@ -543,6 +548,11 @@
             this.TabReview.ControlId.OfficeId = "TabReview";
             this.TabReview.Label = "TabReview";
             this.TabReview.Name = "TabReview";
+#if DEBUG
+            this.TabReview.Visible = true;
+#else
+            this.TabReview.Visible = false;
+#endif
             // 
             // TabView
             // 
@@ -550,7 +560,11 @@
             this.TabView.ControlId.OfficeId = "TabView";
             this.TabView.Label = "TabView";
             this.TabView.Name = "TabView";
+#if DEBUG
             this.TabView.Visible = true;
+#else
+            this.TabView.Visible = false;
+#endif
             // 
             // TabDeveloper
             // 
@@ -558,6 +572,11 @@
             this.TabDeveloper.ControlId.OfficeId = "TabDeveloper";
             this.TabDeveloper.Label = "TabDeveloper";
             this.TabDeveloper.Name = "TabDeveloper";
+#if DEBUG
+            this.TabDeveloper.Visible = true;
+#else
+            this.TabDeveloper.Visible = false;
+#endif
             // 
             // TabAddIns
             // 
@@ -588,6 +607,11 @@
             this.TabSmartArtToolsDesign.ControlId.OfficeId = "TabSmartArtToolsDesign";
             this.TabSmartArtToolsDesign.Label = "TabSmartArtToolsDesign";
             this.TabSmartArtToolsDesign.Name = "TabSmartArtToolsDesign";
+#if DEBUG
+            this.TabSmartArtToolsDesign.Visible = true;
+#else
+            this.TabSmartArtToolsDesign.Visible = false;
+#endif
             // 
             // ToolsExcelRibbon
             // 
@@ -624,10 +648,8 @@
             this.groupModifica.PerformLayout();
             this.groupAmbienti.ResumeLayout(false);
             this.groupAmbienti.PerformLayout();
-            this.groupFileRete.ResumeLayout(false);
-            this.groupFileRete.PerformLayout();
-            this.groupFileLocali.ResumeLayout(false);
-            this.groupFileLocali.PerformLayout();
+            this.groupApplicativi.ResumeLayout(false);
+            this.groupApplicativi.PerformLayout();
             this.groupErrori.ResumeLayout(false);
             this.groupErrori.PerformLayout();
             this.groupMSD.ResumeLayout(false);
@@ -695,11 +717,10 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupCalendario;
         private Microsoft.Office.Tools.Ribbon.RibbonTab TabSmartArtToolsDesign;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupConfigura;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupFileRete;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnPrevisioneGas;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnUnitCommitment;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnPrezziMSD;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupFileLocali;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupApplicativi;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnValidazioneTL;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnPrevisioneCT;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton btnProgrammazioneImpianti;

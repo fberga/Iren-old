@@ -90,7 +90,7 @@ namespace Iren.ToolsExcel.Base
         {
             get
             {
-                if (_initType == InitType.Naming || _initType == InitType.All)
+                if (_initType == InitType.CheckNaming || _initType == InitType.Naming || _initType == InitType.All)
                     return _days.ToArray();
                 else
                     throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Naming, CheckNaming oppure All.");
@@ -124,7 +124,7 @@ namespace Iren.ToolsExcel.Base
             //se è definita la colonna DATA0H24, sarà la prima.
             get 
             {
-                if (_initType == InitType.Naming || _initType == InitType.All)
+                if (_initType == InitType.CheckNaming || _initType == InitType.Naming || _initType == InitType.All)
                     return _defDatesIndexByName.First().Key == GetName(Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24)); 
                 else
                     throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Naming, CheckNaming, oppure All.");
@@ -137,7 +137,7 @@ namespace Iren.ToolsExcel.Base
         {
             get 
             {
-                if (_initType == InitType.Naming || _initType == InitType.All)
+                if (_initType == InitType.CheckNaming || _initType == InitType.Check || _initType == InitType.All)
                     return _check;
                 else
                     throw new MemberAccessException("L'oggetto non è stato inizializzato in modo da poter utilizzare questa risorsa. Inizializzarlo con tipologia Check, CheckNaming, oppure All.");
@@ -713,6 +713,11 @@ namespace Iren.ToolsExcel.Base
 
             return false;
         }
+        /// <summary>
+        /// Verifica se il range passato fa parte di una selezione oppure no.
+        /// </summary>
+        /// <param name="rngPeer">Range da verificare.</param>
+        /// <returns>True se il range è parte di una selezione, false altrimenti.</returns>
         public bool IsSelectionPeer(Range rngPeer)
         {
             foreach (Selection s in _selections)
@@ -720,8 +725,14 @@ namespace Iren.ToolsExcel.Base
                     return true;
 
             return false;
-            
         }
+        /// <summary>
+        /// Restituisce l'oggetto di selezione e il valore corrispondente se il range in ingresso fa effettivamente parte di una selezione. Il range in ingresso fa parte di una delle celle di scelta della selezione e non la cella nascosta dove trascrivere il valore per la formattazione condizionale. Un valore resrtituito indica se la selezione è stata trovata.
+        /// </summary>
+        /// <param name="rngPeer">Il range che dovrebbe appartenere alla selezione.</param>
+        /// <param name="sel">Se il range è parte di una selezione, viene restituito l'oggetto di selezione corrispondente che contiene tutti i riferimenti utili.</param>
+        /// <param name="value">Se il range è parte di una selezione, viene anche restituito il valore corrispondente alla cella scelta.</param>
+        /// <returns>True se viene effettivamente restituita una selezione, false altrimenti.</returns>
         public bool TryGetSelectionByPeer(Range rngPeer, out Selection sel, out int value)
         {
             foreach (Selection s in _selections)
@@ -738,6 +749,11 @@ namespace Iren.ToolsExcel.Base
             value = -1;
             return false;
         }
+        /// <summary>
+        /// Restituisce l'oggetto di selezione se il range in ingresso fa effettivamente parte di una selezione. Il range in ingresso è la cella nascosta dove viene scritto il valore della selezione.
+        /// </summary>
+        /// <param name="rngRif">Il range che rappresenta la cella nascosta dove viene scritto il valore della selezione</param>
+        /// <returns>L'oggetto di selezione corrispondente.</returns>
         public Selection GetSelectionByRif(Range rngRif)
         {
             foreach (Selection s in _selections)
@@ -748,10 +764,20 @@ namespace Iren.ToolsExcel.Base
             }
             return null;
         }
+        /// <summary>
+        /// Verifica se la riga sia o no collegata ad un nome definito.
+        /// </summary>
+        /// <param name="row">Riga da verificare</param>
+        /// <returns>True se è un nome definito, false altrimenti.</returns>
         public bool IsDefined(int row)
         {
             return _defNamesIndexByRow.Contains(row);
         }
+        /// <summary>
+        /// Verifica se il nome è definito.
+        /// </summary>
+        /// <param name="parts">Le parti che compongono il nome</param>
+        /// <returns>True se è definito, false altrimenti.</returns>
         public bool IsDefined(params object[] parts)
         {
             string name = GetName(parts);
@@ -767,6 +793,11 @@ namespace Iren.ToolsExcel.Base
         //         select kv.Key).ToArray();
         //}
 
+        /// <summary>
+        /// Metodo generico per la restituzione del range in base al nome. Lavora con il foglio di riepilogo come caso particolare. Per gli altri fogli, se il nome è composto da 2 parti, le considera SiglaEntita.SiglaInformazione. Se il nome è costituito da più parti, cerca il primo suffisso data valido e considera la parte antecedente come parte di riga mentre la successiva come parte di colonna. Se la parte di colonna non viene trovata, considera la colonna come la prima definita.
+        /// </summary>
+        /// <param name="parts">Le parti che compongono il nome.</param>
+        /// <returns>Il range collegato al nome in ingresso</returns>
         public Range Get(params object[] parts)
         {
             if (_sheet == "Main")
@@ -810,6 +841,12 @@ namespace Iren.ToolsExcel.Base
                 return new Range(row, col);
             }
         }
+        /// <summary>
+        /// Metodo generico per la restituzione del range in base al nome. Lavora con il foglio di riepilogo come caso particolare. Per gli altri fogli, se il nome è composto da 2 parti, le considera SiglaEntita.SiglaInformazione. Se il nome è costituito da più parti, cerca il primo suffisso data valido e considera la parte antecedente come parte di riga mentre la successiva come parte di colonna. Se la parte di colonna non viene trovata, considera la colonna come la prima definita. Un valore indica se il range è stato trovato oppure no.
+        /// </summary>
+        /// <param name="rng">Il range collegato al nome in ingresso</param>
+        /// <param name="parts">Le parti che compongono il nome.</param>
+        /// <returns>True se il range è stato trovato, false altrimenti.</returns>
         public bool TryGet(out Range rng, params object[] parts)
         {
             try
@@ -906,7 +943,7 @@ namespace Iren.ToolsExcel.Base
                 definedDates.Rows.Add(r);
             }
 
-
+            ///////// GOTO
             foreach (var ele in _addressFrom)
             {
                 DataRow r = addressFromTable.NewRow();
@@ -924,7 +961,7 @@ namespace Iren.ToolsExcel.Base
                 addressToTable.Rows.Add(r);
             }
 
-
+            ///////// range editabili
             foreach (var ele in _editable)
             {
                 DataRow r = editable.NewRow();
@@ -934,7 +971,7 @@ namespace Iren.ToolsExcel.Base
                 editable.Rows.Add(r);
             }
 
-
+            ///////// range da salvare sul db
             foreach (var ele in _saveDB)
             {
                 DataRow r = saveDB.NewRow();
@@ -943,7 +980,7 @@ namespace Iren.ToolsExcel.Base
                 saveDB.Rows.Add(r);
             }
 
-
+            ///////// range che necessitano di commenti dopo modifica
             foreach (var ele in _toNote)
             {
                 DataRow r = toNote.NewRow();
@@ -952,7 +989,7 @@ namespace Iren.ToolsExcel.Base
                 toNote.Rows.Add(r);
             }
 
-
+            ///////// celle con check
             foreach (var ele in _check)
             {
                 DataRow r = check.NewRow();
@@ -962,8 +999,8 @@ namespace Iren.ToolsExcel.Base
                 r["Type"] = ele.Type;
                 check.Rows.Add(r);
             }
-            
 
+            ///////// celle che fanno parte di una selezione
             foreach (var ele in _selections)
             {
                 foreach (var kv in ele.SelPeers)

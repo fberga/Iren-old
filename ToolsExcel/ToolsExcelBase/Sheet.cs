@@ -355,6 +355,8 @@ namespace Iren.ToolsExcel.Base
             //cancello tutte le selezioni
             _ws.Activate();
             _ws.Cells[1, 1].Select();
+            Workbook.Main.Select();
+            Workbook.ScreenUpdating = false;
         }
         protected void Clear()
         {
@@ -390,7 +392,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.ScrollRow = 1;
             _ws.Application.ActiveWindow.FreezePanes = true;
             Workbook.Main.Select();
-            _ws.Application.ScreenUpdating = false;
+            Workbook.ScreenUpdating = false;
 
             int colInfo = _struttura.colBlock - _visParametro;
             _ws.Columns[colInfo].ColumnWidth = Struct.cell.width.informazione;

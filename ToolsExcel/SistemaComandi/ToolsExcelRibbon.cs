@@ -96,6 +96,8 @@ namespace Iren.ToolsExcel
             //seleziono l'ambiente attivo
             ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
 
+            RefreshChecks();
+
             //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
             btnModifica.Checked = false;
             btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
@@ -108,15 +110,12 @@ namespace Iren.ToolsExcel
 
             //seleziono il tasto dell'applicativo aperto
             CheckTastoApplicativo();
-
+            
             //aggiungo errorPane
             Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
             Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
             Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
             Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
-
-
-            RefreshChecks();
 
             //aggiungo un altro handler per cell click
             Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
@@ -196,6 +195,7 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
+            Workbook.ScreenUpdating = false;
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
 
             int count = 0;
@@ -216,6 +216,7 @@ namespace Iren.ToolsExcel
             }
 
             ambienteScelto.Checked = true;
+            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di aggiornamento della struttura. Avvisa l'utente ed esegue l'aggiornamento della struttura. Esegue il refresh dei check.
@@ -245,7 +246,7 @@ namespace Iren.ToolsExcel
                 Workbook.ScreenUpdating = true;
                 
                 if (_allDisabled)
-                    AbilitaTasti();
+                    AbilitaTasti(true);
             }
         }
         /// <summary>
@@ -405,14 +406,16 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnModifica_Click(object sender, RibbonControlEventArgs e)
         {
+            Workbook.Application.EnableEvents = true;
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
             Simboli.ModificaDati = btnModifica.Checked;
-            
 
             if (btnModifica.Checked) 
             {
+                AbilitaTasti(false);
+                btnModifica.Enabled = true;
                 btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI_icon;
                 btnModifica.Label = "Modifica SI";
                 Workbook.WB.SheetChange += Handler.StoreEdit;
@@ -430,9 +433,12 @@ namespace Iren.ToolsExcel
                 btnModifica.Label = "Modifica NO";
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 //Rimuovo handler per azioni custom nel caso servisse
-                Workbook.WB.SheetChange -= _modificaCustom.Range; 
+                Workbook.WB.SheetChange -= _modificaCustom.Range;
+                AbilitaTasti(true);
             }
             Sheet.AbilitaModifica(btnModifica.Checked);
+
+            Workbook.RefreshLog();
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
@@ -619,11 +625,13 @@ namespace Iren.ToolsExcel
 
         private void RefreshChecks()
         {
+            Workbook.ScreenUpdating = false;
             try
             {
-                _errorPane.RefreshCheck(_checkFunctions);                
+                _errorPane.RefreshCheck(_checkFunctions);
             }
             catch { }
+            Workbook.ScreenUpdating = true;
         }
 
         /// <summary>
@@ -774,26 +782,14 @@ namespace Iren.ToolsExcel
 
         }
         /// <summary>
-        /// Disabilito tutti i tasti nel caso in cui, ad esempio in seguito a un rilascio, il foglio parta completamente da 0. Disabilita tutti i tasti eccetto Aggiorna Struttura che consente all'utente di rendere operativo il foglio.
-        /// </summary>
-        private void DisabilitaTasti()
-        {
-            foreach (RibbonControl control in Controls)
-            {
-                if(control.Name != "btnAggiornaStruttura")
-                    control.Enabled = false;
-            }
-            _allDisabled = true;
-        }
-        /// <summary>
         /// Abilito tutti i tasti nel caso in cui, ad esempio in seguito a un rilascio, questi vengano disabilitati da DisabilitaTasti.
         /// </summary>
-        private void AbilitaTasti()
+        private void AbilitaTasti(bool enable)
         {
             foreach (string control in _enabledControls)
-                Controls[control].Enabled = true;
+                Controls[control].Enabled = enable;
 
-            _allDisabled = false;
+            _allDisabled = enable;
         }
 
         #endregion        
