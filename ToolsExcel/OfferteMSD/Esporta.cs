@@ -1,5 +1,6 @@
 ﻿using Iren.ToolsExcel.Base;
 using Iren.ToolsExcel.UserConfig;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,7 +18,7 @@ namespace Iren.ToolsExcel
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
+            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
             if (entitaAzione.Count == 0)
                 return false;
@@ -26,8 +27,8 @@ namespace Iren.ToolsExcel
             {
                 case "E_OFFERTA_MSD":
 
-                    var path = Utility.Workbook.GetUsrConfigElement("pathOfferteSuggerite");
-                    string pathStr = Utility.ExportPath.PreparePath(path.Value);
+                    var path = Workbook.GetUsrConfigElement("pathOfferteSuggerite");
+                    string pathStr = PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
                     {
@@ -54,17 +55,17 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                string suffissoData = Utility.Date.GetSuffissoData(dataRif);
-                int oreGiorno = Utility.Date.GetOreGiorno(dataRif);
+                string suffissoData = Date.GetSuffissoData(dataRif);
+                int oreGiorno = Date.GetOreGiorno(dataRif);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
-                DataView entitaParametro = _localDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+                DataView entitaParametro = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
                 entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND CONVERT(DataIV, System.Int32) <= " + dataRif.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + dataRif.ToString("yyyyMMdd");
 
                 decimal calcoloPPA = (decimal)entitaParametro[0]["Valore"];
@@ -119,7 +120,7 @@ namespace Iren.ToolsExcel
                     for(int j = 0; j < informazioni .Length; j++)
                     {
                         //Vendita
-                        rng = definedNames.Get(siglaEntita, informazioni[j]+"VE", suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                        rng = definedNames.Get(siglaEntita, informazioni[j]+"VE", suffissoData, Date.GetSuffissoOra(i + 1));
                         presentedOffer = "No";
                         energia = "0";
                         prezzo = "0";
@@ -128,7 +129,7 @@ namespace Iren.ToolsExcel
                             presentedOffer = "Yes";
                             energia = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
 
-                            rng = definedNames.Get(siglaEntita, informazioni[j]+"VP", suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, informazioni[j]+"VP", suffissoData, Date.GetSuffissoOra(i + 1));
                             prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                         }
                         
@@ -143,7 +144,7 @@ namespace Iren.ToolsExcel
                             );
                         
                         //Acquisto
-                        rng = definedNames.Get(siglaEntita, informazioni[j]+"AE", suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                        rng = definedNames.Get(siglaEntita, informazioni[j]+"AE", suffissoData, Date.GetSuffissoOra(i + 1));
                         presentedOffer = "No";
                         energia = "0";
                         prezzo = "0";
@@ -152,7 +153,7 @@ namespace Iren.ToolsExcel
                             presentedOffer = "Yes";
                             energia = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
 
-                            rng = definedNames.Get(siglaEntita, informazioni[j]+"AP", suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, informazioni[j]+"AP", suffissoData, Date.GetSuffissoOra(i + 1));
                             prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                         }
 
@@ -234,17 +235,17 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                string suffissoData = Utility.Date.GetSuffissoData(dataRif);
-                int oreGiorno = Utility.Date.GetOreGiorno(dataRif);
+                string suffissoData = Date.GetSuffissoData(dataRif);
+                int oreGiorno = Date.GetOreGiorno(dataRif);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
-                DataView entitaParametro = _localDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+                DataView entitaParametro = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
                 entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND CONVERT(DataIV, System.Int32) <= " + dataRif.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + dataRif.ToString("yyyyMMdd");
 
                 decimal calcoloPPA = (decimal)entitaParametro[0]["Valore"];

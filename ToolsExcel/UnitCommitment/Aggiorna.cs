@@ -35,7 +35,7 @@ namespace Iren.ToolsExcel
             foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
-                s.UpdateData(true);
+                s.UpdateData();
             }
         }
         protected override void DatiRiepilogo()

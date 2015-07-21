@@ -11,8 +11,16 @@ using System.IO;
 
 namespace Iren.ToolsExcel.Base
 {
+    /// <summary>
+    /// Classe che gestisce molti dei comportamenti standard del workbook.
+    /// </summary>
     public class Handler
     {
+        /// <summary>
+        /// Gestisce il caso in cui ci sia una selezione multipla che andrebbe a scrivere su righe nascoste: allerta l'utente e impedisce di procedere con la modifica.
+        /// </summary>
+        /// <param name="Sh">Sheet di provenienza.</param>
+        /// <param name="Target">Range selezionato dall'utente.</param>
         public static void CellClick(object Sh, Excel.Range Target)
         {
             //controllo che la selezione non sia multi-linea con in mezzo delle righe nascoste - nel caso avverto l'utente che non può effettuare modifiche
@@ -44,7 +52,6 @@ namespace Iren.ToolsExcel.Base
                 catch {}
             }
         }
-
         /// <summary>
         /// Sposta la selezione su address e la centra nello schermo.
         /// </summary>
@@ -59,7 +66,12 @@ namespace Iren.ToolsExcel.Base
                 Workbook.Application.ActiveWindow.SmallScroll(rng.Row - Workbook.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
             }
         }
-
+        /// <summary>
+        /// Funzione per il salvataggio delle modifiche apportate a ranges anche non contigui.
+        /// </summary>
+        /// <param name="Target">L'insieme dei ranges modificati</param>
+        /// <param name="annotaModifica">Se la modifica va segnalata all'utente attraverso il commento sulla cella oppure no.</param>
+        /// <param name="fromCalcolo">Flag per eseguire azioni particolari nel caso la provenienza del salvataggio sia da un calcolo.</param>
         public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false)
         {
             Excel.Worksheet ws = Target.Worksheet;
@@ -134,12 +146,19 @@ namespace Iren.ToolsExcel.Base
             if (screenUpdating)
                 ws.Application.ScreenUpdating = true;
         }
-
+        /// <summary>
+        /// Funzione per il salvataggio delle modifiche apportate dall'utente quando la modifica è abilitata.
+        /// </summary>
+        /// <param name="Sh">Sheet.</param>
+        /// <param name="Target">Range.</param>
         public static void StoreEdit(object Sh, Excel.Range Target)
         {
             StoreEdit(Target);
         }
-
+        /// <summary>
+        /// Handler per cambiare il label di modifica e la scritta sotto il tasto sul ribbon.
+        /// </summary>
+        /// <param name="modifica">True se modifica è abilitata, false se disabilitata.</param>
         public static void ChangeModificaDati(bool modifica)
         {
             Excel.Worksheet ws = Workbook.Sheets["Main"];
@@ -162,6 +181,10 @@ namespace Iren.ToolsExcel.Base
             }
             ws.Shapes.Item("lbModifica").Locked = true;
         }
+        /// <summary>
+        /// Handler per cambiare il label dell'ambiente.
+        /// </summary>
+        /// <param name="ambiente">Sigla Ambiente.</param>
         public static void ChangeAmbiente(string ambiente)
         {
             Workbook.Main.Shapes.Item("lbTest").Locked = false;
@@ -192,6 +215,11 @@ namespace Iren.ToolsExcel.Base
             }
             Workbook.Main.Shapes.Item("lbTest").Locked = true;
         }
+        /// <summary>
+        /// Handler per cambiare i label in base alla modifica dello stato del DB.
+        /// </summary>
+        /// <param name="db">Database interessato</param>
+        /// <param name="online">True se il database è online, false altrimenti.</param>
         public static void ChangeStatoDB(Core.DataBase.NomiDB db, bool online)
         {
             string labelName = "";
@@ -236,14 +264,20 @@ namespace Iren.ToolsExcel.Base
             if (locked)
                 ws.Protect(Simboli.pwd);
         }
-
+        /// <summary>
+        /// Handler per la modifica del label che indica il mercato attivo.
+        /// </summary>
+        /// <param name="mercato">La stringa con il nome del mercato.</param>
         public static void ChangeMercatoAttivo(string mercato)
         {
             Workbook.Main.Shapes.Item("lbMercato").Locked = false;
             Workbook.Main.Shapes.Item("lbMercato").TextFrame.Characters().Text = mercato;
             Workbook.Main.Shapes.Item("lbMercato").Locked = true;
         }
-
+        /// <summary>
+        /// Gestisce l'apertura degli altri file con i tasti sul ribbon.
+        /// </summary>
+        /// <param name="name">Nome dell'applicazione da aprire.</param>
         public static void SwitchWorksheet(string name)
         {
             //TODO aprire gli altri file!!!!!!
@@ -269,7 +303,11 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-
+        /// <summary>
+        /// Verifica se il workbook indicato da nome è aperto oppure no.
+        /// </summary>
+        /// <param name="name">Nome del workbook.</param>
+        /// <returns>True se è aperto, false altrimenti.</returns>
         private static bool IsWorkbookOpen(string name)
         {
             try

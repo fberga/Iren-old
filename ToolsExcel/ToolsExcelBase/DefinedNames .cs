@@ -506,7 +506,7 @@ namespace Iren.ToolsExcel.Base
         /// <returns>L'indirizzo della colonna corrispondente a DATA1.H1.</returns>
         public int GetColFromDate()
         {
-            return GetColFromDate(Date.GetSuffissoData(DataBase.DataAttiva));
+            return GetColFromDate(Date.SuffissoDATA1);
         }
         /// <summary>
         /// Restituisce l'indirizzo della colonna a partire da giorno del foglio all'ora uno. (Utilizzato nei fogli normali)
@@ -526,7 +526,7 @@ namespace Iren.ToolsExcel.Base
         public int GetColFromDate(string suffissoData, string suffissoOra = "H1")
         {
             if (Struct.tipoVisualizzazione == "V")
-                suffissoData = Date.GetSuffissoData(DataBase.DataAttiva);
+                suffissoData = Date.SuffissoDATA1;
 
             string name = GetName(suffissoData, suffissoOra);
             return _defDatesIndexByName[name];
@@ -665,7 +665,7 @@ namespace Iren.ToolsExcel.Base
             if (IsDataColumn(column))
                 return _defDatesIndexByCol[column];
             else
-                return Date.GetSuffissoData(DataBase.DataAttiva);
+                return Date.SuffissoDATA1;
         }
         /// <summary>
         /// Restituisce il nome definito nella cella indicata dall'indirizzo RC.
@@ -783,16 +783,6 @@ namespace Iren.ToolsExcel.Base
             string name = GetName(parts);
             return _defNamesIndexByName.Count(kv => kv.Key.StartsWith(name)) > 0;
         }
-
-        //public string[] GetFullNameByParts(params object[] parts)
-        //{
-        //    string name = GetName(parts);
-        //    return
-        //        (from kv in _defNamesIndexByName
-        //         where kv.Key.StartsWith(name)
-        //         select kv.Key).ToArray();
-        //}
-
         /// <summary>
         /// Metodo generico per la restituzione del range in base al nome. Lavora con il foglio di riepilogo come caso particolare. Per gli altri fogli, se il nome è composto da 2 parti, le considera SiglaEntita.SiglaInformazione. Se il nome è costituito da più parti, cerca il primo suffisso data valido e considera la parte antecedente come parte di riga mentre la successiva come parte di colonna. Se la parte di colonna non viene trovata, considera la colonna come la prima definita.
         /// </summary>
@@ -860,6 +850,11 @@ namespace Iren.ToolsExcel.Base
                 return false;
             }
         }
+        /// <summary>
+        /// Restituisce l'indirizzo a cui punta il GOTO a partire dalla cella premuta dall'utente.
+        /// </summary>
+        /// <param name="addressFrom">Indirizzo della cella premuta dall'utente.</param>
+        /// <returns>Indirizzo di destinazione del GOTO.</returns>
         public string GetGotoFromAddress(string addressFrom)
         {
             if (_addressFrom.ContainsKey("'" + _sheet + "'!" + addressFrom))
@@ -867,6 +862,11 @@ namespace Iren.ToolsExcel.Base
 
             return "";
         }
+        /// <summary>
+        /// Restituisce l'indirizzo a cui punta il GOTO a partire dalla sigla entità selezionata dall'utente.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla entità della cella premuta dall'utente.</param>
+        /// <returns>Indirizzo di destinazione del GOTO.</returns>
         public string GetGotoFromSiglaEntita(object siglaEntita)
         {
             if (_addressTo.ContainsKey(siglaEntita))
@@ -874,6 +874,11 @@ namespace Iren.ToolsExcel.Base
 
             return "";
         }
+        /// <summary>
+        /// Restituisce la lista di indirizzi delle celle che fungono da tasto per il GOTO a partire dalla sigla entità.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla entità di cui trovare gli indirizzi di partenza</param>
+        /// <returns>Lista di tutti gli indirizzi che fungono da tasto per il GOTO.</returns>
         public List<string> GetFromAddressGOTO(object siglaEntita)
         {
             List<string> o = 
@@ -883,6 +888,10 @@ namespace Iren.ToolsExcel.Base
 
             return o;
         }
+        /// <summary>
+        /// Restituisce la lista completa di indirizzi delle celle che fungono da tasto per i GOTO.
+        /// </summary>
+        /// <returns>Lista completa di indirizzi delle celle che fungono da tasto per i GOTO.</returns>
         public List<string> GetAllFromAddressGOTO()
         {
             List<string> o =
@@ -891,23 +900,42 @@ namespace Iren.ToolsExcel.Base
 
             return o;
         }
+        /// <summary>
+        /// Restituisce l'indirizzi della cella che funge da tasto per il GOTO in posizione i.
+        /// </summary>
+        /// <param name="i">Indice dell'elemento da cercare.</param>
+        /// <returns>Indirizzo di partenza del GOTO.</returns>
         public string GetFromAddressGOTO(int i)
         {
             return _addressFrom.ElementAt(i).Key;
         }
+        /// <summary>
+        /// Verifica se nel foglio sono definiti dei check.
+        /// </summary>
+        /// <returns>True se nel foglio ci sono dei check, false altrimenti.</returns>
         public bool HasCheck()
         {
             return _check.Count > 0;
         }
+        /// <summary>
+        /// Verifica se nel foglio ci sono delle selezioni.
+        /// </summary>
+        /// <returns>True se nel foglio ci sono selezioni, false altrimenti.</returns>
         public bool HasSelections()
         {
             return _selections.Count > 0;
         }
+        /// <summary>
+        /// Verifica se nel foglio sono definiti dei nomi.
+        /// </summary>
+        /// <returns>True se ci sono dei nomi, false altrimenti.</returns>
         public bool HasNames()
         {
             return _defNamesIndexByName.Count > 0;
         }
-
+        /// <summary>
+        /// Salva l'intera struttura nel dataset locale.
+        /// </summary>
         public void DumpToDataSet()
         {
             DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.NOMI_DEFINITI];

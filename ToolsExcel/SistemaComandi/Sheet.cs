@@ -17,9 +17,9 @@ namespace Iren.ToolsExcel
 
         }
 
-        public override void CaricaInformazioni(bool all)
+        public override void CaricaInformazioni()
         {
-            base.CaricaInformazioni(all);
+            base.CaricaInformazioni();
             
             //profili PQNR
             if (_ws.Name == "Iren Termo")
@@ -32,7 +32,7 @@ namespace Iren.ToolsExcel
                 foreach (DataRowView entita in categoriaEntita)
                 {
                     DateTime dataFine;
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
                     
                     if (entitaProprieta.Count > 0)
                         dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));

@@ -256,8 +256,6 @@ namespace Iren.ToolsExcel.Core
                 //se va in timeout la connessione si chiude
                 OpenConnection(_internalsqlConn);
                 DataView elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3).DefaultView;
-                //se va in timeout la connessione si chiude
-                //OpenConnection(_internalsqlConn);
 
                 if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
                     _statoDB[NomiDB.IMP] = ConnectionState.Open;

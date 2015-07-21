@@ -1,5 +1,6 @@
 ﻿using Iren.ToolsExcel.Base;
 using Iren.ToolsExcel.UserConfig;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +19,7 @@ namespace Iren.ToolsExcel
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
+            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
             if (entitaAzione.Count == 0)
                 return false;
@@ -26,15 +27,15 @@ namespace Iren.ToolsExcel
             switch (siglaAzione.ToString())
             {
                 case "E_VDT":
-                    DataView entitaAssetto = _localDB.Tables[Utility.DataBase.Tab.ENTITA_ASSETTO].DefaultView;
+                    DataView entitaAssetto = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].DefaultView;
                     entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
 
                     Dictionary<string,int> assettoFasce = new Dictionary<string,int>();
                     foreach (DataRowView assetto in entitaAssetto)
                         assettoFasce.Add((string)assetto["IdAssetto"], (int)assetto["NumeroFasce"]);
 
-                    var path = Utility.Workbook.GetUsrConfigElement("pathExportSisComTerna");
-                    string pathStr = Utility.ExportPath.PreparePath(path.Value);
+                    var path = Workbook.GetUsrConfigElement("pathExportSisComTerna");
+                    string pathStr = PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
                     {
@@ -60,20 +61,20 @@ namespace Iren.ToolsExcel
                     List<Range> export = new List<Range>();
 
                     //titolo entità
-                    export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, "T", Utility.Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, "T", Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Date.GetOreGiorno(DataBase.DataAttiva)));
 
                     //data
-                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow - 1, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow - 1, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Date.GetOreGiorno(DataBase.DataAttiva)));
 
                     //ora
-                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                    export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Date.GetOreGiorno(DataBase.DataAttiva)));
 
 
-                    DataView entitaAzioneInformazione = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                    DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
                     entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
-                        export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Utility.Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva)));
+                        export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Date.GetOreGiorno(DataBase.DataAttiva)));
                     }
 
                     if (InviaMail(nomeFoglio, siglaEntita, export))
@@ -97,13 +98,13 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                DateTime giorno = Utility.DataBase.DataAttiva;
-                string suffissoData = Utility.Date.GetSuffissoData(giorno);
-                int oreGiorno = Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva);
+                DateTime giorno = DataBase.DataAttiva;
+                string suffissoData = Date.GetSuffissoData(giorno);
+                int oreGiorno = Date.GetOreGiorno(DataBase.DataAttiva);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
@@ -127,42 +128,42 @@ namespace Iren.ToolsExcel
                     {
                         for (int j = 1; j <= assettoFascia.Value; j++)
                         {
-                            Range rng = definedNames.Get(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
-                            Range rngCorr = definedNames.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            Range rng = definedNames.Get(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            Range rngCorr = definedNames.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string psminVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
-                            rngCorr = definedNames.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rngCorr = definedNames.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string psmaxVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string ptminVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string ptmaxVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "TRISP_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TRISP_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                             string trispVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "GPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "GPA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                             string gpaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "GPD_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "GPD_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                             string gpdVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "TAVA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TAVA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                             string tavaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "TARA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TARA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                             string taraVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "BRS_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "BRS_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                             string brsVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
                             string tderampaVal = null;
                             if (isTermo)
                             {
-                                rng = definedNames.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                                rng = definedNames.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
                                 tderampaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
                             }
                             if (ptminVal != "" && ptmaxVal != "")
@@ -193,7 +194,7 @@ namespace Iren.ToolsExcel
                         XElement pqnr = new XElement("PQNR");
                         for (int j = 1; j <= 24; j++)
                         {
-                            Range rng = definedNames.Get(siglaEntita, "PQNR" + j, suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                            Range rng = definedNames.Get(siglaEntita, "PQNR" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             object pqnrVal = ws.Range[rng.ToString()].Value;
                             if (pqnrVal != null)
                                 pqnr.Add(new XElement("Q", pqnrVal.ToString()));
@@ -227,11 +228,11 @@ namespace Iren.ToolsExcel
             {
                 Excel.Worksheet ws = Globals.ThisWorkbook.Sheets[nomeFoglio];
 
-                DataView entitaProprieta = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL'";
                 if (entitaProprieta.Count > 0)
                 {
-                    fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + Utility.DataBase.DataAttiva.ToString("yyyyMMdd") + ".xls";
+                    fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + DataBase.DataAttiva.ToString("yyyyMMdd") + ".xls";
 
                     Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
                     int i = 2;
@@ -245,7 +246,7 @@ namespace Iren.ToolsExcel
                     wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel8);
                     wb.Close();
 
-                    var config = Utility.Workbook.GetUsrConfigElement("destMailTest");
+                    var config = Workbook.GetUsrConfigElement("destMailTest");
                     string mailTo = config.Value;
                     string mailCC = "";
 
@@ -260,9 +261,9 @@ namespace Iren.ToolsExcel
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_CODICE_MAIL'";
                     string codUP = entitaProprieta[0]["Valore"].ToString();
 
-                    config = Utility.Workbook.GetUsrConfigElement("oggettoMail");
-                    string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", Utility.DataBase.DataAttiva.ToString("dd-MM-yyyy"));
-                    config = Utility.Workbook.GetUsrConfigElement("messaggioMail");
+                    config = Workbook.GetUsrConfigElement("oggettoMail");
+                    string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", DataBase.DataAttiva.ToString("dd-MM-yyyy"));
+                    config = Workbook.GetUsrConfigElement("messaggioMail");
                     string messaggio = config.Value;
                     messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 
@@ -290,7 +291,7 @@ namespace Iren.ToolsExcel
             }
             catch(Exception e)
             {
-                Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "SisCom - Esporta.InvioMail: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "SisCom - Esporta.InvioMail: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 

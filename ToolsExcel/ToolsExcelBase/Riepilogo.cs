@@ -59,7 +59,6 @@ namespace Iren.ToolsExcel.Base
         }
         public abstract void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif);
         public abstract void UpdateData();
-        //public abstract void RiepilogoInEmergenza();
 
         #endregion
     }
@@ -132,8 +131,9 @@ namespace Iren.ToolsExcel.Base
                 {
                     _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
                 }
-                Utility.Workbook.ScreenUpdating = false;
+                //Utility.Workbook.ScreenUpdating = false;
             }
+
         }
 
         public override void InitLabels()
@@ -178,7 +178,7 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
                 _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
-            Utility.Workbook.ScreenUpdating = false;
+            //Utility.Workbook.ScreenUpdating = false;
         }
         protected virtual void Clear()
         {
@@ -197,7 +197,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Range[Range.GetRange(1, 1, 1, _struttura.colRecap - 1)].EntireColumn.ColumnWidth = Struct.cell.width.empty;            
             _ws.Rows[1].RowHeight = Struct.cell.height.empty;
 
-            ((Excel._Worksheet)_ws).Activate();
+            _ws.Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
             _ws.Cells[_struttura.rigaBlock, _struttura.colBlock].Select();
             _ws.Application.ActiveWindow.ScrollColumn = 1;
@@ -246,7 +246,7 @@ namespace Iren.ToolsExcel.Base
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
                 rngTitleBar.StartColumn = rngAzioni.StartColumn;
-                _ws.Range[rngTitleBar.ToString()].Style = "recapTitleBarStyle";
+                _ws.Range[rngTitleBar.ToString()].Style = "Barra titolo riepilogo";
                 _ws.Range[rngTitleBar.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
                 foreach (DataRowView azione in _azioni)
@@ -280,8 +280,8 @@ namespace Iren.ToolsExcel.Base
             Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo() - 1);
             Range rngData = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol(), _definedNames.GetRowOffset() - 3, _definedNames.GetColOffsetRiepilogo());
             
-            _ws.Range[rngData.ToString()].Style = "recapAllDatiStyle";
-            _ws.Range[rngData.Columns[0].ToString()].Style = "recapEntityBarStyle";
+            _ws.Range[rngData.ToString()].Style = "Area dati riepilogo";
+            _ws.Range[rngData.Columns[0].ToString()].Style = "Lista entita riepilogo";
             _ws.Range[rngData.Columns[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
             Excel.Range xlrng = _ws.Range[rngAll.Rows[1, rngAll.Rows.Count - 1].ToString()];
@@ -314,7 +314,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView categoria in _categorie)
             {
                 Range rng = new Range(_definedNames.GetRowByName(categoria["SiglaCategoria"]), _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
-                Style.RangeStyle(_ws.Range[rng.ToString()], style: "recapCategoryTitle", borders: "[left:medium,top:medium,right:medium]", merge: true);
+                Style.RangeStyle(_ws.Range[rng.ToString()], style: "Lista categorie riepilogo", borders: "[left:medium,top:medium,right:medium]", merge: true);
                 _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
                 _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
                 foreach (DataRowView entita in _entita)
@@ -462,6 +462,5 @@ namespace Iren.ToolsExcel.Base
         }
 
         #endregion
-
     }
 }

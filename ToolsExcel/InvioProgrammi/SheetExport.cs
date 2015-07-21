@@ -80,7 +80,7 @@ namespace Iren.ToolsExcel
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
 
             Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + 1, categoriaEntita.Count + 3]];
-            gotoBar.Style = "gotoBarStyle";
+            gotoBar.Style = "Top menu GOTO";
             gotoBar.BorderAround2(Weight: Excel.XlBorderWeight.xlMedium, Color: 1);
 
             int i = 3;
@@ -88,7 +88,7 @@ namespace Iren.ToolsExcel
             {
                 Excel.Range rng = _ws.Cells[_struttura.rigaGoto, i++];
                 rng.Value = entita["DesEntitaBreve"];
-                rng.Style = "navBarStyleHorizontal";
+                rng.Style = "Barra navigazione con nomi";
             }
         }
         private void InitColumns()
@@ -134,8 +134,8 @@ namespace Iren.ToolsExcel
 
             _definedNames.DumpToDataSet();
 
-            if (DataCaricamentoStruttura != DataBase.DataAttiva || Simboli.Mercato == _ws.Name)
-                CaricaInformazioni(all: true);
+            if (DataCaricamentoStruttura != DataBase.DataAttiva)
+                CaricaInformazioni();
 
             if (_dataCaricaStruttura.ContainsKey(_ws.Name))
                 _dataCaricaStruttura[_ws.Name] = DataBase.DataAttiva;
@@ -237,15 +237,13 @@ namespace Iren.ToolsExcel
             }
         }
 
-        public override void UpdateData(bool all = true)
+        public override void UpdateData()
         {
             SplashScreen.UpdateStatus("Aggiorno informazioni");
-            if (all)
-            {
-                CancellaDati();
-                AggiornaDateTitoli();
-            }
-            CaricaInformazioni(all);            
+            
+            CancellaDati();
+            AggiornaDateTitoli();
+            CaricaInformazioni();            
         }
         private void CancellaDati()
         {
@@ -287,7 +285,7 @@ namespace Iren.ToolsExcel
         {            
         }
 
-        public override void CaricaInformazioni(bool all)
+        public override void CaricaInformazioni()
         {
             try
             {
@@ -320,7 +318,7 @@ namespace Iren.ToolsExcel
             }
             catch (Exception e)
             {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni InvioProgrammi SheetExport [all = " + all + "]: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni InvioProgrammi SheetExport: " + e.Message);
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }

@@ -9,8 +9,6 @@ namespace Iren.ToolsExcel.Base
     {
         public const string UNION = ".";
 
-        //public static string nomeFile = "";
-
         public static string nomeApplicazione = "";
         private static bool emergenzaForzata = false;
         public static bool EmergenzaForzata
@@ -147,15 +145,15 @@ namespace Iren.ToolsExcel.Base
 
         public static string GetMercatoByAppID(string id)
         {
-            List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
-            List<string> appIDs = new List<string>(ConfigurationManager.AppSettings["AppIDMSD"].Split('|'));
+            List<string> mercati = new List<string>(Utility.Workbook.AppSettings("Mercati").Split('|'));
+            List<string> appIDs = new List<string>(Utility.Workbook.AppSettings("AppIDMSD").Split('|'));
 
             return mercati[appIDs.IndexOf(id)];
         }
         public static string GetAppIDByMercato(string mercato)
         {
-            List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
-            List<string> appIDs = new List<string>(ConfigurationManager.AppSettings["AppIDMSD"].Split('|'));
+            List<string> mercati = new List<string>(Utility.Workbook.AppSettings("Mercati").Split('|'));
+            List<string> appIDs = new List<string>(Utility.Workbook.AppSettings("AppIDMSD").Split('|'));
 
             return appIDs[mercati.IndexOf(mercato)];
         }
@@ -165,7 +163,7 @@ namespace Iren.ToolsExcel.Base
         }
         public static string GetMercatoPrec(string mercato)
         {
-            List<string> mercati = new List<string>(ConfigurationManager.AppSettings["Mercati"].Split('|'));
+            List<string> mercati = new List<string>(Utility.Workbook.AppSettings("Mercati").Split('|'));
             int index = mercati.IndexOf(mercato);
             if(index > 0)
                 return mercati[index - 1];
@@ -179,7 +177,7 @@ namespace Iren.ToolsExcel.Base
             set
             {
                 string idStagione = GetIdStagione(value);
-                Utility.DataBase.ChangeAppSettings("Stagione", idStagione);
+                Utility.Workbook.ChangeAppSettings("Stagione", idStagione);
                 DefinedNames definedNames = new DefinedNames("Previsione");
                 DateTime dataFine = Utility.DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
                 Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Utility.Date.SuffissoDATA1, Utility.Date.GetSuffissoOra(1)).Extend(colOffset: Utility.Date.GetOreIntervallo(dataFine));
@@ -189,21 +187,21 @@ namespace Iren.ToolsExcel.Base
 
         private static string GetIdStagione(string stagione) 
         {
-            List<string> stagioni = new List<string>(ConfigurationManager.AppSettings["Stagioni"].Split('|'));
-            List<string> idStagioni = new List<string>(ConfigurationManager.AppSettings["IdStagioni"].Split('|'));
+            List<string> stagioni = new List<string>(Utility.Workbook.AppSettings("Stagioni").Split('|'));
+            List<string> idStagioni = new List<string>(Utility.Workbook.AppSettings("IdStagioni").Split('|'));
 
             return idStagioni[stagioni.IndexOf(stagione)];
         }
         public static string GetStagione(string id)
         {
-            List<string> stagioni = new List<string>(ConfigurationManager.AppSettings["Stagioni"].Split('|'));
-            List<string> idStagioni = new List<string>(ConfigurationManager.AppSettings["IdStagioni"].Split('|'));
+            List<string> stagioni = new List<string>(Utility.Workbook.AppSettings("Stagioni").Split('|'));
+            List<string> idStagioni = new List<string>(Utility.Workbook.AppSettings("IdStagioni").Split('|'));
 
             return stagioni[idStagioni.IndexOf(id)];
         }
         private static string GetStagione()
         {
-            return GetStagione(ConfigurationManager.AppSettings["Stagione"]);
+            return GetStagione(Utility.Workbook.AppSettings("Stagione"));
         }
 
         public static int[] rgbSfondo = { 183, 222, 232 };

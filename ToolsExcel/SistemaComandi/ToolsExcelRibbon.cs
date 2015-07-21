@@ -165,7 +165,7 @@ namespace Iren.ToolsExcel
         {
             try
             {
-                if (!Workbook.fromErrorPane)
+                if (!Workbook.FromErrorPane)
                 {
                     DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.Check);
                     Range rng = new Range(Target.Row, Target.Column);
@@ -195,7 +195,7 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
-            Workbook.ScreenUpdating = false;
+            //Workbook.ScreenUpdating = false;
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
 
             int count = 0;
@@ -216,7 +216,7 @@ namespace Iren.ToolsExcel
             }
 
             ambienteScelto.Checked = true;
-            Workbook.ScreenUpdating = true;
+            //Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di aggiornamento della struttura. Avvisa l'utente ed esegue l'aggiornamento della struttura. Esegue il refresh dei check.
@@ -269,7 +269,7 @@ namespace Iren.ToolsExcel
                 Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
 
-                DataBase.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
+                Workbook.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
                 btnCalendar.Label = calDate.ToString("dddd dd MMM yyyy");
 
                 Aggiorna aggiorna = new Aggiorna();
@@ -278,7 +278,7 @@ namespace Iren.ToolsExcel
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
 
                     DataBase.ChangeDate(calDate);
-                    DataBase.ConvertiParametriInformazioni();
+                    DataBase.ExecuteSPApplicazioneInit();
 
                     DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd")).DefaultView;
 
@@ -567,7 +567,7 @@ namespace Iren.ToolsExcel
         {
             TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
             var path = Utility.Workbook.GetUsrConfigElement("backup");
-            string pathStr = Utility.ExportPath.PreparePath(path.Value);
+            string pathStr = Esporta.PreparePath(path.Value);
             if (!Directory.Exists(pathStr))
                 Directory.CreateDirectory(pathStr);
 
@@ -699,9 +699,9 @@ namespace Iren.ToolsExcel
             //ComboBox mercati
             if (groupMSD.Visible)
             {
-                if (ConfigurationManager.AppSettings["Mercati"] != null)
+                if (Workbook.AppSettings("Mercati") != null)
                 {
-                    string[] mercati = ConfigurationManager.AppSettings["Mercati"].Split('|');
+                    string[] mercati = Workbook.AppSettings("Mercati").Split('|');
                     cmbMSD.Items.Clear();
                     foreach (string mercato in mercati)
                     {
@@ -719,9 +719,9 @@ namespace Iren.ToolsExcel
             //ComboBox stagioni
             if (groupStagione.Visible)
             {
-                if (ConfigurationManager.AppSettings["Stagioni"] != null)
+                if (Workbook.AppSettings("Stagioni") != null)
                 {
-                    string[] stagioni = ConfigurationManager.AppSettings["Stagioni"].Split('|');
+                    string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
                     cmbStagione.Items.Clear();
                     foreach (string stagione in stagioni)
                     {

@@ -103,7 +103,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void treeViewErrori_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            Workbook.fromErrorPane = true;
+            Workbook.FromErrorPane = true;
 
             if (e.Node.Name.StartsWith("'"))
             {
@@ -117,7 +117,7 @@ namespace Iren.ToolsExcel.Forms
                 rng.Worksheet.Activate();
                 rng.Select();
             }
-            Workbook.fromErrorPane = false;
+            Workbook.FromErrorPane = false;
         }
 
         public void SelectNode(string address)

@@ -1,5 +1,4 @@
 ﻿using Iren.ToolsExcel.UserConfig;
-using Iren.ToolsExcel.Core;
 using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
@@ -19,19 +18,27 @@ namespace Iren.ToolsExcel.Base
 {
     public abstract class AEsporta
     {
-        protected Core.DataBase _db = Utility.DataBase.DB;
-        protected DataSet _localDB = Utility.DataBase.LocalDB;
+        #region Metodi
 
+        /// <summary>
+        /// Launcher per l'azione di esportazione, contiene il metodo standard di handling per eventuali errori. 
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità dell'export.</param>
+        /// <param name="siglaAzione">Sigla dell'azione dell'export</param>
+        /// <param name="desEntita">Descrizione dell'entità.</param>
+        /// <param name="desAzione">Descrizione dell'azione.</param>
+        /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
+        /// <returns>True se l'azione di esportazione è andata a buon fine, false altrimenti.</returns>
         public virtual bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             try
             {
                 if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif))
                 {
-                    if (_db.OpenConnection())
-                        Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+                    if (DataBase.OpenConnection())
+                        DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
 
-                    _db.CloseConnection();
+                    DataBase.CloseConnection();
 
                     return true;
                 }
@@ -40,17 +47,29 @@ namespace Iren.ToolsExcel.Base
             }
             catch (Exception e)
             {
-                if (_db.OpenConnection())
+                if (DataBase.OpenConnection())
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
-                _db.CloseConnection();
+                DataBase.CloseConnection();
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 return false;
             }
         }
+        /// <summary>
+        /// Metodo virtuale di Esportazione.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità dell'export.</param>
+        /// <param name="siglaAzione">Sigla dell'azione dell'export</param>
+        /// <param name="desEntita">Descrizione dell'entità.</param>
+        /// <param name="desAzione">Descrizione dell'azione.</param>
+        /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
+        /// <returns></returns>
         protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
-
+        /// <summary>
+        /// Restituisce un'istanza di Outlook (quella aperta se ce n'è una, una nuova altrimenti).
+        /// </summary>
+        /// <returns>Istanza di Outlook.</returns>
         protected Outlook.Application GetOutlookInstance()
         {
             Outlook.Application application = null;
@@ -75,7 +94,12 @@ namespace Iren.ToolsExcel.Base
             // Return the Outlook Application object.
             return application;
         }
-
+        /// <summary>
+        /// Metodo di esportazione su CSV. Scrive la tabella in ingresso in un file di testo situato al path indicato da nomeFile.
+        /// </summary>
+        /// <param name="nomeFile">Path del file.</param>
+        /// <param name="dt">Tabella dei dati.</param>
+        /// <returns>True se la scrittura ha avuto successo, false altrimenti.</returns>
         protected virtual bool ExportToCSV(string nomeFile, DataTable dt)
         {
             if (dt.Rows.Count > 0)
@@ -101,6 +125,49 @@ namespace Iren.ToolsExcel.Base
 
             return false;
         }
+
+        #endregion
+
+        #region Metodi Statici
+
+        /// <summary>
+        /// Prepara il path sostituendo le parti dinamiche con valori appropriati.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="codRup"></param>
+        /// <returns></returns>
+        public static string PreparePath(string path, string codRup = "")
+        {
+            Regex options = new Regex(@"\[\w+\]");
+            path = options.Replace(path, match =>
+            {
+                string opt = match.Value.Replace("[", "").Replace("]", "");
+                string o = "";
+                switch (opt.ToLowerInvariant())
+                {
+                    case "appname":
+                        o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
+                        break;
+                    case "msd":
+                        o = Simboli.Mercato;
+                        break;
+                    case "codrup":
+                        o = codRup;
+                        break;
+                    //aggiungere qui tutti i formati data da considerare nella forma
+                    //case "formato data":
+                    case "yyyymmdd":
+                        o = Utility.DataBase.DataAttiva.ToString(opt);
+                        break;
+                }
+
+                return o;
+            });
+
+            return path;
+        }
+
+        #endregion
     }
 
     public class Esporta : AEsporta

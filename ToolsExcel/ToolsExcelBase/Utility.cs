@@ -90,6 +90,9 @@ namespace Iren.ToolsExcel.Utility
                 CATEGORIA_ENTITA = "CategoriaEntita",
                 CHECK = "Check",
                 DATE_DEFINITE = "DefinedDates",
+                DATI_APPLICAZIONE_H = "DatiApplicazioneH",
+                DATI_APPLICAZIONE_D = "DatiApplicazioneD",
+                DATI_APPLICAZIONE_COMMENTO = "DatiApplicazioneCommento",
                 EDITABILI = "Editabili",
                 ENTITA_ASSETTO = "EntitaAssetto",
                 ENTITA_AZIONE = "EntitaAzione",
@@ -104,7 +107,7 @@ namespace Iren.ToolsExcel.Utility
                 ENTITA_PARAMETRO_D = "EntitaParametroD",
                 ENTITA_PARAMETRO_H = "EntitaParametroH",
                 ENTITA_PROPRIETA = "EntitaProprieta",
-                ENTITA_RAMPA = "EntitaRampa",                
+                ENTITA_RAMPA = "EntitaRampa",    
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
@@ -149,15 +152,27 @@ namespace Iren.ToolsExcel.Utility
 
         #endregion
 
-        #region Metodi
+        #region Metodi Statici
 
-        public static void InitNewDB(string dbName) {
+        /// <summary>
+        /// Inizializza il nuovo Core.DataBase collegato al dbName che rappresenta l'ambiente Prod|Test|Dev.
+        /// </summary>
+        /// <param name="dbName">Nome (corrisponde all'ambiente) del Database.</param>
+        public static void InitNewDB(string dbName) 
+        {
             _db = new Core.DataBase(dbName);
         }
+        /// <summary>
+        /// Inizializza il nuovo dataset Locale.
+        /// </summary>
         public static void InitNewLocalDB()
         {
             _localDB = new DataSet(NAME);
         }
+        /// <summary>
+        /// Se il dataset contiente la tabella identificata da name, la cancella. Va cancellata perché se nelle varie modifiche al DB viene cambiata la struttura, fare il merge comporterebbe il verificarsi di un errore di mancata corrispondenza delle strutture.
+        /// </summary>
+        /// <param name="name"></param>
         public static void ResetTable(string name) 
         {
             if (_localDB.Tables.Contains(name))
@@ -165,26 +180,30 @@ namespace Iren.ToolsExcel.Utility
                 _localDB.Tables.Remove(name);
             }
         }
+        /// <summary>
+        /// Cambio l'ID applicazione su cui Core.DataBase basa le sue ricerche.
+        /// </summary>
+        /// <param name="appID">Nuovo ID applicazione.</param>
         public static void ChangeAppID(string appID)
         {
-            Utility.DataBase.ChangeAppSettings("AppID", appID);
+            Workbook.ChangeAppSettings("AppID", appID);
             _db.ChangeAppID(int.Parse(appID));
         }
+        /// <summary>
+        /// Cambio la Data Attiva su cui Core.DataBase basa le sue ricerche.
+        /// </summary>
+        /// <param name="dataAttiva">Nuova DataAttiva.</param>
         public static void ChangeDate(DateTime dataAttiva) 
         {
             _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
         }
-        public static void ChangeAppSettings(string key, string value) 
-        {
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings[key].Value = value;
-            config.Save(ConfigurationSaveMode.Minimal);
-            ConfigurationManager.RefreshSection("applicationSettings");
-        }
+        /// <summary>
+        /// Cambio ambiente tra Prod|Test|Prod.
+        /// </summary>
+        /// <param name="ambiente">Nuovo ambiente.</param>
         public static void SwitchEnvironment(string ambiente) 
         {            
-            ChangeAppSettings("DB", ambiente);
-            ConfigurationManager.RefreshSection("applicationSettings");
+            Workbook.ChangeAppSettings("DB", ambiente);
 
             int idA = _db.IdApplicazione;
             int idU = _db.IdUtenteAttivo;
@@ -193,52 +212,77 @@ namespace Iren.ToolsExcel.Utility
             _db = new Core.DataBase(ambiente);
             _db.SetParameters(data, idU, idA);
         }
+        /// <summary>
+        /// Salva le modifiche effettuate ai fogli sul DataBase. Il processo consiste nella creazione di un file XML contenente tutte le righe della tabella di Modifica e successivo svuotamento della tabella stessa. Il processo richiede una connessione aperta. Diversamente le modifiche vengono salvate nella cartella di Emergenza dove, al momento della successiva chiamata al metodo, vengono reinviati al server in ordine cronologico.
+        /// </summary>
         public static void SalvaModificheDB() 
         {
+            //prendo la tabella di modifica e controllo se è nulla
             DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
             if (modifiche != null)
             {
+                //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
                 DataTable dt = modifiche.Copy();
                 dt.TableName = modifiche.TableName;
                 dt.Namespace = "";
 
-                if (dt.Rows.Count == 0)
-                    return;
-
-                bool onLine = DB.OpenConnection();
-
+                //vari path per la funzione del salvataggio delle modifiche sul server
                 var path = Workbook.GetUsrConfigElement("pathExportModifiche");
 
-                string cartellaRemota = ExportPath.PreparePath(path.Value);
-                string cartellaEmergenza = ExportPath.PreparePath(path.Emergenza);
-                string cartellaArchivio = ExportPath.PreparePath(path.Archivio);
+                //path del caricatore sul server
+                string cartellaRemota = Esporta.PreparePath(path.Value);
+                //path della cartella di emergenza
+                string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
+                //path della cartella di archivio in cui copiare i file in caso di esito positivo nel saltavaggio
+                string cartellaArchivio = Esporta.PreparePath(path.Archivio);
 
                 string fileName = "";
-                if (onLine && Directory.Exists(cartellaRemota))
+                //se la connessione è aperta (in emergenza forzata sarà sempre false) ed esiste la cartella del caricatore
+                if (OpenConnection() && Directory.Exists(cartellaRemota))
                 {
+                    //metto in lavorazione i file nella cartella di emergenza
                     string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
                     bool executed = false;
                     if (fileEmergenza.Length > 0)
                     {
-                        Array.Sort<string>(fileEmergenza);
-                        foreach (string file in fileEmergenza)
+                        if (System.Windows.Forms.MessageBox.Show("Sono presenti delle modifiche non ancora salvate sul DB. Procedere con il salvataggio? \n\nPremere Sì per inviare i dati al server, No per cancellare definitivamente le modifiche.", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                         {
-                            File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
-
-                            executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
-                            if (executed)
+                            //il nome file contiene la data, quindi li metto in ordine cronologico
+                            Array.Sort<string>(fileEmergenza);
+                            foreach (string file in fileEmergenza)
                             {
-                                if (!Directory.Exists(cartellaArchivio))
-                                    Directory.CreateDirectory(cartellaArchivio);
+                                File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
 
-                                File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                                executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
+                                if (executed)
+                                {
+                                    if (!Directory.Exists(cartellaArchivio))
+                                        Directory.CreateDirectory(cartellaArchivio);
+
+                                    File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                                }
+                                else
+                                {
+                                    System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                                }
                             }
+                        }
+                        else
+                        {
+                            foreach (string file in fileEmergenza)
+                                File.Delete(file);
                         }
                     }
 
+                    //controllo se la tabella è vuota
+                    if (dt.Rows.Count == 0)
+                        return;
+
+                    //salvo le modifiche appena effettuate
                     fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                     dt.WriteXml(fileName);
 
+                    //se la query indica che il processo è andato a buon fine, sposto in archivio
                     executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
                     if (executed)
                     {
@@ -247,9 +291,19 @@ namespace Iren.ToolsExcel.Utility
 
                         File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
                     }
+                    else
+                    {
+                        fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                        dt.WriteXml(fileName);
+
+                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. Il file è si trova in " + Environment.MachineName);
+                        
+                        System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                    }
                 }
                 else
                 {
+                    //metto le modifiche nella cartella emergenza
                     fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                     try
                     {
@@ -260,24 +314,23 @@ namespace Iren.ToolsExcel.Utility
                         Directory.CreateDirectory(cartellaEmergenza);
                         dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
                     }
+
+                    System.Windows.Forms.MessageBox.Show("A causa di problemi di rete le modifiche sono state salvate in locale", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
                 }
 
+                //svuoto la tabella di modifiche
                 modifiche.Clear();
             }
         }
-        //public static object GetMessaggioCheck(object id) 
-        //{
-        //    DataView tipologiaCheck = _localDB.Tables[Tab.TIPOLOGIA_CHECK].DefaultView;
-        //    tipologiaCheck.RowFilter = "IdTipologiaCheck = " + id;
-
-        //    if (tipologiaCheck.Count > 0)
-        //        return tipologiaCheck[0]["Messaggio"];
-
-        //    return null;
-        //}
-        public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime? dataRif = null, bool presente = true) 
+        /// <summary>
+        /// Aggiunge la riga di riepilogo al DB in modo da far evidenziare la casella nel foglio Main del Workbook.
+        /// </summary>
+        /// <param name="siglaEntita">La sigla dell'entità di cui aggiungere il riepilogo.</param>
+        /// <param name="siglaAzione">La sigla dell'azione di cui aggiungere il riepilogo.</param>
+        /// <param name="giorno">Il giorno in cui aggiungere il riepilogo.</param>
+        /// <param name="presente">Se il dato collegato alla coppia Entità - Azione è presente o no nel DB.</param>
+        public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime giorno, bool presente = true) 
         {
-            dataRif = dataRif ?? DataAttiva;
             try
             {
                 if (OpenConnection())
@@ -285,7 +338,7 @@ namespace Iren.ToolsExcel.Utility
                     QryParams parameters = new QryParams() {
                     {"@SiglaEntita", siglaEntita},
                     {"@SiglaAzione", siglaAzione},
-                    {"@Data", dataRif.Value.ToString("yyyyMMdd")},
+                    {"@Data", giorno.ToString("yyyyMMdd")},
                     {"@Presente", presente ? "1" : "0"}
                 };
                     _db.Insert(DataBase.SP.INSERT_APPLICAZIONE_RIEPILOGO, parameters);
@@ -293,15 +346,22 @@ namespace Iren.ToolsExcel.Utility
             }
             catch (Exception e)
             {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo [" + dataRif ?? DataAttiva + ", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo [" + giorno + ", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
-        public static void ConvertiParametriInformazioni() 
+        /// <summary>
+        /// Inizializza i valori di default e imposta tutte le informazioni che devono essere "trascinate" dai giorni precedenti
+        /// </summary>
+        public static void ExecuteSPApplicazioneInit() 
         {
             Select(SP.APPLICAZIONE_INIT);
         }
+        /// <summary>
+        /// Funzione per l'apertura della connessione che considera anche la presenza del flag di Emergenza Forzata.
+        /// </summary>
+        /// <returns>True se la connessione viene aperta, false altrimenti.</returns>
         public static bool OpenConnection()
         {
             if (!Simboli.EmergenzaForzata)
@@ -309,6 +369,10 @@ namespace Iren.ToolsExcel.Utility
 
             return false;
         }
+        /// <summary>
+        /// Funzione per chiudere la connessione che considera anche la presenza del flag di Emergenza Forzata.
+        /// </summary>
+        /// <returns>True se la connessione viene chiusa, false altrimenti.</returns>
         public static bool CloseConnection()
         {
             if (!Simboli.EmergenzaForzata)
@@ -316,48 +380,13 @@ namespace Iren.ToolsExcel.Utility
 
             return false;
         }
-        public void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
-        {
-#if (!DEBUG)
-            if (OpenConnection())
-            {
-                Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });
-            }
-#endif
-
-            RefreshLog();
-        }
-        public void RefreshLog()
-        {
-            if (OpenConnection())
-            {
-                DataTable dt = Select(SP.APPLICAZIONE_LOG);
-                dt.TableName = Tab.LOG;
-
-                bool sameSchema = dt.Columns.Count == _localDB.Tables[Tab.LOG].Columns.Count;
-
-                for(int i = 0; i < dt.Columns.Count && sameSchema; i++)
-                    if(_localDB.Tables[Tab.LOG].Columns[i].ColumnName != dt.Columns[i].ColumnName)
-                        sameSchema = false;
-
-                _localDB.Tables[Tab.LOG].Clear();
-
-                //if (!sameSchema)
-                //{
-                //    while (_localDB.Tables[Tab.LOG].Columns.Count > 0)
-                //        _localDB.Tables[Tab.LOG].Columns.RemoveAt(0);
-                //    foreach (DataColumn col in dt.Columns)
-                //        _localDB.Tables[Tab.LOG].Columns.Add(new DataColumn() { ColumnName = col.ColumnName, DataType = col.DataType });
-                //}
-
-                _localDB.Tables[Tab.LOG].Merge(dt);
-
-                Excel.Worksheet ws = Workbook.Log;
-                if (ws.ListObjects.Count > 0)
-                    ws.ListObjects[1].Range.EntireColumn.AutoFit();
-            }
-        }
-
+        /// <summary>
+        /// Funzione per eseguire una stored procedure. Fa un "override" della funzione fornita da Core.DataBase che considera la presenza del flag di Emergenza Forzata.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout del comando.</param>
+        /// <returns>DataTable contenente il risultato della storedProcedure.</returns>
         public static DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
         {
             if (OpenConnection())
@@ -370,6 +399,13 @@ namespace Iren.ToolsExcel.Utility
 
             return new DataTable();
         }
+        /// <summary>
+        /// Funzione per eseguire una stored procedure. Fa un "override" della funzione fornita da Core.DataBase che considera la presenza del flag di Emergenza Forzata.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout del comando.</param>
+        /// <returns>DataTable contenente il risultato della storedProcedure.</returns>
         public static DataTable Select(string storedProcedure, String parameters, int timeout = 300)
         {
             if (OpenConnection())
@@ -382,6 +418,12 @@ namespace Iren.ToolsExcel.Utility
 
             return new DataTable();
         }
+        /// <summary>
+        /// Funzione per eseguire una stored procedure. Fa un "override" della funzione fornita da Core.DataBase che considera la presenza del flag di Emergenza Forzata.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="timeout">Timeout del comando.</param>
+        /// <returns>DataTable contenente il risultato della storedProcedure.</returns>
         public static DataTable Select(string storedProcedure, int timeout = 300)
         {
             if (OpenConnection())
@@ -394,7 +436,12 @@ namespace Iren.ToolsExcel.Utility
 
             return new DataTable();
         }
-
+        /// <summary>
+        /// Funzione per eseguire una stored procedure. Fa un "override" della funzione fornita da Core.DataBase che considera la presenza del flag di Emergenza Forzata.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
         public static bool Insert(string storedProcedure, QryParams parameters)
         {
             if (OpenConnection())
@@ -407,41 +454,51 @@ namespace Iren.ToolsExcel.Utility
         }
 
         #endregion
-    }
 
-    public class ExportPath 
-    {
         #region Metodi
 
-        public static string PreparePath(string path, string codRup = "") 
+        /// <summary>
+        /// Inserisce una riga di Log.
+        /// </summary>
+        /// <param name="logType">Tipologia di Log.</param>
+        /// <param name="message">Messaggio del Log.</param>
+        public void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
         {
-            Regex options = new Regex(@"\[\w+\]");
-            path = options.Replace(path, match =>
+#if (!DEBUG)
+            if (OpenConnection())
             {
-                string opt = match.Value.Replace("[", "").Replace("]", "");
-                string o = "";
-                switch (opt.ToLowerInvariant())
-                {
-                    case "appname":
-                        o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
-                        break;
-                    case "msd":
-                        o = Simboli.Mercato;
-                        break;
-                    case "codrup":
-                        o = codRup;
-                        break;
-                    //aggiungere qui tutti i formati data da considerare nella forma
-                    //case "formato data":
-                    case "yyyymmdd":
-                        o = DataBase.DataAttiva.ToString(opt);
-                        break;
-                }
+                Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });
+            }
+#endif
 
-                return o;
-            });
+            RefreshLog();
+        }
+        /// <summary>
+        /// Aggiorna il foglio di Log.
+        /// </summary>
+        public void RefreshLog()
+        {
+            //non posso cancellare la tabella altrimenti perdo il dataBinding con l'oggetto nel foglio di Log. Quindi svuoto la tabella e la riempio con i nuovi valori.
+            if (OpenConnection())
+            {
+                DataTable dt = Select(SP.APPLICAZIONE_LOG);
+                dt.TableName = Tab.LOG;
 
-            return path;
+                bool sameSchema = dt.Columns.Count == _localDB.Tables[Tab.LOG].Columns.Count;
+
+                for (int i = 0; i < dt.Columns.Count && sameSchema; i++)
+                    if (_localDB.Tables[Tab.LOG].Columns[i].ColumnName != dt.Columns[i].ColumnName)
+                        sameSchema = false;
+
+                //svuoto la tabella allo stato attuale
+                _localDB.Tables[Tab.LOG].Clear();
+                //la riempio con tutte le rige comprese le nuove
+                _localDB.Tables[Tab.LOG].Merge(dt);
+
+                Excel.Worksheet ws = Workbook.Log;
+                if (ws.ListObjects.Count > 0)
+                    ws.ListObjects[1].Range.EntireColumn.AutoFit();
+            }
         }
 
         #endregion
@@ -451,6 +508,9 @@ namespace Iren.ToolsExcel.Utility
     {
         #region Proprietà
 
+        /// <summary>
+        /// Scorciatoia per ottenere il suffisso della dataAttiva.
+        /// </summary>
         public static string SuffissoDATA1
         {
             get { return GetSuffissoData(DataBase.DataAttiva); }
@@ -459,31 +519,69 @@ namespace Iren.ToolsExcel.Utility
         #endregion
 
         #region Metodi
+
+        /// <summary>
+        /// Restituisce le ore di intervallo tra la data attiva e la data fine specificata.
+        /// </summary>
+        /// <param name="fine">Data fine.</param>
+        /// <returns>Ore di intervallo.</returns>
         public static int GetOreIntervallo(DateTime fine)
         {
             return GetOreIntervallo(DataBase.DataAttiva, fine);
         }
+        /// <summary>
+        /// Restituisce le ore di intervallo tra una data inizio e fine specificate.
+        /// </summary>
+        /// <param name="inizio">Data inizio.</param>
+        /// <param name="fine">Data fine.</param>
+        /// <returns>Ore di intervallo.</returns>
         public static int GetOreIntervallo(DateTime inizio, DateTime fine)
         {
             return (int)(fine.AddDays(1).ToUniversalTime() - inizio.ToUniversalTime()).TotalHours;
         }
+        /// <summary>
+        /// Restituisce le ore che compongono il giorno passato per parametro.
+        /// </summary>
+        /// <param name="giorno">Giorno.</param>
+        /// <returns>Numero di ore del giorno.</returns>
         public static int GetOreGiorno(DateTime giorno)
         {
             DateTime giornoSucc = giorno.AddDays(1);
             return (int)(giornoSucc.ToUniversalTime() - giorno.ToUniversalTime()).TotalHours;
         }
+        /// <summary>
+        /// Restituisce le ore che compongono il giorno passato per parametro.
+        /// </summary>
+        /// <param name="suffissoData">Suffisso del giorno.</param>
+        /// <returns>Numero di ore del giorno.</returns>
         public static int GetOreGiorno(string suffissoData)
         {
             return GetOreGiorno(GetDataFromSuffisso(suffissoData));
         }
+        /// <summary>
+        /// Restituisce il suffisso del giorno rispetto alla data attiva.
+        /// </summary>
+        /// <param name="giorno">Giorno di cui trovare il suffisso.</param>
+        /// <returns>Stringa del tipo DATAx con x = 1 se giorno è data attiva, x = 2 se giorno è data attiva + 1, e così via.</returns>
         public static string GetSuffissoData(DateTime giorno)
         {
             return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
         }
+        /// <summary>
+        /// Restituisce il suffisso del giorno rispetto alla data attiva.
+        /// </summary>
+        /// <param name="giorno">Giorno di cui trovare il suffisso.</param>
+        /// <returns>Stringa del tipo DATAx con x = 1 se giorno è data attiva, x = 2 se giorno è data attiva + 1, e così via.</returns>
         public static string GetSuffissoData(string giorno)
         {
             return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
         }
+        /// <summary>
+        /// Restituisce il suffisso del giorno rispetto alla data inizio.
+        /// </summary>
+        /// <param name="inizio">Data di inizio.</param>
+        /// <param name="giorno">Giorno di cui trovare il suffisso.</param>
+        /// <returns>Stringa del tipo DATAx con x = 1 se giorno è data attiva, x = 2 se giorno è data attiva + 1, e così via.</returns>
         public static string GetSuffissoData(DateTime inizio, DateTime giorno)
         {
             if (inizio > giorno)
@@ -493,15 +591,31 @@ namespace Iren.ToolsExcel.Utility
             TimeSpan dayDiff = giorno - inizio;
             return "DATA" + (dayDiff.Days + 1);
         }
+        /// <summary>
+        /// Restituisce il suffisso del giorno rispetto alla data inizio.
+        /// </summary>
+        /// <param name="inizio">Data di inizio.</param>
+        /// <param name="giorno">Giorno di cui trovare il suffisso.</param>
+        /// <returns>Stringa del tipo DATAx con x = 1 se giorno è data attiva, x = 2 se giorno è data attiva + 1, e così via.</returns>
         public static string GetSuffissoData(DateTime inizio, object giorno)
         {
             DateTime day = DateTime.ParseExact(giorno.ToString().Substring(0, 8), "yyyyMMdd", CultureInfo.InvariantCulture);
             return GetSuffissoData(inizio, day);
         }
+        /// <summary>
+        /// Restituisce il suffisso dell'ora in ingresso.
+        /// </summary>
+        /// <param name="ora">Numero rappresentante l'ora da 1 a 25.</param>
+        /// <returns>Stringa del tipo Hx con x = ora.</returns>
         public static string GetSuffissoOra(int ora)
         {
             return "H" + ora;
         }
+        /// <summary>
+        /// Restituisce il suffisso dell'ora estraendolo dalla data ISO yyyyMMddHH
+        /// </summary>
+        /// <param name="dataOra">Stringa nella forma DATAx.Hy.</param>
+        /// <returns>Stringa del tipo Hx.</returns>
         public static string GetSuffissoOra(object dataOra)
         {
             string dtO = dataOra.ToString();
@@ -510,6 +624,12 @@ namespace Iren.ToolsExcel.Utility
 
             return GetSuffissoOra(int.Parse(dtO.Substring(dtO.Length - 2, 2)));
         }
+        /// <summary>
+        /// Restituisce la data in formato ISO yyyyMMddHH a partire dal suffisso data e suffisso ora.
+        /// </summary>
+        /// <param name="data">Suffisso data.</param>
+        /// <param name="ora">Suffisso ora.</param>
+        /// <returns>Data in formato ISO yyyyMMddHH.</returns>
         public static string GetDataFromSuffisso(string data, string ora)
         {
             DateTime outDate = GetDataFromSuffisso(data);
@@ -518,11 +638,21 @@ namespace Iren.ToolsExcel.Utility
 
             return outDate.ToString("yyyyMMdd") + (outOra != 0 ? outOra.ToString("D2") : "");
         }
+        /// <summary>
+        /// Restituisce la data in formato ISO yyyyMMdd a partire dal suffisso data.
+        /// </summary>
+        /// <param name="data">Suffisso data.</param>
+        /// <returns>Data in formato ISO yyyyMMdd.</returns>
         public static DateTime GetDataFromSuffisso(string data)
         {
             int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
             return DataBase.DB.DataAttiva.AddDays(giorno - 1);
         }
+        /// <summary>
+        /// Restituisce l'ora a partire dalla stringa in formato ISO yyyyMMddHH
+        /// </summary>
+        /// <param name="dataOra"></param>
+        /// <returns></returns>
         public static int GetOraFromDataOra(string dataOra)
         {
             string dtO = dataOra.ToString();
@@ -531,11 +661,17 @@ namespace Iren.ToolsExcel.Utility
 
             return int.Parse(dtO.Substring(dtO.Length - 2, 2));
         }
+        /// <summary>
+        /// Restituisce l'ora a partire dal suffisso ora del tipo Hx.
+        /// </summary>
+        /// <param name="suffissoOra">Suffisso ora.</param>
+        /// <returns>Intero rappresentante l'ora (1 - 25).</returns>
         public static int GetOraFromSuffissoOra(string suffissoOra)
         {
             string match = Regex.Match(suffissoOra, @"\d+").Value;
             return int.Parse(match);
         }
+        
         #endregion
     }
 
@@ -555,7 +691,10 @@ namespace Iren.ToolsExcel.Utility
 
         #region Metodi
 
-        public static void Aggiorna(params string[] sheets)
+        /// <summary>
+        /// Launcher per tutte le funzioni che aggiornano il repository in seguito alla richiesta di aggiornare la struttura.
+        /// </summary>
+        public static void Aggiorna()
         {
             CreaTabellaNomi();
             CreaTabellaDate();
@@ -1247,14 +1386,18 @@ namespace Iren.ToolsExcel.Utility
 
         #endregion
 
-
-        public static DataTable CaricaApplicazione(object idApplicazione)
+        /// <summary>
+        /// Carica solo i parametri dell'applicazione contenuti nella tabella APPLICAZIONE.
+        /// </summary>
+        /// <param name="appID">L'ID dell'applicazione di cui ricaricare i parametri.</param>
+        /// <returns>La tabella contenente tutti i dati trovati sull'applicazione.</returns>
+        public static DataTable CaricaApplicazione(object appID)
         {
             string name = DataBase.Tab.APPLICAZIONE;
             DataBase.ResetTable(name);
             QryParams parameters = new QryParams() 
             {
-                {"@IdApplicazione", idApplicazione},
+                {"@IdApplicazione", appID},
 
             };
             DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE, parameters);
@@ -1269,32 +1412,79 @@ namespace Iren.ToolsExcel.Utility
     {
         #region Variabili
 
+        /// <summary>
+        /// Il workbook.
+        /// </summary>
         protected static Microsoft.Office.Tools.Excel.Workbook _wb;
+        /// <summary>
+        /// La versione dell'applicazione.
+        /// </summary>
         private static System.Version _wbVersion;
-        public static bool fromErrorPane = false;
+        /// <summary>
+        /// Flag che viene utilizzato per bloccare l'evento SheetSelectionChange quando la selezione è cambiata dal pannello laterale dei check.
+        /// </summary>
+        public static bool FromErrorPane = false;
 
         #endregion
 
         #region Proprietà
 
+        /// <summary>
+        /// L'oggetto Excel del Workbook per accedere a tutti gli handler e proprietà. (Read only)
+        /// </summary>
         public static Microsoft.Office.Tools.Excel.Workbook WB { get { return _wb; } }
+        /// <summary>
+        /// Scorciatoia per accedere all'oggetto Excel del foglio Main (sempre presente in tutti i fogli).
+        /// </summary>
         public static Excel.Worksheet Main { get { return _wb.Sheets["Main"]; } }
+        /// <summary>
+        /// Scorciatoia per accedere all'oggetto Excel del foglio di Log (sempre presente in tutti i fogli).
+        /// </summary>
         public static Excel.Worksheet Log { get { return _wb.Sheets["Log"]; } }
+        /// <summary>
+        /// Scorciatoia per accedere al foglio attivo.
+        /// </summary>
         public static Excel.Worksheet ActiveSheet { get { return _wb.ActiveSheet; } }
+        /// <summary>
+        /// Scorciatoia per accedere all'oggetto Application di Excel.
+        /// </summary>
         public static Excel.Application Application { get { return _wb.Application; } }
+        /// <summary>
+        /// Lista di tutti i fogli che rappresentano una Categoria sul DB (non fanno parte i fogli Log, Main, MSDx). I fogli non sono indicizzati per nome, solo per indice.
+        /// </summary>
         public static IList<Excel.Worksheet> CategorySheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name != "Log" && ws.Name != "Main" && !ws.Name.StartsWith("MSD")).ToList(); } }
+        /// <summary>
+        /// Lista di tutti fogli indicizzati per nome.
+        /// </summary>
         public static Excel.Sheets Sheets { get { return _wb.Sheets; } }
+        /// <summary>
+        /// Lista dei folgi MSDx utile solo in Invio Programmi.
+        /// </summary>
         public static IList<Excel.Worksheet> MSDSheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name.StartsWith("MSD")).ToList(); } }
+        /// <summary>
+        /// La versione dell'applicazione.
+        /// </summary>
         public static System.Version WorkbookVersion { get { return _wbVersion; } }
+        /// <summary>
+        /// La versione della classe Core
+        /// </summary>
         public static System.Version CoreVersion { get { return DataBase.DB.GetCurrentV(); } }
+        /// <summary>
+        /// La versione della classe Base.
+        /// </summary>
         public static System.Version BaseVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+        /// <summary>
+        /// Flag per attivare/disattivare il refresh dello schermo.
+        /// </summary>
         public static bool ScreenUpdating { get { return Application.ScreenUpdating; } set { Application.ScreenUpdating = value; } }
 
         #endregion
 
         #region Metodi
 
-        
+        /// <summary>
+        /// Carica dal DB i dati riguardanti le proprietà dell'applicazione che si trovano nella tabella APPLICAZIONE. Assegna alle variabili globali di applicazione i valori.
+        /// </summary>
         public static void AggiornaParametriApplicazione()
         {
             DataTable dt = Repository.CaricaApplicazione(Workbook.AppSettings("AppID"));
@@ -1319,7 +1509,12 @@ namespace Iren.ToolsExcel.Utility
             DataBase.ResetTable(DataBase.Tab.APPLICAZIONE);
             DataBase.LocalDB.Tables.Add(dt);
         }
-
+        /// <summary>
+        /// Imposta il mercato attivo in base all'orario. Se necessario cambia anche la data attiva e imposta il foglio come da aggiornare.
+        /// </summary>
+        /// <param name="appID">L'ID applicazione che identifica anche in quale mercato il foglio è impostato.</param>
+        /// <param name="dataAttiva">La data attiva da modificare all'occorrenza.</param>
+        /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
         private static bool SetMercato(ref string appID, ref DateTime dataAttiva)
         {
             string appIDold = appID;
@@ -1333,11 +1528,11 @@ namespace Iren.ToolsExcel.Utility
                 dataAttiva = DateTime.Today;
 
             //configuro il mercato attivo
-            string[] mercatiDisp = ConfigurationManager.AppSettings["Mercati"].Split('|');
-            string[] appIDs = ConfigurationManager.AppSettings["AppIDMSD"].Split('|');
+            string[] mercatiDisp = Workbook.AppSettings("Mercati").Split('|');
+            string[] appIDs = Workbook.AppSettings("AppIDMSD").Split('|');
             for(int i = 0; i < mercatiDisp.Length; i++) 
             {
-                string[] ore = ConfigurationManager.AppSettings["Ore" + mercatiDisp[i]].Split('|');
+                string[] ore = Workbook.AppSettings("Ore" + mercatiDisp[i]).Split('|');
                 if (ore.Contains(ora.ToString()))
                 {
                     appID = appIDs[i];
@@ -1349,7 +1544,7 @@ namespace Iren.ToolsExcel.Utility
 
             if(appID != appIDold || dataAttivaOld != dataAttiva)
             {
-                DataBase.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
+                Workbook.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
                 Simboli.AppID = appID;
 
                 return true;
@@ -1357,6 +1552,12 @@ namespace Iren.ToolsExcel.Utility
 
             return false;
         }
+        /// <summary>
+        /// Aggiorna la data per le applicazione Validazione TL e Previsione CT.
+        /// </summary>
+        /// <param name="appID">L'ID applicazione</param>
+        /// <param name="dataAttiva">La data attiva da cambiare se necessario</param>
+        /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
         private static bool AggiornaData(string appID, ref DateTime dataAttiva)
         {            
             DateTime dataAttivaOld = dataAttiva;
@@ -1378,12 +1579,148 @@ namespace Iren.ToolsExcel.Utility
 
             if (dataAttivaOld != dataAttiva)
             {
-                DataBase.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
+                Workbook.ChangeAppSettings("DataAttiva", dataAttiva.ToString("yyyyMMdd"));
                 return true;
             }
             return false;
         }
+        /// <summary>
+        /// Aggiorna i label indicanti lo stato dei Database in seguito ad un cambio di stato.
+        /// </summary>
+        public static void AggiornaLabelStatoDB()
+        {
+            bool isProtected = true;
+            try
+            {
+                isProtected = Main.ProtectContents;
+                
+                if (isProtected)
+                    Main.Unprotect(Simboli.pwd);
 
+                if (DataBase.OpenConnection())
+                {
+                    Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.StatoDB;
+                    Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
+                    Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
+                    Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+
+                    DataBase.CloseConnection();
+                }
+                else
+                {
+                    Simboli.SQLServerOnline = false;
+                    Simboli.ImpiantiOnline = false;
+                    Simboli.ElsagOnline = false;
+                }
+
+                if (isProtected)
+                    Main.Protect(Simboli.pwd);
+            }
+            catch
+            { }
+        }
+        /// <summary>
+        /// Handler per il PropertyChanged della classe Core.DataBase. Attiva l'aggiornamento dei label.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            AggiornaLabelStatoDB();
+        }
+        /// <summary>
+        /// Scrive il DataSet allo stato attuale nelle custom parts del foglio. In questo modo la persistenza è garantita. Le tabelle di Log e Modifica saranno sempre vuote a questo punto.
+        /// </summary>
+        public static void DumpDataSet()
+        {
+            //creo gli stream necessari a scrivere l'XML in modo compatto (senza formattazione) per risparmiare spazio e velocizzare il processo.
+            StringWriter strWriter = new StringWriter();
+            XmlWriter xmlWriter = XmlWriter.Create(strWriter);
+            //scrivo il dataset LocalDB con annesso lo schema (è successo che senza lo schema, quando tutta una colonna è vuota, non viene scritta nell'XML e questo crea problemi quando poi si tenta di caricare nuovi dati).
+            Utility.DataBase.LocalDB.WriteXml(xmlWriter, XmlWriteMode.WriteSchema);
+
+            XElement root = XElement.Parse(strWriter.ToString());
+            XNamespace ns = WB.Name;
+
+            //cancello tutte le righe della tabella di log che verrà riempita ad ogni avvio/modifica del log.
+            IEnumerable<XElement> log =
+                from tables in root.Elements(ns + Utility.DataBase.Tab.LOG)
+                select tables;
+
+            log.Remove();
+
+            string locDBXml = strWriter.ToString();
+            Microsoft.Office.Core.CustomXMLPart part;
+
+            //Non avendo trovato un modo di interagire con le custom parts, provo a cancellare quella esistente (se esiste, altrimenti va in errore e aggiunge la nuova senza problemi).
+            try
+            {
+                _wb.CustomXMLParts[WB.Name].Delete();
+            }
+            catch
+            {
+            }
+            part = _wb.CustomXMLParts.Add();
+            //carico nella nuova custom part il contenuto.
+            part.LoadXML(root.ToString(SaveOptions.DisableFormatting));
+        }
+        /// <summary>
+        /// Restituisce lo UserConfigElement collegato alla chiave configKey nella sezione usrConfig (da non confondere con appSettings).
+        /// </summary>
+        /// <param name="configKey">Chiave.</param>
+        /// <returns>Restituisce l'elemento ricercato.</returns>
+        public static UserConfigElement GetUsrConfigElement(string configKey)
+        {
+            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+
+            return (UserConfigElement)settings.Items[configKey];
+        }
+        /// <summary>
+        /// Restituisce un array con le tre componenti intere Red Green Blue a partire da una stringa suddivisa con un separatore sep. Non ha una gestione di errore, se il parser non riesce ad interpretare la stringa, va in errore.
+        /// </summary>
+        /// <param name="rgb">Stringa nel formato RRR[sep]GGG[sep]BBB.</param>
+        /// <param name="sep">Separatore.</param>
+        /// <returns>Restituisce le tre componenti trovate.</returns>
+        public static int[] GetRGBFromString(string rgb, char sep = ';')
+        {
+            string[] rgbComp = rgb.Split(sep);
+
+            return new int[] { int.Parse(rgbComp[0]), int.Parse(rgbComp[1]), int.Parse(rgbComp[2]) };
+        }
+
+        #region AppSettings
+        /// <summary>
+        /// Quando il file è criptato capita che senza il refresh vada in errore.
+        /// </summary>
+        /// <param name="key">La chiave da ricercare nella sezione appSettings</param>
+        /// <returns>Restituisce la stringa del Value.</returns>
+        public static string AppSettings(string key)
+        {
+            try
+            {
+                return ConfigurationManager.AppSettings[key];
+            }
+            catch
+            {
+                ConfigurationManager.RefreshSection("applicationSettings");
+                return ConfigurationManager.AppSettings[key];
+            }
+        }
+        /// <summary>
+        /// Assegna value al valore della chiave key della sesione appSettings del file di configurazione. Alla fine dell'operazione esegue il refresh della sezione in modo da forzare la riscrittura su disco dei nuovi valori.
+        /// </summary>
+        /// <param name="key">Chiave da modificare.</param>
+        /// <param name="value">Nuovo valore da assegnare.</param>
+        public static void ChangeAppSettings(string key, string value)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings[key].Value = value;
+            config.Save(ConfigurationSaveMode.Minimal);
+            ConfigurationManager.RefreshSection("applicationSettings");
+        }
+        #endregion
+
+        #region Init
         public static void InitLog()
         {
             DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
@@ -1418,7 +1755,7 @@ namespace Iren.ToolsExcel.Utility
             }
             catch (Exception e)
             {
-                DataBase.DB.Insert(DataBase.SP.INSERT_LOG, new QryParams() { { "@IdTipologia", Core.DataBase.TipologiaLOG.LogErrore }, { "@Messaggio", "InitUser: " + e.Message } });
+                InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InitUser: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
@@ -1449,7 +1786,7 @@ namespace Iren.ToolsExcel.Utility
             bool toUpdate = false;
 
             //per Invio Programmi
-            if (ConfigurationManager.AppSettings["Mercati"] != null)
+            if (Workbook.AppSettings("Mercati") != null)
                 toUpdate = SetMercato(ref appID, ref dataAttiva);
 
             //per Previsione Carico Termico & Validazione Teleriscaldamento
@@ -1543,7 +1880,9 @@ namespace Iren.ToolsExcel.Utility
             Application.ScreenUpdating = true;
             Application.EnableEvents = true;
         }
+        #endregion
 
+        #region Log
         public static void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
         {
             Excel.Worksheet log = _wb.Sheets["Log"];
@@ -1562,100 +1901,9 @@ namespace Iren.ToolsExcel.Utility
             db.RefreshLog();
             if (prot) log.Protect(Simboli.pwd);
         }
-        public static void AggiornaLabelStatoDB()
-        {
-            bool isProtected = true;
-            try
-            {
-                isProtected = Main.ProtectContents;
-                
-                if (isProtected)
-                    Main.Unprotect(Simboli.pwd);
+        #endregion
 
-                if (DataBase.OpenConnection())
-                {
-                    Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.StatoDB;
-                    Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
-                    Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
-                    Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
-
-                    DataBase.CloseConnection();
-                }
-                else
-                {
-                    Simboli.SQLServerOnline = false;
-                    Simboli.ImpiantiOnline = false;
-                    Simboli.ElsagOnline = false;
-                }
-
-                if (isProtected)
-                    Main.Protect(Simboli.pwd);
-            }
-            catch
-            { }
-        }
-        public static void DumpDataSet()
-        {
-            StringWriter strWriter = new StringWriter();
-            XmlWriter xmlWriter = XmlWriter.Create(strWriter);
-            Utility.DataBase.LocalDB.WriteXml(xmlWriter, XmlWriteMode.WriteSchema);
-
-            XElement root = XElement.Parse(strWriter.ToString());
-            XNamespace ns = WB.Name;//Simboli.NameSpace;
-
-            IEnumerable<XElement> log =
-                from tables in root.Elements(ns + Utility.DataBase.Tab.LOG)
-                select tables;
-
-            log.Remove();
-
-            string locDBXml = strWriter.ToString();
-            Microsoft.Office.Core.CustomXMLPart part;
-
-            try
-            {
-                _wb.CustomXMLParts[WB.Name].Delete();
-            }
-            catch
-            {
-            }
-            part = _wb.CustomXMLParts.Add();
-
-            part.LoadXML(root.ToString(SaveOptions.DisableFormatting));
-            //part.LoadXML(locDBXml);
-        }
-
-        public static void _db_StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            AggiornaLabelStatoDB();
-        }
-
-        public static UserConfigElement GetUsrConfigElement(string configKey)
-        {
-            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
-
-            return (UserConfigElement)settings.Items[configKey];
-        }
-        public static string AppSettings(string key)
-        {
-            try
-            {
-                return ConfigurationManager.AppSettings[key];
-            }
-            catch
-            {
-                ConfigurationManager.RefreshSection("applicationSettings");
-                return ConfigurationManager.AppSettings[key];
-            }
-        }
-
-        public static int[] GetRGBFromString(string rgb)
-        {
-            string[] rgbComp = rgb.Split(';');
-
-            return new int[] { int.Parse(rgbComp[0]), int.Parse(rgbComp[1]), int.Parse(rgbComp[2]) };
-        }
-        
+        #region Close
         public static void Save()
         {
             _wb.Save();
@@ -1682,6 +1930,7 @@ namespace Iren.ToolsExcel.Utility
 
             Application.ScreenUpdating = true;
         }
+        #endregion
 
         #endregion
     }   

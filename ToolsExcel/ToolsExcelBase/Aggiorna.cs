@@ -60,6 +60,13 @@ namespace Iren.ToolsExcel.Base
     /// </summary>
     public class Aggiorna : AAggiorna
     {
+        #region Variabili
+
+        public static Dictionary<string, Tuple<int, int>> _freezePanes = new Dictionary<string, Tuple<int, int>>();
+
+        #endregion
+
+
         #region Costruttori
 
         public Aggiorna()
@@ -70,6 +77,40 @@ namespace Iren.ToolsExcel.Base
         #endregion
 
         #region Metodi
+
+        protected void CaricaDatiDalDB()
+        {
+            DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
+            DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
+                    (from r in entitaProprieta.AsEnumerable()
+                     where r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                     select int.Parse(r["Valore"].ToString())).DefaultIfEmpty().Max(), Struct.intervalloGiorni));
+
+            SplashScreen.UpdateStatus("Carico informazioni dal DB");
+            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1");
+
+            datiApplicazioneH.TableName = DataBase.Tab.DATI_APPLICAZIONE_H;
+            DataBase.LocalDB.Tables.Add(datiApplicazioneH);
+
+            SplashScreen.UpdateStatus("Carico commenti dal DB");
+            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1");
+
+            insertManuali.TableName = DataBase.Tab.DATI_APPLICAZIONE_COMMENTO;
+            DataBase.LocalDB.Tables.Add(insertManuali);
+
+            SplashScreen.UpdateStatus("Carico informazioni giornaliere dal DB");
+            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1");
+
+            datiApplicazioneD.TableName = DataBase.Tab.DATI_APPLICAZIONE_D;
+            DataBase.LocalDB.Tables.Add(datiApplicazioneD);
+        }
+        protected void CancellaTabelle()
+        {
+            //elimino le tabelle con le informazioni ormai scritte nel foglio
+            DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_H);
+            DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_D);
+            DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_COMMENTO);
+        }
 
         /// <summary>
         /// Launcher dell'aggiornamento della struttura.
@@ -90,6 +131,7 @@ namespace Iren.ToolsExcel.Base
 
                 Workbook.ScreenUpdating = false;
 
+
                 SplashScreen.UpdateStatus("Carico struttura dal DB");
                 Repository.Aggiorna();
 
@@ -104,6 +146,11 @@ namespace Iren.ToolsExcel.Base
                     try
                     {
                         ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
+                        ws.Activate();
+                        if(_freezePanes.ContainsKey(ws.Name))
+                            _freezePanes[ws.Name] = Tuple.Create<int,int>(Workbook.Application.ActiveWindow.SplitRow + 1, Workbook.Application.ActiveWindow.SplitColumn + 1);
+                        else
+                            _freezePanes.Add(ws.Name, Tuple.Create<int,int>(Workbook.Application.ActiveWindow.SplitRow + 1, Workbook.Application.ActiveWindow.SplitColumn + 1));
                     }
                     catch
                     {
@@ -116,26 +163,50 @@ namespace Iren.ToolsExcel.Base
 #endif
                     }
                 }
+                Workbook.ScreenUpdating = false;
 
-                SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
-                StrutturaRiepilogo();
+                try
+                {
+                    CaricaDatiDalDB();
 
-                SplashScreen.UpdateStatus("Aggiorno struttura Fogli");
-                StrutturaFogli();
+                    SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
+                    StrutturaRiepilogo();
 
-                SplashScreen.UpdateStatus("Salvo struttura in locale");
-                Workbook.DumpDataSet();
+                    SplashScreen.UpdateStatus("Aggiorno struttura Fogli");
+                    StrutturaFogli();
 
-                Workbook.Main.Select();
-                Workbook.Main.Range["A1"].Select();
-                Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+                    SplashScreen.UpdateStatus("Salvo struttura in locale");
+                    Workbook.DumpDataSet();
+
+                    foreach (Excel.Worksheet ws in Workbook.Sheets)
+                    {
+                        if (ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
+                        {
+                            ws.Activate();
+                            ws.Range["A1"].Select();
+                        }
+                    }
+
+                    Workbook.Main.Select();
+                    Workbook.Application.CalculateFull();
+                    Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
+
+                    if (wasProtected)
+                        Sheet.Protected = true;
+
+                    Workbook.ScreenUpdating = true;
+                    SplashScreen.Close();
+
+                    CancellaTabelle();
+                }
+                catch
+                {
+                    Workbook.ScreenUpdating = true;
+                    SplashScreen.Close();
+                    CancellaTabelle();
+                    return false;
+                }
                 
-                if (wasProtected)
-                    Sheet.Protected = true;
-                
-                Workbook.ScreenUpdating = true;
-                SplashScreen.Close();
-
                 return true;
             }
             else
@@ -181,15 +252,30 @@ namespace Iren.ToolsExcel.Base
 
                 Workbook.ScreenUpdating = false;
 
-                SplashScreen.UpdateStatus("Aggiorno dati Riepilogo");
-                DatiRiepilogo();
-                SplashScreen.UpdateStatus("Aggiorno dati Fogli");
-                DatiFogli();
+                try
+                {
+                    CaricaDatiDalDB();
 
-                if (wasProtected)
-                    Sheet.Protected = true;
-                Workbook.ScreenUpdating = true;
-                SplashScreen.Close();
+                    SplashScreen.UpdateStatus("Aggiorno dati Riepilogo");
+                    DatiRiepilogo();
+                    SplashScreen.UpdateStatus("Aggiorno dati Fogli");
+                    DatiFogli();
+
+                    if (wasProtected)
+                        Sheet.Protected = true;
+                    Workbook.ScreenUpdating = true;
+                    SplashScreen.Close();
+
+                    CancellaTabelle();
+                }
+                catch
+                {
+                    Workbook.ScreenUpdating = true;
+                    SplashScreen.Close();
+
+                    CancellaTabelle();
+                    return false;
+                }
 
                 return true;
             }
@@ -208,7 +294,7 @@ namespace Iren.ToolsExcel.Base
             foreach (Excel.Worksheet ws in Workbook.CategorySheets)
             {
                 Sheet s = new Sheet(ws);
-                s.UpdateData(true);
+                s.UpdateData();
             }
         }
         /// <summary>

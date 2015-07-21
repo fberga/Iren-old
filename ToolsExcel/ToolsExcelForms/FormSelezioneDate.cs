@@ -48,7 +48,7 @@ namespace Iren.ToolsExcel.Forms
                 int maxIntervallo = Struct.intervalloGiorni;
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
                     if (entitaProprieta.Count > 0)
                     {
                         int value = int.Parse(entitaProprieta[0]["Valore"].ToString());

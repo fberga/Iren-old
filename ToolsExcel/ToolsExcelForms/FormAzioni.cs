@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
+using Tabella = Iren.ToolsExcel.Utility.DataBase.Tab;
 
 namespace Iren.ToolsExcel.Forms
 {
@@ -40,17 +41,17 @@ namespace Iren.ToolsExcel.Forms
             _r = riepilogo;
             _carica = carica;
 
-            _categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
+            _categorie = DataBase.LocalDB.Tables[Tabella.CATEGORIA].DefaultView;
             _categorie.RowFilter = "";
-            _categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            _categoriaEntita = DataBase.LocalDB.Tables[Tabella.CATEGORIA_ENTITA].DefaultView;
             _categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
-            _azioni = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE].DefaultView;
+            _azioni = DataBase.LocalDB.Tables[Tabella.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1";
-            _azioniCategorie = DataBase.LocalDB.Tables[DataBase.Tab.AZIONE_CATEGORIA].DefaultView;
+            _azioniCategorie = DataBase.LocalDB.Tables[Tabella.AZIONE_CATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "";
-            _entitaAzioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
+            _entitaAzioni = DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE].DefaultView;
             _entitaAzioni.RowFilter = "";
-            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            DataView entitaProprieta = DataBase.LocalDB.Tables[Tabella.ENTITA_PROPRIETA].DefaultView;
             entitaProprieta.RowFilter = "";
 
             ConfigStructure();
@@ -380,7 +381,7 @@ namespace Iren.ToolsExcel.Forms
 
                 foreach (DateTime date in _toProcessDates)
                 {
-                    DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                    DataView entitaProprieta = DataBase.LocalDB.Tables[Tabella.ENTITA_PROPRIETA].DefaultView;
                     
 
 
@@ -398,7 +399,7 @@ namespace Iren.ToolsExcel.Forms
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                 {
 
-                                    entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                                    entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
                                     int intervalloGiorni = Struct.intervalloGiorni;
                                     if (entitaProprieta.Count > 0)
                                         intervalloGiorni = int.Parse("" + entitaProprieta[0]["Valore"]);
@@ -408,7 +409,7 @@ namespace Iren.ToolsExcel.Forms
                                         string nomeFoglio = DefinedNames.GetSheetName(nodoEntita.Name);
                                         bool presente;
 
-                                        DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
+                                        DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE]);
                                         entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "'";
 
                                         if (entitaAzione.Count > 0)

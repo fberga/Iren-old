@@ -1,5 +1,6 @@
 ﻿using Iren.ToolsExcel.Base;
 using Iren.ToolsExcel.UserConfig;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,7 +21,7 @@ namespace Iren.ToolsExcel
 
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
+            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
             if (entitaAzione.Count == 0)
                 return false;
@@ -30,12 +31,12 @@ namespace Iren.ToolsExcel
                 case "MAIL":
                     //carico i path di export
                     Dictionary<UserConfigElement, string> cfgPaths = new Dictionary<UserConfigElement, string>();
-                    var path = Utility.Workbook.GetUsrConfigElement("pathExportFileFMS");
-                    cfgPaths.Add(path, Utility.ExportPath.PreparePath(path.Value));
-                    path = Utility.Workbook.GetUsrConfigElement("pathExportFileXSD");
-                    cfgPaths.Add(path, Utility.ExportPath.PreparePath(path.Value));
-                    path = Utility.Workbook.GetUsrConfigElement("pathExportFileRS");
-                    cfgPaths.Add(path, Utility.ExportPath.PreparePath(path.Value));
+                    var path = Workbook.GetUsrConfigElement("pathExportFileFMS");
+                    cfgPaths.Add(path, PreparePath(path.Value));
+                    path = Workbook.GetUsrConfigElement("pathExportFileXSD");
+                    cfgPaths.Add(path, PreparePath(path.Value));
+                    path = Workbook.GetUsrConfigElement("pathExportFileRS");
+                    cfgPaths.Add(path, PreparePath(path.Value));
 
                     //verifico che siano tutti raggiungibili
                     foreach (var kv in cfgPaths)
@@ -53,7 +54,7 @@ namespace Iren.ToolsExcel
                     var oldActiveWindow = Globals.ThisWorkbook.Application.ActiveWindow;
                     Globals.ThisWorkbook.Worksheets[Simboli.Mercato].Activate();
 
-                    Range rng = new Range(_defNamesMercato.GetRowByName(siglaEntita, "DATA"), 1, Utility.Date.GetOreGiorno(Utility.DataBase.DataAttiva) + 5, _defNamesMercato.GetLastCol());
+                    Range rng = new Range(_defNamesMercato.GetRowByName(siglaEntita, "DATA"), 1, Date.GetOreGiorno(DataBase.DataAttiva) + 5, _defNamesMercato.GetLastCol());
 
                     InviaMail(Simboli.Mercato, siglaEntita, rng);
                  
@@ -117,17 +118,17 @@ namespace Iren.ToolsExcel
                 Outlook.Application outlook = GetOutlookInstance();
                 Outlook.MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
 
-                DataView entitaProprieta = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_EXCEL'";
                 if (entitaProprieta.Count > 0)
                 {
                     //creo file Excel da allegare
-                    attachments.Add(@"D:\" + Utility.DataBase.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Simboli.Mercato + ".xls");
+                    attachments.Add(@"D:\" + DataBase.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Simboli.Mercato + ".xls");
 
                     hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
 
-                    DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                    DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                     categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "'";
 
                     if(categoriaEntita.Count == 0)
@@ -139,8 +140,8 @@ namespace Iren.ToolsExcel
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
-                            string nomeFileFMS = Utility.ExportPath.PreparePath(Utility.Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                            string pathFileFMS = Utility.Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
+                            string nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
+                            string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
@@ -152,8 +153,8 @@ namespace Iren.ToolsExcel
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
-                            string nomeFileFMS = Utility.ExportPath.PreparePath(Utility.Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                            string pathFileFMS = Utility.Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
+                            string nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
+                            string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
@@ -164,8 +165,8 @@ namespace Iren.ToolsExcel
                             }
                             else
                             {
-                                nomeFileFMS = Utility.ExportPath.PreparePath(Utility.Workbook.GetUsrConfigElement("formatoNomeFileFMS_TERNA").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                                pathFileFMS = Utility.Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
+                                nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileFMS_TERNA").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
+                                pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
 
                                 files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
                                 foreach (string file in files)
@@ -175,8 +176,8 @@ namespace Iren.ToolsExcel
                         entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS'";
                         if (entitaProprieta.Count > 0)
                         {
-                            string nomeFileFMS = Utility.ExportPath.PreparePath(Utility.Workbook.GetUsrConfigElement("formatoNomeFileRS_TERNA").Value) + ".xml";
-                            string pathFileFMS = Utility.Workbook.GetUsrConfigElement("pathExportFileRS").Value;
+                            string nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileRS_TERNA").Value) + ".xml";
+                            string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileRS").Value;
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
                             foreach (string file in files)
@@ -186,7 +187,7 @@ namespace Iren.ToolsExcel
                     
 
 
-                    var config = Utility.Workbook.GetUsrConfigElement("destMailTest");
+                    var config = Workbook.GetUsrConfigElement("destMailTest");
                     string mailTo = config.Value;
                     string mailCC = "";
 
@@ -201,9 +202,9 @@ namespace Iren.ToolsExcel
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_CODICE_MAIL'";
                     string codUP = entitaProprieta[0]["Valore"].ToString();
 
-                    config = Utility.Workbook.GetUsrConfigElement("oggettoMail");
-                    string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", Utility.DataBase.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Simboli.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
-                    config = Utility.Workbook.GetUsrConfigElement("messaggioMail");
+                    config = Workbook.GetUsrConfigElement("oggettoMail");
+                    string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", DataBase.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Simboli.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
+                    config = Workbook.GetUsrConfigElement("messaggioMail");
                     string messaggio = config.Value;
                     messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 
@@ -232,7 +233,7 @@ namespace Iren.ToolsExcel
             }
             catch(Exception e)
             {
-                Utility.Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InvioProgrammi - Esporta.InvioMail: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InvioProgrammi - Esporta.InvioMail: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 

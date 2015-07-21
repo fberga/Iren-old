@@ -1,5 +1,6 @@
 ﻿using Iren.ToolsExcel.Base;
 using Iren.ToolsExcel.UserConfig;
+using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +19,7 @@ namespace Iren.ToolsExcel
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
+            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
             if (entitaAzione.Count == 0)
                 return false;
@@ -30,8 +31,8 @@ namespace Iren.ToolsExcel
             {
                 case "DATO_TOPICO":
 
-                    path = Utility.Workbook.GetUsrConfigElement("pathExportDatiTopici");
-                    pathStr = Utility.ExportPath.PreparePath(path.Value);
+                    path = Workbook.GetUsrConfigElement("pathExportDatiTopici");
+                    pathStr = PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
                     {
@@ -48,8 +49,8 @@ namespace Iren.ToolsExcel
                     break;
                 case "E_OFFERTA_MGP":
 
-                    path = Utility.Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP_GME");
-                    pathStr = Utility.ExportPath.PreparePath(path.Value);
+                    path = Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP_GME");
+                    pathStr = PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
                     {
@@ -63,8 +64,8 @@ namespace Iren.ToolsExcel
                         return false;
                     }
 
-                    path = Utility.Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP");
-                    pathStr = Utility.ExportPath.PreparePath(path.Value);
+                    path = Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP");
+                    pathStr = PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
                     {
@@ -89,17 +90,17 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                string suffissoData = Utility.Date.GetSuffissoData(dataRif);
-                int oreGiorno = Utility.Date.GetOreGiorno(dataRif);
+                string suffissoData = Date.GetSuffissoData(dataRif);
+                int oreGiorno = Date.GetOreGiorno(dataRif);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
-                DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
                 XNamespace ns = XNamespace.Get("urn:XML-BIDMGM");
@@ -113,7 +114,7 @@ namespace Iren.ToolsExcel
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
                         object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
-                        Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, Utility.Date.GetSuffissoOra(i + 1));
+                        Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(i + 1));
                         values[j++] = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace('.', ',');
 
                     }
@@ -159,19 +160,19 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                string suffissoData = Utility.Date.GetSuffissoData(dataRif);
-                int oreGiorno = Utility.Date.GetOreGiorno(dataRif);
+                string suffissoData = Date.GetSuffissoData(dataRif);
+                int oreGiorno = Date.GetOreGiorno(dataRif);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
-                DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%'";
 
-                DataView entitaProprieta = _localDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA'";
 
                 XNamespace ns = XNamespace.Get("urn:XML-PIPE");
@@ -261,19 +262,19 @@ namespace Iren.ToolsExcel
             {
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
-                Excel.Worksheet ws = Utility.Workbook.Sheets[nomeFoglio];
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                string suffissoData = Utility.Date.GetSuffissoData(dataRif);
-                int oreGiorno = Utility.Date.GetOreGiorno(dataRif);
+                string suffissoData = Date.GetSuffissoData(dataRif);
+                int oreGiorno = Date.GetOreGiorno(dataRif);
 
-                DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
-                DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%'";
 
-                DataView entitaProprieta = _localDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA'";
 
                 XNamespace ns = XNamespace.Get("urn:XML-BIDMGM");

@@ -23,7 +23,7 @@ namespace Iren.ToolsExcel
             bool o = base.Struttura();
 
             //inserisco la stagione
-            Simboli.Stagione = Simboli.GetStagione(ConfigurationManager.AppSettings["Stagione"]);
+            Simboli.Stagione = Simboli.GetStagione(Utility.Workbook.AppSettings("Stagione"));
 
             return o;
         }

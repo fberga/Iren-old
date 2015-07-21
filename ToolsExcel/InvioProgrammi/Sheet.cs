@@ -17,7 +17,7 @@ namespace Iren.ToolsExcel
     {
         #region Variabili
 
-        DefinedNames _definedNamesSheetMercato = new DefinedNames("MSD1");  //non mi interessa sapere il mercato... sono tutti uguali
+        DefinedNames _definedNamesSheetMercato = new DefinedNames(Simboli.Mercato);
         //string _mercatoPrec = Simboli.GetMercatoPrec();
         Excel.Worksheet _wsMercato;
 
@@ -66,7 +66,7 @@ namespace Iren.ToolsExcel
                     foreach (DataRowView info in informazioni)
                     {
                         object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                        Range rng = _definedNames.Get(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva)).Extend(colOffset: Date.GetOreGiorno(DataBase.DataAttiva));
+                        Range rng = _definedNames.Get(siglaEntita, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreGiorno(DataBase.DataAttiva));
                         string quarter = Regex.Match(info["SiglaInformazione"].ToString(), @"Q\d").Value;
                         quarter = quarter == "" ? "Q1" : quarter;
 
@@ -84,9 +84,9 @@ namespace Iren.ToolsExcel
             }
         }
 
-        public override void CaricaInformazioni(bool all)
+        public override void CaricaInformazioni()
         {
-            base.CaricaInformazioni(all);
+            base.CaricaInformazioni();
             AggiornaColori();
         }
         

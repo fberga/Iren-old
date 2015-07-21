@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel.Base
             if (!info["SiglaEntita"].Equals(siglaEntita))
             {
                 siglaEntita = info["SiglaEntita"].ToString();
-                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
                 if (_entitaProprieta.Count > 0)
                     dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
                 else
@@ -235,7 +235,7 @@ namespace Iren.ToolsExcel.Base
                 double width = Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth;
                 Workbook.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
                 Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
-                Workbook.Sheets[nomeFoglio].Range[rng.ToString()].Style = "allDatiStyle";
+                Workbook.Sheets[nomeFoglio].Range[rng.ToString()].Style = "Area dati";
 
                 for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                 {
@@ -269,7 +269,7 @@ namespace Iren.ToolsExcel.Base
                  where r["SiglaEntita"].Equals(siglaEntita)
                  select r["DesEntita"].ToString()).First();
 
-            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_struttura'";
+            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
             if (_entitaProprieta.Count > 0)
                 _dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
             else

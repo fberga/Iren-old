@@ -12,7 +12,7 @@ namespace Iren.ToolsExcel
 {
     public class Carica : Base.Carica
     {
-        DefinedNames _definedNamesSheetMercato = new DefinedNames("MSD1");  //non mi interessa sapere il mercato... sono tutti uguali
+        DefinedNames _definedNamesSheetMercato = new DefinedNames(Simboli.Mercato);
         Excel.Worksheet _wsMercato;
 
         public Carica() 

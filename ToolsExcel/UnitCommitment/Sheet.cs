@@ -42,9 +42,9 @@ namespace Iren.ToolsExcel
                 _definedNames.SetEditable(row + i, new Range(row + i, col + 25));
             }
         }
-        public override void CaricaInformazioni(bool all)
+        public override void CaricaInformazioni()
         {
-            base.CaricaInformazioni(all);
+            base.CaricaInformazioni();
 
             try
             {
@@ -65,37 +65,34 @@ namespace Iren.ToolsExcel
             }
             catch (Exception e)
             {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni Custom UnitComm [all = " + all + "]: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni Custom UnitComm: " + e.Message);
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
-        public override void UpdateData(bool all = true)
+        public override void UpdateData()
         {
             //cancello tutte le NOTE
-            if (all)
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+
+            DateTime dataInizio = DataBase.DataAttiva;
+            DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+            int col = _definedNames.GetFirstCol() + 25;
+
+            foreach (DataRowView entita in categoriaEntita)
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+                DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
 
-                DateTime dataInizio = DataBase.DataAttiva;
-                DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
-
-                int col = _definedNames.GetFirstCol() + 25;
-
-                foreach (DataRowView entita in categoriaEntita)
+                CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
                 {
-                    DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-                    object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-
-                    CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
-                    {
-                        int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
-                        _ws.Range[Range.GetRange(row, col, informazioni.Count)].Value = "";
-                    });
-                }
+                    int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
+                    _ws.Range[Range.GetRange(row, col, informazioni.Count)].Value = "";
+                });
             }
-            base.UpdateData(all);
+            base.UpdateData();
         }
     }
 }

@@ -16,20 +16,20 @@ namespace Iren.ToolsExcel
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE].DefaultView;
+            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
             if (entitaAzione.Count == 0)
                 return false;
 
-            DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
             object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
-            DataView entitaProprieta = _localDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'IMP_COD_IF'";
             object codiceIF = entitaProprieta[0]["Valore"];
 
-            DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+            DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
             entitaAzioneInformazione.RowFilter = "SiglaEntitaRif = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
 
             string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
@@ -56,8 +56,8 @@ namespace Iren.ToolsExcel
                         }
                     };
 
-                    string suffissoData = Utility.Date.GetSuffissoData(dataRif);
-                    int oreData = Utility.Date.GetOreGiorno(dataRif);
+                    string suffissoData = Date.GetSuffissoData(dataRif);
+                    int oreData = Date.GetOreGiorno(dataRif);
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
                         object siglaEntitaRif = (info["SiglaEntitaRif"] is DBNull ? siglaEntita: info["SiglaEntitaRif"]);
@@ -96,9 +96,9 @@ namespace Iren.ToolsExcel
                         //}
                     }
 
-                    var path = Utility.Workbook.GetUsrConfigElement("pathCaricatoreImpianti");
+                    var path = Workbook.GetUsrConfigElement("pathCaricatoreImpianti");
 
-                    string pathStr = Utility.ExportPath.PreparePath(path.Value);
+                    string pathStr = PreparePath(path.Value);
 
                     if (Directory.Exists(pathStr))
                     {

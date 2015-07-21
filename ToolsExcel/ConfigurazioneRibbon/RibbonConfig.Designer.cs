@@ -228,15 +228,16 @@
             this.labelTitoloUser = new System.Windows.Forms.Label();
             this.lbTitoloApplicazione = new System.Windows.Forms.Label();
             this.panelMenuTop = new System.Windows.Forms.Panel();
-            this.labelAmbientiDaCopiare = new System.Windows.Forms.Label();
+            this.cmbApplicazioni = new System.Windows.Forms.ComboBox();
             this.chkAmbienteProduzione = new System.Windows.Forms.CheckBox();
             this.chkAmbienteDev = new System.Windows.Forms.CheckBox();
-            this.cmbApplicazioni = new System.Windows.Forms.ComboBox();
-            this.cmbUtenti = new System.Windows.Forms.ComboBox();
             this.chkAmbienteTest = new System.Windows.Forms.CheckBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnApplyDefault = new System.Windows.Forms.Button();
+            this.btnApply = new System.Windows.Forms.Button();
             this.groupBoxAmbienti = new System.Windows.Forms.GroupBox();
+            this.cmbGruppi = new System.Windows.Forms.ComboBox();
+            this.labelGruppi = new System.Windows.Forms.Label();
+            this.listBoxUtenti = new System.Windows.Forms.ListBox();
             this.ribbonModel.SuspendLayout();
             this.tabFrontOffice.SuspendLayout();
             this.groupsPanel.SuspendLayout();
@@ -288,11 +289,11 @@
             // 
             this.ribbonModel.Controls.Add(this.tabFrontOffice);
             this.ribbonModel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ribbonModel.Location = new System.Drawing.Point(0, 90);
+            this.ribbonModel.Location = new System.Drawing.Point(3, 3);
             this.ribbonModel.Margin = new System.Windows.Forms.Padding(10);
             this.ribbonModel.Name = "ribbonModel";
             this.ribbonModel.SelectedIndex = 0;
-            this.ribbonModel.Size = new System.Drawing.Size(1752, 226);
+            this.ribbonModel.Size = new System.Drawing.Size(1746, 226);
             this.ribbonModel.TabIndex = 0;
             // 
             // tabFrontOffice
@@ -302,7 +303,7 @@
             this.tabFrontOffice.Location = new System.Drawing.Point(4, 22);
             this.tabFrontOffice.Name = "tabFrontOffice";
             this.tabFrontOffice.Padding = new System.Windows.Forms.Padding(5);
-            this.tabFrontOffice.Size = new System.Drawing.Size(1744, 200);
+            this.tabFrontOffice.Size = new System.Drawing.Size(1738, 200);
             this.tabFrontOffice.TabIndex = 0;
             this.tabFrontOffice.Text = "Front Office";
             // 
@@ -364,6 +365,7 @@
             this.lbStato.Size = new System.Drawing.Size(32, 13);
             this.lbStato.TabIndex = 7;
             this.lbStato.Text = "Stato";
+            this.lbStato.DoubleClick += new System.EventHandler(this.lbStato_DoubleClick);
             // 
             // lbVisibile
             // 
@@ -373,6 +375,7 @@
             this.lbVisibile.Size = new System.Drawing.Size(39, 13);
             this.lbVisibile.TabIndex = 6;
             this.lbVisibile.Text = "Visibile";
+            this.lbVisibile.DoubleClick += new System.EventHandler(this.lbVisibile_DoubleClick);
             // 
             // lbAbilitato
             // 
@@ -383,13 +386,11 @@
             this.lbAbilitato.TabIndex = 0;
             this.lbAbilitato.Text = "Abilitato";
             this.lbAbilitato.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbAbilitato.DoubleClick += new System.EventHandler(this.lbAbilitato_DoubleClick);
             // 
             // groupStagione
             // 
             this.groupStagione.Controls.Add(this.panel28);
-            this.groupStagione.Controls.Add(this.lbGroupParametri);
-            this.groupStagione.Controls.Add(this.labelStagione);
-            this.groupStagione.Controls.Add(this.cmbStagione);
             this.groupStagione.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupStagione.Location = new System.Drawing.Point(1534, 2);
             this.groupStagione.Margin = new System.Windows.Forms.Padding(0);
@@ -400,18 +401,21 @@
             // 
             // panel28
             // 
+            this.panel28.Controls.Add(this.labelStagione);
+            this.panel28.Controls.Add(this.cmbStagione);
+            this.panel28.Controls.Add(this.lbGroupParametri);
             this.panel28.Controls.Add(this.checkBox82);
             this.panel28.Controls.Add(this.checkBox83);
             this.panel28.Controls.Add(this.checkBox84);
-            this.panel28.Location = new System.Drawing.Point(34, 144);
+            this.panel28.Location = new System.Drawing.Point(0, 33);
             this.panel28.Name = "panel28";
-            this.panel28.Size = new System.Drawing.Size(32, 71);
+            this.panel28.Size = new System.Drawing.Size(100, 182);
             this.panel28.TabIndex = 4;
             // 
             // checkBox82
             // 
             this.checkBox82.AutoSize = true;
-            this.checkBox82.Location = new System.Drawing.Point(9, 51);
+            this.checkBox82.Location = new System.Drawing.Point(43, 161);
             this.checkBox82.Name = "checkBox82";
             this.checkBox82.Size = new System.Drawing.Size(15, 14);
             this.checkBox82.TabIndex = 2;
@@ -420,7 +424,7 @@
             // checkBox83
             // 
             this.checkBox83.AutoSize = true;
-            this.checkBox83.Location = new System.Drawing.Point(9, 28);
+            this.checkBox83.Location = new System.Drawing.Point(43, 138);
             this.checkBox83.Name = "checkBox83";
             this.checkBox83.Size = new System.Drawing.Size(15, 14);
             this.checkBox83.TabIndex = 1;
@@ -429,7 +433,7 @@
             // checkBox84
             // 
             this.checkBox84.AutoSize = true;
-            this.checkBox84.Location = new System.Drawing.Point(9, 5);
+            this.checkBox84.Location = new System.Drawing.Point(43, 115);
             this.checkBox84.Name = "checkBox84";
             this.checkBox84.Size = new System.Drawing.Size(15, 14);
             this.checkBox84.TabIndex = 0;
@@ -438,7 +442,7 @@
             // lbGroupParametri
             // 
             this.lbGroupParametri.AutoSize = true;
-            this.lbGroupParametri.Location = new System.Drawing.Point(25, 117);
+            this.lbGroupParametri.Location = new System.Drawing.Point(25, 84);
             this.lbGroupParametri.Name = "lbGroupParametri";
             this.lbGroupParametri.Size = new System.Drawing.Size(51, 13);
             this.lbGroupParametri.TabIndex = 36;
@@ -447,7 +451,7 @@
             // labelStagione
             // 
             this.labelStagione.AutoSize = true;
-            this.labelStagione.Location = new System.Drawing.Point(13, 33);
+            this.labelStagione.Location = new System.Drawing.Point(26, 0);
             this.labelStagione.Name = "labelStagione";
             this.labelStagione.Size = new System.Drawing.Size(49, 13);
             this.labelStagione.TabIndex = 2;
@@ -456,17 +460,14 @@
             // cmbStagione
             // 
             this.cmbStagione.FormattingEnabled = true;
-            this.cmbStagione.Location = new System.Drawing.Point(13, 54);
+            this.cmbStagione.Location = new System.Drawing.Point(13, 21);
             this.cmbStagione.Name = "cmbStagione";
             this.cmbStagione.Size = new System.Drawing.Size(74, 21);
             this.cmbStagione.TabIndex = 1;
             // 
             // groupMSD
             // 
-            this.groupMSD.Controls.Add(this.lbGroupMSD);
             this.groupMSD.Controls.Add(this.panel27);
-            this.groupMSD.Controls.Add(this.labelMSD);
-            this.groupMSD.Controls.Add(this.cmbMSD);
             this.groupMSD.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupMSD.Location = new System.Drawing.Point(1432, 2);
             this.groupMSD.Margin = new System.Windows.Forms.Padding(0);
@@ -478,7 +479,7 @@
             // lbGroupMSD
             // 
             this.lbGroupMSD.AutoSize = true;
-            this.lbGroupMSD.Location = new System.Drawing.Point(35, 117);
+            this.lbGroupMSD.Location = new System.Drawing.Point(34, 84);
             this.lbGroupMSD.Name = "lbGroupMSD";
             this.lbGroupMSD.Size = new System.Drawing.Size(31, 13);
             this.lbGroupMSD.TabIndex = 35;
@@ -486,18 +487,21 @@
             // 
             // panel27
             // 
+            this.panel27.Controls.Add(this.labelMSD);
+            this.panel27.Controls.Add(this.lbGroupMSD);
+            this.panel27.Controls.Add(this.cmbMSD);
             this.panel27.Controls.Add(this.checkBox79);
             this.panel27.Controls.Add(this.checkBox80);
             this.panel27.Controls.Add(this.checkBox81);
-            this.panel27.Location = new System.Drawing.Point(34, 144);
+            this.panel27.Location = new System.Drawing.Point(1, 33);
             this.panel27.Name = "panel27";
-            this.panel27.Size = new System.Drawing.Size(32, 71);
+            this.panel27.Size = new System.Drawing.Size(98, 182);
             this.panel27.TabIndex = 3;
             // 
             // checkBox79
             // 
             this.checkBox79.AutoSize = true;
-            this.checkBox79.Location = new System.Drawing.Point(9, 51);
+            this.checkBox79.Location = new System.Drawing.Point(42, 161);
             this.checkBox79.Name = "checkBox79";
             this.checkBox79.Size = new System.Drawing.Size(15, 14);
             this.checkBox79.TabIndex = 2;
@@ -506,7 +510,7 @@
             // checkBox80
             // 
             this.checkBox80.AutoSize = true;
-            this.checkBox80.Location = new System.Drawing.Point(9, 28);
+            this.checkBox80.Location = new System.Drawing.Point(42, 138);
             this.checkBox80.Name = "checkBox80";
             this.checkBox80.Size = new System.Drawing.Size(15, 14);
             this.checkBox80.TabIndex = 1;
@@ -515,7 +519,7 @@
             // checkBox81
             // 
             this.checkBox81.AutoSize = true;
-            this.checkBox81.Location = new System.Drawing.Point(9, 5);
+            this.checkBox81.Location = new System.Drawing.Point(42, 115);
             this.checkBox81.Name = "checkBox81";
             this.checkBox81.Size = new System.Drawing.Size(15, 14);
             this.checkBox81.TabIndex = 0;
@@ -524,7 +528,7 @@
             // labelMSD
             // 
             this.labelMSD.AutoSize = true;
-            this.labelMSD.Location = new System.Drawing.Point(10, 33);
+            this.labelMSD.Location = new System.Drawing.Point(9, 0);
             this.labelMSD.Name = "labelMSD";
             this.labelMSD.Size = new System.Drawing.Size(73, 13);
             this.labelMSD.TabIndex = 1;
@@ -533,7 +537,7 @@
             // cmbMSD
             // 
             this.cmbMSD.FormattingEnabled = true;
-            this.cmbMSD.Location = new System.Drawing.Point(13, 54);
+            this.cmbMSD.Location = new System.Drawing.Point(12, 21);
             this.cmbMSD.Name = "cmbMSD";
             this.cmbMSD.Size = new System.Drawing.Size(74, 21);
             this.cmbMSD.TabIndex = 0;
@@ -2282,7 +2286,7 @@
             // labelTitoloUser
             // 
             this.labelTitoloUser.AutoSize = true;
-            this.labelTitoloUser.Location = new System.Drawing.Point(40, 24);
+            this.labelTitoloUser.Location = new System.Drawing.Point(40, 64);
             this.labelTitoloUser.Name = "labelTitoloUser";
             this.labelTitoloUser.Size = new System.Drawing.Size(39, 13);
             this.labelTitoloUser.TabIndex = 0;
@@ -2291,7 +2295,7 @@
             // lbTitoloApplicazione
             // 
             this.lbTitoloApplicazione.AutoSize = true;
-            this.lbTitoloApplicazione.Location = new System.Drawing.Point(12, 51);
+            this.lbTitoloApplicazione.Location = new System.Drawing.Point(12, 37);
             this.lbTitoloApplicazione.Name = "lbTitoloApplicazione";
             this.lbTitoloApplicazione.Size = new System.Drawing.Size(67, 13);
             this.lbTitoloApplicazione.TabIndex = 0;
@@ -2299,23 +2303,29 @@
             // 
             // panelMenuTop
             // 
+            this.panelMenuTop.Controls.Add(this.groupBoxAmbienti);
+            this.panelMenuTop.Controls.Add(this.btnApply);
+            this.panelMenuTop.Controls.Add(this.listBoxUtenti);
+            this.panelMenuTop.Controls.Add(this.btnApplyDefault);
+            this.panelMenuTop.Controls.Add(this.labelTitoloUser);
+            this.panelMenuTop.Controls.Add(this.labelGruppi);
+            this.panelMenuTop.Controls.Add(this.cmbGruppi);
             this.panelMenuTop.Controls.Add(this.lbTitoloApplicazione);
             this.panelMenuTop.Controls.Add(this.cmbApplicazioni);
-            this.panelMenuTop.Controls.Add(this.labelTitoloUser);
-            this.panelMenuTop.Controls.Add(this.cmbUtenti);
             this.panelMenuTop.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panelMenuTop.Location = new System.Drawing.Point(0, 0);
+            this.panelMenuTop.Location = new System.Drawing.Point(3, 229);
             this.panelMenuTop.Name = "panelMenuTop";
-            this.panelMenuTop.Size = new System.Drawing.Size(1752, 90);
+            this.panelMenuTop.Size = new System.Drawing.Size(1746, 190);
             this.panelMenuTop.TabIndex = 9;
             // 
-            // labelAmbientiDaCopiare
+            // cmbApplicazioni
             // 
-            this.labelAmbientiDaCopiare.AutoSize = true;
-            this.labelAmbientiDaCopiare.Location = new System.Drawing.Point(931, 328);
-            this.labelAmbientiDaCopiare.Name = "labelAmbientiDaCopiare";
-            this.labelAmbientiDaCopiare.Size = new System.Drawing.Size(0, 13);
-            this.labelAmbientiDaCopiare.TabIndex = 3;
+            this.cmbApplicazioni.FormattingEnabled = true;
+            this.cmbApplicazioni.Location = new System.Drawing.Point(96, 34);
+            this.cmbApplicazioni.Name = "cmbApplicazioni";
+            this.cmbApplicazioni.Size = new System.Drawing.Size(361, 21);
+            this.cmbApplicazioni.TabIndex = 2;
+            this.cmbApplicazioni.SelectedIndexChanged += new System.EventHandler(this.cmbApplicazioni_SelectedIndexChanged);
             // 
             // chkAmbienteProduzione
             // 
@@ -2341,22 +2351,6 @@
             this.chkAmbienteDev.TabIndex = 0;
             this.chkAmbienteDev.UseVisualStyleBackColor = true;
             // 
-            // cmbApplicazioni
-            // 
-            this.cmbApplicazioni.FormattingEnabled = true;
-            this.cmbApplicazioni.Location = new System.Drawing.Point(96, 48);
-            this.cmbApplicazioni.Name = "cmbApplicazioni";
-            this.cmbApplicazioni.Size = new System.Drawing.Size(361, 21);
-            this.cmbApplicazioni.TabIndex = 2;
-            // 
-            // cmbUtenti
-            // 
-            this.cmbUtenti.FormattingEnabled = true;
-            this.cmbUtenti.Location = new System.Drawing.Point(96, 21);
-            this.cmbUtenti.Name = "cmbUtenti";
-            this.cmbUtenti.Size = new System.Drawing.Size(361, 21);
-            this.cmbUtenti.TabIndex = 1;
-            // 
             // chkAmbienteTest
             // 
             this.chkAmbienteTest.Appearance = System.Windows.Forms.Appearance.Button;
@@ -2369,49 +2363,75 @@
             this.chkAmbienteTest.TabIndex = 1;
             this.chkAmbienteTest.UseVisualStyleBackColor = true;
             // 
-            // button1
+            // btnApplyDefault
             // 
-            this.button1.Location = new System.Drawing.Point(1137, 353);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(102, 48);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Default";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnApplyDefault.Location = new System.Drawing.Point(645, 94);
+            this.btnApplyDefault.Name = "btnApplyDefault";
+            this.btnApplyDefault.Size = new System.Drawing.Size(102, 48);
+            this.btnApplyDefault.TabIndex = 2;
+            this.btnApplyDefault.Text = "Default";
+            this.btnApplyDefault.UseVisualStyleBackColor = true;
+            this.btnApplyDefault.Click += new System.EventHandler(this.btnApplyDefault_Click);
             // 
-            // button2
+            // btnApply
             // 
-            this.button2.Location = new System.Drawing.Point(1245, 352);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(102, 48);
-            this.button2.TabIndex = 10;
-            this.button2.Text = "Genera";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btnApply.Location = new System.Drawing.Point(753, 93);
+            this.btnApply.Name = "btnApply";
+            this.btnApply.Size = new System.Drawing.Size(102, 48);
+            this.btnApply.TabIndex = 10;
+            this.btnApply.Text = "Applica";
+            this.btnApply.UseVisualStyleBackColor = true;
+            this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
             // 
             // groupBoxAmbienti
             // 
             this.groupBoxAmbienti.Controls.Add(this.chkAmbienteDev);
             this.groupBoxAmbienti.Controls.Add(this.chkAmbienteTest);
             this.groupBoxAmbienti.Controls.Add(this.chkAmbienteProduzione);
-            this.groupBoxAmbienti.Location = new System.Drawing.Point(971, 320);
+            this.groupBoxAmbienti.Location = new System.Drawing.Point(479, 61);
             this.groupBoxAmbienti.Name = "groupBoxAmbienti";
             this.groupBoxAmbienti.Size = new System.Drawing.Size(162, 85);
             this.groupBoxAmbienti.TabIndex = 11;
             this.groupBoxAmbienti.TabStop = false;
             this.groupBoxAmbienti.Text = "Ambienti su cui copiare la configurazione ";
             // 
+            // cmbGruppi
+            // 
+            this.cmbGruppi.FormattingEnabled = true;
+            this.cmbGruppi.Location = new System.Drawing.Point(96, 7);
+            this.cmbGruppi.Name = "cmbGruppi";
+            this.cmbGruppi.Size = new System.Drawing.Size(361, 21);
+            this.cmbGruppi.TabIndex = 3;
+            this.cmbGruppi.SelectedIndexChanged += new System.EventHandler(this.cmbGruppi_SelectedIndexChanged);
+            // 
+            // labelGruppi
+            // 
+            this.labelGruppi.AutoSize = true;
+            this.labelGruppi.Location = new System.Drawing.Point(40, 10);
+            this.labelGruppi.Name = "labelGruppi";
+            this.labelGruppi.Size = new System.Drawing.Size(42, 13);
+            this.labelGruppi.TabIndex = 4;
+            this.labelGruppi.Text = "Gruppo";
+            // 
+            // listBoxUtenti
+            // 
+            this.listBoxUtenti.FormattingEnabled = true;
+            this.listBoxUtenti.Location = new System.Drawing.Point(96, 61);
+            this.listBoxUtenti.Name = "listBoxUtenti";
+            this.listBoxUtenti.Size = new System.Drawing.Size(361, 121);
+            this.listBoxUtenti.TabIndex = 5;
+            this.listBoxUtenti.SelectedIndexChanged += new System.EventHandler(this.listBoxUtenti_SelectedIndexChanged);
+            // 
             // RibbonConfig
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
-            this.ClientSize = new System.Drawing.Size(1752, 426);
-            this.Controls.Add(this.groupBoxAmbienti);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.labelAmbientiDaCopiare);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.ribbonModel);
+            this.ClientSize = new System.Drawing.Size(1752, 420);
             this.Controls.Add(this.panelMenuTop);
+            this.Controls.Add(this.ribbonModel);
             this.Name = "RibbonConfig";
+            this.Padding = new System.Windows.Forms.Padding(3);
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -2422,11 +2442,9 @@
             this.panelRowHeader.ResumeLayout(false);
             this.panelRowHeader.PerformLayout();
             this.groupStagione.ResumeLayout(false);
-            this.groupStagione.PerformLayout();
             this.panel28.ResumeLayout(false);
             this.panel28.PerformLayout();
             this.groupMSD.ResumeLayout(false);
-            this.groupMSD.PerformLayout();
             this.panel27.ResumeLayout(false);
             this.panel27.PerformLayout();
             this.groupErrori.ResumeLayout(false);
@@ -2503,7 +2521,6 @@
             this.panelMenuTop.PerformLayout();
             this.groupBoxAmbienti.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -2710,13 +2727,14 @@
         private System.Windows.Forms.Label lbTitoloApplicazione;
         private System.Windows.Forms.Panel panelMenuTop;
         private System.Windows.Forms.ComboBox cmbApplicazioni;
-        private System.Windows.Forms.ComboBox cmbUtenti;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnApplyDefault;
         private System.Windows.Forms.CheckBox chkAmbienteProduzione;
         private System.Windows.Forms.CheckBox chkAmbienteTest;
         private System.Windows.Forms.CheckBox chkAmbienteDev;
-        private System.Windows.Forms.Label labelAmbientiDaCopiare;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.GroupBox groupBoxAmbienti;
+        private System.Windows.Forms.Label labelGruppi;
+        private System.Windows.Forms.ComboBox cmbGruppi;
+        private System.Windows.Forms.ListBox listBoxUtenti;
     }
 }
