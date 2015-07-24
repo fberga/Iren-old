@@ -13,7 +13,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 namespace Iren.ToolsExcel.Base
 {
     /// <summary>
-    /// Interfaccia con i metodi generici di creazione di un foglio contenente dati riferiti a impianti.
+    /// Interfaccia con i metodi astratti o virtuali di creazione di un foglio contenente dati riferiti a impianti.
     /// </summary>
     public abstract class ASheet
     {
@@ -79,7 +79,7 @@ namespace Iren.ToolsExcel.Base
         /// Metodo che permette di aggiungere delle customizzazioni durante la creazione della struttura.
         /// </summary>
         /// <param name="siglaEntita"></param>
-        protected abstract void InsertPersonalizzazioni(object siglaEntita);
+        protected virtual void InsertPersonalizzazioni(object siglaEntita) { }
         /// <summary>
         /// Metodo per il caricamento delle informazioni.
         /// </summary>
@@ -206,7 +206,9 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
     }
-
+    /// <summary>
+    /// Classe base con i metodi per la creazione di un foglio contenente dati riferiti a impianti.
+    /// </summary>
     public class Sheet : ASheet, IDisposable
     {
         #region Variabili
@@ -383,14 +385,13 @@ namespace Iren.ToolsExcel.Base
             if (_ws.ChartObjects().Count > 0)
                 _ws.ChartObjects().Delete();
 
-            _ws.Rows.Delete();
+            _ws.Rows.ClearContents();
+            _ws.Rows.ClearComments();
             _ws.Rows.FormatConditions.Delete();
             _ws.Rows.EntireRow.Hidden = false;
-            _ws.Rows.Font.Size = 10;
-            _ws.Rows.NumberFormat = "General";
-            _ws.Rows.Font.Name = "Verdana";
-            _ws.Rows.RowHeight = Struct.cell.height.normal;
+            _ws.Rows.Style = "Normal";
 
+            _ws.Rows.RowHeight = Struct.cell.height.normal;
             _ws.Columns.ColumnWidth = Struct.cell.width.dato;
 
             _ws.Rows["1:" + (_struttura.rigaBlock - 1)].RowHeight = Struct.cell.height.empty;
@@ -687,8 +688,8 @@ namespace Iren.ToolsExcel.Base
         /// <summary>
         /// Inserisce le ore nel range rng passato per parametro. Se hasData0H24 è true, mette nella prima cella 24.
         /// </summary>
-        /// <param name="rng"></param>
-        /// <param name="hasData0H24"></param>
+        /// <param name="rng">Range su cui scrivere le ore</param>
+        /// <param name="hasData0H24">True se è presente l'ora 24 del giorno precedente.</param>
         private void InsertOre(Range rng, bool hasData0H24 = false)
         {
             Excel.Range rngOre = _ws.Range[rng.ToString()];
@@ -707,19 +708,12 @@ namespace Iren.ToolsExcel.Base
                 }
                 else
                     _ws.Range[cell.ToString()].Value = ora++;
-
             }
-            
-            //object[] valoriOre = new object[rng.ColOffset + 1];
-            //for (int ora = 0; ora < valoriOre.Length; ora++)
-            //{
-            //    int val = ora + 1;
-            //    if (hasData0H24)
-            //        val = ora == 0 ? 24 : ora;
-            //    valoriOre[ora] = val;
-            //}
-            //rngOre.Value = valoriOre;
         }
+        /// <summary>
+        /// Applica lo stile "Barra titolo verticale" con alcune modifiche e scrive la descrizione dell'entità.
+        /// </summary>
+        /// <param name="desEntita">Descrizione entità da scrivere.</param>
         protected virtual void InsertTitoloVerticale(object desEntita)
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -728,17 +722,13 @@ namespace Iren.ToolsExcel.Base
             Range rngTitolo = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visParametro - 1, informazioni.Count);
 
             Excel.Range titoloVert = _ws.Range[rngTitolo.ToString()];
-            titoloVert.Style = "Barra titolo verticale";
-            titoloVert.Merge();
-            titoloVert.Orientation = informazioni.Count == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical;
-            titoloVert.Font.Size = informazioni.Count == 1 ? 6 : 9;
+            Style.RangeStyle(titoloVert, style: "Barra titolo verticale", orientation: informazioni.Count == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical, merge: true, fontSize: informazioni.Count == 1 ? 6 : 9, numberFormat: informazioni.Count > 4 ? "ddd d" : "dd");
 
-            titoloVert.Value = Struct.tipoVisualizzazione == "O" ? desEntita : _dataInizio;
-            if (informazioni.Count > 4)
-                titoloVert.NumberFormat = Struct.tipoVisualizzazione == "O" ? "general" : "ddd d";
-            else
-                titoloVert.NumberFormat = Struct.tipoVisualizzazione == "O" ? "general" : "dd";
+            titoloVert.Value = Struct.tipoVisualizzazione == "O" ? desEntita : _dataInizio;            
         }
+        /// <summary>
+        /// Formatta l'area dati impostando lo stile di base per le informazioni ("Area dati") e imposta, se ci sono, gli spazi per le informazioni giornaliere.
+        /// </summary>
         protected virtual void FormattaBloccoEntita()
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -778,6 +768,9 @@ namespace Iren.ToolsExcel.Base
             }
             informazioni.RowFilter = informazioni.RowFilter.Replace(" AND SiglaTipologiaInformazione = 'GIORNALIERA'", "");
         }
+        /// <summary>
+        /// Inserisce le informazioni e applica la formattazione riga per riga in base alle informazioni sul DB.
+        /// </summary>
         protected virtual void InsertInformazioniEntita()
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -866,7 +859,9 @@ namespace Iren.ToolsExcel.Base
                 i++;
             }
         }
-        protected override void InsertPersonalizzazioni(object siglaEntita) { }
+        /// <summary>
+        /// Inserisce i valori di default e le formule.
+        /// </summary>
         protected virtual void InsertFormuleValoriDefault()
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -906,13 +901,15 @@ namespace Iren.ToolsExcel.Base
                         deltaNeg = 1;
                     }
                     _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - 1 - deltaPos].ToString()].Formula = formula;
-                    //_ws.Application.ScreenUpdating = false;
                 }
 
                 if (info["ValoreData0H24"] != DBNull.Value)
                     rngData.Cells[1].Value = info["ValoreData0H24"];
             }
         }
+        /// <summary>
+        /// Inserisce i parametri.
+        /// </summary>
         protected virtual void InsertParametri()
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -948,6 +945,9 @@ namespace Iren.ToolsExcel.Base
                 });
             }
         }
+        /// <summary>
+        /// Crea la formattazione condizionale.
+        /// </summary>
         protected virtual void FormattazioneCondizionale()
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -1024,6 +1024,9 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        /// <summary>
+        /// Inserisce i grafici creando anche le serie.
+        /// </summary>
         protected virtual void InsertGrafici()
         {
             DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
@@ -1083,30 +1086,39 @@ namespace Iren.ToolsExcel.Base
                 }
                 graficiInfo.RowFilter = rowFilter;
             }
-            //_ws.Application.ScreenUpdating = false;
         }
+        /// <summary>
+        /// Aggiorna tutti i grafici del foglio.
+        /// </summary>
         public override void AggiornaGrafici()
         {
-            _ws.Application.CalculateFull();
-            //_ws.Application.ScreenUpdating = false;
-            Excel.ChartObjects charts = _ws.ChartObjects();
-            foreach (Excel.ChartObject chart in charts)
+            if (_ws.ChartObjects().Count > 0)
             {
-                int col;
-                if (chart.Name.Contains("DATA"))
+                _ws.Calculate();
+                Excel.ChartObjects charts = _ws.ChartObjects();
+                foreach (Excel.ChartObject chart in charts)
                 {
-                    col = _definedNames.GetColFromDate(chart.Name.Split(Simboli.UNION[0]).Last());
+                    int col;
+                    if (chart.Name.Contains("DATA"))
+                    {
+                        col = _definedNames.GetColFromDate(chart.Name.Split(Simboli.UNION[0]).Last());
+                    }
+                    else
+                    {
+                        col = _definedNames.GetColFromDate();
+                    }
+                    int row = _definedNames.GetRowByName(chart.Name);
+                    Excel.Range rng = _ws.Range[Range.GetRange(row, col)];
+                    AggiornaGrafici(chart.Chart, rng.MergeArea);
+                    chart.Chart.Refresh();
                 }
-                else
-                {
-                    col = _definedNames.GetColFromDate();
-                }
-                int row = _definedNames.GetRowByName(chart.Name);
-                Excel.Range rng = _ws.Range[Range.GetRange(row, col)];
-                AggiornaGrafici(chart.Chart, rng.MergeArea);
-                chart.Chart.Refresh();
             }
         }
+        /// <summary>
+        /// Allinea il grafico al range in modo da far combaciare la barra delle ordinate con la prima colonna dell'area dati. Per far questo calcola la dimensione in punti dei label di ordinata e sposta di conseguenza l'area del grafico.
+        /// </summary>
+        /// <param name="chart">Microsoft.Office.Interop.Excel.Chart da aggiornare.</param>
+        /// <param name="rigaGrafico">Microsoft.Office.Interop.Excel.Range a cui il grafico appartiene.</param>
         private void AggiornaGrafici(Excel.Chart chart, Excel.Range rigaGrafico)
         {
             SplashScreen.UpdateStatus("Aggiorno grafici " + chart.Name);
@@ -1128,6 +1140,9 @@ namespace Iren.ToolsExcel.Base
 
         #endregion
 
+        /// <summary>
+        /// Launcher per caricare le informazioni e i commenti dal DB.
+        /// </summary>
         public override void CaricaInformazioni()
         {
             try
@@ -1143,7 +1158,7 @@ namespace Iren.ToolsExcel.Base
 
                     DataView datiApplicazioneH = DataBase.LocalDB.Tables[DataBase.Tab.DATI_APPLICAZIONE_H].DefaultView;
                     DataView insertManuali = DataBase.LocalDB.Tables[DataBase.Tab.DATI_APPLICAZIONE_COMMENTO].DefaultView;
-
+                    
                     if (Struct.tipoVisualizzazione == "O")
                     {
                         foreach (DataRowView entita in categoriaEntita)
@@ -1183,6 +1198,10 @@ namespace Iren.ToolsExcel.Base
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
+        /// <summary>
+        /// Carica le informazioni.
+        /// </summary>
+        /// <param name="datiApplicazione">Tabella contenente tutte le informazioni da scrivere.</param>
         protected virtual void CaricaInformazioniEntita(DataView datiApplicazione)
         {
             foreach (DataRowView dato in datiApplicazione)
@@ -1198,7 +1217,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
                     List<object> o = new List<object>(dato.Row.ItemArray);
-                    o.RemoveRange(o.Count - 5, 5);
+                    //o.RemoveRange(o.Count - 5, 5);
                     _ws.Range[rng.ToString()].Value = o.ToArray();
 
                     if (giorno == DataBase.DataAttiva && Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
@@ -1210,6 +1229,10 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        /// <summary>
+        /// Carica i commenti.
+        /// </summary>
+        /// <param name="insertManuali">Tabella che contiene tutte le informazioni che necessitano del commento</param>
         protected virtual void CaricaCommentiEntita(DataView insertManuali)
         {
             foreach (DataRowView commento in insertManuali)
@@ -1220,77 +1243,18 @@ namespace Iren.ToolsExcel.Base
                 rng.ClearComments();
                 rng.AddComment("Valore inserito manualmente");
             }
-        }
+        }        
 
-        //TODO
-        //public override void CalcolaFormule(string siglaEntita = null, DateTime? giorno = null, int ordineElaborazione = 0, bool escludiOrdine = false)
-        //{
-        //    DataView dvCE = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-        //    DataView dvEP = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-        //    DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-
-        //    dvCE.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )" + (siglaEntita == null ? "" : " AND SiglaEntita = '" + siglaEntita + "'");
-
-        //    _dataInizio = DB.DataAttiva;
-        //    DateTime giorno = dataAttiva ?? DB.DataAttiva;
-
-        //    bool all = giorno == null;
-
-        //    foreach (DataRowView entita in dvCE)
-        //    {
-        //        siglaEntita = entita["SiglaEntita"].ToString();
-
-        //        informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND OrdineElaborazione <> 0 AND FormulaInCella = 0";
-        //        if (ordineElaborazione != 0)
-        //        {
-        //            informazioni.RowFilter += " AND OrdineElaborazione" + (escludiOrdine ? " <> " : " = ") + ordineElaborazione;
-        //        }
-        //        informazioni.Sort = "OrdineElaborazione";
-
-        //        if (informazioni.Count > 0)
-        //        {
-        //            DateTime dataFine;
-
-        //            dvEP.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
-        //            if (dvEP.Count > 0)
-        //                dataFine = DataBase.DB.DataAttiva.AddDays(double.Parse("" + dvEP[0]["Valore"]));
-        //            else
-        //                dataFine = DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni);
-
-        //            string suffissoData = all ? "DATA1" : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value);
-        //            string suffissoDataPrec = all ? "DATA0" : Date.GetSuffissoData(DataBase.DB.DataAttiva, giorno.Value.AddDays(-1));
-        //            string suffissoUltimoGiorno = Date.GetSuffissoData(DataBase.DB.DataAttiva, dataFine);
-
-        //            foreach (DataRowView info in informazioni)
-        //            {
-        //                Tuple<int, int>[] riga;
-        //                if (all)
-        //                    riga = new Tuple<int, int>[] { Tuple.Create<int, int>(0, 0) };//_definedNames[info["Data0H24"].Equals("0"), entita["SiglaEntita"], info["SiglaInformazione"]];
-        //                else
-        //                    riga = new Tuple<int, int>[] { Tuple.Create<int, int>(0, 0) };//_definedNames[entita["SiglaEntita"], info["SiglaInformazione"], suffissoData];
-
-
-        //                int deltaNeg;
-        //                int deltaPos;
-        //                int oreDataPrec = all ? 24 : Date.GetOreGiorno(giorno.Value.AddDays(-1));
-
-        //                string formula = "=" + PreparaFormula(info, suffissoDataPrec, suffissoData, oreDataPrec, out deltaNeg, out deltaPos);
-
-        //                if (suffissoData != "DATA1")
-        //                    deltaNeg = 0;
-        //                if (suffissoData != suffissoUltimoGiorno)
-        //                    deltaPos = 0;
-
-        //                Excel.Range rng = _ws.Range[_ws.Cells[riga[0].Item1, riga[0].Item2 - deltaNeg], _ws.Cells[riga[riga.Length - 1].Item1, riga[riga.Length - 1].Item2 - deltaPos]];
-
-        //                rng.Formula = formula;
-        //            }
-        //        }
-        //        informazioni.Sort = "";
-        //    }
-
-        //}
-
+        /// <summary>
+        /// Prepara la formula per essere scritta in cella. Sostituisce i parametri con i riferimenti delle celle corrispondenti. Calcola anche un possibile offset se la formula va a controllare valori delle ore precedenti o successive.
+        /// </summary>
+        /// <param name="info">La riga dell'informazione.</param>
+        /// <param name="suffissoDataPrec">Il suffisso della data antecedente a quella in cui si sta lavorando (solitamente DATA0).</param>
+        /// <param name="suffissoData">Il suffisso della data in cui si sta lavorando (solitamente DATA1).</param>
+        /// <param name="oreDataPrec">Numero di ore della data precedente.</param>
+        /// <param name="deltaNeg">Parametro di output che indica l'offset dall'inizio del giorno.</param>
+        /// <param name="deltaPos">Parametro di output che indica l'offset dalla fine del giorno.</param>
+        /// <returns></returns>
         protected string PreparaFormula(DataRowView info, string suffissoDataPrec, string suffissoData, int oreDataPrec, out int deltaNeg, out int deltaPos)
         {
             if (info["Formula"] != DBNull.Value || info["Funzione"] != DBNull.Value)
@@ -1381,6 +1345,9 @@ namespace Iren.ToolsExcel.Base
 
             return "";
         }
+        /// <summary>
+        /// Launcher per l'aggiornamento dei dati.
+        /// </summary>
         public override void UpdateData()
         {
             SplashScreen.UpdateStatus("Aggiorno informazioni");
@@ -1392,10 +1359,18 @@ namespace Iren.ToolsExcel.Base
         }
         #region UpdateData
 
+        /// <summary>
+        /// Cancella le informazioni da aggiornare in tutti i giorni.
+        /// </summary>
         private void CancellaDati()
         {
             CancellaDati(DataBase.DataAttiva, true);
         }
+        /// <summary>
+        /// Cancella le informazioni a partire da giorno. Se all è a true, cancella tutti giorni successivi altrimenti cancella il solo giorno.
+        /// </summary>
+        /// <param name="giorno">Data di partenza della cancellazione.</param>
+        /// <param name="all">Se true cancella tutti i dati a partire dalla data di partenza.</param>
         private void CancellaDati(DateTime giorno, bool all = false)
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -1499,6 +1474,9 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        /// <summary>
+        /// Aggiorna le date dei titolo (per il caso in cui l'aggiornamento venga da un cambio giorno).
+        /// </summary>
         public override void AggiornaDateTitoli()
         {
             if (Struct.tipoVisualizzazione == "O")
@@ -1536,6 +1514,9 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+        /// <summary>
+        /// Carica i parametri e valori di default.
+        /// </summary>
         protected void CaricaParametri()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;

@@ -280,7 +280,7 @@ namespace Iren.ToolsExcel.Utility
 
                     //salvo le modifiche appena effettuate
                     fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
-                    dt.WriteXml(fileName);
+                    dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
 
                     //se la query indica che il processo è andato a buon fine, sposto in archivio
                     executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
@@ -294,7 +294,7 @@ namespace Iren.ToolsExcel.Utility
                     else
                     {
                         fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
-                        dt.WriteXml(fileName);
+                        dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
 
                         Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. Il file è si trova in " + Environment.MachineName);
                         
@@ -303,16 +303,19 @@ namespace Iren.ToolsExcel.Utility
                 }
                 else
                 {
+                    if (dt.Rows.Count == 0)
+                        return;
+
                     //metto le modifiche nella cartella emergenza
                     fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                     try
                     {
-                        dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                        dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
                     }
                     catch (DirectoryNotFoundException)
                     {
                         Directory.CreateDirectory(cartellaEmergenza);
-                        dt.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+                        dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
                     }
 
                     System.Windows.Forms.MessageBox.Show("A causa di problemi di rete le modifiche sono state salvate in locale", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
@@ -1878,7 +1881,7 @@ namespace Iren.ToolsExcel.Utility
             if (wasProtected)
                 Sheet.Protected = true;
             Application.ScreenUpdating = true;
-            Application.EnableEvents = true;
+            Application.EnableEvents = true;            
         }
         #endregion
 

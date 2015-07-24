@@ -60,7 +60,6 @@ namespace Iren.ToolsExcel.Base
                 style.Interior.ColorIndex = 2;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
 
-
                 style = Utility.Workbook.WB.Styles.Add("Barra titolo entita");
                 style.Font.Bold = true;
                 style.Font.Name = "Verdana";
@@ -186,6 +185,11 @@ namespace Iren.ToolsExcel.Base
         /// <param name="visible">Booleano che indica se il range deve essere visibile oppure no.</param>
         public static void RangeStyle(Excel.Range rng, object fontName = null, object style = null, object merge = null, object bold = null, object fontSize = null, object align = null, object numberFormat = null, object foreColor = null, object backColor = null, object pattern = null, object borders = null, object orientation = null, object visible = null)
         {
+            //applica stile per prima cosa
+            if (style != null)
+                rng.Style = (string)style;
+
+            //Font
             if(fontName != null)
                 rng.Font.Name = (string)fontName;
             
@@ -197,10 +201,8 @@ namespace Iren.ToolsExcel.Base
             
             if(foreColor != null)
                 rng.Font.ColorIndex = (int)foreColor;
-            
-            if(style != null)
-                rng.Style = (string)style;
-            
+            //end Font
+
             if(merge != null)
                 rng.MergeCells = (bool)merge;
 

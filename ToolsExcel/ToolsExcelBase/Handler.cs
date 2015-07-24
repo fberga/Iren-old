@@ -16,6 +16,36 @@ namespace Iren.ToolsExcel.Base
     /// </summary>
     public class Handler
     {
+        #region Metodi 
+
+        /// <summary>
+        /// Handler per il click su celle di selezione.
+        /// </summary>
+        /// <param name="Sh"></param>
+        /// <param name="Target"></param>
+        public static void SelectionClick(object Sh, Excel.Range Target)
+        {
+            Workbook.ScreenUpdating = false;
+            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.Selection);
+            Range rng = new Range(Target.Row, Target.Column);
+            Selection sel;
+            int val;
+            if (definedNames.HasSelections() && definedNames.TryGetSelectionByPeer(rng, out sel, out val))
+            {
+                Target.Worksheet.Unprotect(Simboli.pwd);
+                if (sel != null)
+                {
+                    sel.ClearSelections(Target.Worksheet);
+                    sel.Select(Target.Worksheet, rng.ToString());
+
+                    //annoto modifiche e le salvo sul DB
+                    Target.Worksheet.Range[sel.RifAddress].Value = val;
+                    DataBase.SalvaModificheDB();
+                }
+                Target.Worksheet.Protect(Simboli.pwd);
+            }
+            Workbook.ScreenUpdating = true;
+        }
         /// <summary>
         /// Gestisce il caso in cui ci sia una selezione multipla che andrebbe a scrivere su righe nascoste: allerta l'utente e impedisce di procedere con la modifica.
         /// </summary>
@@ -122,7 +152,7 @@ namespace Iren.ToolsExcel.Base
                                 newRow["SiglaEntita"] = parts[0];
                                 newRow["SiglaInformazione"] = parts[1];
                                 newRow["Data"] = data;
-                                newRow["Valore"] = ws.Range[column.ToString()].Value;
+                                newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
                                 newRow["AnnotaModifica"] = annota ? "1" : "0";
                                 newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
                                 newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
@@ -285,7 +315,7 @@ namespace Iren.ToolsExcel.Base
 #if(DEBUG)
             path = "D:\\Repository\\Iren\\ToolsExcel\\"+name+"\\bin\\Debug\\"+name+".xlsm";
 #else
-
+            path = ".\\"+name+".xlsm";
 #endif
             if (!IsWorkbookOpen(name))
             {
@@ -320,5 +350,7 @@ namespace Iren.ToolsExcel.Base
                 return false;
             }
         }
+
+        #endregion
     }
 }

@@ -204,9 +204,9 @@ namespace Iren.ToolsExcel.Base
             return GetStagione(Utility.Workbook.AppSettings("Stagione"));
         }
 
-        public static int[] rgbSfondo = { 183, 222, 232 };
-        public static int[] rgbLinee = { 33, 89, 104 };
-        public static int[] rgbTitolo = { 49, 133, 156 };
+        public static int[] rgbSfondo = { 228, 144, 144 };
+        public static int[] rgbLinee = { 176, 0, 0 };
+        public static int[] rgbTitolo = { 206, 58, 58 };
 
     }
 }

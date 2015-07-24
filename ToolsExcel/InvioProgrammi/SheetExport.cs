@@ -48,14 +48,13 @@ namespace Iren.ToolsExcel
             if (_ws.ChartObjects().Count > 0)
                 _ws.ChartObjects().Delete();
 
-            _ws.Rows.Delete();
+            _ws.Rows.ClearContents();
+            _ws.Rows.ClearComments();
             _ws.Rows.FormatConditions.Delete();
             _ws.Rows.EntireRow.Hidden = false;
-            _ws.Rows.Font.Size = 10;
-            _ws.Rows.NumberFormat = "General";
-            _ws.Rows.Font.Name = "Verdana";
-            _ws.Rows.RowHeight = Struct.cell.height.normal;
+            _ws.Rows.Style = "Normal";
 
+            _ws.Rows.RowHeight = Struct.cell.height.normal;
             _ws.Columns.ColumnWidth = Struct.cell.width.dato;
 
             _ws.Rows["1:" + (_struttura.rigaBlock - 1)].RowHeight = Struct.cell.height.empty;

@@ -78,8 +78,12 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        /// <summary>
+        /// Carica tutti i valori dal DB.
+        /// </summary>
         protected void CaricaDatiDalDB()
         {
+            CancellaTabelle();
             DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
             DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
                     (from r in entitaProprieta.AsEnumerable()
@@ -104,12 +108,18 @@ namespace Iren.ToolsExcel.Base
             datiApplicazioneD.TableName = DataBase.Tab.DATI_APPLICAZIONE_D;
             DataBase.LocalDB.Tables.Add(datiApplicazioneD);
         }
+        /// <summary>
+        /// Cancella le tabelle create in modo da non avere duplicati nel dataset.
+        /// </summary>
         protected void CancellaTabelle()
         {
             //elimino le tabelle con le informazioni ormai scritte nel foglio
-            DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_H);
-            DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_D);
-            DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_COMMENTO);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.DATI_APPLICAZIONE_H))
+                DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_H);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.DATI_APPLICAZIONE_D))
+                DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_D);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.DATI_APPLICAZIONE_COMMENTO))
+                DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_COMMENTO);
         }
 
         /// <summary>
@@ -187,27 +197,25 @@ namespace Iren.ToolsExcel.Base
                         }
                     }
 
+                    SplashScreen.Close();
                     Workbook.Main.Select();
-                    Workbook.Application.CalculateFull();
                     Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
                     if (wasProtected)
                         Sheet.Protected = true;
 
                     Workbook.ScreenUpdating = true;
-                    SplashScreen.Close();
-
                     CancellaTabelle();
+                    return true;
                 }
                 catch
                 {
-                    Workbook.ScreenUpdating = true;
                     SplashScreen.Close();
+
+                    Workbook.ScreenUpdating = true;
                     CancellaTabelle();
                     return false;
                 }
-                
-                return true;
             }
             else
             {

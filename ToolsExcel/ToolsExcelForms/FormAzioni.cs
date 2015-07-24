@@ -375,6 +375,8 @@ namespace Iren.ToolsExcel.Forms
             else
             {
                 Workbook.Application.EnableEvents = false;
+                Workbook.ScreenUpdating = false;
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
                 SplashScreen.Show();
 
                 bool caricaOrGenera = false;
@@ -484,6 +486,8 @@ namespace Iren.ToolsExcel.Forms
 
                 SplashScreen.Close();
                 Workbook.Application.EnableEvents = true;
+                Workbook.ScreenUpdating = true;
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             }
 
             btnApplica.Enabled = true;
@@ -545,6 +549,5 @@ namespace Iren.ToolsExcel.Forms
         }
 
         #endregion
-
     }
 }

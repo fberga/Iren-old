@@ -119,42 +119,21 @@ namespace Iren.ToolsExcel
 
             //aggiungo un altro handler per cell click
             Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
-            Globals.ThisWorkbook.SheetSelectionChange += SelectionClick;
+            Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
-
-        private void SelectionClick(object Sh, Excel.Range Target)
-        {
-            Workbook.ScreenUpdating = false;
-            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.Selection);
-            Range rng = new Range(Target.Row, Target.Column);
-            Selection sel;
-            int val;
-            if (definedNames.HasSelections() && definedNames.TryGetSelectionByPeer(rng, out sel, out val))
-            {
-                Target.Worksheet.Unprotect(Simboli.pwd);
-                if (sel != null)
-                {   
-                    sel.ClearSelections(Target.Worksheet);
-                    sel.Select(Target.Worksheet, rng.ToString());
-
-                    //annoto modifiche e le salvo sul DB
-                    Target.Worksheet.Range[sel.RifAddress].Value = val;
-                    DataBase.SalvaModificheDB();
-                }
-                Target.Worksheet.Protect(Simboli.pwd);
-            }
-            Workbook.ScreenUpdating = true;
-        }
-
+        /// <summary>
+        /// Handler del click sul tasto di configurazione dei parametri. Apre il form che permette di modificare i valori dei parametri definiti per il foglio.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnConfiguraParametri_Click(object sender, RibbonControlEventArgs e)
         {
             FormModificaParametri form = new FormModificaParametri();
             form.Show();
         }
-
         /// <summary>
         /// Handler del SheetSelectionChange. Funzione che controlla se la cella selezionata è un Check. Si trova qui e non dentro la Classe Base.Handler perché deve interagire con l'errorPane 
         /// (non è possibile farlo dal namespace Base in quanto si creerebbe uno using circolare)
@@ -594,7 +573,11 @@ namespace Iren.ToolsExcel
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
-
+        /// <summary>
+        /// Handler della selezione di un nuovo mercato in cmbMSD su ribbon. Aggiorna la struttura dei fogli.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cmbMSD_TextChanged(object sender, RibbonControlEventArgs e)
         {
             Workbook.ScreenUpdating = false;
@@ -607,7 +590,11 @@ namespace Iren.ToolsExcel
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
-
+        /// <summary>
+        /// Handler per il cambio di stagione da cmnStagione su ribbon. Imposta il valore della riga nascosta.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cmbStagione_TextChanged(object sender, RibbonControlEventArgs e)
         {
             Workbook.ScreenUpdating = false;
@@ -623,6 +610,9 @@ namespace Iren.ToolsExcel
 
         #region Metodi
 
+        /// <summary>
+        /// Funzione per aggiornate i check in seguito ad operazioni di modifica del foglio.
+        /// </summary>
         private void RefreshChecks()
         {
             Workbook.ScreenUpdating = false;
@@ -633,7 +623,6 @@ namespace Iren.ToolsExcel
             catch { }
             Workbook.ScreenUpdating = true;
         }
-
         /// <summary>
         /// Metodo di inizializzazione della Tab Front Office. Visualizza e abilita i tasti in base alle specifiche da DB. Da notare che se ci sono aggiornamenti, bisogna caricare la struttura e riavviare l'applicativo.
         /// </summary>

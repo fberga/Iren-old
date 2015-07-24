@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Iren.ToolsExcel.Utility;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -12,8 +14,6 @@ namespace Iren.ToolsExcel.Base
 {
     public partial class SplashForm : Form
     {
-
-
         private const int CS_DROPSHADOW = 0x20000;
         protected override CreateParams CreateParams
         {
@@ -25,8 +25,8 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-
-        private delegate void ShowCloseDelegate();
+        private delegate void ShowDelegate();
+        private delegate void CloseDelegate();
         private delegate void UpdateStatusDelegate(string status);
 
         public SplashForm()
@@ -38,12 +38,13 @@ namespace Iren.ToolsExcel.Base
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new ShowCloseDelegate(ShowSplashScreen));
+                BeginInvoke(new ShowDelegate(ShowSplashScreen));
                 return;
             }
             
-            this.ShowDialog();
-            if(!this.IsDisposed)
+            this.ShowDialog();                
+
+            if (!this.IsDisposed)
                 Application.Run(this);
         }
 
@@ -51,10 +52,10 @@ namespace Iren.ToolsExcel.Base
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new ShowCloseDelegate(CloseSplashScreen));
+                BeginInvoke(new CloseDelegate(CloseSplashScreen));
                 return;
             }
-            
+
             this.Close();
             this.Dispose();
         }
@@ -63,11 +64,14 @@ namespace Iren.ToolsExcel.Base
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new UpdateStatusDelegate(UdpateStatusText), new object[] { status });
+                BeginInvoke(new UpdateStatusDelegate(UdpateStatusText), status);
                 return;
             }
 
-            lbText.Text = status;
+            this.BringToFront();
+            if (status.Length > 70)
+                status = status.Substring(0, 67) + " ...";
+            lbText.Text = status;            
         }
 
         private void lbText_SizeChanged(object sender, EventArgs e)
@@ -97,9 +101,10 @@ namespace Iren.ToolsExcel.Base
         public static void UpdateStatus(string status)
         {
             if (sf != null)
+            {
                 sf.UdpateStatusText(status);
+            }
         }
-
     }
 
     public static class SplashScreen
@@ -108,6 +113,7 @@ namespace Iren.ToolsExcel.Base
         {
             Thread splashthread = new Thread(new ThreadStart(SplashForm.ShowSplash));
             splashthread.IsBackground = true;
+           
             splashthread.Start();
         }
 

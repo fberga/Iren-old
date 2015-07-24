@@ -15,6 +15,9 @@ using Iren.ToolsExcel.Utility;
 
 namespace Iren.ToolsExcel.Base
 {
+    /// <summary>
+    /// Interfaccia con i metodi astratti o virtuali di creazione di un foglio contenente il riepilogo.
+    /// </summary>
     public abstract class ARiepilogo
     {
         #region Variabili
@@ -28,13 +31,22 @@ namespace Iren.ToolsExcel.Base
         #endregion
 
         #region Metodi
-
+        /// <summary>
+        /// In un ciclo che avanza di giorno in giorno a partire da DataBase.DataAttiva per il numero di giorni definito per l'entità, esegui il delegato callback che definisce una routine specifica.
+        /// </summary>
+        /// <param name="callback">Delegato eseguito come corpo del ciclo.</param>
         protected void CicloGiorni(Action<int, string, DateTime> callback)
         {
             DateTime dataInizio = DataBase.DataAttiva;
             DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
+        /// <summary>
+        /// In un ciclo che avanza di giorno in giorno da dataInizio a dataFine, esegui il delegato callback che definisce una routine specifica.
+        /// </summary>
+        /// <param name="dataInizio">Data di inizio del ciclo.</param>
+        /// <param name="dataFine">Data di fine del ciclo.</param>
+        /// <param name="callback">Delegato eseguito come corpo del ciclo.</param>
         protected void CicloGiorni(DateTime dataInizio, DateTime dataFine, Action<int, string, DateTime> callback)
         {
             for (DateTime giorno = dataInizio; giorno <= dataFine; giorno = giorno.AddDays(1))
@@ -50,19 +62,42 @@ namespace Iren.ToolsExcel.Base
                 callback(oreGiorno, suffissoData, giorno);
             }
         }
-
+        /// <summary>
+        /// Metodo di inizializzazione dei label. Se si vuole cambiare la posizione o nascondere uno dei label è necessario eseguire l'override di questo metodo.
+        /// </summary>
         public abstract void InitLabels();
+        /// <summary>
+        /// Launcher per il caricamento della struttura.
+        /// </summary>
         public abstract void LoadStructure();
+        /// <summary>
+        /// Launcher per la compilazione del riepilogo in seguito allo svolgimento di un'azione. Applica di default la data attiva.
+        /// </summary>
+        /// <param name="siglaEntita">Entità per individuare la riga in cui scrivere.</param>
+        /// <param name="siglaAzione">Azione per individuare la colonna in cui scrivere.</param>
+        /// <param name="presente">Se l'azione ha portato a risultati oppure no.</param>
         public void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente)
         {
             AggiornaRiepilogo(siglaEntita, siglaAzione, presente, DataBase.DataAttiva);
         }
+        /// <summary>
+        /// Launcher per la compilazione del riepilogo in seguito allo svolgimento di un'azione.
+        /// </summary>
+        /// <param name="siglaEntita">Entità per individuare la riga in cui scrivere.</param>
+        /// <param name="siglaAzione">Azione per individuare la colonna in cui scrivere.</param>
+        /// <param name="presente">Se l'azione ha portato a risultati oppure no.</param>
+        /// <param name="dataRif">La data in cui andare a scrivere. Assieme all'azione indica la colonna.</param>
         public abstract void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif);
+        /// <summary>
+        /// Launcher per la funzione di aggiornamento dei dati del riepilogo.
+        /// </summary>
         public abstract void UpdateData();
 
         #endregion
     }
-
+    /// <summary>
+    /// Classe base con i metodi per la creazione di un foglio contenente il riepilogo.
+    /// </summary>
     public class Riepilogo : ARiepilogo
     {
         #region Variabili
@@ -103,7 +138,9 @@ namespace Iren.ToolsExcel.Base
         #endregion
 
         #region Metodi
-
+        /// <summary>
+        /// Launcher per il caricamento della struttura del riepilogo.
+        /// </summary>
         public override void LoadStructure()
         {
             _colonnaInizio = _struttura.colRecap;
@@ -135,20 +172,22 @@ namespace Iren.ToolsExcel.Base
             }
 
         }
-
+        /// <summary>
+        /// Inizializza i label con dimensioni e colori caricati dal DB.
+        /// </summary>
         public override void InitLabels()
-        {            
+        {   
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utility.Workbook.WorkbookVersion.ToString();
+            _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utility.Workbook.WorkbookVersion.ToString() + " Base v." + Utility.Workbook.BaseVersion.ToString() + " Core v." + Utility.Workbook.CoreVersion.ToString();
             _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
 
             DataView applicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
            
             //applico colori da DB (solo la prima volta dopo la release della nuova versione)
-            if (Utility.Workbook.Sheets.Count == 2)
-            {
+            //if (Utility.Workbook.Sheets.Count == 2)
+            //{
                 _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
                 _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
                 _ws.Shapes.Item("sfondo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
@@ -156,7 +195,7 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
                 _ws.Shapes.Item("lbDataFine").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
                 _ws.Shapes.Item("lbMercato").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
-            }
+            //}
 
             //aggiorna la scritta di modifica dati
             Simboli.ModificaDati = false;
@@ -180,6 +219,9 @@ namespace Iren.ToolsExcel.Base
             }
             //Utility.Workbook.ScreenUpdating = false;
         }
+        /// <summary>
+        /// Metodo per eliminare la struttura esistente dal foglio e prepararlo alla nuova che verrà caricata.
+        /// </summary>
         protected virtual void Clear()
         {
             _ws.Visible = Excel.XlSheetVisibility.xlSheetVisible;
@@ -205,6 +247,9 @@ namespace Iren.ToolsExcel.Base
             _ws.Application.ActiveWindow.FreezePanes = true;
             Utility.Workbook.ScreenUpdating = false;
         }
+        /// <summary>
+        /// Crea la struttura dei nomi del riepilogo definendo 3 righe di titolo (DATA, AZIONE PARDE, AZIONE), una riga per ogni entità, e una colonna per ogni AZIONE con la DATA di riferimento.
+        /// </summary>
         protected virtual void CreaNomiCelle()
         {
             //inserisco tutte le righe
@@ -235,6 +280,9 @@ namespace Iren.ToolsExcel.Base
             });
             _definedNames.DumpToDataSet();
         }
+        /// <summary>
+        /// Inizializza la barra del titolo.
+        /// </summary>
         protected void InitBarraTitolo()
         {
             Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 3, _azioni.Count);
@@ -275,6 +323,9 @@ namespace Iren.ToolsExcel.Base
                 rngData.StartColumn = rngAzioni.StartColumn;
             });
         }
+        /// <summary>
+        /// Formatta il range che conterrà tutti i dati del riepilogo. Le celle sono tutte disabilitate e verranno abilitate nella funzione AbilitaAzioni.
+        /// </summary>
         protected void FormattaAllDati()
         {
             Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo() - 1);
@@ -309,6 +360,9 @@ namespace Iren.ToolsExcel.Base
                     _ws.Range[col.ToString()].ColumnWidth = maxWidth;
             }
         }
+        /// <summary>
+        /// Crea la barra laterale con la lista di tutte le entità.
+        /// </summary>
         protected void InitBarraEntita()
         {
             foreach (DataRowView categoria in _categorie)
@@ -327,6 +381,9 @@ namespace Iren.ToolsExcel.Base
             
             _ws.Columns[_struttura.colRecap].EntireColumn.AutoFit();
         }
+        /// <summary>
+        /// Abilita le azioni per ogni entità.
+        /// </summary>
         protected void AbilitaAzioni()
         {
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
@@ -339,6 +396,9 @@ namespace Iren.ToolsExcel.Base
                 }
             });
         }
+        /// <summary>
+        /// Carico i dati e i commenti che devono essere scritti nelle celle.
+        /// </summary>
         protected void CaricaDatiRiepilogo()
         {
             try
@@ -379,7 +439,13 @@ namespace Iren.ToolsExcel.Base
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
-
+        /// <summary>
+        /// Launcher per la compilazione del riepilogo in seguito allo svolgimento di un'azione.
+        /// </summary>
+        /// <param name="siglaEntita">Entità per individuare la riga in cui scrivere.</param>
+        /// <param name="siglaAzione">Azione per individuare la colonna in cui scrivere.</param>
+        /// <param name="presente">Se l'azione ha portato a risultati oppure no.</param>
+        /// <param name="dataRif">La data in cui andare a scrivere. Assieme all'azione indica la colonna.</param>
         public override void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif)
         {
 
@@ -406,7 +472,9 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-
+        /// <summary>
+        /// Cancella tutti i dati contenuti nel riepilogo
+        /// </summary>
         private void CancellaDati()
         {
             Range rngData = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset() - 3, _definedNames.GetColOffsetRiepilogo() - 1);
@@ -414,6 +482,9 @@ namespace Iren.ToolsExcel.Base
             _ws.Range[rngData.ToString()].Interior.ColorIndex = 2;
             _ws.Range[rngData.ToString()].ClearComments();
         }
+        /// <summary>
+        /// Aggiorna le date nei titoli e label del riepilogo.
+        /// </summary>
         protected void AggiornaDate()
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
@@ -431,6 +502,9 @@ namespace Iren.ToolsExcel.Base
                 _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
             }
         }
+        /// <summary>
+        /// Launcher per la funzione di aggiornamento dei dati del riepilogo.
+        /// </summary>
         public override void UpdateData()
         {
             if (_definedNames != null)
@@ -445,13 +519,18 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
-        
+        /// <summary>
+        /// In emergenza, permette di impostare lo stile delle celle a disabilitato (infatti il riepilogo non verrebbe aggiornato in ogni caso).
+        /// </summary>
         private void DisabilitaTutto()
         {
             Range rngData = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset() - 3, _definedNames.GetColOffsetRiepilogo() - 1);
 
             Style.RangeStyle(_ws.Range[rngData.ToString()], pattern: Excel.XlPattern.xlPatternCrissCross);
         }
+        /// <summary>
+        /// Mette il riepilogo in stato di emergenza.
+        /// </summary>
         public void RiepilogoInEmergenza()
         {
             if (Struct.visualizzaRiepilogo)
