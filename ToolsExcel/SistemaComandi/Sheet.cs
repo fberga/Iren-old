@@ -17,6 +17,9 @@ namespace Iren.ToolsExcel
 
         }
 
+        /// <summary>
+        /// Carica il profilo PQNR in seguito al caricamento delle informazioni.
+        /// </summary>
         public override void CaricaInformazioni()
         {
             base.CaricaInformazioni();
@@ -83,6 +86,16 @@ namespace Iren.ToolsExcel
                         _ws.Range[rngPQNRVal.ToString()].Value = valori;
                     }
                 }
+            }
+        }
+
+        protected override void InsertGrafici()
+        {
+            base.InsertGrafici();
+
+            foreach (Excel.ChartObject chart in _ws.ChartObjects())
+            {
+                chart.Chart.PlotVisibleOnly = true;
             }
         }
     }

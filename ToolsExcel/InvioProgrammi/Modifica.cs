@@ -10,6 +10,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Aggiunge un azione custom alla modifica manuale. Questa modifica scrive i dati nel foglio nascosto che corrisponde al mercato attivo.
+    /// </summary>
     public class Modifica : Base.Modifica
     {
         public override void Range(object Sh, Excel.Range Target)

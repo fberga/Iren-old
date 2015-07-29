@@ -15,6 +15,9 @@ using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Funzione di esportazione custom.
+    /// </summary>
     class Esporta : AEsporta
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)

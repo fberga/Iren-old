@@ -9,6 +9,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Funzioni di check personalizzate.
+    /// </summary>
     class Check : Base.Check
     {
         public override CheckOutput ExecuteCheck(Excel.Worksheet ws, DefinedNames definedNames, CheckObj check)

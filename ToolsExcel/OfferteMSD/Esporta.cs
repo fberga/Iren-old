@@ -14,6 +14,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Funzione di esportazione personalizzata.
+    /// </summary>
     class Esporta : Base.Esporta
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)

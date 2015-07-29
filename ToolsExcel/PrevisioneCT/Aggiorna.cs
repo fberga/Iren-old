@@ -10,6 +10,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Aggiungo la stagione al foglio e carico la struttura del riepilogo personalizzata.
+    /// </summary>
     public class Aggiorna : Base.Aggiorna
     {
         public Aggiorna()

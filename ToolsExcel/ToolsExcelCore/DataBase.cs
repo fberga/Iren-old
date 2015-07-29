@@ -99,31 +99,57 @@ namespace Iren.ToolsExcel.Core
 
         #region Metodi Pubblici
 
+        /// <summary>
+        /// Apre la connessione al DB.
+        /// </summary>
+        /// <returns>True se la connessione è aperta, false altrimenti.</returns>
         public bool OpenConnection()
         {
             return OpenConnection(_sqlConn);
         }
+        /// <summary>
+        /// Chiude la connessione al DB.
+        /// </summary>
+        /// <returns>True se la connessione viene chiusa o era già chiusa, false altrimenti.</returns>
         public bool CloseConnection()
         {
             return CloseConnection(_sqlConn);
         }
-
+        /// <summary>
+        /// Imposta i parametri principali da utilizzare in quasi tutti i comandi.
+        /// </summary>
+        /// <param name="dataAttiva">La data di riferimento.</param>
+        /// <param name="idUtenteAttivo">Id dell'utente che ha eseguito il login.</param>
+        /// <param name="idApplicazione">Id dell'applicazione aperta.</param>
         public void SetParameters(string dataAttiva, int idUtenteAttivo, int idApplicazione)
         {
             _dataAttiva = dataAttiva;
             _idUtenteAttivo = idUtenteAttivo;
             _idApplicazione = idApplicazione;
         }
+        /// <summary>
+        /// Cambia la data di riferimento.
+        /// </summary>
+        /// <param name="dataAttiva">Nuova data di riferimento.</param>
         public void ChangeDate(string dataAttiva)
         {
             _dataAttiva = dataAttiva;
         }
+        /// <summary>
+        /// Cambia l'id applicazione (utilizzato solo in invio programmi quando viene cambiato il programma).
+        /// </summary>
+        /// <param name="appID">Nuovo id applicazione.</param>
         public void ChangeAppID(int appID)
         {
             _idApplicazione = appID;
         }
 
-
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure che inserisce o modifica valori sul db senza restituire nessun risultato.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri richiesti dalla stored procedure.</param>
+        /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
         public bool Insert(string storedProcedure, QryParams parameters)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
@@ -144,21 +170,44 @@ namespace Iren.ToolsExcel.Core
                 return false;
             }
         }
-
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri richiesti dalla stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
         {
             return Select(_cmd, storedProcedure, parameters, timeout);
         }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Stringa del tipo "@param=valore;..." che rappresenta i parametri richiesti dalla stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, String parameters, int timeout = 300)
         {
             return Select(storedProcedure, getParamsFromString(parameters), timeout);
         }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, int timeout = 300)
         {
             QryParams parameters = new QryParams();
             return Select(storedProcedure, parameters, timeout);
         }
 
+        /// <summary>
+        /// Restituisce la versione attuale della libreria core.
+        /// </summary>
+        /// <returns>Versione.</returns>
         public System.Version GetCurrentV()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
@@ -168,6 +217,11 @@ namespace Iren.ToolsExcel.Core
 
         #region Metodi Privati
 
+        /// <summary>
+        /// Dalla stringa di parametri del tipo "@param1=val1;@param2=val2;..." isola i singoli parametri e restituisce la lista QryParams.
+        /// </summary>
+        /// <param name="parameters">Stringa di parametri.</param>
+        /// <returns>Lista di parametri.</returns>
         private QryParams getParamsFromString(string parameters)
         {
             Regex regex = new Regex(@"@\w+[=:][^;:=]+");
@@ -184,6 +238,11 @@ namespace Iren.ToolsExcel.Core
             return o;
         }
 
+        /// <summary>
+        /// Apre la connessione conn.
+        /// </summary>
+        /// <param name="conn">Connessione da aprire.</param>
+        /// <returns>True se la connessione viene aperta o è già aperta, false altrimenti.</returns>
         private bool OpenConnection(SqlConnection conn)
         {
             try
@@ -198,6 +257,11 @@ namespace Iren.ToolsExcel.Core
 
             return true;
         }
+        /// <summary>
+        /// Chiude la connessione conn.
+        /// </summary>
+        /// <param name="conn">Connessione da chiudere.</param>
+        /// <returns>True se la connessione viene chiusa o è chiusa, false altrimenti.</returns>
         private bool CloseConnection(SqlConnection conn)
         {
             try
@@ -212,7 +276,14 @@ namespace Iren.ToolsExcel.Core
 
             return true;
         }
-
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="cmd">Comando con cui eseguire la stored procedure.</param>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout di esecuzione.</param>
+        /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
         private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
@@ -237,11 +308,22 @@ namespace Iren.ToolsExcel.Core
             }
 
         }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="cmd">Comando con cui eseguire la stored procedure.</param>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout di esecuzione.</param>
+        /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
         private DataTable Select(Command cmd, string storedProcedure, String parameters, int timeout = 300)
         {
             return Select(cmd, storedProcedure, getParamsFromString(parameters), timeout);
         }
-
+        /// <summary>
+        /// Controlla lo stato del DB e notifica se ci sono stati dei cambi.
+        /// </summary>
+        /// <param name="state">Stato.</param>
         private void CheckDB(object state)
         {
             Dictionary<NomiDB, ConnectionState> oldStatoDB = new Dictionary<NomiDB, ConnectionState>(_statoDB);
@@ -278,6 +360,10 @@ namespace Iren.ToolsExcel.Core
             CloseConnection(_internalsqlConn);
             
         }
+        /// <summary>
+        /// Metodo di notifica di un cambio di valore della proprietà propertyName.
+        /// </summary>
+        /// <param name="propertyName">Nome della proprietà di cui notificare il cambiamento.</param>
         private void NotifyPropertyChanged(String propertyName = "")
         {
             if (PropertyChanged != null)

@@ -13,6 +13,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Al carica informazioni viene aggiunta la funzione per aggiornare i colori di sfondo delle celle per evidenziare le variazioni dai mercati precedenti. Inoltre, elimina il titolo verticale.
+    /// </summary>
     public class Sheet : Base.Sheet
     {
         #region Variabili

@@ -9,6 +9,9 @@ using Office = Microsoft.Office.Core;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Cambio i label e nascondo la riga 6.
+    /// </summary>
     class Riepilogo : Base.Riepilogo
     {
         public Riepilogo()

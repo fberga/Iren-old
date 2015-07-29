@@ -484,6 +484,12 @@ namespace Iren.ToolsExcel.Base
         {
             return _defDatesIndexByCol.ElementAt(0).Key;
         }
+
+        public int GetColData1H1()
+        {
+            return _defDatesIndexByName[GetName(Date.SuffissoDATA1, Date.GetSuffissoOra(1))];
+        }
+
         /// <summary>
         /// Restituisce la prima riga definita. Solitamente coinciderà con la riga "rowBlock" definita nella struttura del foglio.
         /// </summary>

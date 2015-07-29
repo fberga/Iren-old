@@ -33,6 +33,10 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        /// <summary>
+        /// Imposta tutte le selezioni a vuote
+        /// </summary>
+        /// <param name="ws">Worksheet dove si trova la selezione.</param>
         public void ClearSelections(Microsoft.Office.Interop.Excel.Worksheet ws)
         {
             foreach (string cell in SelPeers.Keys)
@@ -43,14 +47,29 @@ namespace Iren.ToolsExcel.Base
                 ws.Range[cell].RowHeight = height;
             }
         }
+        /// <summary>
+        /// Imposta la selezione in base al valore val.
+        /// </summary>
+        /// <param name="ws">Worksheet dove si trova la selezione.</param>
+        /// <param name="val">Valore da selezionare.</param>
         public void Select(Microsoft.Office.Interop.Excel.Worksheet ws, int val)
         {
             Select(ws, GetByValue(val));
         }
+        /// <summary>
+        /// Imposta la selezioe in base al range rng selezionato.
+        /// </summary>
+        /// <param name="ws">Worksheet dove si trova la selezione.</param>
+        /// <param name="rng">Range selezionato.</param>
         public void Select(Microsoft.Office.Interop.Excel.Worksheet ws, string rng)
         {
             ws.Range[rng].Value = "\u25CF"; //"\u25C9";
         }
+        /// <summary>
+        /// Restituisce il range da selezionare in base al valore.
+        /// </summary>
+        /// <param name="value">Valore.</param>
+        /// <returns>Indirizzo in formato A1 del range da selezionare.</returns>
         public string GetByValue(int value)
         {
             return SelPeers.First(kv => kv.Value == value).Key;

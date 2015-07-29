@@ -152,7 +152,7 @@ namespace Iren.ToolsExcel.Base
                                 newRow["SiglaEntita"] = parts[0];
                                 newRow["SiglaInformazione"] = parts[1];
                                 newRow["Data"] = data;
-                                newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                newRow["Valore"] = ws.Range[column.ToString()].Value;
                                 newRow["AnnotaModifica"] = annota ? "1" : "0";
                                 newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
                                 newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;

@@ -16,6 +16,9 @@ using System.Reflection;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Funzioni di esportazione custom.
+    /// </summary>
     public class Esporta : AEsporta
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)

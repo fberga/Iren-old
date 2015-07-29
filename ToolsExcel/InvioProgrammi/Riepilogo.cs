@@ -23,6 +23,9 @@ namespace Iren.ToolsExcel
 
         }
 
+        /// <summary>
+        /// Inizializza i label con parametri customizzati.
+        /// </summary>
         public override void InitLabels()
         {
             base.InitLabels();

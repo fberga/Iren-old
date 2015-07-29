@@ -23,11 +23,9 @@ namespace Iren.ToolsExcel
 
         }
 
-        //public override void LoadStructure()
-        //{
-        //    InitLabels();
-        //}
-
+        /// <summary>
+        /// Label riepilogo custom
+        /// </summary>
         public override void InitLabels()
         {
             base.InitLabels();

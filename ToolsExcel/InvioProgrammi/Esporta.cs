@@ -15,6 +15,9 @@ using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Crea la mail con i dati di export da inviare agli impianti.
+    /// </summary>
     class Esporta : AEsporta
     {
         DefinedNames _defNamesMercato = new DefinedNames(Simboli.Mercato);
@@ -56,13 +59,14 @@ namespace Iren.ToolsExcel
 
                     Range rng = new Range(_defNamesMercato.GetRowByName(siglaEntita, "DATA"), 1, Date.GetOreGiorno(DataBase.DataAttiva) + 5, _defNamesMercato.GetLastCol());
 
-                    InviaMail(Simboli.Mercato, siglaEntita, rng);
+                    bool result = InviaMail(Simboli.Mercato, siglaEntita, rng);
                  
                     oldActiveWindow.Activate();
 
                     Globals.ThisWorkbook.Application.ScreenUpdating = true;
-                    break;
+                    return result;
             }
+
             return true;
         }
         protected bool CreaOutputXLS(Excel.Worksheet ws, string fileName, bool deleteOrco, Range rng)
@@ -134,6 +138,8 @@ namespace Iren.ToolsExcel
                     if(categoriaEntita.Count == 0)
                         categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
 
+                    bool interrupt = false;
+
                     foreach (DataRowView entita in categoriaEntita)
                     {
                         entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS'";
@@ -144,6 +150,13 @@ namespace Iren.ToolsExcel
                             string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
+
+                            if (files.Length == 0)
+                                if (System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
+                                {
+                                    interrupt = true;
+                                    break;
+                                }
 
                             foreach (string file in files)
                                 attachments.Add(file);
@@ -157,6 +170,8 @@ namespace Iren.ToolsExcel
                             string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
+
+
 
                             if (files.Length > 0)
                             {
@@ -169,6 +184,14 @@ namespace Iren.ToolsExcel
                                 pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
 
                                 files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
+
+                                if (files.Length == 0)
+                                    if (System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
+                                    {
+                                        interrupt = true;
+                                        break;
+                                    }
+
                                 foreach (string file in files)
                                     attachments.Add(file);
                             }
@@ -180,55 +203,67 @@ namespace Iren.ToolsExcel
                             string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileRS").Value;
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
+
+                            if (files.Length == 0)
+                                if (System.Windows.Forms.MessageBox.Show("File Riserva Secondaria non presente nell'area di rete. Continuare con l'invio?", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
+                                {
+                                    interrupt = true;
+                                    break;
+                                }
+
                             foreach (string file in files)
                                 attachments.Add(file);
                         }
                     }
+
+
+                    if (!interrupt)
+                    {
+                        var config = Workbook.GetUsrConfigElement("destMailTest");
+                        string mailTo = config.Value;
+                        string mailCC = "";
+
+                        if (Simboli.Ambiente == "Produzione")
+                        {
+                            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_TO'";
+                            mailTo = entitaProprieta[0]["Valore"].ToString();
+                            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_CC'";
+                            mailCC = entitaProprieta[0]["Valore"].ToString();
+                        }
+
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_CODICE_MAIL'";
+                        string codUP = entitaProprieta[0]["Valore"].ToString();
+
+                        config = Workbook.GetUsrConfigElement("oggettoMail");
+                        string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", DataBase.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Simboli.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
+                        config = Workbook.GetUsrConfigElement("messaggioMail");
+                        string messaggio = config.Value;
+                        messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
+
+                        //TODO check se manda sempre con lo stesso account...
+                        Outlook.Account senderAccount = outlook.Session.Accounts[1];
+                        foreach (Outlook.Account account in outlook.Session.Accounts)
+                        {
+                            if (account.DisplayName == "Bidding")
+                                senderAccount = account;
+                        }
+                        mail.SendUsingAccount = senderAccount;
+                        mail.Subject = oggetto;
+                        mail.Body = messaggio;
+                        mail.Recipients.Add(mailTo);
+                        mail.CC = mailCC;
+
+                        //aggiungo allegato XLS
+                        foreach (string attachment in attachments)
+                            mail.Attachments.Add(attachment);
+
+                        mail.Send();
+                    }
                     
-
-
-                    var config = Workbook.GetUsrConfigElement("destMailTest");
-                    string mailTo = config.Value;
-                    string mailCC = "";
-
-                    if (Simboli.Ambiente == "Produzione")
-                    {
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_TO'";
-                        mailTo = entitaProprieta[0]["Valore"].ToString();
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_CC'";
-                        mailCC = entitaProprieta[0]["Valore"].ToString();
-                    }
-
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_CODICE_MAIL'";
-                    string codUP = entitaProprieta[0]["Valore"].ToString();
-
-                    config = Workbook.GetUsrConfigElement("oggettoMail");
-                    string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", DataBase.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Simboli.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
-                    config = Workbook.GetUsrConfigElement("messaggioMail");
-                    string messaggio = config.Value;
-                    messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
-
-                    //TODO check se manda sempre con lo stesso account...
-                    Outlook.Account senderAccount = outlook.Session.Accounts[1];
-                    foreach (Outlook.Account account in outlook.Session.Accounts)
-                    {
-                        if (account.DisplayName == "Bidding")
-                            senderAccount = account;
-                    }
-                    mail.SendUsingAccount = senderAccount;
-                    mail.Subject = oggetto;
-                    mail.Body = messaggio;
-                    mail.Recipients.Add(mailTo);
-                    mail.CC = mailCC;
-
-                    //aggiungo allegato XLS
-                    foreach (string attachment in attachments)
-                        mail.Attachments.Add(attachment);
-
-                    mail.Send();
-
                     foreach (string file in attachments)
                         File.Delete(file);
+
+                    return !interrupt;
                 }
             }
             catch(Exception e)
@@ -243,7 +278,7 @@ namespace Iren.ToolsExcel
                 return false;
             }
 
-            return true;
+            return false;
         }
     }
 }

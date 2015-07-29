@@ -12,6 +12,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Aggiungo la personalizzazione delle note.
+    /// </summary>
     class Sheet : Base.Sheet
     {
         public Sheet(Excel.Worksheet ws)
@@ -33,6 +36,7 @@ namespace Iren.ToolsExcel
             rngPersonalizzazioni.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
             rngPersonalizzazioni.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
             rngPersonalizzazioni.Columns[1].ColumnWidth = Struct.cell.width.jolly1;
+            rngPersonalizzazioni.WrapText = true;
 
             //da classe base _dataInizio e _dataFine sono corretti
             for (int i = 1; i < informazioni.Count; i++)

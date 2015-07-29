@@ -38,11 +38,20 @@ namespace Iren.ToolsExcel.Core
 
         #region Metodi
 
+        /// <summary>
+        /// Aggiunge un nuovo parametro con chiave key e valore value.
+        /// </summary>
+        /// <param name="key">Chiave.</param>
+        /// <param name="value">Valore.</param>
         public void Add(string key, object value)
         {
             _parameters.Add(key, value);
         }
-
+        /// <summary>
+        /// Verifica se contiente la chiave key.
+        /// </summary>
+        /// <param name="key">Chiave.</param>
+        /// <returns>True se la chiave esiste, false altrimenti.</returns>
         public bool ContainsKey(string key)
         {
             return _parameters.ContainsKey(key);

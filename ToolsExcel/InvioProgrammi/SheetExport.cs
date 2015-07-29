@@ -11,15 +11,23 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Crea i fogli di export.
+    /// </summary>
     class SheetExport : Base.ASheet
     {
-        private static Dictionary<string, DateTime> _dataCaricaStruttura = new Dictionary<string, DateTime>();
+        #region Variabili
 
+        private static Dictionary<string, DateTime> _dataCaricaStruttura = new Dictionary<string, DateTime>();
 
         protected Excel.Worksheet _ws;
         protected DefinedNames _definedNames;
         protected int _rigaAttiva;
         protected string _mercato;
+
+        #endregion
+
+        #region Costruttori
 
         public SheetExport(Excel.Worksheet ws)
         {
@@ -31,6 +39,28 @@ namespace Iren.ToolsExcel
             _definedNames = new DefinedNames(_ws.Name);
         }
 
+        #endregion
+
+        #region Proprietà
+
+        public DateTime DataCaricamentoStruttura
+        {
+            get
+            {
+                if (_dataCaricaStruttura.ContainsKey(_ws.Name))
+                    return _dataCaricaStruttura[_ws.Name];
+                else
+                    return DateTime.MinValue;
+            }
+        }
+
+        #endregion
+
+        #region Metodi
+
+        /// <summary>
+        /// Aggiorna i parametri applicazione contenuti nella tabella APPLICAZIONE.
+        /// </summary>
         protected void AggiornaParametriSheet()
         {
             DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
@@ -42,7 +72,9 @@ namespace Iren.ToolsExcel
             _struttura.colBlock = 2;
 
         }
-
+        /// <summary>
+        /// Cancella il contenuto del foglio.
+        /// </summary>
         private void Clear()
         {            
             if (_ws.ChartObjects().Count > 0)
@@ -74,6 +106,9 @@ namespace Iren.ToolsExcel
             Workbook.Main.Select();
             _ws.Application.ScreenUpdating = false;
         }
+        /// <summary>
+        /// Inizializza la barra del titolo.
+        /// </summary>
         protected void InitBarraNavigazione()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -90,6 +125,9 @@ namespace Iren.ToolsExcel
                 rng.Style = "Barra navigazione con nomi";
             }
         }
+        /// <summary>
+        /// Crea tutte le colonne.
+        /// </summary>
         private void InitColumns()
         {
             //definisco tutte le colonne
@@ -110,7 +148,9 @@ namespace Iren.ToolsExcel
                     _definedNames.AddCol(colonnaAttiva++, "RIF" + (i + 1), "PROGRAMMAQ" + (j + 1));
             }
         }
-
+        /// <summary>
+        /// Carica la struttura.
+        /// </summary>
         public override void LoadStructure()
         {
             SplashScreen.UpdateStatus("Creo struttura " + _mercato);
@@ -141,7 +181,10 @@ namespace Iren.ToolsExcel
             else
                 _dataCaricaStruttura.Add(_ws.Name, DataBase.DataAttiva);
         }
-
+        /// <summary>
+        /// Inizializza il blocco entità.
+        /// </summary>
+        /// <param name="entita">Riga con i dati dell'entità.</param>
         protected void InitBloccoEntita(DataRowView entita)
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -154,6 +197,10 @@ namespace Iren.ToolsExcel
             }
 
         }
+        /// <summary>
+        /// Crea i nomi delle celle.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entitaà.</param>
         protected void CreaNomiCelle(object siglaEntita)
         {
             _definedNames.AddName(_rigaAttiva, siglaEntita, "T");
@@ -163,6 +210,12 @@ namespace Iren.ToolsExcel
             _definedNames.AddName(_rigaAttiva, siglaEntita, "UM", "T");
             _rigaAttiva += Date.GetOreGiorno(DataBase.DataAttiva) + 5;
         }
+        /// <summary>
+        /// Formatta il blocco entità.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla entità.</param>
+        /// <param name="desEntita">Descrizione.</param>
+        /// <param name="codiceRUP">Codice RUP.</param>
         protected void FormattaBloccoEntita(object siglaEntita, object desEntita, object codiceRUP)
         {
             //Titolo
@@ -235,7 +288,9 @@ namespace Iren.ToolsExcel
 
             }
         }
-
+        /// <summary>
+        /// Aggiorna i dati.
+        /// </summary>
         public override void UpdateData()
         {
             SplashScreen.UpdateStatus("Aggiorno informazioni");
@@ -244,6 +299,9 @@ namespace Iren.ToolsExcel
             AggiornaDateTitoli();
             CaricaInformazioni();            
         }
+        /// <summary>
+        /// Cancella i dati.
+        /// </summary>
         private void CancellaDati()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -266,6 +324,9 @@ namespace Iren.ToolsExcel
                 }
             }
         }
+        /// <summary>
+        /// Aggiorna le date.
+        /// </summary>
         public override void AggiornaDateTitoli()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
@@ -277,13 +338,22 @@ namespace Iren.ToolsExcel
                 _ws.Range[rng.ToString()].Value = DataBase.DataAttiva;
             }
         }
+        /// <summary>
+        /// Non ci sono grafici.
+        /// </summary>
         public override void AggiornaGrafici()
         {
         }
+        /// <summary>
+        /// Non è necessario definire personalizzazioni.
+        /// </summary>
+        /// <param name="siglaEntita"></param>
         protected override void InsertPersonalizzazioni(object siglaEntita)
         {            
         }
-
+        /// <summary>
+        /// Carica le informazioni.
+        /// </summary>
         public override void CaricaInformazioni()
         {
             try
@@ -322,15 +392,6 @@ namespace Iren.ToolsExcel
             }
         }
 
-        public DateTime DataCaricamentoStruttura
-        {
-            get 
-            {
-                if (_dataCaricaStruttura.ContainsKey(_ws.Name))
-                    return _dataCaricaStruttura[_ws.Name];
-                else
-                    return DateTime.MinValue;
-            }
-        }
+        #endregion
     }
 }

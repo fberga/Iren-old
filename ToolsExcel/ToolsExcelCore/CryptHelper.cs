@@ -8,6 +8,10 @@ namespace Iren.ToolsExcel.Core
 {
     public class CryptHelper
     {
+        /// <summary>
+        /// Funzione per criptare le sezioni del file di configurazione che contengono dati sensibili.
+        /// </summary>
+        /// <param name="sections">Lista di sezioni da criptare.</param>
         public static void CryptSection(params string[] sections)
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);

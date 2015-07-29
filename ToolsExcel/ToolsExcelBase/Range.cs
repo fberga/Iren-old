@@ -59,12 +59,19 @@ namespace Iren.ToolsExcel.Base
 
         #region Costruttori
 
+        /// <summary>
+        /// Costruttore vuoto. Crea l'oggetto inizializzando a vuote le collezioni di righe, colonne e celle.
+        /// </summary>
         public Range() 
         {
             _rows = new RowsCollection(this);
             _cols = new ColumnsCollection(this);
             _cells = new CellsCollection(this);
         }
+        /// <summary>
+        /// Costruttore di copia. Crea l'oggetto copiando le informazioni da oth.
+        /// </summary>
+        /// <param name="oth">Oggetto da cui copiare il range.</param>
         public Range(Range oth) 
             : this()
         {
@@ -73,12 +80,23 @@ namespace Iren.ToolsExcel.Base
             _rowOffset = oth.RowOffset;
             _colOffset = oth.ColOffset;
         }
+        /// <summary>
+        /// Definisce un range cella situato alle coordinate (row, column).
+        /// </summary>
+        /// <param name="row">Riga.</param>
+        /// <param name="column">Colonna.</param>
         public Range(int row, int column)
             : this()
         {
             _startRow = row;
             _startColumn = column;
         }
+        /// <summary>
+        /// Definisce un range di una colonna che parte da (row, column) e si estende per rowOffset righe. Quando rowOffset è a 1 il range è una cella.
+        /// </summary>
+        /// <param name="row">Riga.</param>
+        /// <param name="column">Colonna.</param>
+        /// <param name="rowOffset">Righe di offset. Se 1 inizializzo un range cella.</param>
         public Range(int row, int column, int rowOffset)
             : this()
         {
@@ -86,6 +104,13 @@ namespace Iren.ToolsExcel.Base
             _startColumn = column;
             _rowOffset = rowOffset;
         }
+        /// <summary>
+        /// Definisce un range generico che parte da (row, column) e si estende per rowOffset righe e colOffset colonne. Se rowOffset e colOffset sono a 1 il range è di una cella.
+        /// </summary>
+        /// <param name="row">Riga.</param>
+        /// <param name="column">Colonna.</param>
+        /// <param name="rowOffset">Righe di offset.</param>
+        /// <param name="colOffset">Colonne di offset.</param>
         public Range(int row, int column, int rowOffset, int colOffset)
             : this()
         {
@@ -94,6 +119,10 @@ namespace Iren.ToolsExcel.Base
             _rowOffset = rowOffset;
             _colOffset = colOffset;
         }
+        /// <summary>
+        /// Definisce un range a partire da una stringa di indirizzo in forma A1.
+        /// </summary>
+        /// <param name="range">Indirizzo in forma A1.</param>
         public Range(string range)
             : this()
         {
@@ -109,6 +138,12 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        /// <summary>
+        /// Prta il range a rowOffset e colOffset. Restituisce il nuovo oggetto range esteso.
+        /// </summary>
+        /// <param name="rowOffset">Nuovo offset di righe.</param>
+        /// <param name="colOffset">Nuovo offset di colonne.</param>
+        /// <returns>Il nuovo oggetto range esteso.</returns>
         public Range Extend(int rowOffset = 1, int colOffset = 1) 
         {
             RowOffset = rowOffset;
@@ -116,6 +151,12 @@ namespace Iren.ToolsExcel.Base
             
             return this;
         }
+        /// <summary>
+        /// Estende il range di rowOffset e colOffset. Restituisce il nuovo oggetto range esteso.
+        /// </summary>
+        /// <param name="rowOffset">Righe di offset da aggiungere.</param>
+        /// <param name="colOffset">Colonne di offset da aggiungere.</param>
+        /// <returns>Il nuovo oggetto range esteso.</returns>
         public Range ExtendOf(int rowOffset = 0, int colOffset = 0)
         {
             _rowOffset += rowOffset;
@@ -123,11 +164,19 @@ namespace Iren.ToolsExcel.Base
 
             return this;
         }
+        /// <summary>
+        /// Scrive il range in formato A1.
+        /// </summary>
+        /// <returns>La stringa di indirizzo in formato A1.</returns>
         public override string ToString()
         {
             return GetRange(_startRow, _startColumn, _rowOffset, _colOffset);
         }
-
+        /// <summary>
+        /// Verifica se il range contiene rng.
+        /// </summary>
+        /// <param name="rng">Range di cui verificare l'appartenenza.</param>
+        /// <returns>True se rng è un sottorange al massimo uguale, false altrimenti</returns>
         public bool Contains(Range rng)
         {
             return StartRow <= rng.StartRow
@@ -140,6 +189,12 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi Statici
 
+        /// <summary>
+        /// Converte l'indirizzo dal formato RC al formato A1.
+        /// </summary>
+        /// <param name="riga">Riga.</param>
+        /// <param name="colonna">Colonna.</param>
+        /// <returns>La stringa che rappresenta l'indirizzo in formato A1.</returns>
         public static string R1C1toA1(int riga, int colonna)
         {
             string output = "";
@@ -152,10 +207,11 @@ namespace Iren.ToolsExcel.Base
             output += riga;
             return output;
         }
-        public static string R1C1toA1(Range cella)
-        {
-            return R1C1toA1(cella.StartRow, cella.StartColumn);
-        }
+        /// <summary>
+        /// Converte l'indirizzo in formato A1 in un oggetto Range.
+        /// </summary>
+        /// <param name="address">Indirizzo in formato A1.</param>
+        /// <returns>Oggetto range corrispondente all'indirizzo.</returns>
         public static Range A1toRange(string address)
         {
             string[] parts = address.Split(':');
@@ -191,6 +247,14 @@ namespace Iren.ToolsExcel.Base
 
             return rng;
         }
+        /// <summary>
+        /// Crea l'indirizzo in formato A1 a partire da tutti i dati che compongono il range.
+        /// </summary>
+        /// <param name="row">Riga.</param>
+        /// <param name="column">Colonna.</param>
+        /// <param name="rowOffset">Righe di offset.</param>
+        /// <param name="colOffset">Colonne di offset.</param>
+        /// <returns>Stringa di indirizzo in formato A1.</returns>
         public static string GetRange(int row, int column, int rowOffset = 1, int colOffset = 1)
         {
             if ((rowOffset == 1 && colOffset == 1))

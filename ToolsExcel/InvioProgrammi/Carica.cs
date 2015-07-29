@@ -10,6 +10,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Funzioni di caricamento personalizzato. Una volta caricati i dati, scrive l'informazione anche nei fogli di export.
+    /// </summary>
     public class Carica : Base.Carica
     {
         DefinedNames _definedNamesSheetMercato = new DefinedNames(Simboli.Mercato);

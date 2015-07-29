@@ -172,9 +172,22 @@ namespace Iren.ToolsExcel.Base
 
     public class Esporta : AEsporta
     {
+        #region Metodi
+
+        /// <summary>
+        /// Metodo per eseguire un azione di esportazione. Da sovrascrivere in ogni applicativo che ha un'esportazione definita.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità dell'export.</param>
+        /// <param name="siglaAzione">Sigla dell'azione dell'export</param>
+        /// <param name="desEntita">Descrizione dell'entità.</param>
+        /// <param name="desAzione">Descrizione dell'azione.</param>
+        /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
+        /// <returns></returns>
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             return true;
         }
+
+        #endregion
     }
 }

@@ -1033,7 +1033,7 @@ namespace Iren.ToolsExcel.Base
             DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
 
             int i = 1;
-            int col = _definedNames.GetFirstCol() + (_struttura.visData0H24 ? 1 : 0);
+            int col = _definedNames.GetColData1H1();
             int colOffset = _definedNames.GetColOffset(_dataFine) - (_struttura.visData0H24 ? 1 : 0);
             foreach (DataRowView grafico in grafici)
             {
@@ -1122,20 +1122,46 @@ namespace Iren.ToolsExcel.Base
         private void AggiornaGrafici(Excel.Chart chart, Excel.Range rigaGrafico)
         {
             SplashScreen.UpdateStatus("Aggiorno grafici " + chart.Name);
+
+            //calcolo i valori max e min per aggiornare la scala
+            bool allNull = true;
+            double minValue = double.MaxValue;
+            double maxValue = double.MinValue;
+
+            foreach (Excel.Series s in chart.SeriesCollection())
+            {
+                Array val = s.Values as Array;
+
+                if (val.OfType<double>().Any())
+                {
+                    allNull = false;
+                    minValue = Math.Min(minValue, val.Cast<double>().Min());
+                    maxValue = Math.Max(maxValue, val.Cast<double>().Max());
+                }
+            }
+
+            if (!allNull)
+            {
+                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Round(maxValue + maxValue * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Round(minValue - minValue * 5 / 100);
+            }
+
             //resize dell'area del grafico per adattarla alle ore
-            string max = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale.ToString();
-            string min = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale.ToString();
-
-            max = max.Length > min.Length ? max : min;
-
             Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
             grfx.PageUnit = GraphicsUnit.Point;
-            SizeF sizeMax = grfx.MeasureString(max, new Font("Verdana", 11));
+            float sizeMax = float.MinValue;
 
-            chart.ChartArea.Left = rigaGrafico.Left - sizeMax.Width - 7;
-            chart.ChartArea.Width = rigaGrafico.Width + sizeMax.Width + 4;
-            chart.PlotArea.InsideLeft = 0;
-            chart.PlotArea.Width = chart.ChartArea.Width + 3;
+            for(double val = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale; val <= chart.Axes(Excel.XlAxisType.xlValue).MaximumScale; val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit) 
+            {
+                SizeF tmpSize = grfx.MeasureString(val.ToString(), new Font("Verdana", 11));
+                sizeMax = Math.Max(sizeMax, tmpSize.Width);
+            }
+
+            //MANTENERE ORDINE DI QUESTE ISTRUZIONI
+            chart.ChartArea.Left = rigaGrafico.Left - sizeMax - 7;      //sposto a destra il grafico
+            chart.ChartArea.Width = rigaGrafico.Width + sizeMax + 4;    //aumento la larghezza del grafico
+            chart.PlotArea.InsideLeft = 0d;                             //allineo il grafico al bordo sinistro dell'area esterna al grafico
+            chart.PlotArea.Width = chart.ChartArea.Width + 3;           //aumento la larghezza dell'area esterna al grafico
         }
 
         #endregion

@@ -9,6 +9,9 @@ using Office = Microsoft.Office.Core;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Init labels è personalizzata.
+    /// </summary>
     class Riepilogo : Base.Riepilogo
     {
         public Riepilogo()

@@ -8,6 +8,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Label riepilogo custom.
+    /// </summary>
     public class Aggiorna : Base.Aggiorna
     {
         public Aggiorna()
