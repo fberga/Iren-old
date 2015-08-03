@@ -191,6 +191,7 @@ namespace Iren.ToolsExcel
             {
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
                 DataBase.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
+
                 btnAggiornaStruttura_Click(null, null);
             }
 

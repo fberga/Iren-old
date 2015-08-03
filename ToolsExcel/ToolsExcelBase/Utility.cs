@@ -1705,7 +1705,7 @@ namespace Iren.ToolsExcel.Utility
             }
             catch
             {
-                ConfigurationManager.RefreshSection("applicationSettings");
+                ConfigurationManager.RefreshSection("appSettings");
                 return ConfigurationManager.AppSettings[key];
             }
         }
@@ -1719,7 +1719,7 @@ namespace Iren.ToolsExcel.Utility
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings[key].Value = value;
             config.Save(ConfigurationSaveMode.Minimal);
-            ConfigurationManager.RefreshSection("applicationSettings");
+            ConfigurationManager.RefreshSection("appSettings");
         }
         #endregion
 

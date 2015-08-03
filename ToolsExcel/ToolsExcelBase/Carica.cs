@@ -148,7 +148,7 @@ namespace Iren.ToolsExcel.Base
                     suffissoOra = Date.GetSuffissoOra(azione["Data"]);
                 }
 
-                ScriviCella(ws, definedNames, azione["SiglaEntita"], azione, suffissoData, suffissoOra, azione["Valore"], false);
+                ScriviCella(ws, definedNames, azione["SiglaEntita"], azione, suffissoData, suffissoOra, azione["Valore"], false, true);
             }
         }
         /// <summary>
@@ -230,7 +230,7 @@ namespace Iren.ToolsExcel.Base
 
                         if (step == 0)
                         {
-                            ScriviCella(ws, definedNames, siglaEntita, calcolo, suffissoData, Date.GetSuffissoOra(ora), risultato, true);
+                            ScriviCella(ws, definedNames, siglaEntita, calcolo, suffissoData, Date.GetSuffissoOra(ora), risultato, true, false);
                         }
 
                         if (calcolo["FineCalcolo"].Equals("1") || step == -1)
@@ -258,7 +258,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="suffissoOra">Suffisso dell'ora di riferimento necessario per l'indirizzamento.</param>
         /// <param name="risultato">Risultato del calcolo da scrivere nella cella.</param>
         /// <param name="saveToDB">Flag che indica se l'informazione deve essere salvata o no sul DB in modo da attivare la routine di salvataggio della modifica.</param>
-        protected virtual void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB) 
+        protected virtual void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB, bool fromCarica) 
         {
             object siglaEntitaRif = siglaEntita;
 
@@ -280,7 +280,7 @@ namespace Iren.ToolsExcel.Base
             if (info["Commento"] != DBNull.Value)
                 xlRng.AddComment(info["Commento"]).Visible = false;
 
-            if(saveToDB)
+            if (saveToDB && !fromCarica)
                 Handler.StoreEdit(xlRng, 0, true);
         }
         /// <summary>

@@ -58,7 +58,7 @@
             this.panelButtons.Controls.Add(this.btnApplica);
             this.panelButtons.Controls.Add(this.btnAnnulla);
             this.panelButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelButtons.Location = new System.Drawing.Point(5, 440);
+            this.panelButtons.Location = new System.Drawing.Point(5, 503);
             this.panelButtons.Name = "panelButtons";
             this.panelButtons.Padding = new System.Windows.Forms.Padding(0, 3, 0, 0);
             this.panelButtons.Size = new System.Drawing.Size(1050, 53);
@@ -165,7 +165,7 @@
             this.panelCentrale.Location = new System.Drawing.Point(5, 58);
             this.panelCentrale.Name = "panelCentrale";
             this.panelCentrale.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.panelCentrale.Size = new System.Drawing.Size(1050, 382);
+            this.panelCentrale.Size = new System.Drawing.Size(1050, 445);
             this.panelCentrale.TabIndex = 14;
             // 
             // panelUP
@@ -175,7 +175,7 @@
             this.panelUP.Location = new System.Drawing.Point(700, 5);
             this.panelUP.Name = "panelUP";
             this.panelUP.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelUP.Size = new System.Drawing.Size(350, 372);
+            this.panelUP.Size = new System.Drawing.Size(350, 435);
             this.panelUP.TabIndex = 6;
             // 
             // treeViewUP
@@ -188,7 +188,7 @@
             this.treeViewUP.ShowNodeToolTips = true;
             this.treeViewUP.ShowPlusMinus = false;
             this.treeViewUP.ShowRootLines = false;
-            this.treeViewUP.Size = new System.Drawing.Size(344, 372);
+            this.treeViewUP.Size = new System.Drawing.Size(344, 435);
             this.treeViewUP.TabIndex = 1;
             this.treeViewUP.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewUP_AfterCheck);
             this.treeViewUP.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
@@ -200,7 +200,7 @@
             this.panelCategorie.Location = new System.Drawing.Point(350, 5);
             this.panelCategorie.Name = "panelCategorie";
             this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelCategorie.Size = new System.Drawing.Size(350, 372);
+            this.panelCategorie.Size = new System.Drawing.Size(350, 435);
             this.panelCategorie.TabIndex = 5;
             // 
             // treeViewCategorie
@@ -213,7 +213,7 @@
             this.treeViewCategorie.ShowNodeToolTips = true;
             this.treeViewCategorie.ShowPlusMinus = false;
             this.treeViewCategorie.ShowRootLines = false;
-            this.treeViewCategorie.Size = new System.Drawing.Size(344, 372);
+            this.treeViewCategorie.Size = new System.Drawing.Size(344, 435);
             this.treeViewCategorie.TabIndex = 1;
             this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
@@ -225,7 +225,7 @@
             this.panelAzioni.Location = new System.Drawing.Point(0, 5);
             this.panelAzioni.Name = "panelAzioni";
             this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelAzioni.Size = new System.Drawing.Size(350, 372);
+            this.panelAzioni.Size = new System.Drawing.Size(350, 435);
             this.panelAzioni.TabIndex = 4;
             // 
             // treeViewAzioni
@@ -237,7 +237,7 @@
             this.treeViewAzioni.Name = "treeViewAzioni";
             this.treeViewAzioni.ShowPlusMinus = false;
             this.treeViewAzioni.ShowRootLines = false;
-            this.treeViewAzioni.Size = new System.Drawing.Size(344, 372);
+            this.treeViewAzioni.Size = new System.Drawing.Size(344, 435);
             this.treeViewAzioni.TabIndex = 0;
             this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
@@ -246,7 +246,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1060, 498);
+            this.ClientSize = new System.Drawing.Size(1060, 561);
             this.Controls.Add(this.panelCentrale);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelButtons);

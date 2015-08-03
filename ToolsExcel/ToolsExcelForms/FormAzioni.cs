@@ -510,11 +510,10 @@ namespace Iren.ToolsExcel.Forms
         }
         private void comboGiorni_MouseClick(object sender, EventArgs e)
         {
-            selDate.BringToFront();
             selDate.Top = comboGiorni.PointToScreen(Point.Empty).Y + comboGiorni.Height;
             selDate.Left = comboGiorni.PointToScreen(Point.Empty).X;
             selDate.Width = comboGiorni.Width;
-            selDate.Show();
+            selDate.ShowDialog(this);
         }
         private void comboGiorni_TextChanged(object sender, EventArgs e)
         {

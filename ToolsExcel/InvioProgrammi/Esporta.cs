@@ -216,7 +216,6 @@ namespace Iren.ToolsExcel
                         }
                     }
 
-
                     if (!interrupt)
                     {
                         var config = Workbook.GetUsrConfigElement("destMailTest");

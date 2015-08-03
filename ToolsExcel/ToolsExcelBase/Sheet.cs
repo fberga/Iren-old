@@ -162,20 +162,21 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         public static void SalvaModifiche()
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            DataTable categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
 
             //controllo quali entità sono state modificate
-            List<object> entitaModificate =
-                (from r in modifiche.AsEnumerable()
-                 group r["SiglaEntita"] by r["SiglaEntita"] into gr
-                 select gr.Key).ToList();
+            //List<object> entitaModificate =
+            //    (from r in modifiche.AsEnumerable()
+            //     group r["SiglaEntita"] by r["SiglaEntita"] into gr
+            //     select gr.Key).ToList();
 
-            foreach (string siglaEntita in entitaModificate)
+            foreach (DataRow entita in categoriaEntita.Rows)
             {
+                object siglaEntita = entita["SiglaEntita"];
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
 

@@ -35,9 +35,9 @@ namespace Iren.ToolsExcel
             return o;
         }
 
-        protected override void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB)
+        protected override void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB, bool fromCarica)
         {
-            base.ScriviCella(ws, definedNames, siglaEntita, info, suffissoData, suffissoOra, risultato, saveToDB);
+            base.ScriviCella(ws, definedNames, siglaEntita, info, suffissoData, suffissoOra, risultato, saveToDB, fromCarica);
             
             //se l'informazione è visibile la devo scrivere anche nei fogli dei mercati
             DataView informazioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE]);

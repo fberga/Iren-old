@@ -188,6 +188,9 @@ namespace Iren.ToolsExcel.Base
                     SplashScreen.UpdateStatus("Salvo struttura in locale");
                     Workbook.DumpDataSet();
 
+                    Sheet.SalvaModifiche();
+                    DataBase.SalvaModificheDB();
+
                     foreach (Excel.Worksheet ws in Workbook.Sheets)
                     {
                         if (ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
@@ -268,6 +271,9 @@ namespace Iren.ToolsExcel.Base
                     DatiRiepilogo();
                     SplashScreen.UpdateStatus("Aggiorno dati Fogli");
                     DatiFogli();
+
+                    Sheet.SalvaModifiche();
+                    DataBase.SalvaModificheDB();
 
                     if (wasProtected)
                         Sheet.Protected = true;
