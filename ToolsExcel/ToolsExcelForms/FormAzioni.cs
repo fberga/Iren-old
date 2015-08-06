@@ -174,11 +174,13 @@ namespace Iren.ToolsExcel.Forms
             }
 
             treeViewUP.Nodes.Clear();
+
             ThroughAllNodes(treeViewCategorie.Nodes, n =>
             {
                 if (n.Checked)
                 {
                     _categoriaEntita.RowFilter = "SiglaCategoria = '" + n.Name + "'";
+                    _categoriaEntita.Sort = "DesEntita";
                     foreach (DataRowView entita in _categoriaEntita)
                     {
                         ThroughAllNodes(treeViewAzioni.Nodes, n1 =>
@@ -200,6 +202,9 @@ namespace Iren.ToolsExcel.Forms
                 }
             });
         }
+
+
+
         private void Evidenzia(TreeNode node, bool evidenzia)
         {
             if (evidenzia)

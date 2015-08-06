@@ -71,7 +71,8 @@ namespace Iren.ToolsExcel.Base
             this.BringToFront();
             if (status.Length > 70)
                 status = status.Substring(0, 67) + " ...";
-            lbText.Text = status;            
+            if(status != lbText.Text)
+                lbText.Text = status;
         }
 
         private void lbText_SizeChanged(object sender, EventArgs e)

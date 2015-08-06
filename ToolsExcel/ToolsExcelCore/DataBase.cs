@@ -304,6 +304,7 @@ namespace Iren.ToolsExcel.Core
             }
             catch (SqlException)
             {
+                System.Windows.Forms.MessageBox.Show("La richiesta al DB è andata in errore o in timeout...", "Core - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 return new DataTable();
             }
 

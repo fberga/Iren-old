@@ -789,6 +789,19 @@ namespace Iren.ToolsExcel.Base
             string name = GetName(parts);
             return _defNamesIndexByName.Count(kv => kv.Key.StartsWith(name)) > 0;
         }
+        public bool IsDefinedExact(params object[] parts)
+        {
+            string name = GetName(parts);
+            try
+            {
+                int row = _defNamesIndexByName[name];
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// Metodo generico per la restituzione del range in base al nome. Lavora con il foglio di riepilogo come caso particolare. Per gli altri fogli, se il nome è composto da 2 parti, le considera SiglaEntita.SiglaInformazione. Se il nome è costituito da più parti, cerca il primo suffisso data valido e considera la parte antecedente come parte di riga mentre la successiva come parte di colonna. Se la parte di colonna non viene trovata, considera la colonna come la prima definita.
         /// </summary>

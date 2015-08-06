@@ -405,7 +405,7 @@ namespace Iren.ToolsExcel
             else
             {
                 RefreshChecks();
-
+                //Workbook.ScreenUpdating = false;
                 //salva modifiche sul db
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
@@ -617,12 +617,14 @@ namespace Iren.ToolsExcel
         private void RefreshChecks()
         {
             Workbook.ScreenUpdating = false;
+            //Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             try
             {
                 _errorPane.RefreshCheck(_checkFunctions);
             }
             catch { }
-            Workbook.ScreenUpdating = true;
+            //Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+            //Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Metodo di inizializzazione della Tab Front Office. Visualizza e abilita i tasti in base alle specifiche da DB. Da notare che se ci sono aggiornamenti, bisogna caricare la struttura e riavviare l'applicativo.

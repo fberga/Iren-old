@@ -142,28 +142,36 @@ namespace Iren.ToolsExcel.Base
                             else
                                 data = Date.GetDataFromSuffisso(parts[2], "");
 
-                            DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
-                            if (r != null)
-                                r["Valore"] = ws.Range[column.ToString()].Value;
+
+                            if (!Workbook.Application.WorksheetFunction.IsErr(ws.Range[column.ToString()]))
+                            {
+                                DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
+                                if (r != null)
+                                    r["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                else
+                                {
+                                    DataRow newRow = modifiche.NewRow();
+
+                                    newRow["SiglaEntita"] = parts[0];
+                                    newRow["SiglaInformazione"] = parts[1];
+                                    newRow["Data"] = data;
+                                    newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                    newRow["AnnotaModifica"] = annota ? "1" : "0";
+                                    newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
+                                    newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
+
+                                    modifiche.Rows.Add(newRow);
+                                }
+
+                                if (annota)
+                                {
+                                    ws.Range[column.ToString()].ClearComments();
+                                    ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
+                                }
+                            }
                             else
                             {
-                                DataRow newRow = modifiche.NewRow();
 
-                                newRow["SiglaEntita"] = parts[0];
-                                newRow["SiglaInformazione"] = parts[1];
-                                newRow["Data"] = data;
-                                newRow["Valore"] = ws.Range[column.ToString()].Value;
-                                newRow["AnnotaModifica"] = annota ? "1" : "0";
-                                newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
-                                newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
-
-                                modifiche.Rows.Add(newRow);
-                            }
-
-                            if (annota)
-                            {
-                                ws.Range[column.ToString()].ClearComments();
-                                ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
                             }
                         }
                     }

@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel.Base
@@ -84,7 +85,7 @@ namespace Iren.ToolsExcel.Base
         /// Metodo per il caricamento delle informazioni.
         /// </summary>
         public abstract void CaricaInformazioni();
-
+        
         #endregion
 
         #region Proprietà Statiche
@@ -200,7 +201,7 @@ namespace Iren.ToolsExcel.Base
                     //prima cella della riga da salvare (non considera Data0H24)
                     Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
 
-                    Handler.StoreEdit(ws.Range[rng.ToString()], 0);
+                    Handler.StoreEdit(ws.Range[rng.ToString()], 0, true);
                 }
             }
         }        
@@ -242,6 +243,7 @@ namespace Iren.ToolsExcel.Base
             //carico la massima datafine in maniera da creare la barra navigazione della dimensione giusta (compresa la definizione dei giorni se necessario)
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
 
             foreach (DataRowView entita in categoriaEntita)
             {
@@ -330,8 +332,15 @@ namespace Iren.ToolsExcel.Base
             //Definizione dei nomi delle colonne
             _definedNames.DefineDates(_dataInizio, _dataFine, _struttura.colBlock, _struttura.visData0H24);
 
+            Stopwatch watch = Stopwatch.StartNew();
             Clear();
+            watch.Stop();
+            watch = Stopwatch.StartNew();
+            
             InitBarraNavigazione();
+
+            watch.Stop();
+            
 
             _rigaAttiva = _struttura.rigaBlock + 1;
 
@@ -517,20 +526,24 @@ namespace Iren.ToolsExcel.Base
         /// <param name="entita">La riga contenente le informazioni dell'entità.</param>
         protected void InitBloccoEntita(DataRowView entita)
         {
+            Stopwatch watch = Stopwatch.StartNew();
             SplashScreen.UpdateStatus("Carico struttura " + entita["DesEntita"]);
 
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
             DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
 
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            informazioni.Sort = "Ordine";
-
-            grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-
+            if (informazioni.RowFilter != "SiglaEntita = '" + entita["SiglaEntita"] + "'")
+            {
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                //informazioni.Sort = "Ordine";
+                grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+            }
+            
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
+            Stopwatch watch1 = Stopwatch.StartNew();
             CreaNomiCelle(entita["SiglaEntita"]);
             InsertTitoloEntita(entita["SiglaEntita"], entita["DesEntita"]);
             InsertOre(entita["SiglaEntita"]);
@@ -543,9 +556,15 @@ namespace Iren.ToolsExcel.Base
             InsertFormuleValoriDefault();
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL";
             InsertParametri();
+            watch1.Stop();
+            Stopwatch watch2 = Stopwatch.StartNew();
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+            watch2.Stop();
+            Stopwatch watch3 = Stopwatch.StartNew();
             FormattazioneCondizionale();
+            watch3.Stop();
 
+            watch.Stop();
             //due righe vuote tra un'entità e la successiva
             _rigaAttiva += 2;
         }
@@ -721,10 +740,11 @@ namespace Iren.ToolsExcel.Base
 
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             Range rngTitolo = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visParametro - 1, informazioni.Count);
-
+            
+            Stopwatch watch = Stopwatch.StartNew();
             Excel.Range titoloVert = _ws.Range[rngTitolo.ToString()];
             Style.RangeStyle(titoloVert, style: "Barra titolo verticale", orientation: informazioni.Count == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical, merge: true, fontSize: informazioni.Count == 1 ? 6 : 9, numberFormat: informazioni.Count > 4 ? "ddd d" : "dd");
-
+            watch.Stop();
             titoloVert.Value = Struct.tipoVisualizzazione == "O" ? desEntita : _dataInizio;            
         }
         /// <summary>
@@ -923,25 +943,19 @@ namespace Iren.ToolsExcel.Base
 
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
-                    Range rngData = _definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData);
-                    rngData.Extend(1, oreGiorno);
-
-                    Excel.Range rng = _ws.Range[rngData.ToString()];
-
-                    parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + giorno.ToString("yyyyMMdd");
+                    Range rngData = _definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreGiorno);
+                    parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "'";
 
                     if (parametriD.Count > 0)
-                        rng.Value = parametriD[0]["Valore"];
+                        _ws.Range[rngData.ToString()].Formula = parametriD[0]["Valore"];
                     else
                     {
-                        parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND CONVERT(DataIV, System.Int32) <= " + giorno.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + giorno.ToString("yyyyMMdd");
-
-                        parametriH.Sort = "Ora";
+                        parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "'";
 
                         object[] values = parametriH.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
-                        
-                        if(values.Length > 0)
-                            rng.Value = values;
+
+                        if (values.Length > 0)
+                            _ws.Range[rngData.ToString()].Value = values;
                     }
                 });
             }
@@ -966,6 +980,7 @@ namespace Iren.ToolsExcel.Base
                 formattazione.RowFilter = (info["SiglaEntitaRif"] is DBNull ? "SiglaEntita" : "SiglaEntitaRif") + " = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "'";
                 foreach (DataRowView format in formattazione)
                 {
+                    
                     string[] valore = format["Valore"].ToString().Replace("\"", "").Split('|');
                     if (format["NomeCella"] != DBNull.Value)
                     {
@@ -987,8 +1002,9 @@ namespace Iren.ToolsExcel.Base
                                 formula = "=" + address + "<" + valore[0];
                                 break;
                         }
+                        
                         Excel.FormatCondition cond = rngData.FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: formula);
-
+                        
                         cond.Font.Color = format["ForeColor"];
                         cond.Font.Bold = format["Grassetto"].Equals("1");
                         if ((int)format["BackColor"] == 0)
@@ -1010,7 +1026,7 @@ namespace Iren.ToolsExcel.Base
                         {
                             formula1 = valore[0];
                         }
-
+                        
                         Excel.FormatCondition cond = rngData.FormatConditions.Add(Excel.XlFormatConditionType.xlCellValue, format["Operatore"], formula1, formula2);
 
                         cond.Font.Color = format["ForeColor"];
@@ -1185,7 +1201,7 @@ namespace Iren.ToolsExcel.Base
 
                     DataView datiApplicazioneH = DataBase.LocalDB.Tables[DataBase.Tab.DATI_APPLICAZIONE_H].DefaultView;
                     DataView insertManuali = DataBase.LocalDB.Tables[DataBase.Tab.DATI_APPLICAZIONE_COMMENTO].DefaultView;
-                    
+
                     if (Struct.tipoVisualizzazione == "O")
                     {
                         foreach (DataRowView entita in categoriaEntita)
@@ -1231,27 +1247,32 @@ namespace Iren.ToolsExcel.Base
         /// <param name="datiApplicazione">Tabella contenente tutte le informazioni da scrivere.</param>
         protected virtual void CaricaInformazioniEntita(DataView datiApplicazione)
         {
+            //SplashScreen.UpdateStatus("Scrivo informazioni");
             foreach (DataRowView dato in datiApplicazione)
             {
                 DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
-                //sono nel caso DATA0H24
-                if (giorno < DataBase.DataAttiva)
+                
+                if (giorno <= _dataFineUP[dato["SiglaEntita"]])
                 {
-                    Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24));
-                    _ws.Range[rng.ToString()].Value = dato["H24"];
-                }
-                else
-                {
-                    Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
-                    List<object> o = new List<object>(dato.Row.ItemArray);
-                    //o.RemoveRange(o.Count - 5, 5);
-                    _ws.Range[rng.ToString()].Value = o.ToArray();
-
-                    if (giorno == DataBase.DataAttiva && Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
+                    
+                    //sono nel caso DATA0H24
+                    if (giorno < DataBase.DataAttiva)
                     {
-                        Selection s = _definedNames.GetSelectionByRif(rng);
-                        s.ClearSelections(_ws);
-                        s.Select(_ws, int.Parse(o[0].ToString().Split('.')[0]));
+                        Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(DataBase.DataAttiva.AddDays(-1)), Date.GetSuffissoOra(24));
+                        _ws.Range[rng.ToString()].Value = dato["H24"];
+                    }
+                    else
+                    {
+                        Range rng = _definedNames.Get(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
+                        List<object> o = new List<object>(dato.Row.ItemArray);
+                        _ws.Range[rng.ToString()].Value = o.ToArray();
+
+                        if (giorno == DataBase.DataAttiva && Regex.IsMatch(dato["SiglaInformazione"].ToString(), @"RIF\d+"))
+                        {
+                            Selection s = _definedNames.GetSelectionByRif(rng);
+                            s.ClearSelections(_ws);
+                            s.Select(_ws, int.Parse(o[0].ToString().Split('.')[0]));
+                        }
                     }
                 }
             }
@@ -1264,11 +1285,15 @@ namespace Iren.ToolsExcel.Base
         {
             foreach (DataRowView commento in insertManuali)
             {
-                Range rngComm = _definedNames.Get(commento["SiglaEntita"], commento["SiglaInformazione"], Date.GetSuffissoData(commento["Data"].ToString()), Date.GetSuffissoOra(commento["Data"].ToString()));
+                DateTime giorno = DateTime.ParseExact(commento["Data"].ToString().Substring(0,8), "yyyyMMdd", CultureInfo.InvariantCulture);
 
-                Excel.Range rng = _ws.Range[rngComm.ToString()];
-                rng.ClearComments();
-                rng.AddComment("Valore inserito manualmente");
+                if (giorno <= _dataFineUP[commento["SiglaEntita"]])
+                {
+                    SplashScreen.UpdateStatus("Scrivo commenti " + commento["SiglaEntita"]);
+                    Range rng = _definedNames.Get(commento["SiglaEntita"], commento["SiglaInformazione"], Date.GetSuffissoData(giorno), Date.GetSuffissoOra(commento["Data"].ToString()));
+                    _ws.Range[rng.ToString()].ClearComments();
+                    _ws.Range[rng.ToString()].AddComment("Valore inserito manualmente");
+                }
             }
         }        
 
@@ -1417,6 +1442,7 @@ namespace Iren.ToolsExcel.Base
                 foreach (DataRowView info in informazioni)
                 {
                     int col = all ? _definedNames.GetFirstCol() : _definedNames.GetColFromDate(suffissoData);
+                    int realColOffset = colOffset;
                     object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
                     if (Struct.tipoVisualizzazione == "O")
@@ -1432,10 +1458,12 @@ namespace Iren.ToolsExcel.Base
                             if (_struttura.visData0H24 && info["Data0H24"].Equals("0"))
                             {
                                 col++;
-                                colOffset--;
+                                realColOffset--;
                             }
-                            Excel.Range rngData = _ws.Range[Range.GetRange(row, col, 1, colOffset)];
+                            Excel.Range rngData = _ws.Range[Range.GetRange(row, col, 1, realColOffset)];
+                            //rngData.Value = info["ValoreDefault"] != DBNull.Value ? info["ValoreDefault"] : "";
                             rngData.Value = "";
+
                             rngData.ClearComments();
                             Style.RangeStyle(rngData, backColor: info["BackColor"], foreColor: info["ForeColor"]);
                         }                        

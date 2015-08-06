@@ -179,6 +179,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     CaricaDatiDalDB();
 
+                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
                     SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");
                     StrutturaRiepilogo();
 
@@ -188,9 +189,12 @@ namespace Iren.ToolsExcel.Base
                     SplashScreen.UpdateStatus("Salvo struttura in locale");
                     Workbook.DumpDataSet();
 
+                    SplashScreen.UpdateStatus("Invio modifiche al server");
+                    Workbook.ScreenUpdating = false;
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
 
+                    SplashScreen.UpdateStatus("Azzero selezioni");
                     foreach (Excel.Worksheet ws in Workbook.Sheets)
                     {
                         if (ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
@@ -200,15 +204,17 @@ namespace Iren.ToolsExcel.Base
                         }
                     }
 
-                    SplashScreen.Close();
                     Workbook.Main.Select();
+                    SplashScreen.UpdateStatus("Calcolo tutte le formule");
+                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                     Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
                     if (wasProtected)
                         Sheet.Protected = true;
 
-                    Workbook.ScreenUpdating = true;
+                    SplashScreen.Close();
                     CancellaTabelle();
+                    Workbook.ScreenUpdating = true;
                     return true;
                 }
                 catch
@@ -266,7 +272,7 @@ namespace Iren.ToolsExcel.Base
                 try
                 {
                     CaricaDatiDalDB();
-
+                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
                     SplashScreen.UpdateStatus("Aggiorno dati Riepilogo");
                     DatiRiepilogo();
                     SplashScreen.UpdateStatus("Aggiorno dati Fogli");
@@ -274,6 +280,7 @@ namespace Iren.ToolsExcel.Base
 
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
+                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
 
                     if (wasProtected)
                         Sheet.Protected = true;
