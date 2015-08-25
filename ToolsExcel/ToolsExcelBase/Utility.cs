@@ -1672,12 +1672,17 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         /// <param name="configKey">Chiave.</param>
         /// <returns>Restituisce l'elemento ricercato.</returns>
+        public static UserConfiguration GetUsrConfiguration()
+        {
+            return (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+        }
         public static UserConfigElement GetUsrConfigElement(string configKey)
         {
-            var settings = (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+            var settings = GetUsrConfiguration();
 
             return (UserConfigElement)settings.Items[configKey];
         }
+
         /// <summary>
         /// Restituisce un array con le tre componenti intere Red Green Blue a partire da una stringa suddivisa con un separatore sep. Non ha una gestione di errore, se il parser non riesce ad interpretare la stringa, va in errore.
         /// </summary>
@@ -1768,6 +1773,38 @@ namespace Iren.ToolsExcel.Utility
         private static bool Init(string dbName, string appID, DateTime dataAttiva)
         {
             //CryptHelper.CryptSection("connectionStrings", "appSettings");
+
+            //controllo le aree di rete (se presenti)
+            var usrConfig = GetUsrConfiguration();
+            Dictionary<string, string> pathNonDisponibili = new Dictionary<string, string>();
+            foreach (UserConfigElement ele in usrConfig.Items)
+            {
+                if (ele.ToCheckPath == "true")
+                {
+                    string pathStr = Esporta.PreparePath(ele.Value);
+
+                    try
+                    {
+                        System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(pathStr);
+                    }
+                    catch
+                    {
+                        pathNonDisponibili.Add(ele.Desc, pathStr);
+                    }
+                }   
+            }
+            //segnalo all'utente l'impossibilità di accedere alle aree di rete
+            if (pathNonDisponibili.Count > 0)
+            {
+                string paths = "\n";
+                foreach (var kv in pathNonDisponibili)
+                {
+                    paths += " - " + kv.Key + " : '" + kv.Value + "'\n";
+                }
+
+                System.Windows.Forms.MessageBox.Show("I path seguenti non sono raggiungibili o non presentano privilegi di scrittura:" + paths, Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+            }
+
 
             DataBase.InitNewDB(dbName);
             DataBase.DB.PropertyChanged += _db_StatoDBChanged;

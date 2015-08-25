@@ -33,6 +33,12 @@ namespace Iren.ToolsExcel
                 case 3:
                     n = CheckFunc3();
                     break;
+                case 4:
+                    n = CheckFunc4();
+                    break;
+                case 5:
+                    n = CheckFunc5();
+                    break;
             }
 
             return n;
@@ -110,11 +116,6 @@ namespace Iren.ToolsExcel
                     nOra.Nodes.Add("Energia Offerta + PCE < PMin");
                     errore |= true;
                 }
-                if (eOfferta1 + eOfferta2 + eOfferta3 + eOfferta4 + pce < pmax)
-                {
-                    nOra.Nodes.Add("Eofferta + PCE < Pmax");
-                    attenzione |= true;
-                }
                 if (pce > pmax && pmax > 0)
                 {
                     nOra.Nodes.Add("PCE > PMax");
@@ -174,6 +175,16 @@ namespace Iren.ToolsExcel
                 {
                     nOra.Nodes.Add("Energia Offerta + PCE < Limite PMim");
                     errore |= true;
+                }
+                if (eOfferta1 + eOfferta2 + eOfferta3 + eOfferta4 + pce < pmax)
+                {
+                    nOra.Nodes.Add("Eofferta + PCE < Pmax");
+                    attenzione |= true;
+                }
+                if (pmin != eOfferta1 + pce)
+                {
+                    nOra.Nodes.Add("Pmin diversa da Offerta 1 + PCE");
+                    attenzione |= true;
                 }
 
                 if (errore)
@@ -377,6 +388,278 @@ namespace Iren.ToolsExcel
                 if (progrUC + delta < pce)
                 {
                     nOra.Nodes.Add("PCE > Programma + Delta");
+                    attenzione |= true;
+                }
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        private CheckOutput CheckFunc4()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            decimal limitePmax = decimal.MaxValue;
+            if (entitaParametroD.Count > 0)
+                limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
+
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            decimal limitePmin = decimal.MinValue;
+            if (entitaParametroD.Count > 0)
+                limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
+
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
+                if (data != Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                int ora = (i - 1) % Utility.Date.GetOreGiorno(suffissoData) + 1;
+
+                decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E3", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E4", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P2", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P3", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P4", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pmin = GetDecimal("GE_GDPP2", "PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pmax = GetDecimal("GE_GDPP2", "PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));                
+
+                bool errore = false;
+                bool attenzione = false;
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                if (eOfferta1 + eOfferta3 > pmax)
+                {
+                    nOra.Nodes.Add("Eofferta vendita > Pmax");
+                    errore |= true;
+                }
+                if (eOfferta2 < pmin)
+                {
+                    nOra.Nodes.Add("Eofferta acquisto < Pmin");
+                    errore |= true;
+                }
+                if (eOfferta1 == 0 && pOfferta1 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta1 = 0 e Pofferta1 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta2 == 0 && pOfferta2 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta2 = 0 e Pofferta2 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta3 == 0 && pOfferta3 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta3 = 0 e Pofferta3 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta4 == 0 && pOfferta4 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta4 = 0 e Pofferta4 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta2 != 0 && pOfferta2 == 0)
+                {
+                    nOra.Nodes.Add("Eofferta2 <> 0 e Pofferta2 = 0");
+                    errore |= true;
+                }
+                if (eOfferta3 != 0 && pOfferta3 == 0)
+                {
+                    nOra.Nodes.Add("Eofferta3 <> 0 e Pofferta3 = 0");
+                    errore |= true;
+                }
+                if (eOfferta4 != 0 && pOfferta4 == 0)
+                {
+                    nOra.Nodes.Add("Eofferta4 <> 0 e Pofferta4 = 0");
+                    errore |= true;
+                }
+                if (eOfferta1 + eOfferta3 < pmax)
+                {
+                    nOra.Nodes.Add("Eofferta vendita < Pmax");
+                    attenzione |= true;
+                }
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        private CheckOutput CheckFunc5()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            decimal limitePmax = decimal.MaxValue;
+            if (entitaParametroD.Count > 0)
+                limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
+
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            decimal limitePmin = decimal.MinValue;
+            if (entitaParametroD.Count > 0)
+                limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
+
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Utility.Date.GetSuffissoData(Utility.DataBase.DataAttiva.AddHours(i - 1));
+                if (data != Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = Utility.DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                int ora = (i - 1) % Utility.Date.GetOreGiorno(suffissoData) + 1;
+
+                decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E3", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal eOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E4", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P1", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P2", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P3", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P4", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pmin = GetDecimal("GE_GOT1", "PMIN", suffissoData, Utility.Date.GetSuffissoOra(ora));
+                decimal pmax = GetDecimal("GE_GOT1", "PMAX", suffissoData, Utility.Date.GetSuffissoOra(ora));
+
+                bool errore = false;
+                bool attenzione = false;
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                if (eOfferta1 + eOfferta3 > pmax)
+                {
+                    nOra.Nodes.Add("Eofferta vendita > Pmax");
+                    errore |= true;
+                }
+                if (eOfferta2 < pmin)
+                {
+                    nOra.Nodes.Add("Eofferta acquisto < Pmin");
+                    errore |= true;
+                }
+                if (eOfferta1 == 0 && pOfferta1 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta1 = 0 e Pofferta1 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta2 == 0 && pOfferta2 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta2 = 0 e Pofferta2 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta3 == 0 && pOfferta3 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta3 = 0 e Pofferta3 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta4 == 0 && pOfferta4 != 0)
+                {
+                    nOra.Nodes.Add("Eofferta4 = 0 e Pofferta4 <> 0");
+                    errore |= true;
+                }
+                if (eOfferta2 != 0 && pOfferta2 == 0)
+                {
+                    nOra.Nodes.Add("Eofferta2 <> 0 e Pofferta2 = 0");
+                    errore |= true;
+                }
+                if (eOfferta3 != 0 && pOfferta3 == 0)
+                {
+                    nOra.Nodes.Add("Eofferta3 <> 0 e Pofferta3 = 0");
+                    errore |= true;
+                }
+                if (eOfferta4 != 0 && pOfferta4 == 0)
+                {
+                    nOra.Nodes.Add("Eofferta4 <> 0 e Pofferta4 = 0");
+                    errore |= true;
+                }
+                if (eOfferta1 + eOfferta3 < pmax)
+                {
+                    nOra.Nodes.Add("Eofferta vendita < Pmax");
                     attenzione |= true;
                 }
 

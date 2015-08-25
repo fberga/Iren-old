@@ -152,12 +152,13 @@ namespace Iren.ToolsExcel
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
                             if (files.Length == 0)
+                            {
                                 if (System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
                                 {
                                     interrupt = true;
                                     break;
                                 }
-
+                            }
                             foreach (string file in files)
                                 attachments.Add(file);
                         }
@@ -186,11 +187,13 @@ namespace Iren.ToolsExcel
                                 files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
                                 if (files.Length == 0)
+                                {
                                     if (System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
                                     {
                                         interrupt = true;
                                         break;
                                     }
+                                }
 
                                 foreach (string file in files)
                                     attachments.Add(file);
@@ -205,11 +208,13 @@ namespace Iren.ToolsExcel
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
                             if (files.Length == 0)
+                            {
                                 if (System.Windows.Forms.MessageBox.Show("File Riserva Secondaria non presente nell'area di rete. Continuare con l'invio?", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
                                 {
                                     interrupt = true;
                                     break;
                                 }
+                            }
 
                             foreach (string file in files)
                                 attachments.Add(file);
@@ -268,7 +273,6 @@ namespace Iren.ToolsExcel
             catch(Exception e)
             {
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InvioProgrammi - Esporta.InvioMail: " + e.Message);
-
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                 foreach (string file in attachments)

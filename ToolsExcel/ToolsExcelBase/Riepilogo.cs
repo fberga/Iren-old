@@ -281,6 +281,23 @@ namespace Iren.ToolsExcel.Base
             _definedNames.DumpToDataSet();
         }
         /// <summary>
+        /// Aggiorna la colorazione della barra superiore del riepilogo in base allo schema colori basato sui giorni.
+        /// </summary>
+        protected void UpdateDayColor()
+        {
+            DataView azioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.AZIONE]);
+            azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+
+            Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 3, azioni.Count);
+
+            CicloGiorni((oreGiorno, suffissoData, giorno) =>
+            {
+                ASheet.AssegnaColori(_ws.Range[rngTitleBar.ToString()], giorno);
+
+                rngTitleBar.StartColumn += azioni.Count;
+            });
+        }
+        /// <summary>
         /// Inizializza la barra del titolo.
         /// </summary>
         protected void InitBarraTitolo()
@@ -322,6 +339,8 @@ namespace Iren.ToolsExcel.Base
                 _ws.Range[rngData.ToString()].Value = giorno;
                 rngData.StartColumn = rngAzioni.StartColumn;
             });
+
+            UpdateDayColor();
         }
         /// <summary>
         /// Formatta il range che conterrà tutti i dati del riepilogo. Le celle sono tutte disabilitate e verranno abilitate nella funzione AbilitaAzioni.
@@ -389,10 +408,15 @@ namespace Iren.ToolsExcel.Base
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
                 foreach (DataRowView azione in _entitaAzioni)
-                {                    
-                    Range cellaAzione = new Range(_definedNames.GetRowByName(azione["SiglaEntita"]), _definedNames.GetColFromName(azione["SiglaAzione"], suffissoData));
-                    _ws.Range[cellaAzione.ToString()].Interior.Pattern = Excel.XlPattern.xlPatternNone;
-                    _ws.Range[cellaAzione.ToString()].Interior.ColorIndex = 2;
+                {
+
+
+                    if (azione["Giorno"] is DBNull || azione["Giorno"].ToString().Contains(suffissoData))
+                    {
+                        Range cellaAzione = new Range(_definedNames.GetRowByName(azione["SiglaEntita"]), _definedNames.GetColFromName(azione["SiglaAzione"], suffissoData));
+                        _ws.Range[cellaAzione.ToString()].Interior.Pattern = Excel.XlPattern.xlPatternNone;
+                        _ws.Range[cellaAzione.ToString()].Interior.ColorIndex = 2;
+                    }
                 }
             });
         }
@@ -500,6 +524,8 @@ namespace Iren.ToolsExcel.Base
                     _ws.Range[cell.ToString()].Value = giorno;
                 });
                 _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+
+                UpdateDayColor();
             }
         }
         /// <summary>

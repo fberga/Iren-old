@@ -73,7 +73,7 @@ namespace Iren.ToolsExcel.Core
 
         #region Costruttori
 
-        public DataBase(string dbName)
+        public DataBase(string dbName, bool checkDB = true)
         {
             _ambiente = dbName;
             try
@@ -83,9 +83,11 @@ namespace Iren.ToolsExcel.Core
                 _internalsqlConn = new SqlConnection(_connStr);
 
                 _cmd = new Command(_sqlConn);
-                _internalCmd = new Command(_internalsqlConn);
-
-                checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
+                if (checkDB)
+                {
+                    _internalCmd = new Command(_internalsqlConn);
+                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
+                }
 
                 //_sqlConn.StateChange += ConnectionStateChange;
             }
@@ -350,13 +352,18 @@ namespace Iren.ToolsExcel.Core
                 else
                     _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
             }
-
-            if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
-                || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
-                || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
+            else
             {
-                NotifyPropertyChanged("StatoDB");
+                _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+                _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
             }
+
+            //if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
+            //    || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
+            //    || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
+            //{
+                NotifyPropertyChanged("StatoDB");
+            //}
 
             CloseConnection(_internalsqlConn);
             

@@ -174,29 +174,37 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnSelezionaAmbiente_Click(object sender, RibbonControlEventArgs e)
         {
-            //Workbook.ScreenUpdating = false;
             RibbonToggleButton ambienteScelto = (RibbonToggleButton)sender;
 
-            int count = 0;
-            foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
+            if (DataBase.OpenConnection())
             {
-                if (button.Checked)
+                int count = 0;
+                foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
                 {
-                    button.Checked = false;
-                    count++;
+                    if (button.Checked)
+                    {
+                        button.Checked = false;
+                        count++;
+                    }
                 }
+                //se maggiore di 1 allora c'è un cambio ambiente altrimenti doppio click sullo stesso e non faccio nulla
+                if (count > 1)
+                {
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
+                    DataBase.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
+
+                    btnAggiornaStruttura_Click(null, null);
+                }
+
+                ambienteScelto.Checked = true;
+                DataBase.CloseConnection();
             }
-            //se maggiore di 1 allora c'è un cambio ambiente altrimenti doppio click sullo stesso e non faccio nulla
-            if (count > 1)
+            else
             {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
-                DataBase.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
+                ambienteScelto.Checked = false;
 
-                btnAggiornaStruttura_Click(null, null);
+                System.Windows.Forms.MessageBox.Show("Non è possibile effettuare un cambio di ambiente quando il sistema è in emergenza...", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
             }
-
-            ambienteScelto.Checked = true;
-            //Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di aggiornamento della struttura. Avvisa l'utente ed esegue l'aggiornamento della struttura. Esegue il refresh dei check.

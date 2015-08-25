@@ -179,32 +179,59 @@ namespace Iren.ToolsExcel.Base
             {
                 object siglaEntita = entita["SiglaEntita"];
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-                DefinedNames definedNames = new DefinedNames(nomeFoglio);
-
-                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
-
-                bool hasData0H24 = definedNames.HasData0H24;
-
-                entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
-
-                DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
-                DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
-                    (from r in entitaProprieta.AsEnumerable()
-                     where r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
-                     select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
-
-                foreach (DataRowView info in entitaInformazione)
+                if (nomeFoglio != "")
                 {
-                    object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                    DateTime giorno = DataBase.DataAttiva;
+                    DefinedNames definedNames = new DefinedNames(nomeFoglio);
 
-                    //prima cella della riga da salvare (non considera Data0H24)
-                    Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                    Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
 
-                    Handler.StoreEdit(ws.Range[rng.ToString()], 0, true);
+                    bool hasData0H24 = definedNames.HasData0H24;
+
+                    entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
+
+                    DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
+                    DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
+                        (from r in entitaProprieta.AsEnumerable()
+                         where r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                         select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
+
+                    foreach (DataRowView info in entitaInformazione)
+                    {
+                        object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
+                        if (Struct.tipoVisualizzazione == "O")
+                        {
+                            //prima cella della riga da salvare (non considera Data0H24)
+                            Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
+                            Handler.StoreEdit(ws.Range[rng.ToString()], 0, true);
+                        }
+                        else
+                        {
+                            //TODO fare ciclo giorni nel caso di visualizzazione verticale: le informazioni si dividono per i giorni e non sono in linea!!!
+                        }
+                    }
                 }
             }
-        }        
+        }
+
+        /// <summary>
+        /// Assegna il colore al range confrontando il suo contenuto con lo schema definito dagli utenti: Giallo per le date antecedenti a oggi, verde oggi, azzurro domani, arancione dopodomani, grigio il resto.
+        /// </summary>
+        /// <param name="rng">Range su cui applicare la colorazione.</param>
+        /// <param name="giorno">Giorno con cui fare il confronto.</param>
+        public static void AssegnaColori(Excel.Range rng, DateTime giorno)
+        {
+            if (giorno.Date < DateTime.Now.Date)
+                rng.Interior.Color = System.Drawing.Color.FromArgb(240, 230, 140);
+            else if (giorno.Date == DateTime.Now.Date)
+                rng.Interior.Color = System.Drawing.Color.FromArgb(144, 238, 144);
+            else if (giorno.Date == DateTime.Now.Date.AddDays(1))
+                rng.Interior.Color = System.Drawing.Color.FromArgb(135, 206, 250);
+            else if (giorno.Date == DateTime.Now.Date.AddDays(2))
+                rng.Interior.Color = System.Drawing.Color.FromArgb(244, 164, 96);
+            else
+                rng.Interior.Color = System.Drawing.Color.FromArgb(192, 192, 192);
+        }
 
         #endregion
     }
@@ -243,7 +270,7 @@ namespace Iren.ToolsExcel.Base
             //carico la massima datafine in maniera da creare la barra navigazione della dimensione giusta (compresa la definizione dei giorni se necessario)
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";            
 
             foreach (DataRowView entita in categoriaEntita)
             {
@@ -263,6 +290,51 @@ namespace Iren.ToolsExcel.Base
 
         #region Metodi
 
+        /// <summary>
+        /// Colora le celle GOTO in base alla data attiva e al giorno corrente.
+        /// </summary>
+        protected void ColoraGOTO()
+        {
+            if (Struct.tipoVisualizzazione == "V")
+            {
+                List<string> gotos = _definedNames.GetAllFromAddressGOTO();
+
+                foreach (string address in gotos)
+                {
+                    DateTime giorno = _ws.Range[address].Value;
+                    AssegnaColori(_ws.Range[address], giorno);
+                }
+            }
+        }
+        /// <summary>
+        /// Colora le intestazioni di data e ora in base alla data attiva e al giorno corrente.
+        /// </summary>
+        protected void ColoraDataOra()
+        {
+            CicloGiorni(DataBase.DataAttiva, DataBase.DataAttiva.AddDays(_intervalloGiorniMax), (oreGiorno, suffissoData, giorno) =>
+            {
+                int row = 0;
+                if (Struct.tipoVisualizzazione == "O")
+                {
+                    row = _struttura.rigaBlock - 2;
+                }
+                else
+                {
+                    row = _definedNames.Get(Date.GetSuffissoData(giorno), "T").StartRow;
+                }
+                Range rng = new Range(row, _definedNames.GetColFromDate(giorno), 2, oreGiorno);
+
+                AssegnaColori(_ws.Range[rng.ToString()], giorno);
+
+                if (Struct.tipoVisualizzazione == "V")
+                {
+                    //coloro titolo Verticale
+                    rng = new Range(row + 2, _struttura.colBlock - _visParametro - 1);
+                    AssegnaColori(_ws.Range[rng.ToString()].MergeArea, giorno);
+                }
+
+            });
+        }
         /// <summary>
         /// Legge da LocalDB i parametri dell'applicazione e reinizializza tutte le strutture del workbook e del foglio.
         /// </summary>
@@ -350,10 +422,11 @@ namespace Iren.ToolsExcel.Base
 
                 if (Struct.tipoVisualizzazione == "O")
                 {
-                    _dataFine = _dataInizio.AddDays(Math.Max(
-                        (from r in entitaProprieta.AsEnumerable()
-                         where r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
-                         select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
+                    _dataFine = _dataFineUP[siglaEntita];
+                    //_dataFine = _dataInizio.AddDays(Math.Max(
+                    //    (from r in entitaProprieta.AsEnumerable()
+                    //     where r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                    //     select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
 
                     InitBloccoEntita(entita);
 
@@ -400,6 +473,7 @@ namespace Iren.ToolsExcel.Base
             _ws.Rows.FormatConditions.Delete();
             _ws.Rows.EntireRow.Hidden = false;
             _ws.Rows.Style = "Normal";
+            _ws.Rows.UnMerge();
 
             _ws.Rows.RowHeight = Struct.cell.height.normal;
             _ws.Columns.ColumnWidth = Struct.cell.width.dato;
@@ -505,7 +579,6 @@ namespace Iren.ToolsExcel.Base
                 {
                     int escludiH24 = (giorno == _dataInizio && _struttura.visData0H24 ? 1 : 0);
 
-
                     Range rngData = new Range(_struttura.rigaBlock - 2, colonnaInizio + escludiH24, 1, oreGiorno);
 
                     Excel.Range rng = _ws.Range[rngData.ToString()];
@@ -519,6 +592,8 @@ namespace Iren.ToolsExcel.Base
                     colonnaInizio += oreGiorno + escludiH24;
                 });
             }
+
+            ColoraGOTO();
         }
         /// <summary>
         /// Launcher per le azioni di creazione del blocco entità.
@@ -526,7 +601,6 @@ namespace Iren.ToolsExcel.Base
         /// <param name="entita">La riga contenente le informazioni dell'entità.</param>
         protected void InitBloccoEntita(DataRowView entita)
         {
-            Stopwatch watch = Stopwatch.StartNew();
             SplashScreen.UpdateStatus("Carico struttura " + entita["DesEntita"]);
 
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
@@ -536,14 +610,12 @@ namespace Iren.ToolsExcel.Base
             if (informazioni.RowFilter != "SiglaEntita = '" + entita["SiglaEntita"] + "'")
             {
                 informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-                //informazioni.Sort = "Ordine";
                 grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
                 graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
             }
             
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
-            Stopwatch watch1 = Stopwatch.StartNew();
             CreaNomiCelle(entita["SiglaEntita"]);
             InsertTitoloEntita(entita["SiglaEntita"], entita["DesEntita"]);
             InsertOre(entita["SiglaEntita"]);
@@ -556,15 +628,11 @@ namespace Iren.ToolsExcel.Base
             InsertFormuleValoriDefault();
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL";
             InsertParametri();
-            watch1.Stop();
-            Stopwatch watch2 = Stopwatch.StartNew();
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-            watch2.Stop();
-            Stopwatch watch3 = Stopwatch.StartNew();
             FormattazioneCondizionale();
-            watch3.Stop();
 
-            watch.Stop();
+            ColoraDataOra();
+
             //due righe vuote tra un'entità e la successiva
             _rigaAttiva += 2;
         }
@@ -617,6 +685,7 @@ namespace Iren.ToolsExcel.Base
                 _definedNames.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
 
                 int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
+                //int data0H24 = (info["Data0H24"].Equals("1") ? 1 : 0);
 
                 //selezione - Mantenere in questo ordine: alla prima volta entra nel selezione = 10, poi in isSelection e alla fine chiude la selezione e salta gli altri (se non in presenza di un altro 10)
                 if (isSelection && (info["Selezione"].Equals(0) || info["Selezione"].Equals(10)))
@@ -640,10 +709,9 @@ namespace Iren.ToolsExcel.Base
                     rifSel = rng.ToString();
                 }
                 //fine selezione
-                
+
                 if (info["Editabile"].Equals("1"))
                 {
-                    
                     if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                     {
                         //seleziono la cella dell'unità di misura
@@ -656,6 +724,12 @@ namespace Iren.ToolsExcel.Base
                         _definedNames.SetEditable(_rigaAttiva, rng);
                     }
                 }
+                else if (info["Data0H24"].Equals("1"))
+                {
+                    Range rng = new Range(_rigaAttiva, startCol);
+                    _definedNames.SetEditable(_rigaAttiva, rng);
+                }
+
                 if (info["SalvaDB"].Equals("1"))
                     _definedNames.SetSaveDB(_rigaAttiva);
 
@@ -845,14 +919,43 @@ namespace Iren.ToolsExcel.Base
                         align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
                 }
                 else if (info["SiglaTipologiaInformazione"].Equals("TITOLO2"))
-                {
-                    Style.RangeStyle(rngRow.Rows[i], 
+                { 
+                    //caselle delle informazioni + selezione + DATA0H24
+                    Range rng = new Range(rngInfo.Rows[i].Address).ExtendOf(colOffset: _struttura.visData0H24 ? 1 : 0).ExtendOf(colOffset: _struttura.visSelezione ? 1 : 0);
+
+                    Style.RangeStyle(_ws.Range[rng.ToString()],
                         fontSize: info["FontSize"],
                         foreColor: info["ForeColor"],
                         backColor: info["BackColor"],
                         merge: true,
-                        bold:true,
+                        bold: true,
                         borders: "[Top:medium, Right:medium]");
+
+                    col = _struttura.visData0H24 ? 1 : 0;
+                    //giorni normali
+                    CicloGiorni((oreGiorno, suffissoData, giorno) => 
+                    {
+                        rng = new Range(rngData.Rows[i].Address);
+                        Style.RangeStyle(_ws.Range[rng.Columns[col, col + oreGiorno - 1].ToString()],
+                            fontSize: info["FontSize"],
+                            foreColor: info["ForeColor"],
+                            backColor: info["BackColor"],
+                            align: Excel.XlHAlign.xlHAlignCenter,
+                            merge: true,
+                            bold: true,
+                            borders: "[Top:medium, Right:medium]");
+
+                        _ws.Range[rng.Columns[col, col + oreGiorno - 1].ToString()].Value = info["DesInformazione"];
+                        col += oreGiorno;
+                    });
+
+                    //Style.RangeStyle(rngRow.Rows[i], 
+                    //    fontSize: info["FontSize"],
+                    //    foreColor: info["ForeColor"],
+                    //    backColor: info["BackColor"],
+                    //    merge: true,
+                    //    bold:true,
+                    //    borders: "[Top:medium, Right:medium]");
                 }
                 else 
                 {
@@ -1216,7 +1319,7 @@ namespace Iren.ToolsExcel.Base
                     }
                     else
                     {
-                        datiApplicazioneH.RowFilter = "SiglaCategoria='" + _siglaCategoria + "'";
+                        //datiApplicazioneH.RowFilter = "SiglaCategoria='" + _siglaCategoria + "'";
                         CaricaInformazioniEntita(datiApplicazioneH);
                         CaricaCommentiEntita(insertManuali);
                     }
@@ -1408,6 +1511,8 @@ namespace Iren.ToolsExcel.Base
             CaricaParametri();
             CaricaInformazioni();
             AggiornaGrafici();
+
+            UpdateDayColor();
         }
         #region UpdateData
 
@@ -1592,6 +1697,14 @@ namespace Iren.ToolsExcel.Base
                 informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ValoreDefault IS NOT NULL";
                 InsertFormuleValoriDefault();
             }
+        }
+        /// <summary>
+        /// Aggiorna la colorazione della barra superiore della data (o delle varie barre se in visualizzazione verticale) e delle celle GOTO (solo in visualizzazione verticale) in base allo schema colori basato sui giorni.
+        /// </summary>
+        protected void UpdateDayColor()
+        {
+            ColoraDataOra();
+            ColoraGOTO();
         }
 
         #endregion

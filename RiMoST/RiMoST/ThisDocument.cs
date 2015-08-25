@@ -51,7 +51,10 @@ namespace Iren.RiMoST
             SetAppConfigEnvironment();
 
             _idStruttura = ConfigurationManager.AppSettings["idStruttura"];
-            string[] users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
+            string[] users = new string[1];
+            if (ConfigurationManager.AppSettings["utentiVisto"] != null)
+                users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
+
             int rowNum = (int)Math.Ceiling(users.Length / 5.0);
             int colNum = (int)Math.Ceiling((decimal)users.Length / rowNum);
 
@@ -68,7 +71,7 @@ namespace Iren.RiMoST
             }
             
 
-            _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
+            _db = new DataBase(ConfigurationManager.AppSettings["DB"], false);
             if(_db.OpenConnection())
             {
                 _dtApplicazioni = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura);
@@ -172,7 +175,7 @@ namespace Iren.RiMoST
                 File.Delete(AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString());
             }
             AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", file);
-            CryptHelper.CryptSection("connectionStrings");
+            //CryptHelper.CryptSection("connectionStrings");
         }
         public void CloseWithoutSaving()
         {

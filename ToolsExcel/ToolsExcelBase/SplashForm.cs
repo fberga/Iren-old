@@ -47,7 +47,6 @@ namespace Iren.ToolsExcel.Base
             if (!this.IsDisposed)
                 Application.Run(this);
         }
-
         public void CloseSplashScreen()
         {
             if (InvokeRequired)
@@ -59,6 +58,7 @@ namespace Iren.ToolsExcel.Base
             this.Close();
             this.Dispose();
         }
+
 
         public void UdpateStatusText(string status)
         {
@@ -88,8 +88,8 @@ namespace Iren.ToolsExcel.Base
             if (sf == null)
             {
                 sf = new SplashForm();
-                sf.ShowSplashScreen();
             }
+            sf.ShowSplashScreen();
         }
         public static void CloseSplash()
         {

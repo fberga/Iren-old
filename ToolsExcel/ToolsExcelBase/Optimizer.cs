@@ -259,7 +259,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
-            Workbook.Application.Run("wbSetGeneralOptions", Arg13: "1");
+            Workbook.Application.Run("wbSetGeneralOptions", Arg3: "120", Arg13: "1");
 
             _sheet = DefinedNames.GetSheetName(siglaEntita);
             _definedNames = new DefinedNames(_sheet);

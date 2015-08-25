@@ -194,6 +194,17 @@ namespace Iren.ToolsExcel
                     }
                     if (isTermo)
                     {
+                        Range rngProfiloPQNR = definedNames.Get(siglaEntita, "PQNR_PROFILO", suffissoData);
+                        if (ws.Range[rngProfiloPQNR.ToString()].Value == null)
+                        {
+                            SplashScreen.Close();
+                            System.Windows.Forms.MessageBox.Show("Non è stato definito alcun profilo PQNR per l'UP " + siglaEntita + ": l'esportazione verrà interrotta per questa UP. Compilare il suo profilo per poter esportare.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                            SplashScreen.Show();
+
+                            return false;
+                        }
+
+
                         XElement pqnr = new XElement("PQNR");
                         for (int j = 1; j <= 24; j++)
                         {

@@ -379,10 +379,10 @@ namespace Iren.ToolsExcel.Forms
                 MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
+                SplashScreen.Show();
                 Workbook.Application.EnableEvents = false;
                 Workbook.ScreenUpdating = false;
                 Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
-                SplashScreen.Show();
 
                 bool caricaOrGenera = false;
 
@@ -390,8 +390,6 @@ namespace Iren.ToolsExcel.Forms
                 {
                     DataView entitaProprieta = DataBase.LocalDB.Tables[Tabella.ENTITA_PROPRIETA].DefaultView;
                     
-
-
                     string suffissoData = Date.GetSuffissoData(date);
 
                     ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
@@ -419,7 +417,7 @@ namespace Iren.ToolsExcel.Forms
                                         DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE]);
                                         entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "'";
 
-                                        if (entitaAzione.Count > 0)
+                                        if (entitaAzione.Count > 0 && (entitaAzione[0]["Giorno"] is DBNull || entitaAzione[0]["Giorno"].ToString().Contains(Date.GetSuffissoData(date))))
                                         {
                                             SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
@@ -489,10 +487,10 @@ namespace Iren.ToolsExcel.Forms
                     DataBase.SalvaModificheDB();
                 }
 
-                SplashScreen.Close();
                 Workbook.Application.EnableEvents = true;
                 Workbook.ScreenUpdating = true;
                 Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+                SplashScreen.Close();
             }
 
             btnApplica.Enabled = true;

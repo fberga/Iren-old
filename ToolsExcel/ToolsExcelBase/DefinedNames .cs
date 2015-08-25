@@ -295,6 +295,7 @@ namespace Iren.ToolsExcel.Base
                 case InitType.Naming:
                     InitNaming();
                     InitSelection();
+                    InitGOTOs(true);
                     break;
                 case InitType.GOTOs:
                     InitGOTOs();
@@ -1340,7 +1341,7 @@ namespace Iren.ToolsExcel.Base
             string s =
                 (from r in dt.AsEnumerable()
                  where r["Name"].ToString().Contains(siglaEntita.ToString()) && !r["Sheet"].Equals("Main") && !msdSheets.Contains(Workbook.Sheets[r["Sheet"]])
-                 select r["Sheet"].ToString()).First();
+                 select r["Sheet"].ToString()).FirstOrDefault();
 
             return s ?? "";
         }

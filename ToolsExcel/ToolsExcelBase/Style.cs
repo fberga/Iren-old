@@ -39,7 +39,7 @@ namespace Iren.ToolsExcel.Base
                 style.Font.Name = "Verdana";
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                style.Interior.ColorIndex = 15;
+                style.Interior.ColorIndex = 16;
 
                 style = Utility.Workbook.WB.Styles.Add("Barra navigazione con date");
                 style.Font.Bold = true;
@@ -47,7 +47,7 @@ namespace Iren.ToolsExcel.Base
                 style.Font.Size = 8;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                style.Interior.ColorIndex = 2;
+                style.Interior.ColorIndex = 15;
                 style.NumberFormat = "ddd d";
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
 
@@ -57,7 +57,7 @@ namespace Iren.ToolsExcel.Base
                 style.Font.Size = 8;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                style.Interior.ColorIndex = 2;
+                style.Interior.ColorIndex = 15;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
 
                 style = Utility.Workbook.WB.Styles.Add("Barra titolo entita");
@@ -66,7 +66,7 @@ namespace Iren.ToolsExcel.Base
                 style.Font.Size = 16;
                 style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                style.Interior.ColorIndex = 37;
+                style.Interior.ColorIndex = 15;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlMedium);
 
                 style = Utility.Workbook.WB.Styles.Add("Barra della data");
