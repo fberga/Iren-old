@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -41,11 +42,13 @@ namespace Iren.ToolsExcel.Base
                 BeginInvoke(new ShowDelegate(ShowSplashScreen));
                 return;
             }
+            Stopwatch watch = Stopwatch.StartNew();
+            this.Show(Workbook.Window);
+            watch.Stop();
             
-            this.ShowDialog();                
-
             if (!this.IsDisposed)
-                Application.Run(this);
+               Application.Run(this);
+        
         }
         public void CloseSplashScreen()
         {
@@ -59,7 +62,6 @@ namespace Iren.ToolsExcel.Base
             this.Dispose();
         }
 
-
         public void UdpateStatusText(string status)
         {
             if (InvokeRequired)
@@ -68,7 +70,7 @@ namespace Iren.ToolsExcel.Base
                 return;
             }
 
-            this.BringToFront();
+            //this.BringToFront();
             if (status.Length > 70)
                 status = status.Substring(0, 67) + " ...";
             if(status != lbText.Text)
@@ -88,8 +90,8 @@ namespace Iren.ToolsExcel.Base
             if (sf == null)
             {
                 sf = new SplashForm();
+                sf.ShowSplashScreen();
             }
-            sf.ShowSplashScreen();
         }
         public static void CloseSplash()
         {

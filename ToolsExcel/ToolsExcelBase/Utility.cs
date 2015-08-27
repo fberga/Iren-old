@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -1428,6 +1429,8 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         public static bool FromErrorPane = false;
 
+        public static NativeWindow Window = new NativeWindow();
+
         #endregion
 
         #region Proprietà
@@ -1876,6 +1879,9 @@ namespace Iren.ToolsExcel.Utility
             _wb = wb;
             _wbVersion = wbVersion;
 
+            Window.AssignHandle(new IntPtr(Workbook.Application.Hwnd));
+
+
             Application.ScreenUpdating = false;
             Application.Iteration = true;
             Application.MaxIterations = 100;
@@ -1969,6 +1975,8 @@ namespace Iren.ToolsExcel.Utility
             Save();
 
             Application.ScreenUpdating = true;
+
+            Window.ReleaseHandle();
         }
         #endregion
 

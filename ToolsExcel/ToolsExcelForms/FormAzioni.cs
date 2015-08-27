@@ -202,9 +202,6 @@ namespace Iren.ToolsExcel.Forms
                 }
             });
         }
-
-
-
         private void Evidenzia(TreeNode node, bool evidenzia)
         {
             if (evidenzia)
