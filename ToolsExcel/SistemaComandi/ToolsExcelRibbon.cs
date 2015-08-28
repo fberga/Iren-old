@@ -85,41 +85,45 @@ namespace Iren.ToolsExcel
             Globals.Main.Activate();
 #endif
             //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
+            bool isUpdated = true;
             if (Workbook.CategorySheets.Count == 0 || Repository.DaAggiornare)
             {
                 Aggiorna aggiorna = new Aggiorna();
-                aggiorna.Struttura();
+                isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
             }
 
-            btnCalendar.Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
-
-            //seleziono l'ambiente attivo
-            ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
-
-            RefreshChecks();
-
-            //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
-            btnModifica.Checked = false;
-            btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
-            btnModifica.Label = "Modifica NO";
-            try
+            if (isUpdated)
             {
-                Sheet.AbilitaModifica(false);
+                btnCalendar.Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
+
+                //seleziono l'ambiente attivo
+                ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
+
+                RefreshChecks();
+
+                //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
+                btnModifica.Checked = false;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
+                btnModifica.Label = "Modifica NO";
+                try
+                {
+                    Sheet.AbilitaModifica(false);
+                }
+                catch { }
+
+                //seleziono il tasto dell'applicativo aperto
+                CheckTastoApplicativo();
+
+                //aggiungo errorPane
+                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
+                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
+                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+
+                //aggiungo un altro handler per cell click
+                Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
+                Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
             }
-            catch { }
-
-            //seleziono il tasto dell'applicativo aperto
-            CheckTastoApplicativo();
-            
-            //aggiungo errorPane
-            Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
-            Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
-            Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
-            Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
-
-            //aggiungo un altro handler per cell click
-            Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
-            Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
@@ -225,7 +229,7 @@ namespace Iren.ToolsExcel
                 Sheet.Protected = false;
 
                 Aggiorna aggiorna = new Aggiorna();
-                if(aggiorna.Struttura())
+                if(aggiorna.Struttura(avoidRepositoryUpdate: false))
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
                 RefreshChecks();
@@ -268,10 +272,10 @@ namespace Iren.ToolsExcel
                     DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
-                    DataView stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd")).DefaultView;
+                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
 
-                    if (stato.Count > 0 && stato[0]["Stato"].Equals(1))
-                        aggiorna.Struttura();
+                    if (stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1))
+                        aggiorna.Struttura(avoidRepositoryUpdate: false);
                     else
                         aggiorna.Dati();
 
@@ -314,7 +318,7 @@ namespace Iren.ToolsExcel
                 
                 //controllo se l'entità ha la possibilità di selezionare le rampe
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO'";
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Simboli.AppID;
 
                 if (entitaInformazioni.Count == 0)
                 {
@@ -455,13 +459,13 @@ namespace Iren.ToolsExcel
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
                 
                 if(categoriaEntita.Count > 0)
                     siglaEntita = categoriaEntita[0]["Gerarchia"] is DBNull ? siglaEntita : categoriaEntita[0]["Gerarchia"].ToString();
 
                 DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO'";
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Simboli.AppID;
 
                 if (entitaInformazioni.Count == 0)
                 {
@@ -594,7 +598,7 @@ namespace Iren.ToolsExcel
 
             Simboli.AppID = Simboli.GetAppIDByMercato(cmbMSD.Text);
             Aggiorna aggiorna = new Aggiorna();
-            aggiorna.Struttura();
+            aggiorna.Struttura(avoidRepositoryUpdate: true);
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;

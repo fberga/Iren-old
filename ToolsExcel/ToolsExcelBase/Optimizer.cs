@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel.Base
             if (!info["SiglaEntita"].Equals(siglaEntita))
             {
                 siglaEntita = info["SiglaEntita"].ToString();
-                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
+                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
                 if (_entitaProprieta.Count > 0)
                     dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
                 else
@@ -76,7 +76,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected virtual void OmitConstraints() 
         {
-            _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO'";
+            _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO' AND IdApplicazione = " + Simboli.AppID;
 
             string siglaEntita = "";
             string nomeFoglio = "";
@@ -98,7 +98,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddAdjust(object siglaEntita) 
         {
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0'";
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0' AND IdApplicazione = " + Simboli.AppID;
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
@@ -123,7 +123,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddConstraints(object siglaEntita) 
         {
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO'";
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO' AND IdApplicazione = " + Simboli.AppID;
 
             foreach (DataRowView info in _entitaInformazioni)
             {
@@ -137,7 +137,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddOpt(object siglaEntita) 
         {
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO'";
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO' AND IdApplicazione = " + Simboli.AppID;
 
             if (_entitaInformazioni.Count > 0)
             {
@@ -220,7 +220,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected virtual void DeleteExistingAdjust()
         {
-            _entitaInformazioni.RowFilter = "WB <> '0'";
+            _entitaInformazioni.RowFilter = "WB <> '0' AND IdApplicazione = " + Simboli.AppID;
 
             string siglaEntita = "";
             string nomeFoglio = "";
@@ -266,10 +266,10 @@ namespace Iren.ToolsExcel.Base
 
             string desEntita =
                 (from r in DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].AsEnumerable()
-                 where r["SiglaEntita"].Equals(siglaEntita)
+                 where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
                  select r["DesEntita"].ToString()).First();
 
-            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
+            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
             if (_entitaProprieta.Count > 0)
                 _dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
             else

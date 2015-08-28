@@ -39,7 +39,7 @@ namespace Iren.ToolsExcel.Forms
             this.Text = Simboli.nomeApplicazione + " - Selezione UP";
 
             DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "'";
+            entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "' AND IdApplicazione = " + Simboli.AppID;
 
             string rowFilter = "SiglaEntita IN (";
             foreach (DataRowView entitaInfo in entitaInformazioni)
@@ -49,7 +49,7 @@ namespace Iren.ToolsExcel.Forms
             rowFilter = rowFilter.Substring(0, rowFilter.Length - 1) + ")";
 
             DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categorieEntita.RowFilter = rowFilter;
+            categorieEntita.RowFilter = rowFilter + " AND IdApplicazione = " + Simboli.AppID;
 
             _upList =
                 (from r in categorieEntita.ToTable(true, "SiglaEntita", "DesEntita").AsEnumerable()

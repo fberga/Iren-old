@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel
 
                     var rif =
                     (from r in entita.AsEnumerable()
-                     where r["SiglaEntita"].Equals(siglaEntita)
+                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
                      select new { SiglaEntita = r["Gerarchia"] is DBNull ? r["SiglaEntita"] : r["Gerarchia"], Riferimento = r["Riferimento"] }).First();
 
                     string quarter = Regex.Match(siglaInformazione, @"Q\d").Value;

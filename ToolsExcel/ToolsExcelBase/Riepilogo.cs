@@ -151,9 +151,9 @@ namespace Iren.ToolsExcel.Base
 
             if (Struct.visualizzaRiepilogo)
             {
-                _categorie.RowFilter = "Operativa = 1";
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
-                _entita.RowFilter = "";
+                _categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
+                _entita.RowFilter = "IdApplicazione = " + Simboli.AppID;
 
                 CreaNomiCelle();
                 InitBarraTitolo();
@@ -260,7 +260,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView categoria in _categorie)
             {
                 _definedNames.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
-                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
+                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Simboli.AppID;
                 foreach (DataRowView e in _entita)
                 {
                     _definedNames.AddName(_rigaAttiva, e["SiglaEntita"]);
@@ -286,7 +286,7 @@ namespace Iren.ToolsExcel.Base
         protected void UpdateDayColor()
         {
             DataView azioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.AZIONE]);
-            azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+            azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
 
             Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 3, azioni.Count);
 
@@ -389,7 +389,7 @@ namespace Iren.ToolsExcel.Base
                 Range rng = new Range(_definedNames.GetRowByName(categoria["SiglaCategoria"]), _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
                 Style.RangeStyle(_ws.Range[rng.ToString()], style: "Lista categorie riepilogo", borders: "[left:medium,top:medium,right:medium]", merge: true);
                 _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
-                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "'";
+                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Simboli.AppID;
                 foreach (DataRowView entita in _entita)
                 {
                     rng.StartRow++;
@@ -431,7 +431,7 @@ namespace Iren.ToolsExcel.Base
                 {
                     if (DataBase.OpenConnection())
                     {
-                        DataView datiRiepilogo = DataBase.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
+                        DataView datiRiepilogo = (DataBase.Select(DataBase.SP.APPLICAZIONE_RIEPILOGO, "@Data=" + giorno.ToString("yyyyMMdd")) ?? new DataTable()).DefaultView;
                         foreach (DataRowView valore in datiRiepilogo)
                         {
                             Range cellaAzione = new Range(_definedNames.GetRowByName(valore["SiglaEntita"]), _definedNames.GetColFromName(valore["SiglaAzione"], suffissoData));
@@ -516,14 +516,14 @@ namespace Iren.ToolsExcel.Base
             
             if (Struct.visualizzaRiepilogo)
             {
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND Gerarchia IS NOT NULL";
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND Gerarchia IS NOT NULL AND IdApplicazione = " + Simboli.AppID;
             
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
                     Range cell = new Range(_definedNames.GetRowByName("DATA"), _definedNames.GetColFromName(_azioni[0]["SiglaAzione"], suffissoData));
                     _ws.Range[cell.ToString()].Value = giorno;
                 });
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1";
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
 
                 UpdateDayColor();
             }

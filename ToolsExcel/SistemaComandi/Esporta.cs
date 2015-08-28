@@ -23,7 +23,7 @@ namespace Iren.ToolsExcel
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
-            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
             if (entitaAzione.Count == 0)
                 return false;
 
@@ -31,7 +31,7 @@ namespace Iren.ToolsExcel
             {
                 case "E_VDT":
                     DataView entitaAssetto = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].DefaultView;
-                    entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+                    entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
                     Dictionary<string,int> assettoFasce = new Dictionary<string,int>();
                     foreach (DataRowView assetto in entitaAssetto)
@@ -74,7 +74,7 @@ namespace Iren.ToolsExcel
 
 
                     DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
-                    entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+                    entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
                         export.Add(new Range(definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.SuffissoDATA1), definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Date.GetOreGiorno(DataBase.DataAttiva)));
@@ -108,7 +108,7 @@ namespace Iren.ToolsExcel
                 int oreGiorno = Date.GetOreGiorno(DataBase.DataAttiva);
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
@@ -243,7 +243,7 @@ namespace Iren.ToolsExcel
                 Excel.Worksheet ws = Globals.ThisWorkbook.Sheets[nomeFoglio];
 
                 DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL'";
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL' AND IdApplicazione = " + Simboli.AppID;
                 if (entitaProprieta.Count > 0)
                 {
                     fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + DataBase.DataAttiva.ToString("yyyyMMdd") + ".xls";
@@ -266,13 +266,13 @@ namespace Iren.ToolsExcel
 
                     if (Simboli.Ambiente == "Produzione")
                     {
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_TO'";
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_TO' AND IdApplicazione = " + Simboli.AppID;
                         mailTo = entitaProprieta[0]["Valore"].ToString();
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_CC'";
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_CC' AND IdApplicazione = " + Simboli.AppID;
                         mailCC = entitaProprieta[0]["Valore"].ToString();
                     }
-                    
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_CODICE_MAIL'";
+
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_CODICE_MAIL' AND IdApplicazione = " + Simboli.AppID;
                     string codUP = entitaProprieta[0]["Valore"].ToString();
 
                     config = Workbook.GetUsrConfigElement("oggettoMail");

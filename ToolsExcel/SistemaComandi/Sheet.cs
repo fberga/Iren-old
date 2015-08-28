@@ -30,12 +30,12 @@ namespace Iren.ToolsExcel
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
                 DataView entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_RAMPA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID;
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
                     DateTime dataFine;
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
                     
                     if (entitaProprieta.Count > 0)
                         dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));
@@ -44,7 +44,7 @@ namespace Iren.ToolsExcel
 
                     double pRif =
                         (from r in DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].AsEnumerable()
-                         where r["SiglaEntita"].Equals(entita["SiglaEntita"])
+                         where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(entita["SiglaEntita"])
                             && r["SiglaProprieta"].Equals("SISTEMA_COMANDI_PRIF")
                          select Double.Parse(r["Valore"].ToString())).FirstOrDefault();
 
@@ -70,7 +70,7 @@ namespace Iren.ToolsExcel
                         for (int i = 0; i < oreIntervallo; i++)
                         {
                             pMin[i] = pMin[i] < pRif ? pRif : pMin[i];
-                            entitaRampa.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaRampa = '" + _ws.Range[rngPQNR.Columns[i].ToString()].Value + "'";
+                            entitaRampa.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaRampa = '" + _ws.Range[rngPQNR.Columns[i].ToString()].Value + "' AND IdApplicazione = " + Simboli.AppID;
                             if (entitaRampa.Count > 0)
                             {
                                 for (int j = 0; j < 24; j++)

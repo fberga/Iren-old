@@ -21,9 +21,9 @@ namespace Iren.ToolsExcel
 
         }
 
-        public override bool Struttura()
+        public override bool Struttura(bool avoidRepositoryUpdate)
         {
-            bool o = base.Struttura();
+            bool o = base.Struttura(avoidRepositoryUpdate);
 
             //inserisco la stagione
             Simboli.Stagione = Simboli.GetStagione(Utility.Workbook.AppSettings("Stagione"));

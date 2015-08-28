@@ -48,7 +48,7 @@ namespace Iren.ToolsExcel
             Range rngCheck = new Range(_check.Range);
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
@@ -58,12 +58,12 @@ namespace Iren.ToolsExcel
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -223,7 +223,7 @@ namespace Iren.ToolsExcel
             Range rngCheck = new Range(_check.Range);
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
@@ -233,12 +233,12 @@ namespace Iren.ToolsExcel
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -323,7 +323,7 @@ namespace Iren.ToolsExcel
             Range rngCheck = new Range(_check.Range);
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
@@ -333,12 +333,12 @@ namespace Iren.ToolsExcel
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -426,7 +426,7 @@ namespace Iren.ToolsExcel
             Range rngCheck = new Range(_check.Range);
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
@@ -436,12 +436,12 @@ namespace Iren.ToolsExcel
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -562,7 +562,7 @@ namespace Iren.ToolsExcel
             Range rngCheck = new Range(_check.Range);
 
             DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "'";
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
@@ -572,12 +572,12 @@ namespace Iren.ToolsExcel
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
             DataView entitaParametroD = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN'";
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Simboli.AppID;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());

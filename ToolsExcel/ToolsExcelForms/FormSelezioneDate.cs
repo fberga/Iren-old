@@ -39,8 +39,8 @@ namespace Iren.ToolsExcel.Forms
             {
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
                 DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
-                entitaProprieta.RowFilter = "";
+                categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
+                entitaProprieta.RowFilter = "IdApplicazione = " + Simboli.AppID;
 
                 _extraDateFrom = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1);
 
@@ -48,7 +48,7 @@ namespace Iren.ToolsExcel.Forms
                 int maxIntervallo = Struct.intervalloGiorni;
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
                     if (entitaProprieta.Count > 0)
                     {
                         int value = int.Parse(entitaProprieta[0]["Valore"].ToString());

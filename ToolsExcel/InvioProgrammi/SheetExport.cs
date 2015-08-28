@@ -95,15 +95,14 @@ namespace Iren.ToolsExcel
 
             _ws.Columns[1].ColumnWidth = Struct.cell.width.empty;
 
-            ((Excel._Worksheet)_ws).Activate();
-            _ws.Application.ActiveWindow.FreezePanes = false;
-            //if(_ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
-            //    _ws.Cells[_struttura.rigaBlock, 1].Select();
-            
-            _ws.Application.ActiveWindow.ScrollColumn = 1;
-            _ws.Application.ActiveWindow.ScrollRow = 1;
-            _ws.Application.ActiveWindow.FreezePanes = true;
-            Workbook.Main.Select();
+            if(_ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
+            {
+                ((Excel._Worksheet)_ws).Activate();
+                _ws.Application.ActiveWindow.FreezePanes = false;
+                _ws.Cells[_struttura.rigaBlock, 1].Select();
+                _ws.Application.ActiveWindow.FreezePanes = true;
+                Workbook.Main.Select();
+            }
             _ws.Application.ScreenUpdating = false;
         }
         /// <summary>
@@ -136,7 +135,7 @@ namespace Iren.ToolsExcel
             //Calcolo il massimo numero di entità da mettere affiancate
             int maxElementCount =
                 (from r in categoriaEntita.AsEnumerable()
-                 where r["Gerarchia"] != DBNull.Value
+                 where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["Gerarchia"] != DBNull.Value
                  group r by r["Gerarchia"] into g
                  select g.Count()).Max();
 
@@ -156,7 +155,7 @@ namespace Iren.ToolsExcel
             SplashScreen.UpdateStatus("Creo struttura " + _mercato);
 
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
 
             if (DataCaricamentoStruttura != DataBase.DataAttiva)
             {
@@ -188,7 +187,7 @@ namespace Iren.ToolsExcel
         protected void InitBloccoEntita(DataRowView entita)
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
             CreaNomiCelle(entita["SiglaEntita"]);
             
             if (DataCaricamentoStruttura != DataBase.DataAttiva)
@@ -239,7 +238,7 @@ namespace Iren.ToolsExcel
 
             List<DataRow> entitaRif =
                 (from r in categoriaEntita.AsEnumerable()
-                 where r["Gerarchia"].Equals(siglaEntita)
+                 where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["Gerarchia"].Equals(siglaEntita)
                  select r).ToList();
             
             bool hasEntitaRif = entitaRif.Count > 0;
@@ -248,7 +247,7 @@ namespace Iren.ToolsExcel
             rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _struttura.colBlock, 1, 5 * numEntita);
             for (int i = 0; i < numEntita; i++)
             {
-                informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND Visibile = '1' " + (hasEntitaRif ? "AND SiglaEntitaRif = '" + entitaRif[i]["SiglaEntita"] + "'" : "");
+                informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND Visibile = '1' " + (hasEntitaRif ? "AND SiglaEntitaRif = '" + entitaRif[i]["SiglaEntita"] + "'" : "") + " AND IdApplicazione = " + Simboli.AppID;
                 
                 //range grande come tutta la tabella
                 rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _definedNames.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1") - 1, Date.GetOreGiorno(DataBase.DataAttiva) + 2, 5);
@@ -305,13 +304,13 @@ namespace Iren.ToolsExcel
         private void CancellaDati()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
 
             foreach (DataRowView entita in categoriaEntita)
             {
                 List<DataRow> entitaRif =
                    (from r in categoriaEntita.Table.AsEnumerable()
-                    where r["Gerarchia"].Equals(entita["SiglaEntita"])
+                    where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["Gerarchia"].Equals(entita["SiglaEntita"])
                     select r).ToList();
 
                 int numEntita = Math.Max(entitaRif.Count, 1);
@@ -330,7 +329,7 @@ namespace Iren.ToolsExcel
         public override void AggiornaDateTitoli()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
 
             foreach (DataRowView entita in categoriaEntita)
             {
@@ -363,7 +362,7 @@ namespace Iren.ToolsExcel
                     SplashScreen.UpdateStatus("Carico informazioni dal DB per " + _mercato);
                     _dataInizio = DataBase.DB.DataAttiva;
 
-                    DataView datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + Simboli.GetAppIDByMercato(_ws.Name) + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")).DefaultView;
+                    DataView datiApplicazioneH = (DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + Simboli.GetAppIDByMercato(_ws.Name) + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")) ?? new DataTable()).DefaultView;
 
                     var listaEntitaInfo =
                         (from DataRowView r in datiApplicazioneH

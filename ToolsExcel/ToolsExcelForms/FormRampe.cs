@@ -49,12 +49,13 @@ namespace Iren.ToolsExcel.Forms
 
                 _pRif =
                     (from r in DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].AsEnumerable()
-                     where r["SiglaEntita"].Equals(_siglaEntita)
+                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) 
+                        && r["SiglaEntita"].Equals(_siglaEntita)
                         && r["SiglaProprieta"].Equals("SISTEMA_COMANDI_PRIF")
                      select Double.Parse(r["Valore"].ToString())).FirstOrDefault();
 
                 _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_RAMPA].DefaultView;
-                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
+                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
                 _sigleRampa = 
                     (from DataRowView r in _entitaRampa
                      select r["SiglaRampa"]).ToList();
@@ -76,7 +77,9 @@ namespace Iren.ToolsExcel.Forms
                         _pMin[j] = Math.Min(_pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
                 }
 
-                _oreFermata = int.Parse(DataBase.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita).Rows[0]["OreFermata"].ToString());
+                DataTable dtFermata = DataBase.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita);
+                if (dtFermata != null && dtFermata.Rows.Count > 0)
+                    _oreFermata = int.Parse(dtFermata.Rows[0]["OreFermata"].ToString());
 
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
@@ -91,7 +94,7 @@ namespace Iren.ToolsExcel.Forms
         public void frmRAMPE_Load(object sender, EventArgs e)
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             lbDesEntita.Text = categoriaEntita[0]["DesEntita"].ToString() + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + _oreFermata;
 
@@ -312,7 +315,7 @@ namespace Iren.ToolsExcel.Forms
                 int pos = oraX.Controls.IndexOf(check) - 1;
 
                 intestazione[i] = _sigleRampa[pos];
-                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaRampa = '" + _sigleRampa[pos] + "'";
+                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaRampa = '" + _sigleRampa[pos] + "' AND IdApplicazione = " + Simboli.AppID;
 
                 for (int j = 0; j < 24; j++)
                 {

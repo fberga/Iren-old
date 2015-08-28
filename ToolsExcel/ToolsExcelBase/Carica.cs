@@ -58,16 +58,19 @@ namespace Iren.ToolsExcel.Base
                     }
                     else
                     {
-                        DataView azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd")).DefaultView;
-                        if (azioneInformazione.Count == 0)
+                        DataTable azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd"));
+                        if (azioneInformazione != null)
                         {
-                            DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
-                            return false;
-                        }
-                        else
-                        {
-                            ScriviInformazione(siglaEntita, azioneInformazione, definedNames);
-                            DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
+                            if (azioneInformazione.Rows.Count == 0)
+                            {
+                                DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
+                                return false;
+                            }
+                            else
+                            {
+                                ScriviInformazione(siglaEntita, azioneInformazione.DefaultView, definedNames);
+                                DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
+                            }
                         }
                     }
 
@@ -108,7 +111,7 @@ namespace Iren.ToolsExcel.Base
             string suffissoData = Date.GetSuffissoData(giorno);
 
             DataView azioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
-            azioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+            azioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
 
             foreach (DataRowView info in azioneInformazione)
             {
@@ -175,7 +178,7 @@ namespace Iren.ToolsExcel.Base
 
             //cerco le entita che appartengono a quella in input
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "'";
+            categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
             //salvo il numero di riferimento
             foreach (DataRowView entita in categoriaEntita)
                 entitaRiferimento.Add(entita["SiglaEntita"].ToString(), (int)entita["Riferimento"]);
@@ -186,10 +189,10 @@ namespace Iren.ToolsExcel.Base
             DataView calcoloInformazione = DataBase.LocalDB.Tables[DataBase.Tab.CALCOLO_INFORMAZIONE].DefaultView;
 
             DataView entitaAzioneCalcolo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_CALCOLO].DefaultView;
-            entitaAzioneCalcolo.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+            entitaAzioneCalcolo.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
             foreach (DataRowView azioneCalcolo in entitaAzioneCalcolo)
             {
-                calcoloInformazione.RowFilter = "SiglaCalcolo = '" + azioneCalcolo["SiglaCalcolo"] + "'";
+                calcoloInformazione.RowFilter = "SiglaCalcolo = '" + azioneCalcolo["SiglaCalcolo"] + "' AND IdApplicazione = " + Simboli.AppID;
                 calcoloInformazione.Sort = "Step";
 
                 //azzero tutte le informazioni che vengono utilizzate nel calcolo tranne i CHECK
@@ -319,7 +322,7 @@ namespace Iren.ToolsExcel.Base
                     {
                         case "UNIT_COMM":
                             DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
-                            entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND SiglaCommitment = '" + ws.Range[cella1.ToString()].Value + "'";
+                            entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND SiglaCommitment = '" + ws.Range[cella1.ToString()].Value + "' AND IdApplicazione = " + Simboli.AppID;
                             valore1 = entitaCommitment.Count > 0 ? entitaCommitment[0]["IdEntitaCommitment"] : null;
 
                             break;
@@ -349,7 +352,7 @@ namespace Iren.ToolsExcel.Base
             else if (calcolo["IdProprieta"] != DBNull.Value)
             {
                 DataView entitaProprieta = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdProprieta = " + calcolo["IdProprieta"];
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdProprieta = " + calcolo["IdProprieta"] + " AND IdApplicazione = " + Simboli.AppID;
 
                 if (entitaProprieta.Count > 0)
                     valore1 = entitaProprieta[0]["Valore"];
@@ -357,7 +360,7 @@ namespace Iren.ToolsExcel.Base
             else if (calcolo["IdParametroD"] != DBNull.Value)
             {
                 DataView entitaParametro = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_D].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"];
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"] + " AND IdApplicazione = " + Simboli.AppID;
 
                 if (entitaParametro.Count > 0)
                     valore1 =entitaParametro[0]["Valore"];
@@ -365,7 +368,7 @@ namespace Iren.ToolsExcel.Base
             else if (calcolo["IdParametroH"] != DBNull.Value)
             {
                 DataView entitaParametro = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_PARAMETRO_H].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"];
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"] + " AND IdApplicazione = " + Simboli.AppID;
 
                 if (entitaParametro.Count > 0)
                     valore1 = entitaParametro[0]["Valore"];
@@ -385,7 +388,7 @@ namespace Iren.ToolsExcel.Base
                     {
                         case "UNIT_COMM":
                             DataView entitaCommitment = DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_COMMITMENT].DefaultView;
-                            entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntitaRif2 + "' AND SiglaCommitment = '" + ws.Range[cella2.ToString()].Value + "'";
+                            entitaCommitment.RowFilter = "SiglaEntita = '" + siglaEntitaRif2 + "' AND SiglaCommitment = '" + ws.Range[cella2.ToString()].Value + "' AND IdApplicazione = " + Simboli.AppID;
                             valore2 = entitaCommitment.Count > 0 ? entitaCommitment[0] : null;
 
                             break;

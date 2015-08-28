@@ -132,7 +132,7 @@ namespace Iren.ToolsExcel.Base
         public static void AbilitaModifica(bool abilita)
         {
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "Operativa = '1'";
+            categorie.RowFilter = "Operativa = '1' AND IdApplicazione = " + Simboli.AppID;
 
             Protected = false;
             foreach (DataRowView categoria in categorie)
@@ -187,12 +187,12 @@ namespace Iren.ToolsExcel.Base
 
                     bool hasData0H24 = definedNames.HasData0H24;
 
-                    entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1'))";
+                    entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND ((FormulaInCella = '1' AND WB = '0' AND SalvaDB = '1') OR (WB <> '0' AND SalvaDB = '1')) AND IdApplicazione = " + Simboli.AppID;
 
                     DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
                     DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
                         (from r in entitaProprieta.AsEnumerable()
-                         where r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                         where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
                          select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
 
                     foreach (DataRowView info in entitaInformazione)
@@ -260,7 +260,7 @@ namespace Iren.ToolsExcel.Base
             _ws = ws;
 
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            categorie.RowFilter = "DesCategoria = '" + ws.Name + "'";
+            categorie.RowFilter = "DesCategoria = '" + ws.Name + "' AND IdApplicazione = " + Simboli.AppID;
 
             _siglaCategoria = categorie[0]["SiglaCategoria"];
 
@@ -270,11 +270,11 @@ namespace Iren.ToolsExcel.Base
             //carico la massima datafine in maniera da creare la barra navigazione della dimensione giusta (compresa la definizione dei giorni se necessario)
             DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";            
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID;            
 
             foreach (DataRowView entita in categoriaEntita)
             {
-                entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
+                entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
                 int intervalloGiorni = entitaProprieta.Count > 0 ? int.Parse(entitaProprieta[0]["Valore"].ToString()) : Struct.intervalloGiorni;
 
                 _dataFineUP.Add(entita["SiglaEntita"], DataBase.DataAttiva.AddDays(intervalloGiorni));
@@ -346,13 +346,13 @@ namespace Iren.ToolsExcel.Base
 
             //cerco selezioni
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID;
 
             DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
             bool visSelezione = false;
             foreach (DataRowView entita in categoriaEntita)
             {
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Selezione > 0";
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Selezione > 0 AND IdApplicazione = " + Simboli.AppID;
                 if(entitaInformazioni.Count > 0)
                 {
                     visSelezione = true;
@@ -372,7 +372,7 @@ namespace Iren.ToolsExcel.Base
 
             _visParametro = _struttura.visParametro ? 3 : 2 + (visSelezione ? 1 : 0);
 
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL)";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL) AND IdApplicazione = " + Simboli.AppID;
             _struttura.numEleMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
             _struttura.numRigheMenu = 1;
             if (_struttura.numEleMenu > 8)
@@ -396,7 +396,7 @@ namespace Iren.ToolsExcel.Base
             DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
 
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL)";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL) AND IdApplicazione = " + Simboli.AppID;
             
             _dataInizio = Utility.DataBase.DB.DataAttiva;
             _dataFine = Utility.DataBase.DB.DataAttiva.AddDays(Struct.tipoVisualizzazione == "O" ? _intervalloGiorniMax : 0);
@@ -441,8 +441,10 @@ namespace Iren.ToolsExcel.Base
                 }
             }
 
+            ColoraDataOra();
+
             //entitaProprieta.RowFilter = "";
-            categoriaEntita.RowFilter = "";
+            categoriaEntita.RowFilter = "IdApplicazione = " + Simboli.AppID;
 
             _definedNames.DumpToDataSet();
             CaricaInformazioni();
@@ -516,7 +518,7 @@ namespace Iren.ToolsExcel.Base
             SplashScreen.UpdateStatus("Inizializzo barra di navigazione '" + _ws.Name + "'");
 
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL ) AND IdApplicazione = " + Simboli.AppID;
 
             int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
                 
@@ -607,11 +609,11 @@ namespace Iren.ToolsExcel.Base
             DataView grafici = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO].DefaultView;
             DataView graficiInfo = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
 
-            if (informazioni.RowFilter != "SiglaEntita = '" + entita["SiglaEntita"] + "'")
+            if (informazioni.RowFilter != "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID)
             {
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
                 grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
-                graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
             }
             
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
@@ -624,14 +626,12 @@ namespace Iren.ToolsExcel.Base
             InsertInformazioniEntita();
             InsertPersonalizzazioni(entita["SiglaEntita"]);
             InsertGrafici();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1)";
+            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1) AND IdApplicazione = " + Simboli.AppID;
             InsertFormuleValoriDefault();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL";
+            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL AND IdApplicazione = " + Simboli.AppID;
             InsertParametri();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
             FormattazioneCondizionale();
-
-            ColoraDataOra();
 
             //due righe vuote tra un'entità e la successiva
             _rigaAttiva += 2;
@@ -1047,13 +1047,13 @@ namespace Iren.ToolsExcel.Base
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
                     Range rngData = _definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreGiorno);
-                    parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "'";
+                    parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Simboli.AppID;
 
                     if (parametriD.Count > 0)
                         _ws.Range[rngData.ToString()].Formula = parametriD[0]["Valore"];
                     else
                     {
-                        parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "'";
+                        parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Simboli.AppID;
 
                         object[] values = parametriH.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
 
@@ -1080,7 +1080,7 @@ namespace Iren.ToolsExcel.Base
 
                 Excel.Range rngData = _ws.Range[rng.ToString()];
 
-                formattazione.RowFilter = (info["SiglaEntitaRif"] is DBNull ? "SiglaEntita" : "SiglaEntitaRif") + " = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "'";
+                formattazione.RowFilter = (info["SiglaEntitaRif"] is DBNull ? "SiglaEntita" : "SiglaEntitaRif") + " = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "' AND IdApplicazione = " + Simboli.AppID;
                 foreach (DataRowView format in formattazione)
                 {
                     
@@ -1190,7 +1190,7 @@ namespace Iren.ToolsExcel.Base
                 chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
 
                 string rowFilter = graficiInfo.RowFilter;
-                graficiInfo.RowFilter = rowFilter + " AND SiglaGrafico = '" + grafico["SiglaGrafico"] + "'";
+                graficiInfo.RowFilter = rowFilter + " AND SiglaGrafico = '" + grafico["SiglaGrafico"] + "' AND IdApplicazione = " + Simboli.AppID;
 
                 foreach (DataRowView info in graficiInfo)
                 {
@@ -1296,7 +1296,7 @@ namespace Iren.ToolsExcel.Base
                 if (DataBase.OpenConnection())
                 {
                     DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                    categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+                    categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID;
 
                     _dataInizio = DataBase.DB.DataAttiva;
 
@@ -1449,7 +1449,7 @@ namespace Iren.ToolsExcel.Base
                     {
                         int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
                         DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif;
+                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif + " AND IdApplicazione = " + Simboli.AppID;
                         siglaEntita = categoriaEntita[0]["SiglaEntita"];
                     }
                     else
@@ -1531,7 +1531,7 @@ namespace Iren.ToolsExcel.Base
         private void CancellaDati(DateTime giorno, bool all = false)
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'"; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
 
             string suffissoData = Date.GetSuffissoData(giorno);
             int colOffset = _definedNames.GetColOffset();
@@ -1542,7 +1542,7 @@ namespace Iren.ToolsExcel.Base
             {
                 SplashScreen.UpdateStatus("Cancello dati " + entita["DesEntita"]);
                 DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0'";// AND ValoreDefault IS NULL";
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND IdApplicazione = " + Simboli.AppID;// AND ValoreDefault IS NULL";
 
                 foreach (DataRowView info in informazioni)
                 {
@@ -1682,7 +1682,7 @@ namespace Iren.ToolsExcel.Base
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL ) AND IdApplicazione = " + Simboli.AppID;
             _dataInizio = DataBase.DB.DataAttiva;
 
             foreach (DataRowView entita in categoriaEntita)
@@ -1690,11 +1690,11 @@ namespace Iren.ToolsExcel.Base
                 SplashScreen.UpdateStatus("Carico parametri " + entita["DesEntita"]);
                 _dataFine = _dataFineUP[entita["SiglaEntita"]];
 
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL";
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL AND IdApplicazione = " + Simboli.AppID;
                 InsertParametri();
 
                 SplashScreen.UpdateStatus("Aggiorno valori di default " + entita["DesEntita"]);
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ValoreDefault IS NOT NULL";
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND ValoreDefault IS NOT NULL AND IdApplicazione = " + Simboli.AppID;
                 InsertFormuleValoriDefault();
             }
         }

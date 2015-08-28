@@ -41,7 +41,7 @@ namespace Iren.ToolsExcel
             
             //se l'informazione è visibile la devo scrivere anche nei fogli dei mercati
             DataView informazioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE]);
-            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "'";
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "' AND IdApplicazione = " + Simboli.AppID;
             bool visible = false;
             foreach (DataRowView r in informazioni)
                 if (r["Visibile"].Equals("1"))
@@ -53,7 +53,7 @@ namespace Iren.ToolsExcel
 
                 var rif =
                     (from r in entita.AsEnumerable()
-                     where r["SiglaEntita"].Equals(siglaEntita)
+                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
                      select new { SiglaEntita = r["Gerarchia"] is DBNull ? r["SiglaEntita"] : r["Gerarchia"], Riferimento = r["Riferimento"] }).First();
 
                 string quarter = Regex.Match(info["SiglaInformazione"].ToString(), @"Q\d").Value;

@@ -42,17 +42,17 @@ namespace Iren.ToolsExcel.Forms
             _carica = carica;
 
             _categorie = DataBase.LocalDB.Tables[Tabella.CATEGORIA].DefaultView;
-            _categorie.RowFilter = "";
+            _categorie.RowFilter = "IdApplicazione = " + Simboli.AppID;
             _categoriaEntita = DataBase.LocalDB.Tables[Tabella.CATEGORIA_ENTITA].DefaultView;
-            _categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL";
+            _categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
             _azioni = DataBase.LocalDB.Tables[Tabella.AZIONE].DefaultView;
-            _azioni.RowFilter = "Visibile = 1";
+            _azioni.RowFilter = "Visibile = 1 AND IdApplicazione = " + Simboli.AppID;
             _azioniCategorie = DataBase.LocalDB.Tables[Tabella.AZIONE_CATEGORIA].DefaultView;
-            _azioniCategorie.RowFilter = "";
+            _azioniCategorie.RowFilter = "IdApplicazione = " + Simboli.AppID;
             _entitaAzioni = DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE].DefaultView;
-            _entitaAzioni.RowFilter = "";
+            _entitaAzioni.RowFilter =  "IdApplicazione = " + Simboli.AppID;
             DataView entitaProprieta = DataBase.LocalDB.Tables[Tabella.ENTITA_PROPRIETA].DefaultView;
-            entitaProprieta.RowFilter = "";
+            entitaProprieta.RowFilter = "IdApplicazione = " + Simboli.AppID;
 
             ConfigStructure();
 
@@ -179,7 +179,7 @@ namespace Iren.ToolsExcel.Forms
             {
                 if (n.Checked)
                 {
-                    _categoriaEntita.RowFilter = "SiglaCategoria = '" + n.Name + "'";
+                    _categoriaEntita.RowFilter = "SiglaCategoria = '" + n.Name + "' AND IdApplicazione = " + Simboli.AppID;
                     _categoriaEntita.Sort = "DesEntita";
                     foreach (DataRowView entita in _categoriaEntita)
                     {
@@ -187,7 +187,7 @@ namespace Iren.ToolsExcel.Forms
                         {
                             if (n1.Checked)
                             {
-                                _entitaAzioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaAzione = '" + n1.Name + "'";
+                                _entitaAzioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaAzione = '" + n1.Name + "' AND IdApplicazione = " + Simboli.AppID;
                                 if (_entitaAzioni.Count > 0 && treeViewUP.Nodes.Find(entita["SiglaEntita"].ToString(), true).Length == 0)
                                 {
                                     treeViewUP.Nodes.Add(entita["SiglaEntita"].ToString(), entita["DesEntita"].ToString());
@@ -299,7 +299,7 @@ namespace Iren.ToolsExcel.Forms
             {
                 foreach (TreeNode node in justChecked)
                 {
-                    _azioniCategorie.RowFilter = filter + " = '" + node.Name + "'";
+                    _azioniCategorie.RowFilter = filter + " = '" + node.Name + "' AND IdApplicazione = " + Simboli.AppID;
                     foreach (DataRowView azioneCategoria in _azioniCategorie)
                         to.Nodes.Find(azioneCategoria[field].ToString(), true)[0].Checked = true;
                 }
@@ -311,7 +311,7 @@ namespace Iren.ToolsExcel.Forms
                 {
                     if (n.Nodes.Count == 0)
                     {
-                        _azioniCategorie.RowFilter = filter + " = '" + n.Name + "'";
+                        _azioniCategorie.RowFilter = filter + " = '" + n.Name + "' AND IdApplicazione = " + Simboli.AppID;
                         foreach (DataRowView azioneCategoria in _azioniCategorie)
                         {
                             if (checkedNodes.ContainsKey(azioneCategoria[field].ToString()))
@@ -394,14 +394,14 @@ namespace Iren.ToolsExcel.Forms
                         if (nodoAzione.Checked && nodoAzione.Nodes.Count == 0)
                         {
                             TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                            _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+                            _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Simboli.AppID;
 
                             ThroughAllNodes(treeViewUP.Nodes, nodoEntita =>
                             {
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                 {
 
-                                    entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA'";
+                                    entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
                                     int intervalloGiorni = Struct.intervalloGiorni;
                                     if (entitaProprieta.Count > 0)
                                         intervalloGiorni = int.Parse("" + entitaProprieta[0]["Valore"]);
@@ -412,7 +412,7 @@ namespace Iren.ToolsExcel.Forms
                                         bool presente;
 
                                         DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE]);
-                                        entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "'";
+                                        entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Simboli.AppID;
 
                                         if (entitaAzione.Count > 0 && (entitaAzione[0]["Giorno"] is DBNull || entitaAzione[0]["Giorno"].ToString().Contains(Date.GetSuffissoData(date))))
                                         {
@@ -446,7 +446,7 @@ namespace Iren.ToolsExcel.Forms
                                                 
                                                 foreach (string relazione in azioneRelazione)
                                                 {
-                                                    _azioni.RowFilter = "SiglaAzione = '" + relazione + "'";
+                                                    _azioni.RowFilter = "SiglaAzione = '" + relazione + "' AND IdApplicazione = " + Simboli.AppID;
 
                                                     Range rng = new Range(definedNames.GetRowByName(nodoEntita.Name), definedNames.GetColFromName(relazione, suffissoData));
                                                     if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
@@ -455,7 +455,7 @@ namespace Iren.ToolsExcel.Forms
                                                         Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
                                                     }
                                                 }
-                                                _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "'";
+                                                _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Simboli.AppID;
                                             }
                                         }
                                     }

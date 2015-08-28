@@ -285,8 +285,9 @@ namespace Iren.ToolsExcel.Core
         /// <param name="storedProcedure">Nome della stored procedure.</param>
         /// <param name="parameters">Parametri della stored procedure.</param>
         /// <param name="timeout">Timeout di esecuzione.</param>
+        /// <param name="logEnabled">Flag per attivare disattivare il log (usa spInsertLog che deve essere definita nello schema in uso!!).</param>
         /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
-        private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300)
+        private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300, bool logEnabled = true)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -306,8 +307,14 @@ namespace Iren.ToolsExcel.Core
             }
             catch (SqlException)
             {
-                System.Windows.Forms.MessageBox.Show("La richiesta al DB è andata in errore o in timeout...", "Core - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                return new DataTable();
+                if (logEnabled && OpenConnection())
+                {
+                    //nel caso spInsertLog (definita solo per PSO ma non per RiMoST ad esempio) non sia definita, va in errore
+                    try { Insert("spInsertLog", new QryParams() { { "@IdTipologia", TipologiaLOG.LogErrore }, { "@Messaggio", "Core.DataBase.Select[" + storedProcedure + "," + parameters + "]" } }); } 
+                    catch {}
+                    CloseConnection();
+                }
+                return null;
             }
 
         }
@@ -318,8 +325,9 @@ namespace Iren.ToolsExcel.Core
         /// <param name="storedProcedure">Nome della stored procedure.</param>
         /// <param name="parameters">Parametri della stored procedure.</param>
         /// <param name="timeout">Timeout di esecuzione.</param>
+        /// <param name="logEnabled">Flag per attivare disattivare il log (usa spInsertLog che deve essere definita nello schema in uso!!).</param>
         /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
-        private DataTable Select(Command cmd, string storedProcedure, String parameters, int timeout = 300)
+        private DataTable Select(Command cmd, string storedProcedure, String parameters, int timeout = 300, bool logEnabled = true)
         {
             return Select(cmd, storedProcedure, getParamsFromString(parameters), timeout);
         }
@@ -337,20 +345,20 @@ namespace Iren.ToolsExcel.Core
 
             if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                DataView imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3).DefaultView;
-                //se va in timeout la connessione si chiude
-                OpenConnection(_internalsqlConn);
-                DataView elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3).DefaultView;
-
-                if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
+                DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3, false);
+                    
+                if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
                     _statoDB[NomiDB.IMP] = ConnectionState.Open;
                 else
                     _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+                
+                OpenConnection(_internalsqlConn);
+                DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3, false);
 
-                if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
+                if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
                     _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
                 else
-                    _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+                    _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;   
             }
             else
             {

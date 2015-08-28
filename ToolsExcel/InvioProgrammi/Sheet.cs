@@ -60,12 +60,12 @@ namespace Iren.ToolsExcel
                 SplashScreen.UpdateStatus("Aggiorno colori");
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "'";
+                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID;
                 DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Visibile = '1'";
+                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Visibile = '1' AND IdApplicazione = " + Simboli.AppID;
                     foreach (DataRowView info in informazioni)
                     {
                         object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
@@ -75,7 +75,7 @@ namespace Iren.ToolsExcel
 
                         var rif =
                             (from r in categoriaEntita.Table.AsEnumerable()
-                             where r["SiglaEntita"].Equals(siglaEntita)
+                             where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
                              select new { SiglaEntita = r["Gerarchia"] is DBNull ? r["SiglaEntita"] : r["Gerarchia"], Riferimento = r["Riferimento"] }).First();
 
                         Range rngMercato = new Range(_definedNamesSheetMercato.GetRowByName(rif.SiglaEntita, "UM", "T") + 2, _definedNamesSheetMercato.GetColFromName("RIF" + rif.Riferimento, "PROGRAMMA" + quarter)).Extend(rowOffset: Date.GetOreGiorno(DataBase.DataAttiva));

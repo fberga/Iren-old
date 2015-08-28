@@ -58,9 +58,12 @@ namespace ConfigurazioneRibbon
 
             //carico la lista di applicazioni configurabili
             DataTable applicazioni = DataBase.Select(APPLICAZIONI, "@IdApplicazione=0");
-            cmbApplicazioni.DisplayMember = "DesApplicazione";
-            cmbApplicazioni.ValueMember = "IdApplicazione";
-            cmbApplicazioni.DataSource = applicazioni;
+            if (applicazioni != null)
+            {
+                cmbApplicazioni.DisplayMember = "DesApplicazione";
+                cmbApplicazioni.ValueMember = "IdApplicazione";
+                cmbApplicazioni.DataSource = applicazioni;
+            }
 
             //trovo l'ultimo checkbox per identificare quanti componenti ci sono: il numero sara MaxCHK / 3
             var controls = GetAll(this, typeof(CheckBox));
@@ -74,11 +77,6 @@ namespace ConfigurazioneRibbon
         private void AmbienteDefaultNnDisattivabile(object sender, EventArgs e)
         {
             ((CheckBox)sender).Checked = true;
-        }
-
-        private void CaricaListaUtenti()
-        {
-            DataBase.Select(UTENTE_GRUPPO, "@");
         }
 
         private void lbAbilitato_DoubleClick(object sender, EventArgs e)
@@ -131,10 +129,13 @@ namespace ConfigurazioneRibbon
             //carico la lista di utenti disponibili
             int id = ((KeyValuePair<int,string>)cmbGruppi.SelectedItem).Key;
             DataTable utenti = DataBase.Select(UTENTE_GRUPPO, "@IdUtenteGruppo=" + id);
-            listBoxUtenti.DataSource = utenti;
-            listBoxUtenti.ValueMember = "IdUtente";
-            listBoxUtenti.DisplayMember = "Nome";
-            listBoxUtenti.SelectionMode = SelectionMode.MultiExtended;
+            if (utenti != null)
+            {
+                listBoxUtenti.DataSource = utenti;
+                listBoxUtenti.ValueMember = "IdUtente";
+                listBoxUtenti.DisplayMember = "Nome";
+                listBoxUtenti.SelectionMode = SelectionMode.MultiExtended;
+            }
         }
 
         private void ApplyConfig(DataTable dt)
@@ -177,12 +178,12 @@ namespace ConfigurazioneRibbon
             //carico la tabella applicazioneRibbon default (cioè utente 62)       
             DataBase.DB.SetParameters("", 62, (int)cmbApplicazioni.SelectedValue);
 
-            _configurazioniDefault = DataBase.Select(RIBBON);
+            _configurazioniDefault = DataBase.Select(RIBBON) ?? new DataTable();
 
             if (listBoxUtenti.SelectedIndices.Count == 1)
             {
                 DataBase.DB.SetParameters("", (int)listBoxUtenti.SelectedValue, (int)cmbApplicazioni.SelectedValue);
-                _configurazioneUtente = DataBase.Select(RIBBON);
+                _configurazioneUtente = DataBase.Select(RIBBON) ?? new DataTable();
                 ApplyConfig(_configurazioneUtente);
             }
         }
@@ -229,7 +230,7 @@ namespace ConfigurazioneRibbon
             if (listBoxUtenti.SelectedIndices.Count == 1 && cmbApplicazioni.SelectedValue != null)
             {
                 DataBase.DB.SetParameters("", (int)listBoxUtenti.SelectedValue, (int)cmbApplicazioni.SelectedValue);
-                _configurazioneUtente = DataBase.Select(RIBBON);
+                _configurazioneUtente = DataBase.Select(RIBBON) ?? new DataTable();
                 ApplyConfig(_configurazioneUtente);
             }
         }

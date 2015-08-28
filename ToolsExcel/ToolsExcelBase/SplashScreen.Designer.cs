@@ -1,6 +1,6 @@
 ﻿namespace Iren.ToolsExcel.Base
 {
-    partial class SplashForm
+    partial class SplashScreen
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashScreen));
             this.panelAll = new System.Windows.Forms.Panel();
             this.lbText = new System.Windows.Forms.Label();
             this.lbCaricamento = new System.Windows.Forms.Label();

@@ -57,9 +57,9 @@ namespace Iren.ToolsExcel
                     string start = DataBase.DataAttiva.ToString("yyyyMMdd");
                     string end = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd");
 
-                    DataView note = DataBase.Select(DataBase.SP.APPLICAZIONE_NOTE, "@SiglaEntita=ALL;@DateFrom="+start+";@DateTo="+end).DefaultView;
+                    DataTable note = DataBase.Select(DataBase.SP.APPLICAZIONE_NOTE, "@SiglaEntita=ALL;@DateFrom="+start+";@DateTo="+end) ?? new DataTable();
 
-                    foreach (DataRowView nota in note)
+                    foreach (DataRow nota in note.Rows)
                     {
                         int row = _definedNames.GetRowByNameSuffissoData(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
                         int col = _definedNames.GetFirstCol();
@@ -77,7 +77,7 @@ namespace Iren.ToolsExcel
         {
             //cancello tutte le NOTE
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL )";
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL ) AND IdApplicazione = " + Simboli.AppID;
 
             DateTime dataInizio = DataBase.DataAttiva;
             DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
@@ -87,7 +87,7 @@ namespace Iren.ToolsExcel
             foreach (DataRowView entita in categoriaEntita)
             {
                 DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
                 object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
 
                 CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>

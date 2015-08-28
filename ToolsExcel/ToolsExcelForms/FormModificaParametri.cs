@@ -31,7 +31,7 @@ namespace Iren.ToolsExcel.Forms
             this.Text = Simboli.nomeApplicazione + " - Modifica Parametri";
 
             _entita = new DataView(Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA]);
-            _parametri = Utility.DataBase.Select(Utility.DataBase.SP.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.DataBase.DB.IdApplicazione);
+            _parametri = Utility.DataBase.Select(Utility.DataBase.SP.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.DataBase.DB.IdApplicazione) ?? new DataTable();
 
             _parametriD = new DataView(_parametri);
             _parametriH = new DataView(_parametri);
@@ -52,8 +52,8 @@ namespace Iren.ToolsExcel.Forms
 
         private void cmbEntita_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _parametriD.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'D'";
-            _parametriH.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'H'";
+            _parametriD.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'D' AND IdApplicazione = " + Simboli.AppID;
+            _parametriH.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'H' AND IdApplicazione = " + Simboli.AppID;
 
             if (_parametriD.Count == 0)
                 ((Control)tabPageParD).Enabled = false;
@@ -81,7 +81,7 @@ namespace Iren.ToolsExcel.Forms
                     {"@IdEntita", r["IdEntita"]},
                     {"@IdTipologiaParametro", r["IdParametro"]},
                     {"@Dettaglio", "H"},
-                });
+                }) ?? new DataTable();
 
                 DataTable valCorretti = new DataTable()
                 {
@@ -219,16 +219,16 @@ namespace Iren.ToolsExcel.Forms
                     {"@IdEntita", r["IdEntita"]},
                     {"@IdTipologiaParametro", r["IdParametro"]},
                     {"@Dettaglio", "D"},
-                });
+                }) ?? new DataTable();
 
                 DataTable valCorretti = new DataTable()
                 {
                     Columns = 
-                {
-                    {"Inizio Validità", typeof(DateTime)},
-                    {"Fine Validità", typeof(DateTime)},
-                    {"Valore", typeof(decimal)}
-                }
+                    {
+                        {"Inizio Validità", typeof(DateTime)},
+                        {"Fine Validità", typeof(DateTime)},
+                        {"Valore", typeof(decimal)}
+                    }
                 };
 
 

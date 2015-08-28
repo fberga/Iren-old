@@ -1,6 +1,7 @@
 ﻿using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace Iren.ToolsExcel.Base
         /// Launcher dell'aggiornamento della struttura.
         /// </summary>
         /// <returns></returns>
-        public abstract bool Struttura();
+        public abstract bool Struttura(bool avoidRepositoryUpdate);
         /// <summary>
         /// Aggiornamento della struttura dei fogli.
         /// </summary>
@@ -88,23 +89,23 @@ namespace Iren.ToolsExcel.Base
             DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
             DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
                     (from r in entitaProprieta.AsEnumerable()
-                     where r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
                      select int.Parse(r["Valore"].ToString())).DefaultIfEmpty().Max(), Struct.intervalloGiorni));
 
             SplashScreen.UpdateStatus("Carico informazioni dal DB");
-            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1");
+            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
 
             datiApplicazioneH.TableName = DataBase.Tab.DATI_APPLICAZIONE_H;
             DataBase.LocalDB.Tables.Add(datiApplicazioneH);
 
             SplashScreen.UpdateStatus("Carico commenti dal DB");
-            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1");
+            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1") ?? new DataTable();
 
             insertManuali.TableName = DataBase.Tab.DATI_APPLICAZIONE_COMMENTO;
             DataBase.LocalDB.Tables.Add(insertManuali);
 
             SplashScreen.UpdateStatus("Carico informazioni giornaliere dal DB");
-            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1");
+            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
 
             datiApplicazioneD.TableName = DataBase.Tab.DATI_APPLICAZIONE_D;
             DataBase.LocalDB.Tables.Add(datiApplicazioneD);
@@ -127,12 +128,13 @@ namespace Iren.ToolsExcel.Base
         /// Launcher dell'aggiornamento della struttura.
         /// </summary>
         /// <returns>True se l'aggiornamento è andato a buon fine.</returns>
-        public override bool Struttura()
+        public override bool Struttura(bool avoidRepositoryUpdate)
         {
-            if (DataBase.OpenConnection())
+            if (DataBase.OpenConnection() || avoidRepositoryUpdate)
             {
                 //aggiorno i parametri di base dell'applicazione
-                Workbook.AggiornaParametriApplicazione();
+                if (!avoidRepositoryUpdate)
+                    Workbook.AggiornaParametriApplicazione();
 
                 SplashScreen.Show();
 
@@ -142,14 +144,29 @@ namespace Iren.ToolsExcel.Base
 
                 Workbook.ScreenUpdating = false;
 
-
-                SplashScreen.UpdateStatus("Carico struttura dal DB");
-                Repository.Aggiorna();
-
+                if (!avoidRepositoryUpdate)
+                {
+                    SplashScreen.UpdateStatus("Carico struttura dal DB");
+                    if (ConfigurationManager.AppSettings["AppIDMSD"] != null)
+                    {
+                        string[] appIDs = ConfigurationManager.AppSettings["AppIDMSD"].Split('|');
+                        Repository.Aggiorna(appIDs);
+                    }
+                    else
+                    {
+                        Repository.Aggiorna(null);
+                    }
+                }
+                else
+                {
+                    //resetto la struttura nomi che verrà ricreata nelle prossime righe
+                    Repository.InitStrutturaNomi();
+                }
+                
                 SplashScreen.UpdateStatus("Controllo se tutti i fogli sono presenti");
 
                 DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-                categorie.RowFilter = "Operativa = 1";
+                categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
 
                 foreach (DataRowView categoria in categorie)
                 {
@@ -178,7 +195,8 @@ namespace Iren.ToolsExcel.Base
 
                 try
                 {
-                    CaricaDatiDalDB();
+                    if(DataBase.OpenConnection())
+                        CaricaDatiDalDB();
 
                     Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
                     SplashScreen.UpdateStatus("Aggiorno struttura Riepilogo");

@@ -23,7 +23,7 @@ namespace Iren.ToolsExcel
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
-            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
             if (entitaAzione.Count == 0)
                 return false;
 
@@ -99,12 +99,12 @@ namespace Iren.ToolsExcel
                 int oreGiorno = Date.GetOreGiorno(dataRif);
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
                 DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
-                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
+                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
 
                 XNamespace ns = XNamespace.Get("urn:XML-BIDMGM");
 
@@ -169,14 +169,14 @@ namespace Iren.ToolsExcel
                 int oreGiorno = Date.GetOreGiorno(dataRif);
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
                 DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
-                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%'";
+                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%' AND IdApplicazione = " + Simboli.AppID;
 
                 DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA'";
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA' AND IdApplicazione = " + Simboli.AppID;
 
                 XNamespace ns = XNamespace.Get("urn:XML-PIPE");
                 XNamespace xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
@@ -271,14 +271,14 @@ namespace Iren.ToolsExcel
                 int oreGiorno = Date.GetOreGiorno(dataRif);
 
                 DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
 
                 DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
-                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%'";
+                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%' AND IdApplicazione = " + Simboli.AppID;
 
                 DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA'";
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA' AND IdApplicazione = " + Simboli.AppID;
 
                 XNamespace ns = XNamespace.Get("urn:XML-BIDMGM");
                 XNamespace xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");

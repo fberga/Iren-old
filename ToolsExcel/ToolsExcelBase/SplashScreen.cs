@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.Base
 {
-    public partial class SplashForm : Form
+    public partial class SplashScreen : Form
     {
         private const int CS_DROPSHADOW = 0x20000;
         protected override CreateParams CreateParams
@@ -30,7 +30,7 @@ namespace Iren.ToolsExcel.Base
         private delegate void CloseDelegate();
         private delegate void UpdateStatusDelegate(string status);
 
-        public SplashForm()
+        public SplashScreen()
         {
             InitializeComponent();
         }
@@ -42,13 +42,12 @@ namespace Iren.ToolsExcel.Base
                 BeginInvoke(new ShowDelegate(ShowSplashScreen));
                 return;
             }
-            Stopwatch watch = Stopwatch.StartNew();
-            this.Show(Workbook.Window);
-            watch.Stop();
             
+
+            base.Show(Workbook.Window);
+
             if (!this.IsDisposed)
-               Application.Run(this);
-        
+                Application.Run(this);
         }
         public void CloseSplashScreen()
         {
@@ -58,7 +57,7 @@ namespace Iren.ToolsExcel.Base
                 return;
             }
 
-            this.Close();
+            base.Close();
             this.Dispose();
         }
 
@@ -70,7 +69,6 @@ namespace Iren.ToolsExcel.Base
                 return;
             }
 
-            //this.BringToFront();
             if (status.Length > 70)
                 status = status.Substring(0, 67) + " ...";
             if(status != lbText.Text)
@@ -83,17 +81,21 @@ namespace Iren.ToolsExcel.Base
             lbText.Left = (int)Math.Round((panelAll.Width / 2) - (width / 2));
         }
 
-        static SplashForm sf = null;
+        static SplashScreen sf = null;
+        static Thread _splashthread;
 
-        public static void ShowSplash()
+        public static void Show()
         {
             if (sf == null)
             {
-                sf = new SplashForm();
-                sf.ShowSplashScreen();
+                sf = new SplashScreen();
+                _splashthread = new Thread(new ThreadStart(sf.ShowSplashScreen));
+                _splashthread.IsBackground = true;
+
+                _splashthread.Start();
             }
         }
-        public static void CloseSplash()
+        public static void Close()
         {
             if (sf != null)
             {
@@ -108,27 +110,5 @@ namespace Iren.ToolsExcel.Base
                 sf.UdpateStatusText(status);
             }
         }
-    }
-
-    public static class SplashScreen
-    {
-        public static void Show()
-        {
-            Thread splashthread = new Thread(new ThreadStart(SplashForm.ShowSplash));
-            splashthread.IsBackground = true;
-           
-            splashthread.Start();
-        }
-
-        public static void Close()
-        {
-            SplashForm.CloseSplash();
-        }
-
-        public static void UpdateStatus(string status)
-        {
-            SplashForm.UpdateStatus(status);
-        }
-        
     }
 }

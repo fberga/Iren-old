@@ -59,6 +59,19 @@ namespace Iren.ToolsExcel.Core
 
         public IEnumerator GetEnumerator() { return _parameters.GetEnumerator(); }
 
+        public override string ToString()
+        {
+            if (_parameters.Count == 0)
+                return "params:{}";
+
+            string o = "";
+            foreach (var kv in _parameters)
+            {
+                o += kv.Key + "=" + kv.Value + ",";
+            }
+            return "params:{" + o.Substring(0, o.Length - 1) + "}";
+        }
+
         #endregion
     }
 }
