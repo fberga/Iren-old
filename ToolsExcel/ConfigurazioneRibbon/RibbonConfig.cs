@@ -129,6 +129,7 @@ namespace ConfigurazioneRibbon
             //carico la lista di utenti disponibili
             int id = ((KeyValuePair<int,string>)cmbGruppi.SelectedItem).Key;
             DataTable utenti = DataBase.Select(UTENTE_GRUPPO, "@IdUtenteGruppo=" + id);
+
             if (utenti != null)
             {
                 listBoxUtenti.DataSource = utenti;

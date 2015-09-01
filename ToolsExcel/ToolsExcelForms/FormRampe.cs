@@ -160,28 +160,31 @@ namespace Iren.ToolsExcel.Forms
                 tableLayoutDesRampa.Controls.Add(rb, 1, y);
 
                 tableLayoutRampe.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
-                for (int i = 0; i < _entitaRampa.Table.Columns.Count - 2; i++)
+                //Descrizione Rampa
+                tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105f));
+                tableLayoutRampe.Controls.Add(new Label() { Text = rampa["DesRampa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, BackColor = System.Drawing.Color.Transparent }, 0, y);
+                //Ore fermata
+                tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
+                tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoDa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent }, 1, y);
+
+                //Tolgo IdApplicazione che si trova all'ultima riga
+                var columnNames =
+                    from c in _entitaRampa.Table.Columns.Cast<DataColumn>()
+                    where Regex.IsMatch(c.ColumnName, @"^Q\d+$")    //è nel formato "Qx"
+                    select c.ColumnName;
+
+                int i = 2;
+                foreach (var colName in columnNames)
                 {
-                    switch (i)
-                    {
-                        case 0:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105f));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["DesRampa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                        case 1:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoDa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                        case 2:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoA"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                        default:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["Q" + (i - 2)].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                    }
+                    tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
+                    tableLayoutRampe.Controls.Add(new Label() { Text = rampa[colName].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent }, i++, y);
                 }
+
+                //for (int i = 2; i < _entitaRampa.Table.Columns.Count - 3; i++)
+                //{
+                //    tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
+                //    tableLayoutRampe.Controls.Add(new Label() { Text = rampa["Q" + (i - 2)].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
+                //}
                 y++;
 
             }

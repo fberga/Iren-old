@@ -22,8 +22,10 @@ namespace Iren.ToolsExcel
 
         protected Excel.Worksheet _ws;
         protected DefinedNames _definedNames;
+        protected DefinedNames _definedNamesMercatoPrec;
         protected int _rigaAttiva;
         protected string _mercato;
+        protected int _appID;
 
         #endregion
 
@@ -33,10 +35,13 @@ namespace Iren.ToolsExcel
         {
             _ws = ws;
             _mercato = ws.Name;
+            _appID = int.Parse(Simboli.GetAppIDByMercato(_mercato));
 
             AggiornaParametriSheet();
 
-            _definedNames = new DefinedNames(_ws.Name);
+            _definedNames = new DefinedNames(_mercato);
+            if (_mercato != "MSD1")
+                _definedNamesMercatoPrec = new DefinedNames(Simboli.GetMercatoPrec(_mercato));
         }
 
         #endregion
@@ -47,8 +52,8 @@ namespace Iren.ToolsExcel
         {
             get
             {
-                if (_dataCaricaStruttura.ContainsKey(_ws.Name))
-                    return _dataCaricaStruttura[_ws.Name];
+                if (_dataCaricaStruttura.ContainsKey(_mercato))
+                    return _dataCaricaStruttura[_mercato];
                 else
                     return DateTime.MinValue;
             }
@@ -135,7 +140,7 @@ namespace Iren.ToolsExcel
             //Calcolo il massimo numero di entità da mettere affiancate
             int maxElementCount =
                 (from r in categoriaEntita.AsEnumerable()
-                 where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["Gerarchia"] != DBNull.Value
+                 where r["IdApplicazione"].Equals(_appID) && r["Gerarchia"] != DBNull.Value
                  group r by r["Gerarchia"] into g
                  select g.Count()).Max();
 
@@ -155,7 +160,7 @@ namespace Iren.ToolsExcel
             SplashScreen.UpdateStatus("Creo struttura " + _mercato);
 
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + _appID;
 
             if (DataCaricamentoStruttura != DataBase.DataAttiva)
             {
@@ -175,10 +180,10 @@ namespace Iren.ToolsExcel
             if (DataCaricamentoStruttura != DataBase.DataAttiva)
                 CaricaInformazioni();
 
-            if (_dataCaricaStruttura.ContainsKey(_ws.Name))
-                _dataCaricaStruttura[_ws.Name] = DataBase.DataAttiva;
+            if (_dataCaricaStruttura.ContainsKey(_mercato))
+                _dataCaricaStruttura[_mercato] = DataBase.DataAttiva;
             else
-                _dataCaricaStruttura.Add(_ws.Name, DataBase.DataAttiva);
+                _dataCaricaStruttura.Add(_mercato, DataBase.DataAttiva);
         }
         /// <summary>
         /// Inizializza il blocco entità.
@@ -187,7 +192,7 @@ namespace Iren.ToolsExcel
         protected void InitBloccoEntita(DataRowView entita)
         {
             DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
+            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + _appID;
             CreaNomiCelle(entita["SiglaEntita"]);
             
             if (DataCaricamentoStruttura != DataBase.DataAttiva)
@@ -217,6 +222,7 @@ namespace Iren.ToolsExcel
         /// <param name="codiceRUP">Codice RUP.</param>
         protected void FormattaBloccoEntita(object siglaEntita, object desEntita, object codiceRUP)
         {
+            Range rngMercatoPrec = new Range();
             //Titolo
             Range rng = new Range(_definedNames.GetRowByName(siglaEntita, "T"), _struttura.colBlock, 1, 10);
             Style.RangeStyle(_ws.Range[rng.ToString()], fontSize: 12, merge: true, bold: true, align: Excel.XlHAlign.xlHAlignCenter, borders: "[top:medium,right:medium,bottom:medium,left:medium]");
@@ -247,7 +253,7 @@ namespace Iren.ToolsExcel
             rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _struttura.colBlock, 1, 5 * numEntita);
             for (int i = 0; i < numEntita; i++)
             {
-                informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND Visibile = '1' " + (hasEntitaRif ? "AND SiglaEntitaRif = '" + entitaRif[i]["SiglaEntita"] + "'" : "") + " AND IdApplicazione = " + Simboli.AppID;
+                informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND Visibile = '1' " + (hasEntitaRif ? "AND SiglaEntitaRif = '" + entitaRif[i]["SiglaEntita"] + "'" : "") + " AND IdApplicazione = " + _appID;
                 
                 //range grande come tutta la tabella
                 rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _definedNames.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1") - 1, Date.GetOreGiorno(DataBase.DataAttiva) + 2, 5);
@@ -273,14 +279,17 @@ namespace Iren.ToolsExcel
                 else
                     _ws.Range[rng.Cells[1,1].ToString()].Value = "0-60";
 
+                //TODO controllare che non ci siano problemi
                 if (_mercato != "MSD1")
                 {
                     string mercatoPrec = Simboli.GetMercatoPrec(_mercato);
+                    //calcolo il range nel foglio del mercato precedente (non è detto che siano nella stessa posizione (anche se non ha senso che non lo siano...))
+                    rngMercatoPrec = new Range(_definedNamesMercatoPrec.GetRowByName(siglaEntita, "UM", "T"), _definedNamesMercatoPrec.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1") - 1, Date.GetOreGiorno(DataBase.DataAttiva) + 2, 5);
 
-                    Excel.FormatCondition condGreater = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " > '" + mercatoPrec + "'!" + rng.Cells[2, 1]);
+                    Excel.FormatCondition condGreater = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " > '" + mercatoPrec + "'!" + rngMercatoPrec.Cells[2, 1]);
                     condGreater.Interior.ColorIndex = Struct.COLORE_VARIAZIONE_POSITIVA;
 
-                    Excel.FormatCondition condLess = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " < '" + mercatoPrec + "'!" + rng.Cells[2, 1]);
+                    Excel.FormatCondition condLess = _ws.Range[rng.Rows[2, rng.Rows.Count - 1].Columns[1, 4].ToString()].FormatConditions.Add(Excel.XlFormatConditionType.xlExpression, Formula1: "=" + rng.Cells[2, 1] + " < '" + mercatoPrec + "'!" + rngMercatoPrec.Cells[2, 1]);
                     condLess.Interior.ColorIndex = Struct.COLORE_VARIAZIONE_NEGATIVA;
                 }
                 
@@ -304,13 +313,13 @@ namespace Iren.ToolsExcel
         private void CancellaDati()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + _appID;
 
             foreach (DataRowView entita in categoriaEntita)
             {
                 List<DataRow> entitaRif =
                    (from r in categoriaEntita.Table.AsEnumerable()
-                    where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["Gerarchia"].Equals(entita["SiglaEntita"])
+                    where r["IdApplicazione"].Equals(_appID) && r["Gerarchia"].Equals(entita["SiglaEntita"])
                     select r).ToList();
 
                 int numEntita = Math.Max(entitaRif.Count, 1);
@@ -329,7 +338,7 @@ namespace Iren.ToolsExcel
         public override void AggiornaDateTitoli()
         {
             DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
+            categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + _appID;
 
             foreach (DataRowView entita in categoriaEntita)
             {
@@ -362,7 +371,7 @@ namespace Iren.ToolsExcel
                     SplashScreen.UpdateStatus("Carico informazioni dal DB per " + _mercato);
                     _dataInizio = DataBase.DB.DataAttiva;
 
-                    DataView datiApplicazioneH = (DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + Simboli.GetAppIDByMercato(_ws.Name) + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")) ?? new DataTable()).DefaultView;
+                    DataView datiApplicazioneH = (DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + _appID + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")) ?? new DataTable()).DefaultView;
 
                     var listaEntitaInfo =
                         (from DataRowView r in datiApplicazioneH

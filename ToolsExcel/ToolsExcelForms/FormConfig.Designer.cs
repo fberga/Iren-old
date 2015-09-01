@@ -109,6 +109,7 @@
             this.Padding = new System.Windows.Forms.Padding(3);
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FormConfig";
             this.Load += new System.EventHandler(this.FormConfig_Load);
             this.panelButtons.ResumeLayout(false);

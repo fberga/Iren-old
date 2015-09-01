@@ -107,7 +107,9 @@ namespace Iren.ToolsExcel.Base
         {
             if (sf != null)
             {
-                sf.UdpateStatusText(status);
+                //evito cross thread exception
+                try { sf.UdpateStatusText(status); }
+                catch { }
             }
         }
     }

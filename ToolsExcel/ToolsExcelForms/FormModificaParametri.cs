@@ -52,8 +52,8 @@ namespace Iren.ToolsExcel.Forms
 
         private void cmbEntita_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _parametriD.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'D' AND IdApplicazione = " + Simboli.AppID;
-            _parametriH.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'H' AND IdApplicazione = " + Simboli.AppID;
+            _parametriD.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'D'";
+            _parametriH.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'H'";
 
             if (_parametriD.Count == 0)
                 ((Control)tabPageParD).Enabled = false;

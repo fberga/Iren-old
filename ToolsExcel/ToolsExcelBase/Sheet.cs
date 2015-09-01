@@ -1324,6 +1324,7 @@ namespace Iren.ToolsExcel.Base
                         CaricaCommentiEntita(insertManuali);
                     }
 
+                    SplashScreen.UpdateStatus("Carico dati giornalieri");
                     //carico dati giornalieri
                     DataView datiApplicazioneD = DataBase.LocalDB.Tables[DataBase.Tab.DATI_APPLICAZIONE_D].DefaultView;
 
@@ -1511,7 +1512,7 @@ namespace Iren.ToolsExcel.Base
             CaricaParametri();
             CaricaInformazioni();
             AggiornaGrafici();
-
+            SplashScreen.UpdateStatus("Aggiorno colori date");
             UpdateDayColor();
         }
         #region UpdateData
@@ -1542,7 +1543,7 @@ namespace Iren.ToolsExcel.Base
             {
                 SplashScreen.UpdateStatus("Cancello dati " + entita["DesEntita"]);
                 DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND IdApplicazione = " + Simboli.AppID;// AND ValoreDefault IS NULL";
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND FormulaInCella = '0' AND SiglaTipologiaInformazione NOT LIKE 'TITOLO%' AND IdApplicazione = " + Simboli.AppID;// AND ValoreDefault IS NULL";
 
                 foreach (DataRowView info in informazioni)
                 {

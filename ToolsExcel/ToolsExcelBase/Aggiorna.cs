@@ -224,7 +224,7 @@ namespace Iren.ToolsExcel.Base
                     }
 
                     Workbook.Main.Select();
-                    SplashScreen.UpdateStatus("Calcolo tutte le formule");
+                    SplashScreen.UpdateStatus("Abilito calcolo automatico");
                     Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                     Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
@@ -297,8 +297,12 @@ namespace Iren.ToolsExcel.Base
                     SplashScreen.UpdateStatus("Aggiorno dati Fogli");
                     DatiFogli();
 
+                    SplashScreen.UpdateStatus("Invio modifiche al server");
+                    Workbook.ScreenUpdating = false;
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
+
+                    SplashScreen.UpdateStatus("Abilito calcolo automatico");
                     Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
 
                     if (wasProtected)

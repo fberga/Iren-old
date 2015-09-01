@@ -253,6 +253,10 @@ namespace Iren.ToolsExcel
 
             //apro il form calendario
             Forms.FormCalendar cal = new FormCalendar();
+
+            cal.Top = System.Windows.Forms.Cursor.Position.Y - 20;
+            cal.Left = System.Windows.Forms.Cursor.Position.X - 20;
+
             DateTime calDate = cal.ShowDialog();
 
             //verifico che la data sia stata cambiata

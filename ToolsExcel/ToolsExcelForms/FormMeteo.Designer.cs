@@ -145,6 +145,7 @@
             this.Controls.Add(this.panelButtons);
             this.Name = "FormMeteo";
             this.Padding = new System.Windows.Forms.Padding(5);
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Meteo";
             this.Load += new System.EventHandler(this.frmMETEO_Load);
             this.panelButtons.ResumeLayout(false);
