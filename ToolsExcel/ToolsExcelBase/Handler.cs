@@ -104,85 +104,88 @@ namespace Iren.ToolsExcel.Base
         /// <param name="fromCalcolo">Flag per eseguire azioni particolari nel caso la provenienza del salvataggio sia da un calcolo.</param>
         public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false)
         {
-            Excel.Worksheet ws = Target.Worksheet;
-            bool wasProtected = ws.ProtectContents;
-            bool screenUpdating = ws.Application.ScreenUpdating;
-            if (wasProtected)
-                ws.Unprotect(Simboli.pwd);
-
-            if (screenUpdating)
-               Workbook.ScreenUpdating = false;
-
-            DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
-            DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
-
-            if (ws.ChartObjects().Count > 0 && !fromCalcolo)
+            if (DataBase.DB.IdUtenteAttivo != 0)        //non salva sulla tabella delle modifiche se l'utente non è configurato
             {
-                Sheet s = new Sheet(ws);
-                s.AggiornaGrafici();
-            }
+                Excel.Worksheet ws = Target.Worksheet;
+                bool wasProtected = ws.ProtectContents;
+                bool screenUpdating = ws.Application.ScreenUpdating;
+                if (wasProtected)
+                    ws.Unprotect(Simboli.pwd);
 
-            string[] ranges = Target.Address.Split(',');
+                if (screenUpdating)
+                    Workbook.ScreenUpdating = false;
 
-            foreach (string range in ranges)
-            {
-                Range rng = new Range(range);
-                foreach (Range row in rng.Rows)
+                DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
+                DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
+
+                if (ws.ChartObjects().Count > 0 && !fromCalcolo)
                 {
-                    if (definedNames.SaveDB(row.StartRow))
+                    Sheet s = new Sheet(ws);
+                    s.AggiornaGrafici();
+                }
+
+                string[] ranges = Target.Address.Split(',');
+
+                foreach (string range in ranges)
+                {
+                    Range rng = new Range(range);
+                    foreach (Range row in rng.Rows)
                     {
-                        bool annota = annotaModifica == -1 ? definedNames.ToNote(row.StartRow) : annotaModifica == 1;
-                        foreach (Range column in row.Columns)
+                        if (definedNames.SaveDB(row.StartRow))
                         {
-                            string[] parts = definedNames.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
-
-                            string data;
-                            if (parts.Length == 4)
-                                data = Date.GetDataFromSuffisso(parts[2], parts[3]);
-                            else
-                                data = Date.GetDataFromSuffisso(parts[2], "");
-
-
-                            if (!Workbook.Application.WorksheetFunction.IsErr(ws.Range[column.ToString()]))
+                            bool annota = annotaModifica == -1 ? definedNames.ToNote(row.StartRow) : annotaModifica == 1;
+                            foreach (Range column in row.Columns)
                             {
-                                DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
-                                if (r != null)
-                                    r["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                string[] parts = definedNames.GetNameByAddress(column.StartRow, column.StartColumn).Split(Simboli.UNION[0]);
+
+                                string data;
+                                if (parts.Length == 4)
+                                    data = Date.GetDataFromSuffisso(parts[2], parts[3]);
+                                else
+                                    data = Date.GetDataFromSuffisso(parts[2], "");
+
+
+                                if (!Workbook.Application.WorksheetFunction.IsErr(ws.Range[column.ToString()]))
+                                {
+                                    DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
+                                    if (r != null)
+                                        r["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                    else
+                                    {
+                                        DataRow newRow = modifiche.NewRow();
+
+                                        newRow["SiglaEntita"] = parts[0];
+                                        newRow["SiglaInformazione"] = parts[1];
+                                        newRow["Data"] = data;
+                                        newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                        newRow["AnnotaModifica"] = annota ? "1" : "0";
+                                        newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
+                                        newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
+
+                                        modifiche.Rows.Add(newRow);
+                                    }
+
+                                    if (annota)
+                                    {
+                                        ws.Range[column.ToString()].ClearComments();
+                                        ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
+                                    }
+                                }
                                 else
                                 {
-                                    DataRow newRow = modifiche.NewRow();
 
-                                    newRow["SiglaEntita"] = parts[0];
-                                    newRow["SiglaInformazione"] = parts[1];
-                                    newRow["Data"] = data;
-                                    newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
-                                    newRow["AnnotaModifica"] = annota ? "1" : "0";
-                                    newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
-                                    newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
-
-                                    modifiche.Rows.Add(newRow);
                                 }
-
-                                if (annota)
-                                {
-                                    ws.Range[column.ToString()].ClearComments();
-                                    ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
-                                }
-                            }
-                            else
-                            {
-
                             }
                         }
                     }
                 }
+
+                if (wasProtected)
+                    ws.Protect(Simboli.pwd);
+
+                if (screenUpdating)
+                    ws.Application.ScreenUpdating = true;
             }
-
-            if (wasProtected)
-                ws.Protect(Simboli.pwd);
-
-            if (screenUpdating)
-                ws.Application.ScreenUpdating = true;
         }
         /// <summary>
         /// Funzione per il salvataggio delle modifiche apportate dall'utente quando la modifica è abilitata.

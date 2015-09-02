@@ -128,14 +128,27 @@ namespace ConfigurazioneRibbon
         {
             //carico la lista di utenti disponibili
             int id = ((KeyValuePair<int,string>)cmbGruppi.SelectedItem).Key;
+
             DataTable utenti = DataBase.Select(UTENTE_GRUPPO, "@IdUtenteGruppo=" + id);
 
             if (utenti != null)
             {
-                listBoxUtenti.DataSource = utenti;
+                if (id == 0)
+                {
+                    DataRow r = utenti.NewRow();
+                    r["IdUtente"] = 0;
+                    r["Nome"] = "Utenti non configurati";
+                    utenti.Rows.Add(r);
+                }
+
                 listBoxUtenti.ValueMember = "IdUtente";
                 listBoxUtenti.DisplayMember = "Nome";
+                listBoxUtenti.DataSource = utenti;
                 listBoxUtenti.SelectionMode = SelectionMode.MultiExtended;
+            }
+            else
+            {
+                listBoxUtenti.DataSource = null;
             }
         }
 

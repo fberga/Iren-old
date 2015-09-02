@@ -421,7 +421,6 @@ namespace Iren.ToolsExcel
             else
             {
                 RefreshChecks();
-                //Workbook.ScreenUpdating = false;
                 //salva modifiche sul db
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
@@ -430,6 +429,10 @@ namespace Iren.ToolsExcel
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 //Rimuovo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange -= _modificaCustom.Range;
+                
+                //aggiorno i label dello stato nel caso sia necessario!
+                Workbook.AggiornaLabelStatoDB();
+
                 AbilitaTasti(true);
             }
             Sheet.AbilitaModifica(btnModifica.Checked);

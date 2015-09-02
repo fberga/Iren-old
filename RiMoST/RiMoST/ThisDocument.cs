@@ -74,7 +74,7 @@ namespace Iren.RiMoST
             _db = new DataBase(ConfigurationManager.AppSettings["DB"], false);
             if(_db.OpenConnection())
             {
-                _dtApplicazioni = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura);
+                _dtApplicazioni = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura) ?? new DataTable();
                 foreach (DataRow r in _dtApplicazioni.Rows)
                 {
                     dropDownStrumenti.DropDownListEntries.Add(r["DesApplicazione"].ToString(), r["IdApplicazione"].ToString());

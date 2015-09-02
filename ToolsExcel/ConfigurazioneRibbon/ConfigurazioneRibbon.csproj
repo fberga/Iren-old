@@ -159,6 +159,9 @@
     <Resource Include="..\ToolsExcelBase\resources\aggiornastruttura-icon.png">
       <Link>Resources\aggiornastruttura-icon.png</Link>
     </Resource>
+    <Resource Include="..\ToolsExcelBase\resources\ExtensionManager_vsix_OSReg.ico">
+      <Link>Resources\ExtensionManager_vsix_OSReg.ico</Link>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">

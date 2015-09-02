@@ -157,6 +157,9 @@
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\ExtensionManager_vsix_OSReg.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy $(TargetPath) \\pc1009235\Applicazioni\ToolsExcelBase\</PostBuildEvent>

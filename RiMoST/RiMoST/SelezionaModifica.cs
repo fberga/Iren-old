@@ -35,7 +35,7 @@ namespace Iren.RiMoST
         {
             if(ThisDocument.DB.OpenConnection())
             {
-                DataView dv = ThisDocument.DB.Select("spGetRichiesta", "@IdTipologiaStato:7; @IdStruttura:" + ThisDocument._idStruttura).DefaultView;
+                DataView dv = (ThisDocument.DB.Select("spGetRichiesta", "@IdTipologiaStato:7; @IdStruttura:" + ThisDocument._idStruttura) ?? new DataTable()).DefaultView;
                 dv.RowFilter = "IdRichiesta LIKE '%" + _anno + "'";
                 cmbRichiesta.DataSource = dv;
                 cmbRichiesta.DisplayMember = "IdRichiesta";

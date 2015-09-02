@@ -218,7 +218,7 @@ namespace Iren.ToolsExcel.Utility
         {
             //prendo la tabella di modifica e controllo se è nulla
             DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
-            if (modifiche != null)
+            if (modifiche != null && DataBase.DB.IdUtenteAttivo != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
             {
                 //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
                 DataTable dt = modifiche.Copy();
@@ -1442,39 +1442,43 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         public static void AggiornaLabelStatoDB()
         {
-            bool isProtected = true;
-            try
+            //disabilito l'aggiornamento in caso di modifica dati... lo ripeto alla chiusura in caso
+            if (!Simboli.ModificaDati)
             {
-                Workbook.WB.Application.ScreenUpdating = false;
-                isProtected = Main.ProtectContents;
-                
-                if (isProtected)
-                    Main.Unprotect(Simboli.pwd);
-
-                if (DataBase.OpenConnection())
+                bool isProtected = true;
+                try
                 {
-                    Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.StatoDB;
-                    Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
-                    Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
-                    Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+                    Workbook.WB.Application.ScreenUpdating = false;
+                    isProtected = Main.ProtectContents;
 
-                    DataBase.CloseConnection();
-                }
-                else
-                {
-                    Simboli.SQLServerOnline = false;
-                    Simboli.ImpiantiOnline = false;
-                    Simboli.ElsagOnline = false;
-                }
+                    if (isProtected)
+                        Main.Unprotect(Simboli.pwd);
 
-                if (isProtected)
-                    Main.Protect(Simboli.pwd);
+                    if (DataBase.OpenConnection())
+                    {
+                        Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.StatoDB;
+                        Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
+                        Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
+                        Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+
+                        DataBase.CloseConnection();
+                    }
+                    else
+                    {
+                        Simboli.SQLServerOnline = false;
+                        Simboli.ImpiantiOnline = false;
+                        Simboli.ElsagOnline = false;
+                    }
+
+                    if (isProtected)
+                        Main.Protect(Simboli.pwd);
+                }
+                catch { }
+
+                //lo faccio a parte perché se andasse in errore prima deve almeno provare a riattivare lo screen updating!!!
+                try { Workbook.WB.Application.ScreenUpdating = true; }
+                catch { }
             }
-            catch { }
-
-            //lo faccio a parte perché se andasse in errore prima deve almeno provare a riattivare lo screen updating!!!
-            try { Workbook.WB.Application.ScreenUpdating = true; }
-            catch { }
         }
         /// <summary>
         /// Handler per il PropertyChanged della classe Core.DataBase. Attiva l'aggiornamento dei label.
@@ -1595,8 +1599,6 @@ namespace Iren.ToolsExcel.Utility
         }
         private static int InitUser()
         {
-            //try
-            //{
             DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
             if (dtUtente != null)
             {
@@ -1618,16 +1620,7 @@ namespace Iren.ToolsExcel.Utility
 
             System.Windows.Forms.MessageBox.Show("Errore durante l'inizializzazione dell'utente.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             
-            return -1;
-            //}
-            //catch (Exception e)
-            //{
-            //    InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InitUser: " + e.Message);
-
-            //    System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-
-            //    return -1;
-            //}
+            return -1;            
         }
         private static bool Init(string dbName, string appID, DateTime dataAttiva)
         {

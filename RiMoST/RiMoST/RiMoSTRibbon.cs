@@ -96,7 +96,7 @@ namespace Iren.RiMoST
         {
             if (ThisDocument.DB.OpenConnection())
             {
-                DataTable dt = ThisDocument.DB.Select("spGetFirstAvailableID", "@IdStruttura=" + ThisDocument._idStruttura);
+                DataTable dt = ThisDocument.DB.Select("spGetFirstAvailableID", "@IdStruttura=" + ThisDocument._idStruttura) ?? new DataTable();
                 
                 Globals.ThisDocument.lbIdRichiesta.LockContents = false;
                 Globals.ThisDocument.lbIdRichiesta.Text = dt.Rows[0][0].ToString();
@@ -196,7 +196,7 @@ namespace Iren.RiMoST
         {
             if (ThisDocument.DB.OpenConnection())
             {
-                DataTable dt = ThisDocument.DB.Select("spGetAvailableYears", "@IdStruttura=" + ThisDocument._idStruttura);
+                DataTable dt = ThisDocument.DB.Select("spGetAvailableYears", "@IdStruttura=" + ThisDocument._idStruttura) ?? new DataTable();
                 foreach (DataRow r in dt.Rows)
                 {
                     RibbonDropDownItem item = Globals.Factory.GetRibbonFactory().CreateRibbonDropDownItem();
@@ -236,7 +236,7 @@ namespace Iren.RiMoST
 
             if (ThisDocument.DB.OpenConnection())
             {
-                DataView dv = ThisDocument.DB.Select("spGetRichiesta", "@IdRichiesta=" + Globals.ThisDocument.lbIdRichiesta.Text + ";@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
+                DataView dv = (ThisDocument.DB.Select("spGetRichiesta", "@IdRichiesta=" + Globals.ThisDocument.lbIdRichiesta.Text + ";@IdStruttura=" + ThisDocument._idStruttura) ?? new DataTable()).DefaultView;
                 dv.RowFilter = "IdTipologiaStato <> 7";
                 if (dv.Count > 0)
                 {
