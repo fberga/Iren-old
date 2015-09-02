@@ -55,6 +55,7 @@ namespace Iren.ToolsExcel.Core
             {NomiDB.ELSAG, ConnectionState.Closed}
         };
 
+        private string _ambiente;
         public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
@@ -64,6 +65,7 @@ namespace Iren.ToolsExcel.Core
         public DateTime DataAttiva { get { return DateTime.ParseExact(_dataAttiva, "yyyyMMdd", CultureInfo.InvariantCulture); } }
         public int IdUtenteAttivo { get { return _idUtenteAttivo; } }
         public int IdApplicazione { get { return _idApplicazione; } }
+        public string Ambiente { get { return _ambiente; } }
 
         public Dictionary<NomiDB, ConnectionState> StatoDB { get { return _statoDB; } }
 
@@ -71,15 +73,21 @@ namespace Iren.ToolsExcel.Core
 
         #region Costruttori
 
-        public DataBase(string dbName)
+        public DataBase(string dbName, bool checkDB = true)
         {
+            _ambiente = dbName;
             try
             {
                 _connStr = ConfigurationManager.ConnectionStrings[dbName].ConnectionString;
                 _sqlConn = new SqlConnection(_connStr);
                 _internalsqlConn = new SqlConnection(_connStr);
 
-                checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
+                _cmd = new Command(_sqlConn);
+                if (checkDB)
+                {
+                    _internalCmd = new Command(_internalsqlConn);
+                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
+                }
 
                 //_sqlConn.StateChange += ConnectionStateChange;
             }
@@ -87,36 +95,64 @@ namespace Iren.ToolsExcel.Core
             {
                 System.Windows.Forms.MessageBox.Show(e.Message, "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
-
-            _cmd = new Command(_sqlConn);
-            _internalCmd = new Command(_internalsqlConn);
         }
 
         #endregion
 
         #region Metodi Pubblici
 
+        /// <summary>
+        /// Apre la connessione al DB.
+        /// </summary>
+        /// <returns>True se la connessione è aperta, false altrimenti.</returns>
         public bool OpenConnection()
         {
             return OpenConnection(_sqlConn);
         }
+        /// <summary>
+        /// Chiude la connessione al DB.
+        /// </summary>
+        /// <returns>True se la connessione viene chiusa o era già chiusa, false altrimenti.</returns>
         public bool CloseConnection()
         {
             return CloseConnection(_sqlConn);
         }
-
+        /// <summary>
+        /// Imposta i parametri principali da utilizzare in quasi tutti i comandi.
+        /// </summary>
+        /// <param name="dataAttiva">La data di riferimento.</param>
+        /// <param name="idUtenteAttivo">Id dell'utente che ha eseguito il login.</param>
+        /// <param name="idApplicazione">Id dell'applicazione aperta.</param>
         public void SetParameters(string dataAttiva, int idUtenteAttivo, int idApplicazione)
         {
             _dataAttiva = dataAttiva;
             _idUtenteAttivo = idUtenteAttivo;
             _idApplicazione = idApplicazione;
         }
+        /// <summary>
+        /// Cambia la data di riferimento.
+        /// </summary>
+        /// <param name="dataAttiva">Nuova data di riferimento.</param>
         public void ChangeDate(string dataAttiva)
         {
             _dataAttiva = dataAttiva;
         }
+        /// <summary>
+        /// Cambia l'id applicazione (utilizzato solo in invio programmi quando viene cambiato il programma).
+        /// </summary>
+        /// <param name="appID">Nuovo id applicazione.</param>
+        public void ChangeAppID(int appID)
+        {
+            _idApplicazione = appID;
+        }
 
-        public void Insert(string storedProcedure, QryParams parameters)
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure che inserisce o modifica valori sul db senza restituire nessun risultato.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri richiesti dalla stored procedure.</param>
+        /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
+        public bool Insert(string storedProcedure, QryParams parameters)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -127,26 +163,53 @@ namespace Iren.ToolsExcel.Core
 
             try
             {
-                _cmd.SqlCmd(storedProcedure, parameters).ExecuteNonQuery();
+                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters);
+                cmd.ExecuteNonQuery();
+                return cmd.Parameters[0].Value.Equals(0);
             }
-            catch (TimeoutException) { }
-            
+            catch (TimeoutException) 
+            {
+                return false;
+            }
         }
-
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri richiesti dalla stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
         {
             return Select(_cmd, storedProcedure, parameters, timeout);
         }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Stringa del tipo "@param=valore;..." che rappresenta i parametri richiesti dalla stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, String parameters, int timeout = 300)
         {
             return Select(storedProcedure, getParamsFromString(parameters), timeout);
         }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, int timeout = 300)
         {
             QryParams parameters = new QryParams();
             return Select(storedProcedure, parameters, timeout);
         }
 
+        /// <summary>
+        /// Restituisce la versione attuale della libreria core.
+        /// </summary>
+        /// <returns>Versione.</returns>
         public System.Version GetCurrentV()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
@@ -156,6 +219,11 @@ namespace Iren.ToolsExcel.Core
 
         #region Metodi Privati
 
+        /// <summary>
+        /// Dalla stringa di parametri del tipo "@param1=val1;@param2=val2;..." isola i singoli parametri e restituisce la lista QryParams.
+        /// </summary>
+        /// <param name="parameters">Stringa di parametri.</param>
+        /// <returns>Lista di parametri.</returns>
         private QryParams getParamsFromString(string parameters)
         {
             Regex regex = new Regex(@"@\w+[=:][^;:=]+");
@@ -172,6 +240,11 @@ namespace Iren.ToolsExcel.Core
             return o;
         }
 
+        /// <summary>
+        /// Apre la connessione conn.
+        /// </summary>
+        /// <param name="conn">Connessione da aprire.</param>
+        /// <returns>True se la connessione viene aperta o è già aperta, false altrimenti.</returns>
         private bool OpenConnection(SqlConnection conn)
         {
             try
@@ -186,6 +259,11 @@ namespace Iren.ToolsExcel.Core
 
             return true;
         }
+        /// <summary>
+        /// Chiude la connessione conn.
+        /// </summary>
+        /// <param name="conn">Connessione da chiudere.</param>
+        /// <returns>True se la connessione viene chiusa o è chiusa, false altrimenti.</returns>
         private bool CloseConnection(SqlConnection conn)
         {
             try
@@ -200,8 +278,16 @@ namespace Iren.ToolsExcel.Core
 
             return true;
         }
-
-        private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300)
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="cmd">Comando con cui eseguire la stored procedure.</param>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout di esecuzione.</param>
+        /// <param name="logEnabled">Flag per attivare disattivare il log (usa spInsertLog che deve essere definita nello schema in uso!!).</param>
+        /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
+        private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300, bool logEnabled = true)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -221,50 +307,79 @@ namespace Iren.ToolsExcel.Core
             }
             catch (SqlException)
             {
-                return new DataTable();
+                if (logEnabled && OpenConnection())
+                {
+                    //nel caso spInsertLog (definita solo per PSO ma non per RiMoST ad esempio) non sia definita, va in errore
+                    try { Insert("spInsertLog", new QryParams() { { "@IdTipologia", TipologiaLOG.LogErrore }, { "@Messaggio", "Core.DataBase.Select[" + storedProcedure + "," + parameters + "]" } }); } 
+                    catch {}
+                    CloseConnection();
+                }
+                return null;
             }
 
         }
-        private DataTable Select(Command cmd, string storedProcedure, String parameters, int timeout = 300)
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
+        /// </summary>
+        /// <param name="cmd">Comando con cui eseguire la stored procedure.</param>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout di esecuzione.</param>
+        /// <param name="logEnabled">Flag per attivare disattivare il log (usa spInsertLog che deve essere definita nello schema in uso!!).</param>
+        /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
+        private DataTable Select(Command cmd, string storedProcedure, String parameters, int timeout = 300, bool logEnabled = true)
         {
             return Select(cmd, storedProcedure, getParamsFromString(parameters), timeout);
         }
-
+        /// <summary>
+        /// Controlla lo stato del DB e notifica se ci sono stati dei cambi.
+        /// </summary>
+        /// <param name="state">Stato.</param>
         private void CheckDB(object state)
         {
             Dictionary<NomiDB, ConnectionState> oldStatoDB = new Dictionary<NomiDB, ConnectionState>(_statoDB);
-            if (OpenConnection(_internalsqlConn))
+            
+            OpenConnection(_internalsqlConn);
+            
+            _statoDB[NomiDB.SQLSERVER] = _internalsqlConn.State;
+
+            if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                _statoDB[NomiDB.SQLSERVER] = _internalsqlConn.State;
+                DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3, false);
+                    
+                if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
+                    _statoDB[NomiDB.IMP] = ConnectionState.Open;
+                else
+                    _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+                
+                OpenConnection(_internalsqlConn);
+                DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3, false);
 
-                if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
-                {
-                    DataView imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3).DefaultView;
-                    //se va in timeout la connessione si chiude
-                    OpenConnection(_internalsqlConn);
-                    DataView elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3).DefaultView;
-                    //se va in timeout la connessione si chiude
-                    OpenConnection(_internalsqlConn);
-
-                    if (imp.Count > 0 && imp[0]["Stato"].Equals(0))
-                        _statoDB[NomiDB.IMP] = ConnectionState.Open;
-                    else
-                        _statoDB[NomiDB.IMP] = ConnectionState.Closed;
-
-                    if (elsag.Count > 0 && elsag[0]["Stato"].Equals(0))
-                        _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
-                    else
-                        _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
-                }
-
-                if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
-                    || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
-                    || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
-                {
-                    NotifyPropertyChanged("StatoDB");
-                }
+                if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
+                    _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+                else
+                    _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;   
             }
+            else
+            {
+                _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+                _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+            }
+
+            //if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
+            //    || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
+            //    || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
+            //{
+                NotifyPropertyChanged("StatoDB");
+            //}
+
+            CloseConnection(_internalsqlConn);
+            
         }
+        /// <summary>
+        /// Metodo di notifica di un cambio di valore della proprietà propertyName.
+        /// </summary>
+        /// <param name="propertyName">Nome della proprietà di cui notificare il cambiamento.</param>
         private void NotifyPropertyChanged(String propertyName = "")
         {
             if (PropertyChanged != null)

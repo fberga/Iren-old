@@ -23,31 +23,12 @@ namespace Iren.ToolsExcel
 
         }
 
-        public override void LoadStructure()
-        {
-            InitLabels();
-        }
-
+        /// <summary>
+        /// Label riepilogo custom
+        /// </summary>
         public override void InitLabels()
         {
             base.InitLabels();
-
-            //coloro
-            _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 44, 12));
-            _ws.Shapes.Item("lbTitolo").Line.ForeColor.Brightness = 0.1067f;
-            _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(8, 62, 22));
-            _ws.Shapes.Item("lbTitolo").Fill.ForeColor.Brightness = 0.1862f;
-
-            _ws.Shapes.Item("sfondo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 44, 12));
-            _ws.Shapes.Item("sfondo").Line.ForeColor.Brightness = 0.1067f;
-            _ws.Shapes.Item("sfondo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(72, 139, 90));
-            _ws.Shapes.Item("sfondo").Fill.ForeColor.Brightness = 0.4446f;
-
-            _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(8, 62, 22));
-            _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.Brightness = 0.1862f;
-            _ws.Shapes.Item("lbDataFine").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(8, 62, 22));
-            _ws.Shapes.Item("lbDataFine").Fill.ForeColor.Brightness = 0.1862f;
-
 
             //nascondi quelli non utilizzati
             _ws.Shapes.Item("lbImpianti").Visible = Office.MsoTriState.msoFalse;
@@ -62,20 +43,5 @@ namespace Iren.ToolsExcel
             _ws.Shapes.Item("sfondo").Height = (float)(12.5 * _ws.Rows[5].Height);
             _ws.Shapes.Item("sfondo").LockAspectRatio = Office.MsoTriState.msoTrue;
         }
-
-        //public override void AggiornaRiepilogo(object entita, object azione, bool presente, DateTime? dataRif)
-        //{
-            
-        //}
-
-        //public override void UpdateRiepilogo()
-        //{
-            
-        //}
-
-        //public override void RiepilogoInEmergenza()
-        //{
-            
-        //}
     }
 }

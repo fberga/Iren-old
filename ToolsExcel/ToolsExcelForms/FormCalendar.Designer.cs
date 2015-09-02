@@ -88,6 +88,7 @@
             this.Padding = new System.Windows.Forms.Padding(6);
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Calendario";
             this.ResumeLayout(false);
 

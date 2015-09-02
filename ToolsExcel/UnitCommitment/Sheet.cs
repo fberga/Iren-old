@@ -12,6 +12,9 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Aggiungo la personalizzazione delle note.
+    /// </summary>
     class Sheet : Base.Sheet
     {
         public Sheet(Excel.Worksheet ws)
@@ -19,34 +22,33 @@ namespace Iren.ToolsExcel
 
         protected override void InsertPersonalizzazioni(object siglaEntita)
         {
-            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
-            informazioni.Sort = "Ordine";
+            //da classe base il filtro è corretto
+            DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
             _ws.Columns[3].Font.Size = 9;
 
-            //da classe base _dataInizio e _dataFine sono corretti
-            CicloGiorni((oreGiorno, suffissoData, giorno) => 
-            {   
-                object siglaInfo = DefinedNames.GetName(informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"]);
-                Tuple<int, int> primaRiga = _nomiDefiniti[DefinedNames.GetName(siglaInfo, informazioni[0]["SiglaInformazione"], suffissoData)].Last();
-                Excel.Range rng = _ws.Range[_ws.Cells[primaRiga.Item1, primaRiga.Item2 + 1], _ws.Cells[primaRiga.Item1 + informazioni.Count - 1, primaRiga.Item2 + 1]];
-                rng.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
-                rng.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-                rng.Columns[1].ColumnWidth = _cell.Width.jolly1;
-                int r = 0;
-                foreach (DataRowView info in informazioni)
-                {
-                    siglaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                    _nomiDefiniti.Add(DefinedNames.GetName(siglaInfo, "NOTE", suffissoData), primaRiga.Item1 + r, primaRiga.Item2 + 1, true, true, false);
-                    r++;
-                }
+            int col = _definedNames.GetFirstCol();
+            siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
+            int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio));
 
-            });
+            Excel.Range rngPersonalizzazioni = _ws.Range[Range.GetRange(row + 1, col + 25, informazioni.Count - 1)];
+
+            rngPersonalizzazioni.Borders[Excel.XlBordersIndex.xlInsideHorizontal].Weight = Excel.XlBorderWeight.xlThin;
+            rngPersonalizzazioni.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+            rngPersonalizzazioni.Columns[1].ColumnWidth = Struct.cell.width.jolly1;
+            rngPersonalizzazioni.WrapText = true;
+
+            //da classe base _dataInizio e _dataFine sono corretti
+            for (int i = 1; i < informazioni.Count; i++)
+            {
+                siglaEntita = informazioni[i]["SiglaEntitaRif"] is DBNull ? informazioni[i]["SiglaEntita"] : informazioni[i]["SiglaEntitaRif"];
+                _definedNames.AddName(row + i, siglaEntita, "NOTE", Date.GetSuffissoData(_dataInizio));
+                _definedNames.SetEditable(row + i, new Range(row + i, col + 25));
+            }
         }
-        public override void CaricaInformazioni(bool all)
+        public override void CaricaInformazioni()
         {
-            base.CaricaInformazioni(all);
+            base.CaricaInformazioni();
 
             try
             {
@@ -55,25 +57,46 @@ namespace Iren.ToolsExcel
                     string start = DataBase.DataAttiva.ToString("yyyyMMdd");
                     string end = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd");
 
-                    DataView note = DataBase.DB.Select(DataBase.SP.APPLICAZIONE_NOTE, "@SiglaEntita=ALL;@DateFrom="+start+";@DateTo="+end).DefaultView;
+                    DataTable note = DataBase.Select(DataBase.SP.APPLICAZIONE_NOTE, "@SiglaEntita=ALL;@DateFrom="+start+";@DateTo="+end) ?? new DataTable();
 
-                    foreach (DataRowView nota in note)
+                    foreach (DataRow nota in note.Rows)
                     {
-                        Tuple<int, int> cella = _nomiDefiniti[DefinedNames.GetName(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()))][0];
-                        Excel.Range rng = _ws.Cells[cella.Item1, cella.Item2];
-
-                        rng.Value = nota["Note"];
+                        int row = _definedNames.GetRowByNameSuffissoData(nota["SiglaEntita"], "NOTE", Date.GetSuffissoData(nota["Data"].ToString()));
+                        int col = _definedNames.GetFirstCol();
+                        _ws.Range[Range.GetRange(row, col + 25)].Value = nota["Note"];
                     }
-
-                    DataBase.CloseConnection();
                 } 
             }
             catch (Exception e)
             {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni Custom UnitComm [all = " + all + "]: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni Custom UnitComm: " + e.Message);
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
+        public override void UpdateData()
+        {
+            //cancello tutte le NOTE
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL ) AND IdApplicazione = " + Simboli.AppID;
 
+            DateTime dataInizio = DataBase.DataAttiva;
+            DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+
+            int col = _definedNames.GetFirstCol() + 25;
+
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                DataView informazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Simboli.AppID;
+                object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
+
+                CicloGiorni(dataInizio, dataFine, (oreGiorno, suffData, g) =>
+                {
+                    int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], suffData);
+                    _ws.Range[Range.GetRange(row, col, informazioni.Count)].Value = "";
+                });
+            }
+            base.UpdateData();
+        }
     }
 }

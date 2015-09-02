@@ -33,7 +33,6 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.Startup += new System.EventHandler(this.Log_Startup);
-            this.Shutdown += new System.EventHandler(this.Log_Shutdown);
 
         }
 
@@ -65,16 +64,12 @@ namespace Iren.ToolsExcel
                 _logObj.TableStyle = "TableStyleLight16";
 
                 Excel.Range rng = Columns[2];
-                rng.NumberFormat = "dd/MM/yyyy HH:mm:ss";
+                rng.NumberFormat = "dd/MM/yyyy";
                 rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
 
                 DataBase.DB.CloseConnection();
             }
             Protect(Simboli.pwd);
-        }
-
-        private void Log_Shutdown(object sender, EventArgs e)
-        {
         }
 
         #endregion

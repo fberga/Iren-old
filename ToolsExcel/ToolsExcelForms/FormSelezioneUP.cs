@@ -1,9 +1,11 @@
 ﻿using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
+using System.Linq;
 using System;
 using System.Data;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
+using System.Collections.Generic;
 
 namespace Iren.ToolsExcel.Forms
 {
@@ -11,18 +13,20 @@ namespace Iren.ToolsExcel.Forms
     {
         #region Variabili
         
-        private string _siglaEntita = "";
-        private bool _isCanceld = false;
-        private bool _hasSelection = false;
         private string _siglaInformazione = "";
+        private Dictionary<string, string> _upList = new Dictionary<string, string>();
         
         #endregion
 
         #region Proprietà
 
-        public bool IsCanceld { get { return _isCanceld; } }
-        public bool HasSelection { get { return _hasSelection; } }
-        public string SiglaEntita { get { return _siglaEntita; } }
+        public List<string> ListaUP
+        {
+            get 
+            {
+                return _upList.Keys.ToList();
+            }
+        }
         
         #endregion
 
@@ -31,20 +35,11 @@ namespace Iren.ToolsExcel.Forms
         public FormSelezioneUP(string siglaInformazione)
         {
             InitializeComponent();
-
             _siglaInformazione = siglaInformazione;
-
             this.Text = Simboli.nomeApplicazione + " - Selezione UP";
-        }
 
-        #endregion
-
-        #region Eventi
-
-        private void frmSELUP_Load(object sender, EventArgs e)
-        {
-            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAINFORMAZIONE].DefaultView;
-            entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "'";
+            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "' AND IdApplicazione = " + Simboli.AppID;
 
             string rowFilter = "SiglaEntita IN (";
             foreach (DataRowView entitaInfo in entitaInformazioni)
@@ -53,19 +48,26 @@ namespace Iren.ToolsExcel.Forms
             }
             rowFilter = rowFilter.Substring(0, rowFilter.Length - 1) + ")";
 
-            DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            categorieEntita.RowFilter = rowFilter;
+            DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categorieEntita.RowFilter = rowFilter + " AND IdApplicazione = " + Simboli.AppID;
 
-            DataView groupedEntita = categorieEntita.ToTable(true, "SiglaEntita", "DesEntita").DefaultView;
+            _upList =
+                (from r in categorieEntita.ToTable(true, "SiglaEntita", "DesEntita").AsEnumerable()
+                 select r).ToDictionary(r => r["SiglaEntita"].ToString(), r => r["DesEntita"].ToString());
 
-            comboUP.DataSource = groupedEntita;
-            comboUP.DisplayMember = "DesEntita";
+            comboUP.DataSource = new BindingSource(_upList, null);
+            comboUP.DisplayMember = "Value";
+            comboUP.ValueMember = "Key";
             comboUP.SelectedIndex = 0;
         }
 
+        #endregion
+
+        #region Eventi
+
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
-            _siglaEntita = "";
+            comboUP.SelectedIndex = -1;
             this.Close();
         }
 
@@ -74,23 +76,23 @@ namespace Iren.ToolsExcel.Forms
             this.Close();
         }
 
-        private void comboUP_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            _siglaEntita = ((DataRowView)comboUP.SelectedItem)["SiglaEntita"].ToString();
-        }
-
         /// <summary>
-        /// Sposta la selezione sul titolo dell'UP scelta e ritorna la sua sugla.
+        /// Sposta la selezione sul titolo dell'UP scelta e ritorna la sua sigla.
         /// </summary>
         /// <returns>Restituisce la sigla dell'UP scelta.</returns>
-        public new string ShowDialog()
+        public new object ShowDialog()
         {
             base.ShowDialog();
 
-            if(_siglaEntita != "")
-                Handler.GOTO(_siglaEntita);            
+            if (comboUP.SelectedIndex != -1) 
+            {
+                //non mi serve il nome del foglio perché lavoro direttamente con la siglaEntita
+                DefinedNames n = new DefinedNames("", DefinedNames.InitType.GOTOs);
+                string address = n.GetGotoFromSiglaEntita(comboUP.SelectedValue);
+                Handler.Goto(address);
+            }
 
-            return _siglaEntita;
+            return comboUP.SelectedValue;
         } 
 
         #endregion

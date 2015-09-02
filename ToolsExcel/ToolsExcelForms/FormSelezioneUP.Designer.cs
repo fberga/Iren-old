@@ -46,7 +46,6 @@
             this.comboUP.Name = "comboUP";
             this.comboUP.Size = new System.Drawing.Size(465, 28);
             this.comboUP.TabIndex = 0;
-            this.comboUP.SelectedIndexChanged += new System.EventHandler(this.comboUP_SelectedIndexChanged);
             // 
             // lblSeleziona
             // 
@@ -119,7 +118,6 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "frmSELUP";
-            this.Load += new System.EventHandler(this.frmSELUP_Load);
             this.panelButtons.ResumeLayout(false);
             this.panelTop.ResumeLayout(false);
             this.panelTop.PerformLayout();

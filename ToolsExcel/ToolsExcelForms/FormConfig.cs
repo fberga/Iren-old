@@ -55,8 +55,8 @@ namespace Iren.ToolsExcel.Forms
 
             foreach (UserConfigElement item in config.Items)
             {
-                if(item.Visibile == "true")
-                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Default);
+                if (item.Visibile == "true")
+                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Default);                
             }
 
         }

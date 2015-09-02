@@ -53,6 +53,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BugFixedTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ErrorPane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ErrorPane.Designer.cs">
+      <DependentUpon>ErrorPane.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormAzioni.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -71,17 +80,23 @@
     <Compile Include="FormConfig.Designer.cs">
       <DependentUpon>FormConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormModificaParametri.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormModificaParametri.Designer.cs">
+      <DependentUpon>FormModificaParametri.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormSelezioneDate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSelezioneDate.Designer.cs">
+      <DependentUpon>FormSelezioneDate.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormSelezioneUP.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormSelezioneUP.Designer.cs">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>
-    </Compile>
-    <Compile Include="LoaderScreen.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="LoaderScreen.Designer.cs">
-      <DependentUpon>LoaderScreen.cs</DependentUpon>
     </Compile>
     <Compile Include="FormMeteo.cs">
       <SubType>Form</SubType>
@@ -96,12 +111,9 @@
     <Compile Include="FormRampe.Designer.cs">
       <DependentUpon>FormRampe.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormSettings.Designer.cs">
-      <DependentUpon>FormSettings.cs</DependentUpon>
-    </Compile>
+    <EmbeddedResource Include="ErrorPane.resx">
+      <DependentUpon>ErrorPane.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormAzioni.resx">
       <DependentUpon>FormAzioni.cs</DependentUpon>
     </EmbeddedResource>
@@ -111,11 +123,15 @@
     <EmbeddedResource Include="FormConfig.resx">
       <DependentUpon>FormConfig.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FormModificaParametri.resx">
+      <DependentUpon>FormModificaParametri.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSelezioneDate.resx">
+      <DependentUpon>FormSelezioneDate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormSelezioneUP.resx">
       <DependentUpon>FormSelezioneUP.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="LoaderScreen.resx">
-      <DependentUpon>LoaderScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMeteo.resx">
       <DependentUpon>FormMeteo.cs</DependentUpon>
@@ -132,9 +148,6 @@
     </Compile>
     <EmbeddedResource Include="FormRampe.resx">
       <DependentUpon>FormRampe.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormSettings.resx">
-      <DependentUpon>FormSettings.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -189,7 +202,25 @@
       <Name>ToolsExcelUserConfig</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\loader.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\loader1.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dots-spin-lg.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\728.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\7281.GIF" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetPath) \\pc1009235\Applicazioni\ToolsExcelForms\</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

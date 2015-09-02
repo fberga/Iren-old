@@ -57,5 +57,12 @@ namespace Iren.ToolsExcel.UserConfig
             set { base["visibile"] = value; }
         }
 
+        [ConfigurationProperty("tocheckpath", IsRequired = false, DefaultValue = "true")]
+        public string ToCheckPath
+        {
+            get { return (string)base["tocheckpath"]; }
+            set { base["tocheckpath"] = value; }
+        }
+
     }
 }

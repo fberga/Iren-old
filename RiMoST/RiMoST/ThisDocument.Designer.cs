@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 
 #pragma warning disable 414
-namespace Iren.FrontOffice.Tools {
+namespace Iren.RiMoST {
     
     
     /// 
@@ -19,31 +19,45 @@ namespace Iren.FrontOffice.Tools {
         
         internal Microsoft.Office.Tools.ActionsPane ActionsPane;
         
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl4;
+        internal Microsoft.Office.Tools.Word.RichTextContentControl txtDescrizione;
         
-        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl5;
+        internal Microsoft.Office.Tools.Word.RichTextContentControl txtOggetto;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl txtNote;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbIdRichiesta;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbDataInvio;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbIdTitolo;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbDataTitolo;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbStrumentoTitolo;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbOggetto;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbDescrizione;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbNote;
+        
+        internal Microsoft.Office.Tools.Word.DropDownListContentControl dropDownStrumenti;
+        
+        internal Microsoft.Office.Tools.Word.RichTextContentControl lbBozza;
         
         internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl1;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl headerIdRichiesta;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl3;
+        
+        internal Microsoft.Office.Tools.Word.PlainTextContentControl plainTextContentControl4;
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         private global::System.Object missing = global::System.Type.Missing;
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         internal Microsoft.Office.Interop.Word.Application ThisApplication;
-        
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtNote;
-        
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtDescrizione;
-        
-        internal Microsoft.Office.Tools.Word.Controls.TextBox txtOggetto;
-        
-        internal Microsoft.Office.Tools.Word.Controls.ComboBox cmbStrumento;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbBozza;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbIdRichiesta;
-        
-        internal Microsoft.Office.Tools.Word.Controls.Label lbDataInvio;
         
         internal System.Windows.Forms.PictureBox pictureBox1;
         
@@ -144,9 +158,23 @@ namespace Iren.FrontOffice.Tools {
         private void BeginInitialization() {
             this.BeginInit();
             this.ActionsPane.BeginInit();
-            this.plainTextContentControl4.BeginInit();
-            this.plainTextContentControl5.BeginInit();
+            this.txtDescrizione.BeginInit();
+            this.txtOggetto.BeginInit();
+            this.txtNote.BeginInit();
+            this.lbIdRichiesta.BeginInit();
+            this.lbDataInvio.BeginInit();
+            this.lbIdTitolo.BeginInit();
+            this.lbDataTitolo.BeginInit();
+            this.lbStrumentoTitolo.BeginInit();
+            this.lbOggetto.BeginInit();
+            this.lbDescrizione.BeginInit();
+            this.lbNote.BeginInit();
+            this.dropDownStrumenti.BeginInit();
+            this.lbBozza.BeginInit();
             this.plainTextContentControl1.BeginInit();
+            this.headerIdRichiesta.BeginInit();
+            this.plainTextContentControl3.BeginInit();
+            this.plainTextContentControl4.BeginInit();
         }
         
         /// 
@@ -154,9 +182,23 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void EndInitialization() {
-            this.plainTextContentControl1.EndInit();
-            this.plainTextContentControl5.EndInit();
             this.plainTextContentControl4.EndInit();
+            this.plainTextContentControl3.EndInit();
+            this.headerIdRichiesta.EndInit();
+            this.plainTextContentControl1.EndInit();
+            this.lbBozza.EndInit();
+            this.dropDownStrumenti.EndInit();
+            this.lbNote.EndInit();
+            this.lbDescrizione.EndInit();
+            this.lbOggetto.EndInit();
+            this.lbStrumentoTitolo.EndInit();
+            this.lbDataTitolo.EndInit();
+            this.lbIdTitolo.EndInit();
+            this.lbDataInvio.EndInit();
+            this.lbIdRichiesta.EndInit();
+            this.txtNote.EndInit();
+            this.txtOggetto.EndInit();
+            this.txtDescrizione.EndInit();
             this.ActionsPane.EndInit();
             this.EndInit();
         }
@@ -167,16 +209,23 @@ namespace Iren.FrontOffice.Tools {
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         private void InitializeControls() {
             this.ActionsPane = Globals.Factory.CreateActionsPane(null, null, "ActionsPane", "ActionsPane", this);
-            this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "77677295", "plainTextContentControl4", this);
-            this.plainTextContentControl5 = Globals.Factory.CreatePlainTextContentControl(null, null, "75971759", "plainTextContentControl5", this);
-            this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "3740960896", "plainTextContentControl1", this);
-            this.txtNote = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "7694A411B7412F747D17B5027A9DF6D62D6A37", "7694A411B7412F747D17B5027A9DF6D62D6A37", this, "txtNote");
-            this.txtDescrizione = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "629B715FF6805664A936BBA7654A658BAE8D66", "629B715FF6805664A936BBA7654A658BAE8D66", this, "txtDescrizione");
-            this.txtOggetto = new Microsoft.Office.Tools.Word.Controls.TextBox(Globals.Factory, this.ItemProvider, this.HostContext, "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", "5C4A4AA145E87A548DB5BC71504868B2DC4FD5", this, "txtOggetto");
-            this.cmbStrumento = new Microsoft.Office.Tools.Word.Controls.ComboBox(Globals.Factory, this.ItemProvider, this.HostContext, "4DC4A472B42B454449E49CF94B9489509B9F64", "4DC4A472B42B454449E49CF94B9489509B9F64", this, "cmbStrumento");
-            this.lbBozza = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "87C342FB78AFE38449D8A65789FCAD05FD0FE8", "87C342FB78AFE38449D8A65789FCAD05FD0FE8", this, "lbBozza");
-            this.lbIdRichiesta = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", "7A7A8B63A7A09D74F657A5FF701CF0AA83A7D7", this, "lbIdRichiesta");
-            this.lbDataInvio = new Microsoft.Office.Tools.Word.Controls.Label(Globals.Factory, this.ItemProvider, this.HostContext, "097CCF0170F61904EFA0A29002534BDA1F05A0", "097CCF0170F61904EFA0A29002534BDA1F05A0", this, "lbDataInvio");
+            this.txtDescrizione = Globals.Factory.CreateRichTextContentControl(null, null, "3964439384", "txtDescrizione", this);
+            this.txtOggetto = Globals.Factory.CreateRichTextContentControl(null, null, "3529901788", "txtOggetto", this);
+            this.txtNote = Globals.Factory.CreateRichTextContentControl(null, null, "1717777112", "txtNote", this);
+            this.lbIdRichiesta = Globals.Factory.CreateRichTextContentControl(null, null, "296500560", "lbIdRichiesta", this);
+            this.lbDataInvio = Globals.Factory.CreateRichTextContentControl(null, null, "2823222331", "lbDataInvio", this);
+            this.lbIdTitolo = Globals.Factory.CreateRichTextContentControl(null, null, "946891539", "lbIdTitolo", this);
+            this.lbDataTitolo = Globals.Factory.CreateRichTextContentControl(null, null, "2287615174", "lbDataTitolo", this);
+            this.lbStrumentoTitolo = Globals.Factory.CreateRichTextContentControl(null, null, "98222052", "lbStrumentoTitolo", this);
+            this.lbOggetto = Globals.Factory.CreateRichTextContentControl(null, null, "2932912823", "lbOggetto", this);
+            this.lbDescrizione = Globals.Factory.CreateRichTextContentControl(null, null, "2574693929", "lbDescrizione", this);
+            this.lbNote = Globals.Factory.CreateRichTextContentControl(null, null, "3555103920", "lbNote", this);
+            this.dropDownStrumenti = Globals.Factory.CreateDropDownListContentControl(null, null, "117655195", "dropDownStrumenti", this);
+            this.lbBozza = Globals.Factory.CreateRichTextContentControl(null, null, "3735105531", "lbBozza", this);
+            this.plainTextContentControl1 = Globals.Factory.CreatePlainTextContentControl(null, null, "1951277223", "plainTextContentControl1", this);
+            this.headerIdRichiesta = Globals.Factory.CreatePlainTextContentControl(null, null, "4094021969", "headerIdRichiesta", this);
+            this.plainTextContentControl3 = Globals.Factory.CreatePlainTextContentControl(null, null, "1736129785", "plainTextContentControl3", this);
+            this.plainTextContentControl4 = Globals.Factory.CreatePlainTextContentControl(null, null, "2154937362", "plainTextContentControl4", this);
         }
         
         /// 
@@ -193,17 +242,53 @@ namespace Iren.FrontOffice.Tools {
             this.ActionsPane.AutoSize = false;
             this.ActionsPane.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             // 
-            // plainTextContentControl4
+            // txtDescrizione
             // 
-            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            this.txtDescrizione.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
-            // plainTextContentControl5
+            // txtOggetto
             // 
-            this.plainTextContentControl5.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            this.txtOggetto.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
-            // plainTextContentControl1
+            // txtNote
             // 
-            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            this.txtNote.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbIdRichiesta
+            // 
+            this.lbIdRichiesta.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbDataInvio
+            // 
+            this.lbDataInvio.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbIdTitolo
+            // 
+            this.lbIdTitolo.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbDataTitolo
+            // 
+            this.lbDataTitolo.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbStrumentoTitolo
+            // 
+            this.lbStrumentoTitolo.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbOggetto
+            // 
+            this.lbOggetto.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbDescrizione
+            // 
+            this.lbDescrizione.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // lbNote
+            // 
+            this.lbNote.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // dropDownStrumenti
+            // 
+            this.dropDownStrumenti.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
             // pictureBox1
             // 
@@ -216,54 +301,29 @@ namespace Iren.FrontOffice.Tools {
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Text = "pictureBox1";
             // 
-            // txtNote
-            // 
-            this.txtNote.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtNote.Name = "txtNote";
-            // 
-            // txtDescrizione
-            // 
-            this.txtDescrizione.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescrizione.Name = "txtDescrizione";
-            // 
-            // txtOggetto
-            // 
-            this.txtOggetto.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtOggetto.Name = "txtOggetto";
-            // 
-            // cmbStrumento
-            // 
-            this.cmbStrumento.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cmbStrumento.Name = "cmbStrumento";
-            // 
             // lbBozza
             // 
-            this.lbBozza.Enabled = false;
-            this.lbBozza.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbBozza.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.lbBozza.Name = "lbBozza";
-            this.lbBozza.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbBozza.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
-            // lbIdRichiesta
+            // plainTextContentControl1
             // 
-            this.lbIdRichiesta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbIdRichiesta.Name = "lbIdRichiesta";
+            this.plainTextContentControl1.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
-            // lbDataInvio
+            // headerIdRichiesta
             // 
-            this.lbDataInvio.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbDataInvio.Name = "lbDataInvio";
+            this.headerIdRichiesta.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl3
+            // 
+            this.plainTextContentControl3.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
+            // 
+            // plainTextContentControl4
+            // 
+            this.plainTextContentControl4.DefaultDataSourceUpdateMode = System.Windows.Forms.DataSourceUpdateMode.Never;
             // 
             // ThisDocument
             // 
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.txtNote.BindingContext = this.BindingContext;
-            this.txtDescrizione.BindingContext = this.BindingContext;
-            this.txtOggetto.BindingContext = this.BindingContext;
-            this.cmbStrumento.BindingContext = this.BindingContext;
-            this.lbBozza.BindingContext = this.BindingContext;
-            this.lbIdRichiesta.BindingContext = this.BindingContext;
-            this.lbDataInvio.BindingContext = this.BindingContext;
         }
         
         /// 
@@ -278,9 +338,23 @@ namespace Iren.FrontOffice.Tools {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Tools.Office.ProgrammingModel.dll", "12.0.0.0")]
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Never)]
         protected override void OnShutdown() {
-            this.plainTextContentControl1.Dispose();
-            this.plainTextContentControl5.Dispose();
             this.plainTextContentControl4.Dispose();
+            this.plainTextContentControl3.Dispose();
+            this.headerIdRichiesta.Dispose();
+            this.plainTextContentControl1.Dispose();
+            this.lbBozza.Dispose();
+            this.dropDownStrumenti.Dispose();
+            this.lbNote.Dispose();
+            this.lbDescrizione.Dispose();
+            this.lbOggetto.Dispose();
+            this.lbStrumentoTitolo.Dispose();
+            this.lbDataTitolo.Dispose();
+            this.lbIdTitolo.Dispose();
+            this.lbDataInvio.Dispose();
+            this.lbIdRichiesta.Dispose();
+            this.txtNote.Dispose();
+            this.txtOggetto.Dispose();
+            this.txtDescrizione.Dispose();
             this.ActionsPane.Dispose();
             base.OnShutdown();
         }

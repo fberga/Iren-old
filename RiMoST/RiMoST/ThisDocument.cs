@@ -16,17 +16,31 @@ using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
 using Microsoft.Office.Interop.Word;
 using System.Reflection;
-using Iren.FrontOffice.Core;
+using Iren.ToolsExcel.Core;
 using System.IO;
+using Microsoft.Office.Tools.Ribbon;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.RiMoST
 {
     public partial class ThisDocument
     {
         #region Variabili
 
-        public static DataBase _db;
+        private static DataBase _db;
         public static string _idStruttura;
+        private DataTable _dtApplicazioni;
+        public const int OGGETTO_MAX_LEN = 255;
+        public const int DESCRIZIONE_MAX_LEN = 4000;
+        public const int NOTE_MAX_LEN = 255;
+        
+        private Microsoft.Office.Tools.Word.GroupContentControl groupControl1;
+
+        #endregion
+
+        #region Proprietà
+
+        public DataTable Applicazioni { get { return _dtApplicazioni; } }
+        public static DataBase DB { get { return _db; } }
 
         #endregion
 
@@ -35,16 +49,19 @@ namespace Iren.FrontOffice.Tools
         private void ThisDocument_Startup(object sender, System.EventArgs e)
         {
             SetAppConfigEnvironment();
+
             _idStruttura = ConfigurationManager.AppSettings["idStruttura"];
-            string[] users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
+            string[] users = new string[1];
+            if (ConfigurationManager.AppSettings["utentiVisto"] != null)
+                users = ConfigurationManager.AppSettings["utentiVisto"].Split(',');
+
             int rowNum = (int)Math.Ceiling(users.Length / 5.0);
             int colNum = (int)Math.Ceiling((decimal)users.Length / rowNum);
 
             Word.Table tb = this.Tables[1];
-
+            
             tb.Rows[tb.Rows.Count].Cells.Split(rowNum, colNum);
-
-            int i = 0, j = 0;            
+            int i = 0, j = 0;
             foreach (string usr in users)
             {
                 tb.Cell((tb.Rows.Count - rowNum) + i + 1, (j % colNum) + 1).Range.Text = usr;
@@ -52,31 +69,38 @@ namespace Iren.FrontOffice.Tools
                 if ((++j % colNum) == 0)
                     i++;
             }
+            
 
-            _db = new DataBase(ConfigurationManager.AppSettings["DB"]);
+            _db = new DataBase(ConfigurationManager.AppSettings["DB"], false);
+            if(_db.OpenConnection())
+            {
+                _dtApplicazioni = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura) ?? new DataTable();
+                foreach (DataRow r in _dtApplicazioni.Rows)
+                {
+                    dropDownStrumenti.DropDownListEntries.Add(r["DesApplicazione"].ToString(), r["IdApplicazione"].ToString());
+                }
 
-            DataView dtView = _db.Select("spGetApplicazioniDisponibili", "@IdStruttura=" + _idStruttura).DefaultView;
+                dropDownStrumenti.DropDownListEntries[1].Select();
 
-            cmbStrumento.DataSource = dtView;
-            cmbStrumento.DisplayMember = "DesApplicazione";
+                Globals.Ribbons.RiMoSTRibbon.getAvailableID();                
 
-            DataTable dt = _db.Select("spGetFirstAvailableID", "@IdStruttura=" + _idStruttura);
-            lbIdRichiesta.Text = dt.Rows[0][0].ToString();
+                lbDataInvio.LockContents = false;
+                lbDataInvio.Text = DateTime.Now.ToShortDateString();
+                lbDataInvio.LockContents = true;
 
-            lbDataInvio.Text = DateTime.Now.ToShortDateString();
+                object what = Word.WdGoToItem.wdGoToLine;
+                object which = Word.WdGoToDirection.wdGoToLast;
+                object missing = Missing.Value;
 
-            txtDescrizione.Multiline = true;
-            txtDescrizione.Height = 265.5f;
-            txtNote.Multiline = true;
-            txtNote.Height = 54.75f;
-            txtOggetto.Multiline = true;
-            txtOggetto.Height = 33f;
+                _db.CloseConnection();
+            }
 
-            object what = Word.WdGoToItem.wdGoToLine;
-            object which = Word.WdGoToDirection.wdGoToLast;
-            object missing = Missing.Value;
+            //disabilito la modifica per gli elementi strutturali del documento
+            tb.Select();
+            groupControl1 = this.Controls.AddGroupContentControl("TabellaStruttura");
 
-            AddProtection();
+            dropDownStrumenti.Range.Select();
+            this.ThisApplication.Options.PasteFormatWithinDocument = WdPasteOptions.wdKeepTextOnly;
         }
         private void ThisDocument_BeforeClose(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -85,14 +109,62 @@ namespace Iren.FrontOffice.Tools
         #pragma warning disable 0467
         private void ThisDocument_Shutdown(object sender, System.EventArgs e)
         {
-            Application.Quit();
+            ThisApplication.Quit();
         }
         #pragma warning restore 0467
+        private void RichText_Exiting(object sender, ContentControlExitingEventArgs e)
+        {
+            Microsoft.Office.Tools.Word.RichTextContentControl ctrl = (Microsoft.Office.Tools.Word.RichTextContentControl)sender;
+
+            string messaggio = "";
+            bool overDimension = false;
+            int length = 0;
+            if (ctrl.Equals(txtOggetto) && ctrl.Text.Length > OGGETTO_MAX_LEN)
+            {
+                messaggio = "La lunghezza dell'oggetto supera i caratteri consentiti. Se si procede così il testo salvato risulterà parziale.";
+                overDimension = true;
+                length = OGGETTO_MAX_LEN;
+            }
+            else if (ctrl.Equals(txtDescrizione) && ctrl.Text.Length > DESCRIZIONE_MAX_LEN)
+            {
+                messaggio = "La lunghezza della descrizione supera i caratteri consentiti. Se si procede così il testo salvato risulterà parziale.";
+                overDimension = true;
+                length = DESCRIZIONE_MAX_LEN;
+            }
+            else if (ctrl.Equals(txtNote) && ctrl.Text.Length > NOTE_MAX_LEN)
+            {
+                messaggio = "La lunghezza delle note supera i caratteri consentiti. Se si procede così il testo salvato risulterà parziale.";
+                overDimension = true;
+                length = NOTE_MAX_LEN;
+            }
+
+            FormatTextOverDimension(ctrl, length, overDimension);
+            if (overDimension)
+                System.Windows.Forms.MessageBox.Show(messaggio, "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        }
 
         #endregion
 
         #region Metodi
 
+        public void FormatTextOverDimension(Microsoft.Office.Tools.Word.RichTextContentControl ctrl, int length, bool overDimension)
+        {
+            if (overDimension)
+            {
+                string text = ctrl.Text;
+                Word.Range rng = ctrl.Range;
+                rng.Text = text.Substring(0, length);
+                rng.Font.ColorIndex = WdColorIndex.wdBlack;
+                rng.Collapse(WdCollapseDirection.wdCollapseEnd);
+                rng.Text = text.Substring(length, text.Length - length);
+                rng.Font.ColorIndex = WdColorIndex.wdRed;
+            }
+            else
+            {
+                if(!ctrl.ShowingPlaceholderText)
+                    ctrl.Range.Font.ColorIndex = WdColorIndex.wdAuto;
+            }
+        }
         private void SetAppConfigEnvironment()
         {
             string file = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RiMoST/RiMoST.config");
@@ -103,57 +175,32 @@ namespace Iren.FrontOffice.Tools
                 File.Delete(AppDomain.CurrentDomain.GetData("APP_CONFIG_FILE").ToString());
             }
             AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", file);
-            Connection.CryptSection(file);
+            //CryptHelper.CryptSection("connectionStrings");
         }
-
-        public void AddProtection()
-        {
-            object noReset = false;
-            object password = System.String.Empty;
-            object useIRM = false;
-            object enforceStyleLock = false;
-
-            this.Protect(Word.WdProtectionType.wdAllowOnlyFormFields,
-                ref noReset, ref password, ref useIRM, ref enforceStyleLock);
-        }
-        public void RemoveProtection()
-        {
-            object password = System.String.Empty;
-            this.Unprotect(ref password);
-        }
-
         public void CloseWithoutSaving()
         {
             object saveMod = WdSaveOptions.wdDoNotSaveChanges;
             object missing = Missing.Value;
             this.Close(ref saveMod, ref missing, ref missing);
         }
-
-        public static void Highlight(string textToFind, Word.WdColorIndex color, string highlightMark = "")
+        public static void Highlight(Microsoft.Office.Tools.Word.RichTextContentControl ctrl)
         {
-            Word.Find finder = Globals.ThisDocument.Content.Find;
-            finder.Text = textToFind;
-            finder.Replacement.Text = finder.Text + highlightMark;
-            finder.Replacement.Font.ColorIndex = color;
-            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
+            ctrl.LockContents = false;
+            ctrl.Text = ctrl.Text + "*";
+            ctrl.Range.Font.ColorIndex = WdColorIndex.wdRed;
+            ctrl.LockContents = true;
         }
-        public static void ToNormal(string textToFind, Word.WdColorIndex color, string highlightMark = "")
+        public static void ToNormal(Microsoft.Office.Tools.Word.RichTextContentControl ctrl)
         {
-            Word.Find finder = Globals.ThisDocument.Content.Find;
-            finder.Text = textToFind + highlightMark;
-            finder.Replacement.Text = textToFind;
-            finder.Replacement.Font.ColorIndex = color;
-            finder.Execute(Replace: Word.WdReplace.wdReplaceAll);
+            ctrl.LockContents = false;
+            ctrl.Text = ctrl.Text.Replace("*","");
+            ctrl.Range.Font.ColorIndex = WdColorIndex.wdBlack;
+            ctrl.LockContents = true;
         }
 
         #endregion
 
         #region Codice generato dalla finestra di progettazione di VSTO
-
-        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        {
-            return new Ribbon();
-        }
 
         /// <summary>
         /// Metodo richiesto per il supporto della finestra di progettazione - non modificare
@@ -161,6 +208,9 @@ namespace Iren.FrontOffice.Tools
         /// </summary>
         private void InternalStartup()
         {
+            this.txtDescrizione.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.RichText_Exiting);
+            this.txtOggetto.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.RichText_Exiting);
+            this.txtNote.Exiting += new Microsoft.Office.Tools.Word.ContentControlExitingEventHandler(this.RichText_Exiting);
             this.Startup += new System.EventHandler(this.ThisDocument_Startup);
             this.Shutdown += new System.EventHandler(this.ThisDocument_Shutdown);
             this.BeforeClose += new System.ComponentModel.CancelEventHandler(this.ThisDocument_BeforeClose);
@@ -168,7 +218,5 @@ namespace Iren.FrontOffice.Tools
         }
 
         #endregion
-
-
     }
 }

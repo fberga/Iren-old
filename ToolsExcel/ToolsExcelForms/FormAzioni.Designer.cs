@@ -33,17 +33,16 @@
             this.btnApplica = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
-            this.groupMercati = new System.Windows.Forms.GroupBox();
+            this.checkTutte = new System.Windows.Forms.CheckBox();
             this.groupDate = new System.Windows.Forms.GroupBox();
-            this.comboGiorni = new System.Windows.Forms.ComboBox();
+            this.comboGiorni = new System.Windows.Forms.Button();
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
-            this.treeViewUP = new System.Windows.Forms.TreeView();
+            this.treeViewUP = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelCategorie = new System.Windows.Forms.Panel();
-            this.treeViewCategorie = new System.Windows.Forms.TreeView();
+            this.treeViewCategorie = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
-            this.treeViewAzioni = new System.Windows.Forms.TreeView();
-            this.checkTutte = new System.Windows.Forms.CheckBox();
+            this.treeViewAzioni = new Iren.ToolsExcel.Forms.BugFixedTreeView();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.groupDate.SuspendLayout();
@@ -59,7 +58,7 @@
             this.panelButtons.Controls.Add(this.btnApplica);
             this.panelButtons.Controls.Add(this.btnAnnulla);
             this.panelButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelButtons.Location = new System.Drawing.Point(5, 440);
+            this.panelButtons.Location = new System.Drawing.Point(5, 503);
             this.panelButtons.Name = "panelButtons";
             this.panelButtons.Padding = new System.Windows.Forms.Padding(0, 3, 0, 0);
             this.panelButtons.Size = new System.Drawing.Size(1050, 53);
@@ -106,7 +105,7 @@
             // 
             // panelTop
             // 
-            this.panelTop.Controls.Add(this.groupMercati);
+            this.panelTop.Controls.Add(this.checkTutte);
             this.panelTop.Controls.Add(this.groupDate);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(5, 5);
@@ -114,17 +113,21 @@
             this.panelTop.Size = new System.Drawing.Size(1050, 53);
             this.panelTop.TabIndex = 13;
             // 
-            // groupMercati
+            // checkTutte
             // 
-            this.groupMercati.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupMercati.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupMercati.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupMercati.Location = new System.Drawing.Point(350, 0);
-            this.groupMercati.Name = "groupMercati";
-            this.groupMercati.Size = new System.Drawing.Size(700, 53);
-            this.groupMercati.TabIndex = 2;
-            this.groupMercati.TabStop = false;
-            this.groupMercati.Text = "Mercato da esportare (dopo topico per Elsag)";
+            this.checkTutte.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkTutte.AutoSize = true;
+            this.checkTutte.BackColor = System.Drawing.SystemColors.Control;
+            this.checkTutte.CausesValidation = false;
+            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkTutte.Location = new System.Drawing.Point(982, 28);
+            this.checkTutte.Name = "checkTutte";
+            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.checkTutte.Size = new System.Drawing.Size(65, 24);
+            this.checkTutte.TabIndex = 2;
+            this.checkTutte.Text = "Tutte";
+            this.checkTutte.UseVisualStyleBackColor = false;
+            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
             // 
             // groupDate
             // 
@@ -141,12 +144,17 @@
             // 
             // comboGiorni
             // 
-            this.comboGiorni.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboGiorni.FormattingEnabled = true;
+            this.comboGiorni.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboGiorni.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.comboGiorni.Location = new System.Drawing.Point(6, 19);
             this.comboGiorni.Name = "comboGiorni";
             this.comboGiorni.Size = new System.Drawing.Size(338, 28);
             this.comboGiorni.TabIndex = 0;
+            this.comboGiorni.Text = "- Click per selezionare le date -";
+            this.comboGiorni.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.comboGiorni.UseVisualStyleBackColor = true;
+            this.comboGiorni.TextChanged += new System.EventHandler(this.comboGiorni_TextChanged);
+            this.comboGiorni.Click += new System.EventHandler(this.comboGiorni_MouseClick);
             // 
             // panelCentrale
             // 
@@ -157,18 +165,17 @@
             this.panelCentrale.Location = new System.Drawing.Point(5, 58);
             this.panelCentrale.Name = "panelCentrale";
             this.panelCentrale.Padding = new System.Windows.Forms.Padding(0, 5, 0, 5);
-            this.panelCentrale.Size = new System.Drawing.Size(1050, 382);
+            this.panelCentrale.Size = new System.Drawing.Size(1050, 445);
             this.panelCentrale.TabIndex = 14;
             // 
             // panelUP
             // 
-            this.panelUP.Controls.Add(this.checkTutte);
             this.panelUP.Controls.Add(this.treeViewUP);
             this.panelUP.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelUP.Location = new System.Drawing.Point(700, 5);
             this.panelUP.Name = "panelUP";
             this.panelUP.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelUP.Size = new System.Drawing.Size(350, 372);
+            this.panelUP.Size = new System.Drawing.Size(350, 435);
             this.panelUP.TabIndex = 6;
             // 
             // treeViewUP
@@ -181,7 +188,7 @@
             this.treeViewUP.ShowNodeToolTips = true;
             this.treeViewUP.ShowPlusMinus = false;
             this.treeViewUP.ShowRootLines = false;
-            this.treeViewUP.Size = new System.Drawing.Size(344, 372);
+            this.treeViewUP.Size = new System.Drawing.Size(344, 435);
             this.treeViewUP.TabIndex = 1;
             this.treeViewUP.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewUP_AfterCheck);
             this.treeViewUP.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
@@ -193,7 +200,7 @@
             this.panelCategorie.Location = new System.Drawing.Point(350, 5);
             this.panelCategorie.Name = "panelCategorie";
             this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelCategorie.Size = new System.Drawing.Size(350, 372);
+            this.panelCategorie.Size = new System.Drawing.Size(350, 435);
             this.panelCategorie.TabIndex = 5;
             // 
             // treeViewCategorie
@@ -206,9 +213,9 @@
             this.treeViewCategorie.ShowNodeToolTips = true;
             this.treeViewCategorie.ShowPlusMinus = false;
             this.treeViewCategorie.ShowRootLines = false;
-            this.treeViewCategorie.Size = new System.Drawing.Size(344, 372);
+            this.treeViewCategorie.Size = new System.Drawing.Size(344, 435);
             this.treeViewCategorie.TabIndex = 1;
-            this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewCategorie_AfterCheck);
+            this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
             // panelAzioni
@@ -218,7 +225,7 @@
             this.panelAzioni.Location = new System.Drawing.Point(0, 5);
             this.panelAzioni.Name = "panelAzioni";
             this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelAzioni.Size = new System.Drawing.Size(350, 372);
+            this.panelAzioni.Size = new System.Drawing.Size(350, 435);
             this.panelAzioni.TabIndex = 4;
             // 
             // treeViewAzioni
@@ -230,31 +237,16 @@
             this.treeViewAzioni.Name = "treeViewAzioni";
             this.treeViewAzioni.ShowPlusMinus = false;
             this.treeViewAzioni.ShowRootLines = false;
-            this.treeViewAzioni.Size = new System.Drawing.Size(344, 372);
+            this.treeViewAzioni.Size = new System.Drawing.Size(344, 435);
             this.treeViewAzioni.TabIndex = 0;
-            this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewAzioni_AfterCheck);
+            this.treeViewAzioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewAzioni.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
-            // 
-            // checkTutte
-            // 
-            this.checkTutte.AutoSize = true;
-            this.checkTutte.BackColor = System.Drawing.SystemColors.Window;
-            this.checkTutte.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkTutte.Location = new System.Drawing.Point(279, 1);
-            this.checkTutte.Name = "checkTutte";
-            this.checkTutte.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.checkTutte.Size = new System.Drawing.Size(65, 24);
-            this.checkTutte.TabIndex = 2;
-            this.checkTutte.Text = "Tutte";
-            this.checkTutte.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkTutte.UseVisualStyleBackColor = false;
-            this.checkTutte.CheckedChanged += new System.EventHandler(this.checkTutte_CheckedChanged);
             // 
             // FormAzioni
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1060, 498);
+            this.ClientSize = new System.Drawing.Size(1060, 561);
             this.Controls.Add(this.panelCentrale);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.panelButtons);
@@ -263,13 +255,14 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Azioni";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormAzioni_FormClosing);
             this.Load += new System.EventHandler(this.frmAZIONI_Load);
             this.panelButtons.ResumeLayout(false);
             this.panelTop.ResumeLayout(false);
+            this.panelTop.PerformLayout();
             this.groupDate.ResumeLayout(false);
             this.panelCentrale.ResumeLayout(false);
             this.panelUP.ResumeLayout(false);
-            this.panelUP.PerformLayout();
             this.panelCategorie.ResumeLayout(false);
             this.panelAzioni.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -286,13 +279,12 @@
         private System.Windows.Forms.Panel panelUP;
         private System.Windows.Forms.Panel panelCategorie;
         private System.Windows.Forms.Panel panelAzioni;
-        private System.Windows.Forms.TreeView treeViewUP;
-        private System.Windows.Forms.TreeView treeViewCategorie;
-        private System.Windows.Forms.TreeView treeViewAzioni;
-        private System.Windows.Forms.GroupBox groupMercati;
+        private BugFixedTreeView treeViewUP;
+        private BugFixedTreeView treeViewCategorie;
+        private BugFixedTreeView treeViewAzioni;
         private System.Windows.Forms.GroupBox groupDate;
         private System.Windows.Forms.Button btnMeteo;
-        private System.Windows.Forms.ComboBox comboGiorni;
         private System.Windows.Forms.CheckBox checkTutte;
+        private System.Windows.Forms.Button comboGiorni;
     }
 }

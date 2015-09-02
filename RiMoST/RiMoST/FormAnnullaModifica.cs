@@ -6,9 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Iren.FrontOffice.Core;
+using Iren.ToolsExcel.Core;
 
-namespace Iren.FrontOffice.Tools
+namespace Iren.RiMoST
 {
     public partial class FormAnnullaModifica : Form
     {
@@ -27,10 +27,15 @@ namespace Iren.FrontOffice.Tools
         #region Callbacks
         private void FormAnnullaModifica_Load(object sender, EventArgs e)
         {
-            DataView dv = ThisDocument._db.Select("spGetRichiesta", "@IdStruttura=" + ThisDocument._idStruttura).DefaultView;
-            dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
-            cmbRichiesta.DataSource = dv;
-            cmbRichiesta.DisplayMember = "IdRichiesta";
+            if(ThisDocument.DB.OpenConnection())
+            {
+                DataView dv = (ThisDocument.DB.Select("spGetRichiesta", "@IdStruttura=" + ThisDocument._idStruttura) ?? new DataTable()).DefaultView;
+                dv.RowFilter = "IdTipologiaStato NOT IN (4, 7) AND IdRichiesta LIKE '%" + _anno + "'";
+                cmbRichiesta.DataSource = dv;
+                cmbRichiesta.DisplayMember = "IdRichiesta";
+
+                ThisDocument.DB.CloseConnection();
+            }
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -38,15 +43,17 @@ namespace Iren.FrontOffice.Tools
             if (MessageBox.Show("Sei sicuro di voler ANNULLARE la richiesta selezionata?", "Attenzione!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.OK)
             {
                 DataRowView row = (DataRowView)cmbRichiesta.SelectedItem;
-
-                QryParams parameters = new QryParams() 
-                {
-                    {"@IdRichiesta", row["IdRichiesta"]},
-                    {"@IdStruttura", ThisDocument._idStruttura},
-                };
                 try
                 {
-                    ThisDocument._db.Insert("spAnnullaRichiesta", parameters);
+                    if (ThisDocument.DB.OpenConnection())
+                    {
+                        ThisDocument.DB.Insert("spAnnullaRichiesta", new QryParams() 
+                        {
+                            {"@IdRichiesta", row["IdRichiesta"]},
+                            {"@IdStruttura", ThisDocument._idStruttura},
+                        });
+                        ThisDocument.DB.CloseConnection();
+                    }
                 }
                 catch (Exception)
                 {

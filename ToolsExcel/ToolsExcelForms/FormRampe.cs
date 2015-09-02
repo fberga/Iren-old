@@ -23,11 +23,10 @@ namespace Iren.ToolsExcel.Forms
         int _childWidth;
         int _oreFermata;
         Excel.Worksheet _ws;
-        object[] _valoriPQNR;
-        DefinedNames _nomiDefiniti;
+        object[] _profiloPQNR;
+        DefinedNames _definedNames;
         string _siglaEntita;
         string _suffissoData;
-        Tuple<int, int>[] _profiloPQNR;
 
         #endregion
 
@@ -40,106 +39,62 @@ namespace Iren.ToolsExcel.Forms
 
             if (DataBase.OpenConnection())
             {
-                _ws = (Excel.Worksheet)Workbook.WB.ActiveSheet;
-                _nomiDefiniti = new DefinedNames(_ws.Name);
+                _ws = (Excel.Worksheet)Workbook.ActiveSheet;
+                _definedNames = new DefinedNames(_ws.Name, DefinedNames.InitType.Naming);
 
-                string nome = _nomiDefiniti[rng.Row, rng.Column][0];
+                string nome = _definedNames.GetNameByAddress(rng.Row, rng.Column);
                 _siglaEntita = nome.Split(Simboli.UNION[0])[0];
-
                 _suffissoData = Regex.Match(nome, @"DATA\d+").Value;
-                _suffissoData = _suffissoData == "" ? "DATA1" : _suffissoData;
+                _oreGiorno = Date.GetOreGiorno(_suffissoData);
 
-                DataView proprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-                proprieta.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_PRIF'";
-                _pRif = 0;
-                if (proprieta.Count > 0)
-                    _pRif = Double.Parse(proprieta[0]["Valore"].ToString());
+                _pRif =
+                    (from r in DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].AsEnumerable()
+                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) 
+                        && r["SiglaEntita"].Equals(_siglaEntita)
+                        && r["SiglaProprieta"].Equals("SISTEMA_COMANDI_PRIF")
+                     select Double.Parse(r["Valore"].ToString())).FirstOrDefault();
 
-                _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITARAMPA].DefaultView;
-                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
-                _sigleRampa = _entitaRampa.ToTable(false, "SiglaRampa").AsEnumerable().Select(r => r["SiglaRampa"]).ToList();
+                _entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_RAMPA].DefaultView;
+                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+                _sigleRampa = 
+                    (from DataRowView r in _entitaRampa
+                     select r["SiglaRampa"]).ToList();
 
-                DataView assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAASSETTO].DefaultView;
-                assetti.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
+                int assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(_siglaEntita));
 
-                _profiloPQNR = _nomiDefiniti[DefinedNames.GetName(_siglaEntita, "PQNR_PROFILO", _suffissoData)];
-                object[,] values = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]].Value;
-                _valoriPQNR = values.Cast<object>().ToArray();
+                Range profilo = _definedNames.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: _oreGiorno);
 
-                //TODO controllare se si può semplificare
-                _pMin = new double[_valoriPQNR.Length];
-                int numAssetto = 1;
-                foreach (DataRowView assetto in assetti)
+                object[,] values = _ws.Range[profilo.ToString()].Value;
+                _profiloPQNR = values.Cast<object>().ToArray();
+
+                _pMin = new double[_profiloPQNR.Length];
+                for (int i = 0; i < _pMin.Length; i++ ) _pMin[i] = double.MaxValue;
+
+                for(int i = 0; i < assetti; i++)
                 {
-                    Tuple<int, int>[] cellePmin = _nomiDefiniti[DefinedNames.GetName(_siglaEntita, "PMIN_TERNA_ASSETTO" + numAssetto, _suffissoData)];
-                    object[,] pMinOraria = _ws.Range[_ws.Cells[cellePmin[0].Item1, cellePmin[0].Item2], _ws.Cells[cellePmin[0].Item1, cellePmin[cellePmin.Length - 1].Item2]].Value;
-                    //object[] pMinOraria = tmppMinOraria.Cast<object>().ToArray();
-                    for (int i = 0; i < pMinOraria.GetLength(1); i++)
-                    {
-                        _pMin[i] = Math.Min(_pMin[i], (double)(pMinOraria[1, i + 1] ?? 0d));
-                    }
-                    numAssetto++;
+                    Range rngPmin = _definedNames.Get(_siglaEntita, "PMIN_TERNA_ASSETTO" + (i + 1), _suffissoData).Extend(colOffset: _oreGiorno);
+                    for (int j = 0; j < _oreGiorno; j++)
+                        _pMin[j] = Math.Min(_pMin[j], (double)(_ws.Range[rngPmin.Columns[j].ToString()].Value ?? 0d));
                 }
 
-                _oreGiorno = _valoriPQNR.Length;
-                _oreFermata = int.Parse(DataBase.DB.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita).Rows[0]["OreFermata"].ToString());
+                DataTable dtFermata = DataBase.Select(DataBase.SP.GET_ORE_FERMATA, "@SiglaEntita=" + _siglaEntita);
+                if (dtFermata != null && dtFermata.Rows.Count > 0)
+                    _oreFermata = int.Parse(dtFermata.Rows[0]["OreFermata"].ToString());
 
                 _childWidth = panelValoriRampa.Width / _oreGiorno;
                 this.Width = tableLayoutDesRampa.Width + (_childWidth * _oreGiorno) + (this.Padding.Left);
                 this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-
-                DataBase.DB.CloseConnection();
             }
-        }
-
-        #endregion
-
-        #region Metodi
-
-        private DataTable initOutTable()
-        {
-            DataTable dt = new DataTable()
-            {
-                Columns =
-                {
-                    {"SiglaRampa", typeof(string)},
-                    {"Q1", typeof(Int32)},
-                    {"Q2", typeof(Int32)},
-                    {"Q3", typeof(Int32)},
-                    {"Q4", typeof(Int32)},
-                    {"Q5", typeof(Int32)},
-                    {"Q6", typeof(Int32)},
-                    {"Q7", typeof(Int32)},
-                    {"Q8", typeof(Int32)},
-                    {"Q9", typeof(Int32)},
-                    {"Q10", typeof(Int32)},
-                    {"Q11", typeof(Int32)},
-                    {"Q12", typeof(Int32)},
-                    {"Q13", typeof(Int32)},
-                    {"Q14", typeof(Int32)},
-                    {"Q15", typeof(Int32)},
-                    {"Q16", typeof(Int32)},
-                    {"Q17", typeof(Int32)},
-                    {"Q18", typeof(Int32)},
-                    {"Q19", typeof(Int32)},
-                    {"Q20", typeof(Int32)},
-                    {"Q21", typeof(Int32)},
-                    {"Q22", typeof(Int32)},
-                    {"Q23", typeof(Int32)},
-                    {"Q24", typeof(Int32)}
-                }
-            };
-            return dt;
         }
 
         #endregion
 
         #region Eventi
 
-        private void frmRAMPE_Load(object sender, EventArgs e)
+        public void frmRAMPE_Load(object sender, EventArgs e)
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "'";
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
 
             lbDesEntita.Text = categoriaEntita[0]["DesEntita"].ToString() + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + _oreFermata;
 
@@ -205,28 +160,31 @@ namespace Iren.ToolsExcel.Forms
                 tableLayoutDesRampa.Controls.Add(rb, 1, y);
 
                 tableLayoutRampe.RowStyles.Add(new RowStyle(SizeType.Percent, rowHeightPercentage));
-                for (int i = 0; i < _entitaRampa.Table.Columns.Count - 2; i++)
+                //Descrizione Rampa
+                tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105f));
+                tableLayoutRampe.Controls.Add(new Label() { Text = rampa["DesRampa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, BackColor = System.Drawing.Color.Transparent }, 0, y);
+                //Ore fermata
+                tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
+                tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoDa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent }, 1, y);
+
+                //Tolgo IdApplicazione che si trova all'ultima riga
+                var columnNames =
+                    from c in _entitaRampa.Table.Columns.Cast<DataColumn>()
+                    where Regex.IsMatch(c.ColumnName, @"^Q\d+$")    //è nel formato "Qx"
+                    select c.ColumnName;
+
+                int i = 2;
+                foreach (var colName in columnNames)
                 {
-                    switch (i)
-                    {
-                        case 0:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 105f));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["DesRampa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                        case 1:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoDa"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                        case 2:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60f));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["FermoA"].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                        default:
-                            tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
-                            tableLayoutRampe.Controls.Add(new Label() { Text = rampa["Q" + (i - 2)].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
-                            break;
-                    }
+                    tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
+                    tableLayoutRampe.Controls.Add(new Label() { Text = rampa[colName].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent }, i++, y);
                 }
+
+                //for (int i = 2; i < _entitaRampa.Table.Columns.Count - 3; i++)
+                //{
+                //    tableLayoutRampe.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, (tableLayoutRampe.Width - 225f) / (tableLayoutRampe.ColumnCount - 2)));
+                //    tableLayoutRampe.Controls.Add(new Label() { Text = rampa["Q" + (i - 2)].ToString(), Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, BackColor = System.Drawing.Color.Transparent}, i, y);
+                //}
                 y++;
 
             }
@@ -266,11 +224,11 @@ namespace Iren.ToolsExcel.Forms
             }
 
             //carico valori PQNR
-            if (_valoriPQNR[0] != null)
+            if (_profiloPQNR[0] != null)
             {
-                for (int i = 0; i < _valoriPQNR.Length; i++)
+                for (int i = 0; i < _profiloPQNR.Length; i++)
                 {
-                    ((RadioButton)Controls.Find("H" + (i + 1), true)[0].Controls[_sigleRampa.IndexOf(_valoriPQNR[i]) + 1]).Checked = true;
+                    ((RadioButton)Controls.Find("H" + (i + 1), true)[0].Controls[_sigleRampa.IndexOf(_profiloPQNR[i]) + 1]).Checked = true;
                 }
             }
             else
@@ -346,9 +304,8 @@ namespace Iren.ToolsExcel.Forms
                 }
             }
         }
-        private void btnApplica_Click(object sender, EventArgs e)
+        public void btnApplica_Click(object sender, EventArgs e)
         {
-            //DataTable o = initOutTable();
             object[] intestazione = new object[_oreGiorno];
             object[,] valori = new object[24, _oreGiorno];
 
@@ -361,30 +318,24 @@ namespace Iren.ToolsExcel.Forms
                 int pos = oraX.Controls.IndexOf(check) - 1;
 
                 intestazione[i] = _sigleRampa[pos];
-                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaRampa = '" + _sigleRampa[pos] + "'";
+                _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND SiglaRampa = '" + _sigleRampa[pos] + "' AND IdApplicazione = " + Simboli.AppID;
 
                 for (int j = 0; j < 24; j++)
                 {
                     if (_entitaRampa[0]["Q" + (j + 1)] != DBNull.Value)
                     {
-                        valori[j, i] = ((int)_entitaRampa[0]["Q" + (j + 1)]) * _pRif / _pMin[i];
+                        valori[j, i] = Math.Round(((int)_entitaRampa[0]["Q" + (j + 1)]) * _pRif / _pMin[i]);
                     }
                 }
             }
 
-            Excel.Range rng = _ws.Range[_ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[0].Item2], _ws.Cells[_profiloPQNR[0].Item1, _profiloPQNR[_profiloPQNR.Length - 1].Item2]];
-            rng.Value = intestazione;
+            Range rngPQNR = _definedNames.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: Date.GetOreGiorno(_suffissoData));
+            _ws.Range[rngPQNR.ToString()].Value = intestazione;
 
-            Tuple<int,int>[] valoriRampe = _nomiDefiniti.GetByFilter(DefinedNames.Fields.Foglio + " = '" + _ws.Name + "' AND " +
-                                                 DefinedNames.Fields.Nome + " LIKE '" + DefinedNames.GetName(_siglaEntita, "PQNR") + "%' AND " +
-                                                 DefinedNames.Fields.Nome + " NOT LIKE '%PROFILO%' AND " +
-                                                 DefinedNames.Fields.Nome + " LIKE '%" + _suffissoData + "%'");
-
-            _ws.Range[_ws.Cells[valoriRampe[0].Item1, valoriRampe[0].Item2], _ws.Cells[valoriRampe[valoriRampe.Length - 1].Item1, valoriRampe[valoriRampe.Length - 1].Item2]].Value = valori;
+            Range rngPQNRVal = _definedNames.Get(_siglaEntita, "PQNR1", _suffissoData).Extend(rowOffset: 24, colOffset: Date.GetOreGiorno(_suffissoData));
+            _ws.Range[rngPQNRVal.ToString()].Value = valori;
             
-
-
-            Handler.StoreEdit(_ws, rng);
+            Handler.StoreEdit(_ws, _ws.Range[rngPQNR.ToString()]);
             DataBase.SalvaModificheDB();
         }
         private void btnAnnulla_Click(object sender, EventArgs e)

@@ -13,22 +13,26 @@ namespace Iren.ToolsExcel.Forms
         DataView _entita;
         DataView _entitaProprieta;
         DateTime _dataRif;
+        ACarica _carica;
+        ARiepilogo _riepilogo;
 
-        public FormMeteo(object dataRif)
+        public FormMeteo(object dataRif, ACarica carica, ARiepilogo riepilogo)
         {
             InitializeComponent();
 
-            _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITAPROPRIETA].DefaultView;
+            _carica = carica;
+            _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
+            _riepilogo = riepilogo;
 
-            labelData.Text = "Data Riferimento: " + _dataRif.ToString("dd/MM/yyyy");
+            labelData.Text = "Data Riferimento:   " + _dataRif.ToString("dddd dd MMMM yyyy");
             this.Text = Simboli.nomeApplicazione + " - Meteo";
         }
 
         private void frmMETEO_Load(object sender, EventArgs e)
         {
-            _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA'";
+            _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA' AND IdApplicazione = " + Simboli.AppID;
 
             string filtro = "";
             foreach (DataRowView prop in _entitaProprieta)
@@ -39,7 +43,7 @@ namespace Iren.ToolsExcel.Forms
             if (filtro.Length > 0)
             {
                 filtro = "SiglaEntita IN (" + filtro.Remove(filtro.Length - 1) + ")";
-                _entita.RowFilter = filtro;
+                _entita.RowFilter = filtro + " AND IdApplicazione = " + Simboli.AppID;
             }
 
 
@@ -60,10 +64,10 @@ namespace Iren.ToolsExcel.Forms
                 foreach (RadioButton rdb in radioArray)
                     groupDati.Controls.Remove(rdb);
 
-                DataView fonti = DataBase.DB.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")).DefaultView;
+                DataTable fonti = DataBase.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")) ?? new DataTable();
 
                 int fonteOrdine = 0;
-                foreach (DataRowView fonte in fonti)
+                foreach (DataRow fonte in fonti.Rows)
                 {
                     DateTime dataEmissione = DateTime.ParseExact(fonte["DataEmissione"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
                     if (!groupDati.Controls.ContainsKey("combo" + fonte["CodiceFonte"]))
@@ -95,7 +99,6 @@ namespace Iren.ToolsExcel.Forms
                     ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).Items.Add(dataEmissione);
                     ((ComboBox)groupDati.Controls["combo" + fonte["CodiceFonte"]]).SelectedIndex = 0;
                 }
-                DataBase.DB.CloseConnection();
             }
         }
 
@@ -109,16 +112,14 @@ namespace Iren.ToolsExcel.Forms
                 if (rbt.Checked)
                 {
                     //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
-                    _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "'";
+                    _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "' AND IdApplicazione = " + Simboli.AppID;
 
-                    DataBase.DB.Insert("spUpdateFonteMeteo", new Core.QryParams() 
+                    DataBase.Insert("spUpdateFonteMeteo", new Core.QryParams() 
                     {
                         {"@SiglaEntita", entita["SiglaEntita"]},
                         {"@Valore", _entitaProprieta[0]["Ordine"]}
                     });
                 }
-
-                DataBase.DB.CloseConnection();
             }
             
         }
@@ -130,16 +131,15 @@ namespace Iren.ToolsExcel.Forms
                 //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
                 foreach (DataRowView entita in _entita)
                 {
-                    DataBase.DB.Insert("spUpdateFonteMeteo", new Core.QryParams() 
+                    DataBase.Insert("spUpdateFonteMeteo", new Core.QryParams() 
                         {
                             {"@SiglaEntita", entita["SiglaEntita"]},
                             {"@Valore", "1"}
                         });
                 }
 
-                _entita.RowFilter = "";
-                _entitaProprieta.RowFilter = "";
-                DataBase.DB.CloseConnection();
+                _entita.RowFilter = "IdApplicazione = " + Simboli.AppID;
+                _entitaProprieta.RowFilter = "IdApplicazione = " + Simboli.AppID;
                 this.Close();
             }
         }
@@ -156,27 +156,14 @@ namespace Iren.ToolsExcel.Forms
 
             string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
 
-            bool gone = Workbook.CaricaAzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, dataEmissione);
+            bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif,  dataEmissione);
 
-            DataBase.OpenConnection();
-
-            Riepilogo r = new Riepilogo(Workbook.WB.Sheets["Main"]);
-            r.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
+            _riepilogo.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
 
             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
-            DataBase.DB.CloseConnection();
 
             btnCarica.Enabled = true;
             btnAnnulla.Enabled = true;
-        }
-    }
-
-    class Riepilogo : Base.Riepilogo
-    {
-        public Riepilogo(Microsoft.Office.Interop.Excel.Worksheet ws)
-            : base(ws)
-        {
-
         }
     }
 }

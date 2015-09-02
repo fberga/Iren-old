@@ -9,6 +9,9 @@ using Office = Microsoft.Office.Core;
 
 namespace Iren.ToolsExcel
 {
+    /// <summary>
+    /// Cambio i label e nascondo la riga 6.
+    /// </summary>
     class Riepilogo : Base.Riepilogo
     {
         public Riepilogo()
@@ -26,23 +29,6 @@ namespace Iren.ToolsExcel
         public override void InitLabels()
         {
             base.InitLabels();
-
-            //coloro
-            _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(157, 58, 0));
-            _ws.Shapes.Item("lbTitolo").Line.ForeColor.Brightness = 0.1019f;
-            _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(198, 81, 12));
-            _ws.Shapes.Item("lbTitolo").Fill.ForeColor.Brightness = 0.1792f;
-
-            _ws.Shapes.Item("sfondo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(157, 58, 0));
-            _ws.Shapes.Item("sfondo").Line.ForeColor.Brightness = 0.1019f;
-            _ws.Shapes.Item("sfondo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 172, 123));
-            _ws.Shapes.Item("sfondo").Fill.ForeColor.Brightness = 0.522f;
-
-            _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(198, 81, 12));
-            _ws.Shapes.Item("lbDataInizio").Fill.ForeColor.Brightness = 0.1792f;
-            _ws.Shapes.Item("lbDataFine").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(198, 81, 12));
-            _ws.Shapes.Item("lbDataFine").Fill.ForeColor.Brightness = 0.1792f;
-
 
             //nascondi quelli non utilizzati
             _ws.Shapes.Item("lbImpianti").Visible = Office.MsoTriState.msoFalse;

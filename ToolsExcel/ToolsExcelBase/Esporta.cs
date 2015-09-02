@@ -1,5 +1,4 @@
 ﻿using Iren.ToolsExcel.UserConfig;
-using Iren.ToolsExcel.Core;
 using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
@@ -9,31 +8,38 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
+using Outlook = Microsoft.Office.Interop.Outlook;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Reflection;
+
 
 namespace Iren.ToolsExcel.Base
 {
     public abstract class AEsporta
     {
-        protected Core.DataBase _db = Utility.DataBase.DB;
-        protected DataSet _localDB = Utility.DataBase.LocalDB;
+        #region Metodi
 
-        public abstract bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
-        protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
-    }
-
-    public class Esporta : AEsporta
-    {
-        public override bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
+        /// <summary>
+        /// Launcher per l'azione di esportazione, contiene il metodo standard di handling per eventuali errori. 
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità dell'export.</param>
+        /// <param name="siglaAzione">Sigla dell'azione dell'export</param>
+        /// <param name="desEntita">Descrizione dell'entità.</param>
+        /// <param name="desAzione">Descrizione dell'azione.</param>
+        /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
+        /// <returns>True se l'azione di esportazione è andata a buon fine, false altrimenti.</returns>
+        public virtual bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
             try
             {
                 if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif))
                 {
-                    if(_db.OpenConnection())
-                        Utility.DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
-                    
-                    _db.CloseConnection();
-                    
+                    if (DataBase.OpenConnection())
+                        DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
+
+                    DataBase.CloseConnection();
+
                     return true;
                 }
 
@@ -41,125 +47,147 @@ namespace Iren.ToolsExcel.Base
             }
             catch (Exception e)
             {
-                if (_db.OpenConnection())
+                if (DataBase.OpenConnection())
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "RunExport [" + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
-                _db.CloseConnection();
+                DataBase.CloseConnection();
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 return false;
             }
         }
+        /// <summary>
+        /// Metodo virtuale di Esportazione.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità dell'export.</param>
+        /// <param name="siglaAzione">Sigla dell'azione dell'export</param>
+        /// <param name="desEntita">Descrizione dell'entità.</param>
+        /// <param name="desAzione">Descrizione dell'azione.</param>
+        /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
+        /// <returns></returns>
+        protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
+        /// <summary>
+        /// Restituisce un'istanza di Outlook (quella aperta se ce n'è una, una nuova altrimenti).
+        /// </summary>
+        /// <returns>Istanza di Outlook.</returns>
+        protected Outlook.Application GetOutlookInstance()
+        {
+            Outlook.Application application = null;
+
+            // Check whether there is an Outlook process running.
+            if (Process.GetProcessesByName("OUTLOOK").Count() > 0)
+            {
+
+                // If so, use the GetActiveObject method to obtain the process and cast it to an Application object.
+                application = Marshal.GetActiveObject("Outlook.Application") as Outlook.Application;
+            }
+            else
+            {
+
+                // If not, create a new instance of Outlook and log on to the default profile.
+                application = new Outlook.Application();
+                Outlook.NameSpace nameSpace = application.GetNamespace("MAPI");
+                nameSpace.Logon("", "");
+                nameSpace = null;
+            }
+
+            // Return the Outlook Application object.
+            return application;
+        }
+        /// <summary>
+        /// Metodo di esportazione su CSV. Scrive la tabella in ingresso in un file di testo situato al path indicato da nomeFile.
+        /// </summary>
+        /// <param name="nomeFile">Path del file.</param>
+        /// <param name="dt">Tabella dei dati.</param>
+        /// <returns>True se la scrittura ha avuto successo, false altrimenti.</returns>
+        protected virtual bool ExportToCSV(string nomeFile, DataTable dt)
+        {
+            if (dt.Rows.Count > 0)
+            {
+                try
+                {
+                    using (StreamWriter outFile = new StreamWriter(nomeFile))
+                    {
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            IEnumerable<string> fields = r.ItemArray.Select(field => field.ToString());
+                            outFile.WriteLine(string.Join(";", fields));
+                        }
+                        outFile.Flush();
+                    }
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Metodi Statici
+
+        /// <summary>
+        /// Prepara il path sostituendo le parti dinamiche con valori appropriati.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="codRup"></param>
+        /// <returns></returns>
+        public static string PreparePath(string path, string codRup = "")
+        {
+            Regex options = new Regex(@"\[\w+\]");
+            path = options.Replace(path, match =>
+            {
+                string opt = match.Value.Replace("[", "").Replace("]", "");
+                string o = "";
+                switch (opt.ToLowerInvariant())
+                {
+                    case "appname":
+                        o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
+                        break;
+                    case "msd":
+                        o = Simboli.Mercato;
+                        break;
+                    case "codrup":
+                        o = codRup;
+                        break;
+                    //aggiungere qui tutti i formati data da considerare nella forma
+                    //case "formato data":
+                    case "yyyymmdd":
+                        o = Utility.DataBase.DataAttiva.ToString(opt);
+                        break;
+                }
+
+                return o;
+            });
+
+            return path;
+        }
+
+        #endregion
+    }
+
+    public class Esporta : AEsporta
+    {
+        #region Metodi
+
+        /// <summary>
+        /// Metodo per eseguire un azione di esportazione. Da sovrascrivere in ogni applicativo che ha un'esportazione definita.
+        /// </summary>
+        /// <param name="siglaEntita">Sigla dell'entità dell'export.</param>
+        /// <param name="siglaAzione">Sigla dell'azione dell'export</param>
+        /// <param name="desEntita">Descrizione dell'entità.</param>
+        /// <param name="desAzione">Descrizione dell'azione.</param>
+        /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
+        /// <returns></returns>
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = _localDB.Tables[Utility.DataBase.Tab.ENTITAAZIONE].DefaultView;
-            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
-            if (entitaAzione.Count == 0)
-                return false;
-
-            DataView categoriaEntita = _localDB.Tables[Utility.DataBase.Tab.CATEGORIAENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
-            object codiceRUP = categoriaEntita[0]["CodiceRUP"];
-
-            DataView entitaProprieta = _localDB.Tables[Utility.DataBase.Tab.ENTITAPROPRIETA].DefaultView;
-            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'IMP_COD_IF'";
-            object codiceIF = entitaProprieta[0]["Valore"];
-
-            DataView entitaAzioneInformazione = _localDB.Tables[Utility.DataBase.Tab.ENTITAAZIONEINFORMAZIONE].DefaultView;
-            entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "'";
-
-            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
-            DefinedNames nomiDefiniti = new DefinedNames(nomeFoglio);
-
-            switch (siglaAzione.ToString())
-            {
-                case "E_MP_MGP":
-                    DataTable dt = new DataTable("E_MP_MGP")
-                    {
-                        Columns =
-                        {
-                            {"Campo1", typeof(string)},
-                            {"Campo2", typeof(string)},
-                            {"UP", typeof(string)},
-                            {"Campo3", typeof(string)},
-                            {"Data", typeof(string)},
-                            {"Ora", typeof(string)},
-                            {"Informazione", typeof(string)},
-                            {"Valore", typeof(string)}
-                        }
-                    };
-
-                    string suffissoData = Utility.Date.GetSuffissoData(_db.DataAttiva, dataRif);
-                    foreach (DataRowView entAzInfo in entitaAzioneInformazione)
-                    {
-                        object entita = (entAzInfo["SiglaEntitaRif"] is DBNull ? entAzInfo["SiglaEntita"] : entAzInfo["SiglaEntitaRif"]);
-                        
-                        Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
-                        Tuple<int, int>[] riga = nomiDefiniti[entita, entAzInfo["SiglaInformazione"], suffissoData];
-                        Excel.Range rng = ws.Range[nomiDefiniti.GetRange(riga)];
-
-                        object[,] tmpVal = rng.Value;
-                        object[] values = tmpVal.Cast<object>().ToArray();
-
-                        for (int i = 0, length = values.Length; i < length; i++)
-                        {
-                            DataRow row = dt.NewRow();
-
-                            row["Campo1"] = nomeFoglio == "Iren Termo" ? "AHRP" : "AIHRP";
-                            row["Campo2"] = "Prod";
-                            row["UP"] = codiceIF;
-                            if (DefinedNames.IsDefined(nomeFoglio, DefinedNames.GetName(entita, "UNIT_COMM")))
-                                row["Campo3"] = "17";
-                            else
-                                row["Campo3"] = "NA";
-                            row["Data"] = dataRif.ToString("yyyy/MM/dd");
-                            row["Ora"] = i + 1;
-                            row["Informazione"] = entAzInfo["SiglaInformazione"].Equals("PMAX") ? "Pmax" : "Pmin";
-                            row["Valore"] = values[i] ?? 0;
-
-                            dt.Rows.Add(row);
-                        }
-                    }
-
-                    var path = Utility.Utilities.GetUsrConfigElement("pathExportMP_MGP");
-
-                    string pathStr = Utility.ExportPath.PreparePath(path.Value);
-
-                    if (Directory.Exists(pathStr))
-                    {
-                        if (!ExportToCSV(System.IO.Path.Combine(pathStr, "AEM_" + (nomeFoglio == "Iren Termo" ? "AHRP_" : "AIHRP_") + codiceIF + "_" + dataRif.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfffffff") + ".csv"), dt))
-                            return false;
-                    }
-                    else
-                    {
-                        System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                        return false;
-                    }
-
-                    break;
-            }
             return true;
         }
 
-        protected bool ExportToCSV(string nomeFile, DataTable dt)
-        {
-            try
-            {
-                using (StreamWriter outFile = new StreamWriter(nomeFile))
-                {
-                    foreach (DataRow r in dt.Rows)
-                    {
-                        IEnumerable<string> fields = r.ItemArray.Select(field => field.ToString());
-                        outFile.WriteLine(string.Join(";", fields));
-                    }
-                    outFile.Flush();
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        #endregion
     }
 }

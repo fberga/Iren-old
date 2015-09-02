@@ -65,55 +65,65 @@ namespace Iren.EpexDownloader
             bool is23hours = !is25hours && (day.Month == 3 && isLastSunday(day));
 
             string URL = _baseURL + day.ToString("yyyy-MM-dd") + "/FR";
-            _htmlDoc.LoadHtml(_webClient.DownloadString(URL));
-
-            //ottengo l'array delle date visualizzate
-            HtmlNode dateRow = _htmlDoc.DocumentNode.SelectSingleNode("//div[@id='tab_fr']//table[@class='list hours responsive']//tr");
-            List<DateTime> days = new List<DateTime>();
-            foreach (HtmlNode col in dateRow.SelectNodes("th"))
+            try
             {
-                DateTime d = new DateTime();
-                if (DateTime.TryParseExact(col.InnerText + " " + day.Year, "ddd, MM/dd yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out d))
-                    days.Add(d);
-            }
+                _htmlDoc.LoadHtml(_webClient.DownloadString(URL));
 
-            KeyValuePair<string, int>[] tabIDs = new KeyValuePair<string, int>[] 
+                //ottengo l'array delle date visualizzate
+                HtmlNode dateRow = _htmlDoc.DocumentNode.SelectSingleNode("//div[@id='tab_fr']//table[@class='list hours responsive']//tr");
+                List<DateTime> days = new List<DateTime>();
+                foreach (HtmlNode col in dateRow.SelectNodes("th"))
+                {
+                    DateTime d = new DateTime();
+                    if (DateTime.TryParseExact(col.InnerText + " " + day.Year, "ddd, dd/MM yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out d))
+                        days.Add(d);
+                }
+
+                KeyValuePair<string, int>[] tabIDs = new KeyValuePair<string, int>[] 
                 { 
                     new KeyValuePair<string, int>("tab_fr", 987), 
                     new KeyValuePair<string, int>("tab_de", 924), 
                     new KeyValuePair<string, int>("tab_ch", 988)};
 
-            foreach (KeyValuePair<string, int> tabID in tabIDs)
-            {
-                HtmlNodeCollection tab = _htmlDoc.DocumentNode.SelectNodes("//div[@id='" + tabID.Key + "']//table[@class='list hours responsive']//tr[@class='no-border']");
-
-                //la mia data ha 24 ore ma la tabella contiene anche la riga della 25-esima
-                if (!is25hours && tab.Count() == 25)
-                    tab.RemoveAt(3);
-
-                DataTable dt = initTable();
-
-                int i = 0;
-                int index = days.IndexOf(day);
-                foreach (HtmlNode row in tab)
+                foreach (KeyValuePair<string, int> tabID in tabIDs)
                 {
-                    //seleziono il valore che mi interessa dalla tabella sapendo che index è 0-based e che le prime 2 colonne sono di intestazione
-                    HtmlNode mgpVal = row.SelectSingleNode("td[" + (3 + index) + "]");
-                    DataRow newRow = dt.NewRow();
+                    HtmlNodeCollection tab = _htmlDoc.DocumentNode.SelectNodes("//div[@id='" + tabID.Key + "']//table[@class='list hours responsive']//tr[@class='no-border']");
 
-                    newRow["Zona"] = tabID.Value;
-                    newRow["Data"] = day.ToString("yyyyMMdd") + (++i < 10 ? "0" : "") + i;
-                    newRow["Mgp"] = 0;
-                    decimal tmp;
-                    if (Decimal.TryParse(mgpVal.InnerText.Replace('.', ','), out tmp))
-                        newRow["MGP"] = tmp;
+                    //la mia data ha 24 ore ma la tabella contiene anche la riga della 25-esima
+                    if (!is25hours && tab.Count() == 25)
+                        tab.RemoveAt(3);
 
-                    dt.Rows.Add(newRow);
+                    DataTable dt = initTable();
+
+                    int i = 0;
+                    int index = days.IndexOf(day);
+                    foreach (HtmlNode row in tab)
+                    {
+                        //seleziono il valore che mi interessa dalla tabella sapendo che index è 0-based e che le prime 2 colonne sono di intestazione
+                        HtmlNode mgpVal = row.SelectSingleNode("td[" + (3 + index) + "]");
+                        DataRow newRow = dt.NewRow();
+
+                        newRow["Zona"] = tabID.Value;
+                        newRow["Data"] = day.ToString("yyyyMMdd") + (++i < 10 ? "0" : "") + i;
+                        newRow["Mgp"] = 0;
+                        decimal tmp;
+                        if (Decimal.TryParse(mgpVal.InnerText.Replace('.', ','), out tmp))
+                            newRow["MGP"] = tmp;
+
+                        dt.Rows.Add(newRow);
+                    }
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        //scrivo la tabella all'interno del caricatore
+                        string path = Path.Combine(_basePath, day.ToString("yyyyMMdd") + "_" + tabID.Value + ".xml");
+                        dt.WriteXml(path);
+                    }
                 }
+            }
+            catch(Exception)
+            {
 
-                //scrivo la tabella all'interno del caricatore
-                string path = Path.Combine(_basePath, day.ToString("yyyyMMdd") + "_" + tabID.Value + ".xml");
-                dt.WriteXml(path);
             }
         }
 

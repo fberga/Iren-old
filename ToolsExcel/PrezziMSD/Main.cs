@@ -17,8 +17,6 @@ namespace Iren.ToolsExcel
 {
     public partial class Main
     {
-        public Dictionary<string, object> config = new Dictionary<string, object>();
-
         #region Codice generato dalla finestra di progettazione di VSTO
 
         /// <summary>
@@ -27,18 +25,9 @@ namespace Iren.ToolsExcel
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(Main_Startup);
-            this.Shutdown += new System.EventHandler(Main_Shutdown);
+
         }
 
         #endregion
-
-        private void Main_Startup(object sender, System.EventArgs e)
-        {
-        }
-
-        private void Main_Shutdown(object sender, System.EventArgs e)
-        {
-        }        
     }
 }
