@@ -102,7 +102,8 @@ namespace Iren.ToolsExcel.Base
         /// <param name="Target">L'insieme dei ranges modificati</param>
         /// <param name="annotaModifica">Se la modifica va segnalata all'utente attraverso il commento sulla cella oppure no.</param>
         /// <param name="fromCalcolo">Flag per eseguire azioni particolari nel caso la provenienza del salvataggio sia da un calcolo.</param>
-        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false)
+        /// <param name="tableName">La tabella in cui inserire le modifiche. Di default Tab.Modifica. Utile specificarme una diversa nel caso di esportazione XML.</param>
+        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false, string tableName = DataBase.Tab.MODIFICA)
         {
             if (DataBase.DB.IdUtenteAttivo != 0)        //non salva sulla tabella delle modifiche se l'utente non è configurato
             {
@@ -116,7 +117,7 @@ namespace Iren.ToolsExcel.Base
                     Workbook.ScreenUpdating = false;
 
                 DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
-                DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
+                DataTable dt = DataBase.LocalDB.Tables[tableName];
 
                 if (ws.ChartObjects().Count > 0 && !fromCalcolo)
                 {
@@ -147,12 +148,12 @@ namespace Iren.ToolsExcel.Base
 
                                 if (!Workbook.Application.WorksheetFunction.IsErr(ws.Range[column.ToString()]))
                                 {
-                                    DataRow r = modifiche.Rows.Find(new object[] { parts[0], parts[1], data });
+                                    DataRow r = dt.Rows.Find(new object[] { parts[0], parts[1], data });
                                     if (r != null)
                                         r["Valore"] = ws.Range[column.ToString()].Value ?? "";
                                     else
                                     {
-                                        DataRow newRow = modifiche.NewRow();
+                                        DataRow newRow = dt.NewRow();
 
                                         newRow["SiglaEntita"] = parts[0];
                                         newRow["SiglaInformazione"] = parts[1];
@@ -162,7 +163,7 @@ namespace Iren.ToolsExcel.Base
                                         newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
                                         newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
 
-                                        modifiche.Rows.Add(newRow);
+                                        dt.Rows.Add(newRow);
                                     }
 
                                     if (annota)
@@ -170,10 +171,6 @@ namespace Iren.ToolsExcel.Base
                                         ws.Range[column.ToString()].ClearComments();
                                         ws.Range[column.ToString()].AddComment("Valore inserito manualmente").Visible = false;
                                     }
-                                }
-                                else
-                                {
-
                                 }
                             }
                         }

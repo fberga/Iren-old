@@ -28,7 +28,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\Sistema Comandi\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\Sistema Comandi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <ApplicationVersion>1.0.0.2</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -159,6 +159,11 @@
       <DependentUpon>Log.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Sheet.cs" />
     <Compile Include="ToolsExcelRibbon.cs">
       <SubType>Component</SubType>
@@ -176,6 +181,10 @@
     <EmbeddedResource Include="Log.resx">
       <DependentUpon>Log.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="ToolsExcelRibbon.resx">
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
@@ -185,9 +194,16 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="Data\SistemaComandi.xlsm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="SistemaComandi.xlsm" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FileCopyPDA\FileCopyPDA.csproj">
+      <Project>{d56b88d5-d5d9-4804-85c3-71bd2a4e7159}</Project>
+      <Name>FileCopyPDA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">
       <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
       <Name>ToolsExcelBase</Name>

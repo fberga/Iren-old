@@ -80,6 +80,12 @@
     <Compile Include="FormConfig.Designer.cs">
       <DependentUpon>FormConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormImportXML.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormImportXML.Designer.cs">
+      <DependentUpon>FormImportXML.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormModificaParametri.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -122,6 +128,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormConfig.resx">
       <DependentUpon>FormConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormImportXML.resx">
+      <DependentUpon>FormImportXML.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormModificaParametri.resx">
       <DependentUpon>FormModificaParametri.cs</DependentUpon>

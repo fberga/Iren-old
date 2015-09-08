@@ -804,6 +804,24 @@ namespace Iren.ToolsExcel
         }
 
         #endregion        
+
+        private void btnEsportaXML_Click(object sender, RibbonControlEventArgs e)
+        {
+            Workbook.ScreenUpdating = false;
+            SplashScreen.Show();
+            SplashScreen.UpdateStatus("Esporto tutte le informazioni del foglio");
+
+            EsportaXML exp = new EsportaXML();
+            exp.RunExport();
+            SplashScreen.Close();
+            Workbook.ScreenUpdating = true;
+        }
+
+        private void btnImportaXML_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormImportXML frmXML = new FormImportXML();
+            frmXML.ShowDialog();
+        }
     }
 
     #region Controls Collection

@@ -107,7 +107,8 @@ namespace Iren.ToolsExcel.Utility
                 ENTITA_PARAMETRO_D = "EntitaParametroD",
                 ENTITA_PARAMETRO_H = "EntitaParametroH",
                 ENTITA_PROPRIETA = "EntitaProprieta",
-                ENTITA_RAMPA = "EntitaRampa",    
+                ENTITA_RAMPA = "EntitaRampa",
+                EXPORT_XML = "ExportXML",
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
@@ -707,6 +708,7 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaAddressFrom();
             CreaTabellaAddressTo();
             CreaTabellaModifica();
+            CreaTabellaExportXML();
             CreaTabellaEditabili();
             CreaTabellaSalvaDB();
             CreaTabellaAnnotaModifica();
@@ -861,6 +863,35 @@ namespace Iren.ToolsExcel.Utility
             try
             {
                 string name = Tab.MODIFICA;
+                ResetTable(name);
+                DataTable dt = new DataTable(name)
+                {
+                    Columns =
+                    {
+                        {"SiglaEntita", typeof(string)},
+                        {"SiglaInformazione", typeof(string)},
+                        {"Data", typeof(string)},
+                        {"Valore", typeof(string)},
+                        {"AnnotaModifica", typeof(string)},
+                        {"IdApplicazione", typeof(string)},
+                        {"IdUtente", typeof(string)}
+                    }
+                };
+
+                dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private static bool CreaTabellaExportXML()
+        {
+            try
+            {
+                string name = Tab.EXPORT_XML;
                 ResetTable(name);
                 DataTable dt = new DataTable(name)
                 {
