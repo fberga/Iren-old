@@ -123,10 +123,35 @@ namespace Iren.ToolsExcel
                 //aggiungo un altro handler per cell click
                 Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
                 Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
+
+                //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
+                DataBase.DB.PropertyChanged += StatoDB_Changed;
+                StatoDB_Changed(null, null);
             }
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
+        }
+
+        private void StatoDB_Changed(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (DataBase.OpenConnection())
+            {
+                if(Controls["btnEsportaXML"].Enabled)
+                    Controls["btnEsportaXML"].Enabled = false;
+                if (Controls["btnImportaXML"].Enabled)
+                    Controls["btnImportaXML"].Enabled = false;
+                
+                DataBase.CloseConnection();
+            }
+            else
+            {
+                if (_enabledControls.Contains("btnEsportaXML"))
+                    Controls["btnEsportaXML"].Enabled = true;
+
+                if (_enabledControls.Contains("btnImportaXML"))
+                    Controls["btnImportaXML"].Enabled = true;
+            }
         }
         /// <summary>
         /// Handler del click sul tasto di configurazione dei parametri. Apre il form che permette di modificare i valori dei parametri definiti per il foglio.
@@ -556,6 +581,7 @@ namespace Iren.ToolsExcel
         private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
         {
             Simboli.EmergenzaForzata = btnForzaEmergenza.Checked;
+            StatoDB_Changed(null, null);
         }
         /// <summary>
         /// Handler del click del tasto di chiusura. Chiude l'applicativo.

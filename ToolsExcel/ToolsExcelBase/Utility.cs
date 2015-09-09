@@ -109,6 +109,7 @@ namespace Iren.ToolsExcel.Utility
                 ENTITA_PROPRIETA = "EntitaProprieta",
                 ENTITA_RAMPA = "EntitaRampa",
                 EXPORT_XML = "ExportXML",
+                LISTA_APPLICAZIONI = "ListaApplicazioni",
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
@@ -726,6 +727,7 @@ namespace Iren.ToolsExcel.Utility
             _appIDs = appIDs;
 
             InitStrutturaNomi();
+            CaricaApplicazioni();
             CaricaAzioni();
             CaricaCategorie();
             CaricaApplicazioneRibbon();
@@ -978,6 +980,18 @@ namespace Iren.ToolsExcel.Utility
                 dt.TableName = tableName;
                 _localDB.Tables.Add(dt);
             }
+        }
+        /// <summary>
+        /// Carica la lista di tutte le applicazioni disponibili.
+        /// </summary>
+        public static void CaricaApplicazioni()
+        {
+            QryParams parameters = new QryParams() 
+                {
+                    {"@IdApplicazione", 0}
+                };
+
+            CaricaDati(Tab.LISTA_APPLICAZIONI, SP.APPLICAZIONE, parameters);
         }
         /// <summary>
         /// Carica i dati necessari alla creazione del menu ribbon.

@@ -34,7 +34,7 @@ namespace Iren.ToolsExcel.Base
 
                     bool hasData0H24 = definedNames.HasData0H24;
 
-                    entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND Editabile = '1' AND IdApplicazione = " + Simboli.AppID;
+                    entitaInformazione.RowFilter = "(SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "') AND Editabile = '1' AND IdApplicazione = " + Simboli.AppID;
 
                     DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
                     int intervalloGiorni =

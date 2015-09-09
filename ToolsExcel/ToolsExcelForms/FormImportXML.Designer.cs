@@ -28,89 +28,55 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.dataGridFileXML = new System.Windows.Forms.DataGridView();
-            this.openFileXMLImport = new System.Windows.Forms.OpenFileDialog();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.generalContainer = new System.Windows.Forms.TableLayoutPanel();
+            this.panelBottom = new System.Windows.Forms.Panel();
+            this.btnApri = new System.Windows.Forms.Button();
             this.btnImporta = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
-            this.btnApri = new System.Windows.Forms.Button();
-            this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridFileXML)).BeginInit();
-            this.panel1.SuspendLayout();
+            this.tvEntitaInformazioni = new System.Windows.Forms.TreeView();
+            this.panelTop = new System.Windows.Forms.Panel();
+            this.richTextInfoTop = new System.Windows.Forms.RichTextBox();
+            this.openFileXMLImport = new System.Windows.Forms.OpenFileDialog();
+            this.generalContainer.SuspendLayout();
+            this.panelBottom.SuspendLayout();
+            this.panelTop.SuspendLayout();
             this.SuspendLayout();
             // 
-            // tableLayoutPanel1
+            // generalContainer
             // 
-            this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.dataGridFileXML, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 2);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 400F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 54F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1072, 475);
-            this.tableLayoutPanel1.TabIndex = 0;
+            this.generalContainer.ColumnCount = 1;
+            this.generalContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.generalContainer.Controls.Add(this.panelBottom, 0, 2);
+            this.generalContainer.Controls.Add(this.tvEntitaInformazioni, 0, 1);
+            this.generalContainer.Controls.Add(this.panelTop, 0, 0);
+            this.generalContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.generalContainer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.generalContainer.Location = new System.Drawing.Point(0, 0);
+            this.generalContainer.Name = "generalContainer";
+            this.generalContainer.RowCount = 4;
+            this.generalContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 71F));
+            this.generalContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 349F));
+            this.generalContainer.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 54F));
+            this.generalContainer.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.generalContainer.Size = new System.Drawing.Size(872, 474);
+            this.generalContainer.TabIndex = 0;
             // 
-            // dataGridFileXML
+            // panelBottom
             // 
-            this.dataGridFileXML.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridFileXML.Location = new System.Drawing.Point(3, 23);
-            this.dataGridFileXML.Name = "dataGridFileXML";
-            this.dataGridFileXML.Size = new System.Drawing.Size(982, 362);
-            this.dataGridFileXML.TabIndex = 0;
-            // 
-            // openFileXMLImport
-            // 
-            this.openFileXMLImport.FileName = "openFileDialog1";
-            this.openFileXMLImport.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileXMLImport_FileOk);
-            // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.btnApri);
-            this.panel1.Controls.Add(this.btnImporta);
-            this.panel1.Controls.Add(this.btnAnnulla);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(3, 423);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1066, 48);
-            this.panel1.TabIndex = 2;
-            // 
-            // btnImporta
-            // 
-            this.btnImporta.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnImporta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnImporta.Location = new System.Drawing.Point(840, 0);
-            this.btnImporta.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnImporta.Name = "btnImporta";
-            this.btnImporta.Size = new System.Drawing.Size(113, 48);
-            this.btnImporta.TabIndex = 6;
-            this.btnImporta.Text = "Importa dati";
-            this.btnImporta.UseVisualStyleBackColor = true;
-            // 
-            // btnAnnulla
-            // 
-            this.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnAnnulla.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnAnnulla.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAnnulla.Location = new System.Drawing.Point(953, 0);
-            this.btnAnnulla.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnAnnulla.Name = "btnAnnulla";
-            this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
-            this.btnAnnulla.TabIndex = 7;
-            this.btnAnnulla.Text = "Chiudi";
-            this.btnAnnulla.UseVisualStyleBackColor = true;
+            this.panelBottom.Controls.Add(this.btnApri);
+            this.panelBottom.Controls.Add(this.btnImporta);
+            this.panelBottom.Controls.Add(this.btnAnnulla);
+            this.panelBottom.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelBottom.Location = new System.Drawing.Point(3, 423);
+            this.panelBottom.Name = "panelBottom";
+            this.panelBottom.Size = new System.Drawing.Size(866, 48);
+            this.panelBottom.TabIndex = 2;
             // 
             // btnApri
             // 
             this.btnApri.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnApri.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnApri.Location = new System.Drawing.Point(727, 0);
+            this.btnApri.Location = new System.Drawing.Point(527, 0);
             this.btnApri.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnApri.Name = "btnApri";
             this.btnApri.Size = new System.Drawing.Size(113, 48);
@@ -119,29 +85,95 @@
             this.btnApri.UseVisualStyleBackColor = true;
             this.btnApri.Click += new System.EventHandler(this.btnApri_Click);
             // 
+            // btnImporta
+            // 
+            this.btnImporta.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnImporta.Enabled = false;
+            this.btnImporta.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnImporta.Location = new System.Drawing.Point(640, 0);
+            this.btnImporta.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnImporta.Name = "btnImporta";
+            this.btnImporta.Size = new System.Drawing.Size(113, 48);
+            this.btnImporta.TabIndex = 6;
+            this.btnImporta.Text = "Importa dati";
+            this.btnImporta.UseVisualStyleBackColor = true;
+            this.btnImporta.Click += new System.EventHandler(this.btnImporta_Click);
+            // 
+            // btnAnnulla
+            // 
+            this.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnAnnulla.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnAnnulla.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAnnulla.Location = new System.Drawing.Point(753, 0);
+            this.btnAnnulla.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnAnnulla.Name = "btnAnnulla";
+            this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
+            this.btnAnnulla.TabIndex = 7;
+            this.btnAnnulla.Text = "Chiudi";
+            this.btnAnnulla.UseVisualStyleBackColor = true;
+            // 
+            // tvEntitaInformazioni
+            // 
+            this.tvEntitaInformazioni.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvEntitaInformazioni.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tvEntitaInformazioni.Location = new System.Drawing.Point(3, 74);
+            this.tvEntitaInformazioni.Name = "tvEntitaInformazioni";
+            this.tvEntitaInformazioni.Size = new System.Drawing.Size(866, 343);
+            this.tvEntitaInformazioni.TabIndex = 3;
+            // 
+            // panelTop
+            // 
+            this.panelTop.Controls.Add(this.richTextInfoTop);
+            this.panelTop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelTop.Location = new System.Drawing.Point(3, 3);
+            this.panelTop.Name = "panelTop";
+            this.panelTop.Size = new System.Drawing.Size(866, 65);
+            this.panelTop.TabIndex = 4;
+            // 
+            // richTextInfoTop
+            // 
+            this.richTextInfoTop.BackColor = System.Drawing.SystemColors.Control;
+            this.richTextInfoTop.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextInfoTop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextInfoTop.Location = new System.Drawing.Point(0, 0);
+            this.richTextInfoTop.Name = "richTextInfoTop";
+            this.richTextInfoTop.Size = new System.Drawing.Size(866, 65);
+            this.richTextInfoTop.TabIndex = 6;
+            this.richTextInfoTop.Text = "Nessun file XML caricato...";
+            // 
+            // openFileXMLImport
+            // 
+            this.openFileXMLImport.FileName = "openFileDialog1";
+            this.openFileXMLImport.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileXMLImport_FileOk);
+            // 
             // FormImportXML
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1072, 475);
-            this.Controls.Add(this.tableLayoutPanel1);
+            this.ClientSize = new System.Drawing.Size(872, 474);
+            this.Controls.Add(this.generalContainer);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "FormImportXML";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FormImportXML";
-            this.tableLayoutPanel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridFileXML)).EndInit();
-            this.panel1.ResumeLayout(false);
+            this.generalContainer.ResumeLayout(false);
+            this.panelBottom.ResumeLayout(false);
+            this.panelTop.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.DataGridView dataGridFileXML;
+        private System.Windows.Forms.TableLayoutPanel generalContainer;
         private System.Windows.Forms.OpenFileDialog openFileXMLImport;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelBottom;
         private System.Windows.Forms.Button btnImporta;
         private System.Windows.Forms.Button btnAnnulla;
         private System.Windows.Forms.Button btnApri;
+        private System.Windows.Forms.TreeView tvEntitaInformazioni;
+        private System.Windows.Forms.Panel panelTop;
+        private System.Windows.Forms.RichTextBox richTextInfoTop;
     }
 }

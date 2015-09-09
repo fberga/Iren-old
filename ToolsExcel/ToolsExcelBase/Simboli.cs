@@ -1,6 +1,7 @@
 ﻿using Iren.ToolsExcel.Core;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 
 namespace Iren.ToolsExcel.Base
@@ -207,6 +208,5 @@ namespace Iren.ToolsExcel.Base
         public static int[] rgbSfondo = { 228, 144, 144 };
         public static int[] rgbLinee = { 176, 0, 0 };
         public static int[] rgbTitolo = { 206, 58, 58 };
-
     }
 }

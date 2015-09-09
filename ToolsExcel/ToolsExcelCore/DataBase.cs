@@ -86,7 +86,7 @@ namespace Iren.ToolsExcel.Core
                 if (checkDB)
                 {
                     _internalCmd = new Command(_internalsqlConn);
-                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 1000 * 60);
+                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 500 * 60);
                 }
 
                 //_sqlConn.StateChange += ConnectionStateChange;
