@@ -7,6 +7,8 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Reflection;
+using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -33,20 +35,22 @@ namespace Iren.ToolsExcel
             {
                 case "MAIL":
                     //carico i path di export
-                    Dictionary<UserConfigElement, string> cfgPaths = new Dictionary<UserConfigElement, string>();
-                    var path = Workbook.GetUsrConfigElement("pathExportFileFMS");
-                    cfgPaths.Add(path, PreparePath(path.Value));
-                    path = Workbook.GetUsrConfigElement("pathExportFileXSD");
-                    cfgPaths.Add(path, PreparePath(path.Value));
-                    path = Workbook.GetUsrConfigElement("pathExportFileRS");
-                    cfgPaths.Add(path, PreparePath(path.Value));
+                    List<UserConfigElement> cfgPaths = new List<UserConfigElement>();
+
+                    var cfgPath = Workbook.GetUsrConfigElement("pathExportFileFMS");
+                    cfgPaths.Add(cfgPath);
+                    cfgPath = Workbook.GetUsrConfigElement("pathExportFileXSD");
+                    cfgPaths.Add(cfgPath);
+                    cfgPath = Workbook.GetUsrConfigElement("pathExportFileRS");
+                    cfgPaths.Add(cfgPath);
 
                     //verifico che siano tutti raggiungibili
-                    foreach (var kv in cfgPaths)
+                    foreach (var p in cfgPaths)
                     {
-                        if(!Directory.Exists(kv.Value))
+                        string path = PreparePath(p);
+                        if (!Directory.Exists(path))
                         {
-                            System.Windows.Forms.MessageBox.Show(path.Desc + " '" + kv.Value + "' non raggiungibile.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                            System.Windows.Forms.MessageBox.Show(p.Desc + " '" + path + "' non raggiungibile.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                             return false;
                         }
@@ -127,7 +131,8 @@ namespace Iren.ToolsExcel
                 if (entitaProprieta.Count > 0)
                 {
                     //creo file Excel da allegare
-                    attachments.Add(@"D:\" + DataBase.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Simboli.Mercato + ".xls");
+                    string pathExport = PreparePath(Workbook.GetUsrConfigElement("exportXML"));
+                    attachments.Add(Path.Combine(pathExport, DataBase.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Simboli.Mercato + ".xls"));
 
                     hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
@@ -146,8 +151,8 @@ namespace Iren.ToolsExcel
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
-                            string nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                            string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
+                            string nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
+                            string pathFileFMS = PreparePath(Workbook.GetUsrConfigElement("pathExportFileFMS"));
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
@@ -167,8 +172,8 @@ namespace Iren.ToolsExcel
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
-                            string nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                            string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
+                            string nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
+                            string pathFileFMS = PreparePath(Workbook.GetUsrConfigElement("pathExportFileFMS"));
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
@@ -181,8 +186,8 @@ namespace Iren.ToolsExcel
                             }
                             else
                             {
-                                nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileFMS_TERNA").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                                pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileFMS").Value;
+                                nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileFMS_TERNA").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
+                                pathFileFMS = PreparePath(Workbook.GetUsrConfigElement("pathExportFileFMS"));
 
                                 files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
@@ -202,8 +207,8 @@ namespace Iren.ToolsExcel
                         entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS' AND IdApplicazione = " + Simboli.AppID;
                         if (entitaProprieta.Count > 0)
                         {
-                            string nomeFileFMS = PreparePath(Workbook.GetUsrConfigElement("formatoNomeFileRS_TERNA").Value) + ".xml";
-                            string pathFileFMS = Workbook.GetUsrConfigElement("pathExportFileRS").Value;
+                            string nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileRS_TERNA").Value) + ".xml";
+                            string pathFileFMS = PreparePath(Workbook.GetUsrConfigElement("pathExportFileRS"));
 
                             string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
 
@@ -242,6 +247,7 @@ namespace Iren.ToolsExcel
                         string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", DataBase.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Simboli.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
                         config = Workbook.GetUsrConfigElement("messaggioMail");
                         string messaggio = config.Value;
+
                         messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 
                         //TODO check se manda sempre con lo stesso account...

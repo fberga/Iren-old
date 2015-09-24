@@ -20,6 +20,8 @@ namespace Iren.ToolsExcel.Forms
 
         public FormImportXML()
         {
+            this.Text = Simboli.nomeApplicazione + " - Import XML (Emergenza)";
+
             InitializeComponent();
             btnApri_Click(null, null);
         }
@@ -126,10 +128,10 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnApri_Click(object sender, EventArgs e)
         {
-            var path = Workbook.GetUsrConfigElement("emergenza");
-            string cartellaEmergenza = Esporta.PreparePath(path.Value);
+            var path = Workbook.GetUsrConfigElement("exportXML");
+            string cartellaExport = path.Value;
 
-            openFileXMLImport.InitialDirectory = cartellaEmergenza;
+            openFileXMLImport.InitialDirectory = cartellaExport;
             openFileXMLImport.Filter = "XML Files (*.xml)|*.xml";
             openFileXMLImport.ShowDialog();
         }

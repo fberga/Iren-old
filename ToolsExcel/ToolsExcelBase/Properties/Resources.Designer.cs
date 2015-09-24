@@ -283,16 +283,6 @@ namespace Iren.ToolsExcel.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap PSO {
-            get {
-                object obj = ResourceManager.GetObject("PSO", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
-        /// </summary>
         public static System.Drawing.Bitmap rampe_icon {
             get {
                 object obj = ResourceManager.GetObject("rampe_icon", resourceCulture);

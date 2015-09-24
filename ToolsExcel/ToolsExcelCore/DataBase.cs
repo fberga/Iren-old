@@ -58,6 +58,8 @@ namespace Iren.ToolsExcel.Core
         private string _ambiente;
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private int _chechDBCount = 4;
+
         #endregion
 
         #region Proprietà
@@ -86,10 +88,8 @@ namespace Iren.ToolsExcel.Core
                 if (checkDB)
                 {
                     _internalCmd = new Command(_internalsqlConn);
-                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 500 * 60);
+                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 250 * 60);
                 }
-
-                //_sqlConn.StateChange += ConnectionStateChange;
             }
             catch (Exception e)
             {
@@ -345,36 +345,41 @@ namespace Iren.ToolsExcel.Core
 
             if (_statoDB[NomiDB.SQLSERVER] == ConnectionState.Open)
             {
-                DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 3, false);
-                    
-                if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
-                    _statoDB[NomiDB.IMP] = ConnectionState.Open;
-                else
-                    _statoDB[NomiDB.IMP] = ConnectionState.Closed;
-                
-                OpenConnection(_internalsqlConn);
-                DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 3, false);
+                if (_chechDBCount == 4)
+                {
+                    _chechDBCount = 0;
+                    DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 5, false);
 
-                if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
-                    _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
-                else
-                    _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;   
+                    if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
+                        _statoDB[NomiDB.IMP] = ConnectionState.Open;
+                    else
+                        _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+
+                    OpenConnection(_internalsqlConn);
+                    DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 5, false);
+
+                    if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
+                        _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+                    else
+                        _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+                }
+                _chechDBCount++;
             }
             else
             {
+                _chechDBCount = 4;
                 _statoDB[NomiDB.IMP] = ConnectionState.Closed;
                 _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
             }
 
-            //if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
-            //    || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
-            //    || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
-            //{
+            if (_statoDB[NomiDB.SQLSERVER] != oldStatoDB[NomiDB.SQLSERVER]
+                || _statoDB[NomiDB.IMP] != oldStatoDB[NomiDB.IMP]
+                || _statoDB[NomiDB.ELSAG] != oldStatoDB[NomiDB.ELSAG])
+            {
                 NotifyPropertyChanged("StatoDB");
-            //}
-
-            CloseConnection(_internalsqlConn);
+            }
             
+            CloseConnection(_internalsqlConn);            
         }
         /// <summary>
         /// Metodo di notifica di un cambio di valore della proprietà propertyName.

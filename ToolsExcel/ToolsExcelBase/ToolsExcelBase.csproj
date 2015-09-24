@@ -120,7 +120,6 @@
     <Resource Include="Resources\calendario-icon.png" />
     <Resource Include="Resources\params-config-icon.png" />
     <Resource Include="Resources\PencilAngled_16xMD_color.png" />
-    <Resource Include="Resources\PSO.png" />
     <Resource Include="Resources\rampe-icon.png" />
     <Resource Include="Resources\modificaNO-icon.png" />
     <Resource Include="Resources\modificaSI-icon.png" />

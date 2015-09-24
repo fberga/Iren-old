@@ -80,14 +80,17 @@ namespace Iren.ToolsExcel.Base
                 }
                 else
                 {
-                    if (azionePadre.Equals("GENERA"))
+                    if (azionePadre.Equals("GENERA")) 
+                    {
                         ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno);
-                    else if (azionePadre.Equals("CARICA")) 
-                    { /*TODO per invio programmi un caricamento da XML*/ }
 
-                    Sheet s = new Sheet(Workbook.Sheets[definedNames.Sheet]);
-                    s.AggiornaGrafici();
-                    return true;
+                        Sheet s = new Sheet(Workbook.Sheets[definedNames.Sheet]);
+                        s.AggiornaGrafici();
+
+                        return true;
+                    }
+
+                    return false;
                 }
             }
             catch (Exception e)

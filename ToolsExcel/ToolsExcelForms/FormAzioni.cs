@@ -66,6 +66,10 @@ namespace Iren.ToolsExcel.Forms
             {
                 selDate.VisibleChanged += selDate_VisibleChanged;
             }
+
+            if (!Utility.DataBase.OpenConnection())
+                btnMeteo.Enabled = false;
+            Utility.DataBase.CloseConnection();
         }
 
         #endregion
@@ -400,7 +404,6 @@ namespace Iren.ToolsExcel.Forms
                             {
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                 {
-
                                     entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
                                     int intervalloGiorni = Struct.intervalloGiorni;
                                     if (entitaProprieta.Count > 0)

@@ -93,9 +93,7 @@ namespace Iren.ToolsExcel
                         }
                     }
 
-                    var path = Workbook.GetUsrConfigElement("pathExportMP_MGP");
-
-                    string pathStr = PreparePath(path.Value);
+                    string pathStr = PreparePath(Workbook.GetUsrConfigElement("pathExportMP_MGP"));
 
                     if (Directory.Exists(pathStr))
                     {

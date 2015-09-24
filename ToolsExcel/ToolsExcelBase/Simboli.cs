@@ -32,12 +32,12 @@ namespace Iren.ToolsExcel.Base
                     if (isProtected)
                         Utility.Workbook.Main.Unprotect(pwd);
 
-                    Riepilogo main = new Riepilogo(Utility.Workbook.Main);
-                    if (value)
-                        main.RiepilogoInEmergenza();
-                    else
-                        if (Utility.DataBase.OpenConnection())
-                            main.UpdateData();
+                    //Riepilogo main = new Riepilogo(Utility.Workbook.Main);
+                    //if (value)
+                    //    main.RiepilogoInEmergenza();
+                    //else
+                    //    if (Utility.DataBase.OpenConnection())
+                    //        main.UpdateData();
 
                     Utility.Workbook.AggiornaLabelStatoDB();
 
@@ -49,6 +49,8 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+
+        public static bool Aborted { get; set; }
 
         public static string pwd = "";
 

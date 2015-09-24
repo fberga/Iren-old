@@ -1,6 +1,6 @@
 ﻿namespace Iren.ToolsExcel.Forms
 {
-    partial class FormConfig
+    partial class FormConfiguraPercorsi
     {
         /// <summary>
         /// Required designer variable.

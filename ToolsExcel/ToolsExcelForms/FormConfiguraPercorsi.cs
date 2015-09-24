@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.Forms
 {
-    public partial class FormConfig : Form
+    public partial class FormConfiguraPercorsi : Form
     {
         DataTable _dt = new DataTable("usrConfig") 
         {
@@ -17,17 +17,17 @@ namespace Iren.ToolsExcel.Forms
                 {"Key", typeof(string)},
                 {"Proprietà", typeof(string)},
                 {"Valore", typeof(string)},
-                {"Default", typeof(string)}
+                {"Emergenza", typeof(string)}
             }
         };
 
-        public FormConfig()
+        public FormConfiguraPercorsi()
         {
             InitializeComponent();
 
             dataGridConfigurazioni.DataSource = _dt;
             
-            this.Text = Simboli.nomeApplicazione + " - Config";
+            this.Text = Simboli.nomeApplicazione + " - Configura percorsi";
 
             int width = dataGridConfigurazioni.Width * 90 / 100;
 
@@ -45,7 +45,7 @@ namespace Iren.ToolsExcel.Forms
             dataGridConfigurazioni.Columns[2].Width = (width / 3);
             
             dataGridConfigurazioni.Columns[3].Width = (width / 3);
-            dataGridConfigurazioni.Columns[3].ReadOnly = true;
+            //dataGridConfigurazioni.Columns[3].ReadOnly = true;
             
         }
 
@@ -55,8 +55,8 @@ namespace Iren.ToolsExcel.Forms
 
             foreach (UserConfigElement item in config.Items)
             {
-                if (item.Visibile == "true")
-                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Default);                
+                if (item.Visibile)
+                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Emergenza);
             }
 
         }
@@ -67,7 +67,10 @@ namespace Iren.ToolsExcel.Forms
             var section = (UserConfiguration)config.GetSection("usrConfig");
 
             foreach (DataRow r in _dt.GetChanges().Rows)
+            {
                 section.Items[r["Key"].ToString()].Value = r["Valore"].ToString();
+                section.Items[r["Key"].ToString()].Emergenza = r["Emergenza"].ToString();
+            }
 
             config.Save(ConfigurationSaveMode.Minimal);
             ConfigurationManager.RefreshSection("usrConfig");

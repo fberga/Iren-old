@@ -9,7 +9,7 @@ namespace Iren.ToolsExcel.Forms
         public FormCalendar()
         {
             InitializeComponent();
-            Application.EnableVisualStyles();
+            //Application.EnableVisualStyles();
             calObj.SetDate(Utility.DataBase.DataAttiva);
             this.Text = Simboli.nomeApplicazione + " - Calendar";
         }
@@ -32,11 +32,7 @@ namespace Iren.ToolsExcel.Forms
         public new DateTime ShowDialog()
         {
             base.ShowDialog();
-            //if (calObj.SelectionStart == Utility.DataBase.DataAttiva)
-            //    return null;
-
             return calObj.SelectionStart;
         }
-
     }
 }

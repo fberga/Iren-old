@@ -1,4 +1,6 @@
-﻿namespace Iren.ToolsExcel
+﻿using System;
+using System.Reflection;
+namespace Iren.ToolsExcel
 {
     partial class ToolsExcelRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
     {
@@ -148,7 +150,7 @@
             // btnChiudi
             // 
             this.btnChiudi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnChiudi.Image = ((System.Drawing.Image)(resources.GetObject("btnChiudi.Image")));
+            this.btnChiudi.Image = ToolsExcel.Base.Properties.Resources.salva_icon;
             this.btnChiudi.Label = "Chiudi";
             this.btnChiudi.Name = "btnChiudi";
             this.btnChiudi.ShowImage = true;
@@ -165,7 +167,7 @@
             // btnForzaEmergenza
             // 
             this.btnForzaEmergenza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnForzaEmergenza.Image = ((System.Drawing.Image)(resources.GetObject("btnForzaEmergenza.Image")));
+            this.btnForzaEmergenza.Image = ToolsExcel.Base.Properties.Resources.forzaemergenza_icon;
             this.btnForzaEmergenza.Label = "Forza Emergenza";
             this.btnForzaEmergenza.Name = "btnForzaEmergenza";
             this.btnForzaEmergenza.ShowImage = true;
@@ -174,7 +176,7 @@
             // btnEsportaXML
             // 
             this.btnEsportaXML.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnEsportaXML.Image = ((System.Drawing.Image)(resources.GetObject("btnEsportaXML.Image")));
+            this.btnEsportaXML.Image = ToolsExcel.Base.Properties.Resources.export_xml;
             this.btnEsportaXML.Label = "Esporta dati in XML";
             this.btnEsportaXML.Name = "btnEsportaXML";
             this.btnEsportaXML.ShowImage = true;
@@ -183,7 +185,7 @@
             // btnImportaXML
             // 
             this.btnImportaXML.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnImportaXML.Image = ((System.Drawing.Image)(resources.GetObject("btnImportaXML.Image")));
+            this.btnImportaXML.Image = ToolsExcel.Base.Properties.Resources.import_xml;
             this.btnImportaXML.Label = "Importa dati da XML";
             this.btnImportaXML.Name = "btnImportaXML";
             this.btnImportaXML.ShowImage = true;
@@ -199,7 +201,7 @@
             // btnConfigura
             // 
             this.btnConfigura.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnConfigura.Image = ((System.Drawing.Image)(resources.GetObject("btnConfigura.Image")));
+            this.btnConfigura.Image = ToolsExcel.Base.Properties.Resources.settings_icon;
             this.btnConfigura.Label = "Configura percorsi";
             this.btnConfigura.Name = "btnConfigura";
             this.btnConfigura.ShowImage = true;
@@ -208,7 +210,7 @@
             // btnConfiguraParametri
             // 
             this.btnConfiguraParametri.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnConfiguraParametri.Image = ((System.Drawing.Image)(resources.GetObject("btnConfiguraParametri.Image")));
+            this.btnConfiguraParametri.Image = ToolsExcel.Base.Properties.Resources.params_config_icon;
             this.btnConfiguraParametri.Label = "Configura parametri";
             this.btnConfiguraParametri.Name = "btnConfiguraParametri";
             this.btnConfiguraParametri.ShowImage = true;
@@ -224,12 +226,18 @@
             // 
             this.btnCalendar.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.btnCalendar.Description = "Apre il calendario per cambiare la data";
-            this.btnCalendar.Image = ((System.Drawing.Image)(resources.GetObject("btnCalendar.Image")));
+            this.btnCalendar.Image = (System.Drawing.Image)ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject("calendario_icon");//.calendario_icon;
             this.btnCalendar.Label = "Calendario";
             this.btnCalendar.Name = "btnCalendar";
             this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
             this.btnCalendar.ShowImage = true;
-            this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
+
+            EventInfo ei = btnCalendar.GetType().GetEvent("Click");
+            MethodInfo hi = GetType().GetMethod("btnCalendar_Click", BindingFlags.Instance | BindingFlags.NonPublic);
+            Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
+            ei.AddEventHandler(btnCalendar, d);
+
+            //this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
             // 
             // groupModifica
             // 
@@ -240,7 +248,7 @@
             // btnModifica
             // 
             this.btnModifica.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnModifica.Image = ((System.Drawing.Image)(resources.GetObject("btnModifica.Image")));
+            this.btnModifica.Image = ToolsExcel.Base.Properties.Resources.modificaNO_icon;
             this.btnModifica.Label = "Modifica NO";
             this.btnModifica.Name = "btnModifica";
             this.btnModifica.ShowImage = true;
@@ -256,7 +264,7 @@
             // btnAggiornaDati
             // 
             this.btnAggiornaDati.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnAggiornaDati.Image = ((System.Drawing.Image)(resources.GetObject("btnAggiornaDati.Image")));
+            this.btnAggiornaDati.Image = ToolsExcel.Base.Properties.Resources.aggiornadati_icon;
             this.btnAggiornaDati.Label = "Aggiorna Dati";
             this.btnAggiornaDati.Name = "btnAggiornaDati";
             this.btnAggiornaDati.ShowImage = true;
@@ -265,7 +273,7 @@
             // btnAggiornaStruttura
             // 
             this.btnAggiornaStruttura.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnAggiornaStruttura.Image = ((System.Drawing.Image)(resources.GetObject("btnAggiornaStruttura.Image")));
+            this.btnAggiornaStruttura.Image = ToolsExcel.Base.Properties.Resources.aggiornastruttura_icon;
             this.btnAggiornaStruttura.Label = "Aggiorna Struttura";
             this.btnAggiornaStruttura.Name = "btnAggiornaStruttura";
             this.btnAggiornaStruttura.ShowImage = true;
@@ -282,7 +290,7 @@
             // btnAzioni
             // 
             this.btnAzioni.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnAzioni.Image = ((System.Drawing.Image)(resources.GetObject("btnAzioni.Image")));
+            this.btnAzioni.Image = ToolsExcel.Base.Properties.Resources.azioni_icon;
             this.btnAzioni.Label = "Start";
             this.btnAzioni.Name = "btnAzioni";
             this.btnAzioni.ShowImage = true;
@@ -291,7 +299,7 @@
             // btnOttimizza
             // 
             this.btnOttimizza.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnOttimizza.Image = ((System.Drawing.Image)(resources.GetObject("btnOttimizza.Image")));
+            this.btnOttimizza.Image = ToolsExcel.Base.Properties.Resources.ottimizzatore_icon;
             this.btnOttimizza.Label = "Ottimizza";
             this.btnOttimizza.Name = "btnOttimizza";
             this.btnOttimizza.ShowImage = true;
@@ -300,7 +308,7 @@
             // btnRampe
             // 
             this.btnRampe.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnRampe.Image = ((System.Drawing.Image)(resources.GetObject("btnRampe.Image")));
+            this.btnRampe.Image = ToolsExcel.Base.Properties.Resources.rampe_icon;
             this.btnRampe.Label = "Rampe";
             this.btnRampe.Name = "btnRampe";
             this.btnRampe.ShowImage = true;
@@ -317,7 +325,7 @@
             // btnDev
             // 
             this.btnDev.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnDev.Image = ((System.Drawing.Image)(resources.GetObject("btnDev.Image")));
+            this.btnDev.Image = ToolsExcel.Base.Properties.Resources.dev_icon;
             this.btnDev.Label = "Dev";
             this.btnDev.Name = "btnDev";
             this.btnDev.ShowImage = true;
@@ -327,7 +335,7 @@
             // btnTest
             // 
             this.btnTest.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnTest.Image = ((System.Drawing.Image)(resources.GetObject("btnTest.Image")));
+            this.btnTest.Image = ToolsExcel.Base.Properties.Resources.test_icon;
             this.btnTest.Label = "Test";
             this.btnTest.Name = "btnTest";
             this.btnTest.ShowImage = true;
@@ -337,7 +345,7 @@
             // btnProduzione
             // 
             this.btnProduzione.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnProduzione.Image = ((System.Drawing.Image)(resources.GetObject("btnProduzione.Image")));
+            this.btnProduzione.Image = ToolsExcel.Base.Properties.Resources.prod_icon;
             this.btnProduzione.Label = "Prod";
             this.btnProduzione.Name = "btnProduzione";
             this.btnProduzione.ShowImage = true;
@@ -363,7 +371,7 @@
             // btnPrevisioneGas
             // 
             this.btnPrevisioneGas.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnPrevisioneGas.Image = ((System.Drawing.Image)(resources.GetObject("btnPrevisioneGas.Image")));
+            this.btnPrevisioneGas.Image = ToolsExcel.Base.Properties.Resources.gas_icon;
             this.btnPrevisioneGas.Label = "Previsione Gas";
             this.btnPrevisioneGas.Name = "btnPrevisioneGas";
             this.btnPrevisioneGas.ShowImage = true;
@@ -372,7 +380,7 @@
             // btnUnitCommitment
             // 
             this.btnUnitCommitment.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnUnitCommitment.Image = ((System.Drawing.Image)(resources.GetObject("btnUnitCommitment.Image")));
+            this.btnUnitCommitment.Image = ToolsExcel.Base.Properties.Resources.unitComm_icon;
             this.btnUnitCommitment.Label = "Unit Commitment";
             this.btnUnitCommitment.Name = "btnUnitCommitment";
             this.btnUnitCommitment.ShowImage = true;
@@ -381,7 +389,7 @@
             // btnPrezziMSD
             // 
             this.btnPrezziMSD.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnPrezziMSD.Image = ((System.Drawing.Image)(resources.GetObject("btnPrezziMSD.Image")));
+            this.btnPrezziMSD.Image = ToolsExcel.Base.Properties.Resources.prezziMSD_icon;
             this.btnPrezziMSD.Label = "Prezzi MSD";
             this.btnPrezziMSD.Name = "btnPrezziMSD";
             this.btnPrezziMSD.ShowImage = true;
@@ -390,7 +398,7 @@
             // btnValidazioneTL
             // 
             this.btnValidazioneTL.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnValidazioneTL.Image = ((System.Drawing.Image)(resources.GetObject("btnValidazioneTL.Image")));
+            this.btnValidazioneTL.Image = ToolsExcel.Base.Properties.Resources.validazioneTL_icon;
             this.btnValidazioneTL.Label = "Validazione TL";
             this.btnValidazioneTL.Name = "btnValidazioneTL";
             this.btnValidazioneTL.ShowImage = true;
@@ -399,7 +407,7 @@
             // btnPrevisioneCT
             // 
             this.btnPrevisioneCT.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnPrevisioneCT.Image = ((System.Drawing.Image)(resources.GetObject("btnPrevisioneCT.Image")));
+            this.btnPrevisioneCT.Image = ToolsExcel.Base.Properties.Resources.previsioneCT_icon;
             this.btnPrevisioneCT.Label = "Previsione CT";
             this.btnPrevisioneCT.Name = "btnPrevisioneCT";
             this.btnPrevisioneCT.ShowImage = true;
@@ -408,7 +416,7 @@
             // btnProgrammazioneImpianti
             // 
             this.btnProgrammazioneImpianti.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnProgrammazioneImpianti.Image = ((System.Drawing.Image)(resources.GetObject("btnProgrammazioneImpianti.Image")));
+            this.btnProgrammazioneImpianti.Image = ToolsExcel.Base.Properties.Resources.progrImpianti_icon;
             this.btnProgrammazioneImpianti.Label = "Progr. Impianti";
             this.btnProgrammazioneImpianti.Name = "btnProgrammazioneImpianti";
             this.btnProgrammazioneImpianti.ShowImage = true;
@@ -417,7 +425,7 @@
             // btnOfferteMGP
             // 
             this.btnOfferteMGP.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnOfferteMGP.Image = ((System.Drawing.Image)(resources.GetObject("btnOfferteMGP.Image")));
+            this.btnOfferteMGP.Image = ToolsExcel.Base.Properties.Resources.offerteMGP_icon;
             this.btnOfferteMGP.Label = "Offerte MGP";
             this.btnOfferteMGP.Name = "btnOfferteMGP";
             this.btnOfferteMGP.ShowImage = true;
@@ -426,7 +434,7 @@
             // btnOfferteMSD
             // 
             this.btnOfferteMSD.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnOfferteMSD.Image = ((System.Drawing.Image)(resources.GetObject("btnOfferteMSD.Image")));
+            this.btnOfferteMSD.Image = ToolsExcel.Base.Properties.Resources.offerteMSD_icon;
             this.btnOfferteMSD.Label = "Offerte MSD";
             this.btnOfferteMSD.Name = "btnOfferteMSD";
             this.btnOfferteMSD.ShowImage = true;
@@ -435,7 +443,7 @@
             // btnOfferteMB
             // 
             this.btnOfferteMB.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnOfferteMB.Image = ((System.Drawing.Image)(resources.GetObject("btnOfferteMB.Image")));
+            this.btnOfferteMB.Image = ToolsExcel.Base.Properties.Resources.offerteMB_icon;
             this.btnOfferteMB.Label = "Offerte MB";
             this.btnOfferteMB.Name = "btnOfferteMB";
             this.btnOfferteMB.ShowImage = true;
@@ -444,7 +452,7 @@
             // btnInvioProgrammi
             // 
             this.btnInvioProgrammi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnInvioProgrammi.Image = ((System.Drawing.Image)(resources.GetObject("btnInvioProgrammi.Image")));
+            this.btnInvioProgrammi.Image = ToolsExcel.Base.Properties.Resources.invioProgrammi_icon;
             this.btnInvioProgrammi.Label = "Invio Programmi";
             this.btnInvioProgrammi.Name = "btnInvioProgrammi";
             this.btnInvioProgrammi.ShowImage = true;
@@ -453,7 +461,7 @@
             // btnSistemaComandi
             // 
             this.btnSistemaComandi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnSistemaComandi.Image = ((System.Drawing.Image)(resources.GetObject("btnSistemaComandi.Image")));
+            this.btnSistemaComandi.Image = ToolsExcel.Base.Properties.Resources.sisCom_icon;
             this.btnSistemaComandi.Label = "Sistema Comandi";
             this.btnSistemaComandi.Name = "btnSistemaComandi";
             this.btnSistemaComandi.ShowImage = true;
@@ -468,7 +476,7 @@
             // btnMostraErrorPane
             // 
             this.btnMostraErrorPane.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.btnMostraErrorPane.Image = ((System.Drawing.Image)(resources.GetObject("btnMostraErrorPane.Image")));
+            this.btnMostraErrorPane.Image = ToolsExcel.Base.Properties.Resources.errorpane_icon;
             this.btnMostraErrorPane.Label = "Mostra pannello";
             this.btnMostraErrorPane.Name = "btnMostraErrorPane";
             this.btnMostraErrorPane.ShowImage = true;
@@ -491,7 +499,7 @@
             this.cmbMSD.Label = "Mercato MSD";
             this.cmbMSD.Name = "cmbMSD";
             this.cmbMSD.ShowLabel = false;
-            this.cmbMSD.Text = null;
+            this.cmbMSD.Text = null;            
             // 
             // groupStagione
             // 

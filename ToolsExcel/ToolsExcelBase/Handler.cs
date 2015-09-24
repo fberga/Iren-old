@@ -25,7 +25,6 @@ namespace Iren.ToolsExcel.Base
         /// <param name="Target"></param>
         public static void SelectionClick(object Sh, Excel.Range Target)
         {
-            Workbook.ScreenUpdating = false;
             DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.Selection);
             Range rng = new Range(Target.Row, Target.Column);
             Selection sel;
@@ -35,16 +34,17 @@ namespace Iren.ToolsExcel.Base
                 Target.Worksheet.Unprotect(Simboli.pwd);
                 if (sel != null)
                 {
+                    Workbook.ScreenUpdating = false;
                     sel.ClearSelections(Target.Worksheet);
                     sel.Select(Target.Worksheet, rng.ToString());
 
                     //annoto modifiche e le salvo sul DB
                     Target.Worksheet.Range[sel.RifAddress].Value = val;
                     DataBase.SalvaModificheDB();
+                    Workbook.ScreenUpdating = true;
                 }
                 Target.Worksheet.Protect(Simboli.pwd);
             }
-            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Gestisce il caso in cui ci sia una selezione multipla che andrebbe a scrivere su righe nascoste: allerta l'utente e impedisce di procedere con la modifica.
@@ -69,7 +69,7 @@ namespace Iren.ToolsExcel.Base
                             break;
                         }
                     }
-                }    
+                }
             }
             else
             {

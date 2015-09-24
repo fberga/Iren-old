@@ -7,12 +7,25 @@ using System.Text;
 namespace Iren.ToolsExcel.UserConfig
 {
     public class UserConfigElement : ConfigurationElement
-    {        
+    {
+        public enum ElementType
+        {
+            path, pathNoCheck, to, subject, body, nameFormat
+        }
+
+
         [ConfigurationProperty("key", IsRequired = true, IsKey = true)]
         public string Key
         {
             get { return (string)base["key"]; }
             set { base["key"] = value; }
+        }
+
+        [ConfigurationProperty("type", IsRequired = true, IsKey = true)]
+        public ElementType Type
+        {
+            get { return (ElementType)Enum.Parse(typeof(ElementType), base["type"].ToString()); }
+            set { base["type"] = value; }
         }
 
         [ConfigurationProperty("desc", IsRequired = false, DefaultValue="")]
@@ -29,12 +42,12 @@ namespace Iren.ToolsExcel.UserConfig
             set { base["value"] = value; }
         }
 
-        [ConfigurationProperty("default", IsRequired = false, DefaultValue="")]
-        public string Default
-        {
-            get { return Environment.ExpandEnvironmentVariables((string)base["default"]); }
-            set { base["default"] = value; }
-        }
+        //[ConfigurationProperty("default", IsRequired = false, DefaultValue="")]
+        //public string Default
+        //{
+        //    get { return Environment.ExpandEnvironmentVariables((string)base["default"]); }
+        //    set { base["default"] = value; }
+        //}
 
         [ConfigurationProperty("emergenza", IsRequired = false, DefaultValue="")]
         public string Emergenza
@@ -51,18 +64,10 @@ namespace Iren.ToolsExcel.UserConfig
         }
 
         [ConfigurationProperty("visibile", IsRequired = false, DefaultValue="true")]
-        public string Visibile
+        public bool Visibile
         {
-            get { return (string)base["visibile"]; }
+            get { return (bool)base["visibile"]; }
             set { base["visibile"] = value; }
         }
-
-        [ConfigurationProperty("tocheckpath", IsRequired = false, DefaultValue = "true")]
-        public string ToCheckPath
-        {
-            get { return (string)base["tocheckpath"]; }
-            set { base["tocheckpath"] = value; }
-        }
-
     }
 }

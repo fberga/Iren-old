@@ -70,9 +70,9 @@ namespace Iren.ToolsExcel.Base
             }
 
             //preparo l'export
-            var path = Workbook.GetUsrConfigElement("emergenza");
+            var path = Workbook.GetUsrConfigElement("exportXML");
             //path della cartella di emergenza
-            string cartellaEmergenza = Esporta.PreparePath(path.Value);
+            string cartellaEmergenza = path.Value;
             string cartellaExport = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", ""));
             string fileName = Path.Combine(cartellaExport, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
 
