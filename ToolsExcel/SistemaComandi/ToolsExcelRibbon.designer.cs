@@ -232,12 +232,12 @@ namespace Iren.ToolsExcel
             this.btnCalendar.ScreenTip = "Apre il calendario per cambiare la data";
             this.btnCalendar.ShowImage = true;
 
-            EventInfo ei = btnCalendar.GetType().GetEvent("Click");
-            MethodInfo hi = GetType().GetMethod("btnCalendar_Click", BindingFlags.Instance | BindingFlags.NonPublic);
-            Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
-            ei.AddEventHandler(btnCalendar, d);
+            //EventInfo ei = btnCalendar.GetType().GetEvent("Click");
+            //MethodInfo hi = GetType().GetMethod("btnCalendar_Click", BindingFlags.Instance | BindingFlags.NonPublic);
+            //Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
+            //ei.AddEventHandler(btnCalendar, d);
 
-            //this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
+            this.btnCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalendar_Click);
             // 
             // groupModifica
             // 

@@ -63,9 +63,19 @@ namespace ConfiguratoreRibbon2.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap add_icon {
+        internal static System.Drawing.Bitmap addButton {
             get {
-                object obj = ResourceManager.GetObject("add_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("addButton", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap addGroup {
+            get {
+                object obj = ResourceManager.GetObject("addGroup", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -28,14 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConfiguratoreRibbon));
+            this.components = new System.ComponentModel.Container();
             this.toolStripTopMenu = new System.Windows.Forms.ToolStrip();
             this.AddGroup = new System.Windows.Forms.ToolStripButton();
             this.AddButton = new System.Windows.Forms.ToolStripButton();
             this.panelRibbonLayout = new System.Windows.Forms.Panel();
             this.panelFill = new System.Windows.Forms.Panel();
-            this.chooseImageDialog = new System.Windows.Forms.OpenFileDialog();
+            this.button1 = new System.Windows.Forms.Button();
+            this.imageListSmall = new System.Windows.Forms.ImageList(this.components);
+            this.imageListNormal = new System.Windows.Forms.ImageList(this.components);
             this.toolStripTopMenu.SuspendLayout();
+            this.panelFill.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripTopMenu
@@ -53,7 +56,7 @@
             // 
             // AddGroup
             // 
-            this.AddGroup.Image = global::ConfiguratoreRibbon2.Properties.Resources.add_icon;
+            this.AddGroup.Image = global::ConfiguratoreRibbon2.Properties.Resources.addGroup;
             this.AddGroup.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.AddGroup.Name = "AddGroup";
             this.AddGroup.Size = new System.Drawing.Size(51, 51);
@@ -63,7 +66,7 @@
             // 
             // AddButton
             // 
-            this.AddButton.Image = ((System.Drawing.Image)(resources.GetObject("AddButton.Image")));
+            this.AddButton.Image = global::ConfiguratoreRibbon2.Properties.Resources.addButton;
             this.AddButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.AddButton.Name = "AddButton";
             this.AddButton.Size = new System.Drawing.Size(40, 51);
@@ -85,6 +88,7 @@
             // 
             // panelFill
             // 
+            this.panelFill.Controls.Add(this.button1);
             this.panelFill.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelFill.Location = new System.Drawing.Point(0, 274);
             this.panelFill.Name = "panelFill";
@@ -92,10 +96,28 @@
             this.panelFill.TabIndex = 4;
             this.panelFill.Click += new System.EventHandler(this.ChangeFocus);
             // 
-            // chooseImageDialog
+            // button1
             // 
-            this.chooseImageDialog.FileName = "openFileDialog1";
-            this.chooseImageDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.BtnImageChosen);
+            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.button1.Location = new System.Drawing.Point(93, 101);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(174, 52);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "button1";
+            this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // imageListSmall
+            // 
+            this.imageListSmall.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
+            this.imageListSmall.ImageSize = new System.Drawing.Size(16, 16);
+            this.imageListSmall.TransparentColor = System.Drawing.Color.Transparent;
+            // 
+            // imageListNormal
+            // 
+            this.imageListNormal.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
+            this.imageListNormal.ImageSize = new System.Drawing.Size(32, 32);
+            this.imageListNormal.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // ConfiguratoreRibbon
             // 
@@ -111,6 +133,7 @@
             this.Text = "Form1";
             this.toolStripTopMenu.ResumeLayout(false);
             this.toolStripTopMenu.PerformLayout();
+            this.panelFill.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -123,7 +146,9 @@
         private System.Windows.Forms.ToolStripButton AddGroup;
         private System.Windows.Forms.Panel panelFill;
         private System.Windows.Forms.ToolStripButton AddButton;
-        private System.Windows.Forms.OpenFileDialog chooseImageDialog;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ImageList imageListSmall;
+        private System.Windows.Forms.ImageList imageListNormal;
     }
 }
 
