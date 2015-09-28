@@ -34,11 +34,9 @@
             this.AddButton = new System.Windows.Forms.ToolStripButton();
             this.panelRibbonLayout = new System.Windows.Forms.Panel();
             this.panelFill = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
             this.imageListSmall = new System.Windows.Forms.ImageList(this.components);
             this.imageListNormal = new System.Windows.Forms.ImageList(this.components);
             this.toolStripTopMenu.SuspendLayout();
-            this.panelFill.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripTopMenu
@@ -84,28 +82,14 @@
             this.panelRibbonLayout.Padding = new System.Windows.Forms.Padding(4);
             this.panelRibbonLayout.Size = new System.Drawing.Size(1302, 220);
             this.panelRibbonLayout.TabIndex = 3;
-            this.panelRibbonLayout.Click += new System.EventHandler(this.ChangeFocus);
             // 
             // panelFill
             // 
-            this.panelFill.Controls.Add(this.button1);
             this.panelFill.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelFill.Location = new System.Drawing.Point(0, 274);
             this.panelFill.Name = "panelFill";
             this.panelFill.Size = new System.Drawing.Size(1302, 263);
             this.panelFill.TabIndex = 4;
-            this.panelFill.Click += new System.EventHandler(this.ChangeFocus);
-            // 
-            // button1
-            // 
-            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.button1.Location = new System.Drawing.Point(93, 101);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(174, 52);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.button1.UseVisualStyleBackColor = true;
             // 
             // imageListSmall
             // 
@@ -133,7 +117,6 @@
             this.Text = "Form1";
             this.toolStripTopMenu.ResumeLayout(false);
             this.toolStripTopMenu.PerformLayout();
-            this.panelFill.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -146,7 +129,6 @@
         private System.Windows.Forms.ToolStripButton AddGroup;
         private System.Windows.Forms.Panel panelFill;
         private System.Windows.Forms.ToolStripButton AddButton;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ImageList imageListSmall;
         private System.Windows.Forms.ImageList imageListNormal;
     }
