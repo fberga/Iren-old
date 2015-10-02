@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ConfiguratoreRibbon2
+namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     public partial class SelettoreImmagini : Form
     {

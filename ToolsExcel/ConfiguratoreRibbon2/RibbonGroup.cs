@@ -5,16 +5,16 @@ using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace ConfiguratoreRibbon2
+namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    class GroupPanel : SelectablePanel
+    class RibbonGroup : SelectablePanel
     {
         const string NEW_GROUP_PREFIX = "New Group";
 
         TextBox _label = new TextBox();
         public string Label { get { return _label.Text; } set { _label.Text = value; } }
 
-        public GroupPanel() 
+        public RibbonGroup() 
             : base()
         {
             Dock = DockStyle.Left;
@@ -44,7 +44,7 @@ namespace ConfiguratoreRibbon2
             }
         }
 
-        public GroupPanel(Control ribbon)
+        public RibbonGroup(Control ribbon)
             : this()
         {
             BackColor = ControlPaint.LightLight(ribbon.BackColor);
@@ -64,11 +64,6 @@ namespace ConfiguratoreRibbon2
             base.OnPaint(pe);
             var rc = this.ClientRectangle;
             ControlPaint.DrawBorder3D(pe.Graphics, rc, Border3DStyle.Etched, Border3DSide.Right);
-        }
-
-        protected override void OnClick(EventArgs e)
-        {
-            base.OnClick(e);
         }
 
         protected override void OnDoubleClick(EventArgs e)

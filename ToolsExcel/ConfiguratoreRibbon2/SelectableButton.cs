@@ -7,9 +7,9 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    class SelectablePanel : Panel
+    public class SelectableButton : Button
     {
-        public SelectablePanel()
+        public SelectableButton()
         {
             this.SetStyle(ControlStyles.Selectable, true);
             this.TabStop = true;
@@ -17,7 +17,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         protected override void OnMouseDown(MouseEventArgs e)
         {
             this.Focus();
-            this.Invalidate();
             base.OnMouseDown(e);
         }
         protected override void OnEnter(EventArgs e)

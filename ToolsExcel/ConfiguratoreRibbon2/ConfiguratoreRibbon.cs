@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace ConfiguratoreRibbon2
+namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     public partial class ConfiguratoreRibbon : Form
     {
@@ -35,18 +35,18 @@ namespace ConfiguratoreRibbon2
 
         }
 
-        private IEnumerable<Control> GetAll(Control control, Type type)
-        {
-            var controls = control.Controls.Cast<Control>();
+        //private IEnumerable<Control> GetAll(Control control, Type type)
+        //{
+        //    var controls = control.Controls.Cast<Control>();
 
-            return controls.SelectMany(ctrl => GetAll(ctrl, type))
-                                      .Concat(controls)
-                                      .Where(c => c.GetType() == type);
-        }
+        //    return controls.SelectMany(ctrl => GetAll(ctrl, type))
+        //                              .Concat(controls)
+        //                              .Where(c => c.GetType() == type);
+        //}
 
         private int FindLastOfItsKind(string prefix, Type type)
         {
-            var progs = GetAll(panelRibbonLayout, type)
+            var progs = Utility.GetAll(panelRibbonLayout, type)
                 .Where(c => c.Name.StartsWith(prefix))
                 .Select(c => 
                     {
@@ -62,31 +62,12 @@ namespace ConfiguratoreRibbon2
             return 0;
         }
 
-        private void ReturnPressed(object sender, KeyEventArgs e)
-        {
-            TextBox txt = sender as TextBox;
-            if (e.KeyCode == Keys.Return || e.KeyCode == Keys.Tab)
-            {
-                e.SuppressKeyPress = true;
-                txt.ReadOnly = true;
-                txt.Parent.Focus();
-            }
-        }
-
-        private void EnterEditMode(object sender, EventArgs e)
-        {
-            TextBox txt = sender as TextBox;
-            txt.ReadOnly = false;
-            txt.SelectAll();
-        }
-
         private void AggiungiGruppo_Click(object sender, EventArgs e)
         {
-            GroupPanel newGroup = new GroupPanel(panelRibbonLayout);
+            RibbonGroup newGroup = new RibbonGroup(panelRibbonLayout);
             panelRibbonLayout.Controls.Add(newGroup);
             newGroup.BringToFront();
             newGroup.Select();
-            //_selectedGroup = newGroup;
         }
 
         private Panel GetAnchestorGroup(Control ctrl)
@@ -105,7 +86,7 @@ namespace ConfiguratoreRibbon2
 
         private void AggiungiTasto_Click(object sender, EventArgs e)
         {
-            if(ActiveControl.GetType() != typeof(GroupPanel)) 
+            if(ActiveControl.GetType() != typeof(RibbonGroup)) 
             {
                 MessageBox.Show("Nessun gruppo selezionato...", "ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -113,7 +94,7 @@ namespace ConfiguratoreRibbon2
 
             ControlContainer container = new ControlContainer();
             container.Size = new Size(50, ActiveControl.Height - 30);
-            RibbonButton newBtn = new RibbonButton(imageListNormal, imageListSmall);
+            RibbonButton newBtn = new RibbonButton(panelRibbonLayout, imageListNormal, imageListSmall);
 
             var left =
                 (from p in ActiveControl.Controls.OfType<ControlContainer>()
@@ -121,14 +102,98 @@ namespace ConfiguratoreRibbon2
 
             container.Left = left == 0 ? ActiveControl.Padding.Left : left;
             container.Top = ActiveControl.Padding.Top;
-
-            container.Controls.Add(newBtn);
+            if (newBtn.ImageKey != "")
+            {
+                ActiveControl.Controls.Add(container);
+                container.Controls.Add(newBtn);
+                newBtn.Top = container.Padding.Top;
+                newBtn.Left = container.Padding.Left;
+            }
         }
 
         private void UpdateParentGroupDimension(object sender, EventArgs e)
         {
             Control ctrl = sender as Control;
             Utility.UpdateGroupDimension(ctrl.Parent);
+        }
+
+        private void ctrlDownButton_Click(object sender, EventArgs e)
+        {
+            if (ActiveControl.GetType() == typeof(RibbonButton))
+            {
+                RibbonButton btn = ActiveControl as RibbonButton;
+
+                if (btn.Slot== 1)
+                {
+                    var nextBtn = Utility.GetAll(btn.Parent)
+                        .Where(c => btn.Bottom == c.Top).FirstOrDefault();
+
+                    if (nextBtn != null)
+                    {
+                        nextBtn.Top = btn.Top;
+                        btn.Top = nextBtn.Bottom;
+                    }
+                }
+            }
+        }
+
+        private void ctrlUpButton_Click(object sender, EventArgs e)
+        {
+            if (ActiveControl.GetType() == typeof(RibbonButton))
+            {
+                RibbonButton btn = ActiveControl as RibbonButton;
+
+                if (btn.Slot == 1)
+                {
+                    var nextBtn = Utility.GetAll(btn.Parent)
+                        .Where(c => btn.Top == c.Bottom).FirstOrDefault();
+
+                    if (nextBtn != null)
+                    {
+                        btn.Top = nextBtn.Top;
+                        nextBtn.Top = btn.Bottom;
+                    }
+                }
+            }
+        }
+
+        private void ctrlLeftButton_Click(object sender, EventArgs e)
+        {
+            //if(ActiveControl != null) 
+            //{
+            //    if(ActiveControl.Parent.GetType() == typeof(ControlContainer))
+            //    {
+            //        ControlContainer actual = ActiveControl.Parent as ControlContainer;
+            //        var next =
+            //            Utility.GetAll(panelRibbonLayout, typeof(ControlContainer))
+            //            .Cast<ControlContainer>()
+            //            .Where(c => c.Right == actual.Left && c.FreeSlot > )
+            //    }
+            //}
+        }
+
+        private void AddDropDown_Click(object sender, EventArgs e)
+        {
+            if (ActiveControl.GetType() != typeof(RibbonGroup))
+            {
+                MessageBox.Show("Nessun gruppo selezionato...", "ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            ControlContainer container = new ControlContainer();
+            container.Size = new Size(50, ActiveControl.Height - 30);
+            RibbonDropDown newDrpDwn = new RibbonDropDown(panelRibbonLayout);
+
+            var left =
+                (from p in ActiveControl.Controls.OfType<ControlContainer>()
+                 select p.Right).DefaultIfEmpty().Max();
+
+            container.Left = left == 0 ? ActiveControl.Padding.Left : left;
+            container.Top = ActiveControl.Padding.Top;
+            ActiveControl.Controls.Add(container);
+            container.Controls.Add(newDrpDwn);
+            newDrpDwn.Top = container.Padding.Top;
+            newDrpDwn.Left = container.Padding.Left;
         }
     }
 }

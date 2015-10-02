@@ -1,4 +1,4 @@
-﻿namespace ConfiguratoreRibbon2
+﻿namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     partial class SelettoreImmagini
     {

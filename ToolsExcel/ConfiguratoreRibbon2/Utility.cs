@@ -6,28 +6,23 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace ConfiguratoreRibbon2
+namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     class Utility
-    {
-        //public const string DESC_FIELD_NAME = "Description";
-        //public const string SCREEN_TIP_FIELD_NAME = "ScreenTip";
-        //public const string TOGGLE_BUTTON_FIELD_NAME = "ToggleButton";
-        //public const string DIMENSION_FIELD_NAME = "Dimension";
-
-        public static IEnumerable<Control> GetAll(Control control, Type type)
+    {       
+        public static IEnumerable<Control> GetAll(Control control, Type type = null)
         {
             var controls = control.Controls.Cast<Control>();
 
             return controls.SelectMany(ctrl => GetAll(ctrl, type))
                                       .Concat(controls)
-                                      .Where(c => c.GetType() == type);
+                                      .Where(c => type == null || c.GetType() == type || c.GetType().GetInterfaces().Contains(type));
         }
 
         public static int FindLastOfItsKind(Control ctrl, string prefix, Type type)
         {
             var progs = GetAll(ctrl, type)
-                .Where(c => c.Name.StartsWith(prefix))
+                .Where(c => c.Name.StartsWith(PrepareLabelForControlName(prefix)))
                 .Select(c =>
                 {
                     string num = Regex.Match(c.Name, @"\d+").Value;
@@ -94,7 +89,8 @@ namespace ConfiguratoreRibbon2
         {
             var txtWidth =
                 (from txt in parent.Controls.OfType<TextBox>()
-                 select (int)(Utility.MeasureTextSize(txt).Width + 20)).FirstOrDefault();
+                 select txt.GetPreferredSize(txt.Size)).FirstOrDefault();
+                 //select (int)(Utility.MeasureTextSize(txt).Width + 20)).FirstOrDefault();
 
             var totWidth =
                 (from p in parent.Controls.OfType<ControlContainer>()
@@ -106,8 +102,14 @@ namespace ConfiguratoreRibbon2
                 containers[i].Left = containers[i - 1].Right;
 
 
-            parent.Width = Math.Max(txtWidth, totWidth);
+            parent.Width = Math.Max(txtWidth.Width, totWidth);
             parent.Invalidate();
         }
+
+        public static string PrepareLabelForControlName(string label)
+        {
+            return label.Replace(" ", "");
+        }
+
     }
 }

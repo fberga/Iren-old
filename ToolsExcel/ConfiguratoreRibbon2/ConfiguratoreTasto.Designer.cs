@@ -1,4 +1,4 @@
-﻿namespace ConfiguratoreRibbon2
+﻿namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     partial class ConfiguratoreTasto
     {
@@ -106,6 +106,7 @@
             this.radioDimLarge.TabStop = true;
             this.radioDimLarge.Text = "Grande";
             this.radioDimLarge.UseVisualStyleBackColor = true;
+            this.radioDimLarge.Click += new System.EventHandler(this.radioDimLarge_Click);
             // 
             // radioDimSmall
             // 

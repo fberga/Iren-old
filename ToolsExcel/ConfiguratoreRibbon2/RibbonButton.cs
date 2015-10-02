@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ConfiguratoreRibbon2
+namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    public class RibbonButton : Button
+    public class RibbonButton : SelectableButton, INotifyPropertyChanged, IRibbonComponent
     {
         const string NEW_BUTTON_PREFIX = "New Button";
 
         private Size largeBtnMinSize = new Size(50, 100);
         private Size smallBtnMaxSize = new Size(250, 33);
 
-        private ImageList imageListNormal = new ImageList();
-        private ImageList imageListSmall = new ImageList();
+        private ImageList _imageListNormal = new ImageList();
+        private ImageList _imageListSmall = new ImageList();
 
+        private Rectangle _selectionRect = new Rectangle(new Point(0, 0), new Size(0, 0));
+
+        private Point _startPt = new Point(int.MaxValue, int.MaxValue);
+
+        public int Slot { get { return Dimensione == 1 ? 3 : 1; } }
         public int Dimensione { get; set; }
         public string Descrizione { get; set; }
         public string ScreenTip { get; set; }
@@ -24,36 +31,37 @@ namespace ConfiguratoreRibbon2
         public string Label { get { return Text; } set { Text = value; } }
         public string Nome { get { return Name; } set { Name = value; } }
 
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public RibbonButton(ImageList normal, ImageList small)
         {
+            _imageListNormal = normal;
+            _imageListSmall = small;
+
             SetUpLargeButton();
             Dimensione = 1;
 
-            using (SelettoreImmagini chooseImageDialog = new SelettoreImmagini(imageListNormal))
+            using (SelettoreImmagini chooseImageDialog = new SelettoreImmagini(_imageListNormal))
             {
                 if (chooseImageDialog.ShowDialog() == DialogResult.OK)
-                {
                     ImageKey = chooseImageDialog.FileName;
-                    SetLargeButtonDimension();
-                }
             }
-
-            imageListNormal = normal;
-            imageListSmall = small;
         }
         public RibbonButton(Control ribbon, ImageList normal, ImageList small)
             : this(normal, small)
         {
-            int prog = Utility.FindLastOfItsKind(ribbon, NEW_BUTTON_PREFIX, typeof(Button)) + 1;
+            int prog = Utility.FindLastOfItsKind(ribbon, NEW_BUTTON_PREFIX, typeof(RibbonButton)) + 1;
             Name = NEW_BUTTON_PREFIX.Replace(" ","") + prog;
             Text = NEW_BUTTON_PREFIX + " " + prog;
+            this.Font = ribbon.Font;
+            
+            SetLargeButtonDimension();
         }
 
 
         public void SetUpLargeButton()
         {
-            ImageList = imageListNormal;
+            ImageList = _imageListNormal;
             MaximumSize = new Size(int.MaxValue, int.MaxValue);
             MinimumSize = largeBtnMinSize;
             ImageAlign = ContentAlignment.TopCenter;
@@ -64,7 +72,7 @@ namespace ConfiguratoreRibbon2
         }
         public void SetUpSmallButton()
         {
-            ImageList = imageListSmall;
+            ImageList = _imageListSmall;
             MinimumSize = new Size(0, 0);
             MaximumSize = smallBtnMaxSize;
             ImageAlign = ContentAlignment.MiddleLeft;
@@ -85,11 +93,30 @@ namespace ConfiguratoreRibbon2
             Width = Math.Min((int)(Utility.MeasureTextSize(this).Width + 30), 250);
         }
 
-        protected override void OnClick(EventArgs e)
+        protected override void OnSizeChanged(EventArgs e)
         {
-            base.OnClick(e);
+            if (Parent != null)
+            {
+                ControlContainer parent = Parent as ControlContainer;
+                parent.SetContainerWidth();
+            }
+            base.OnSizeChanged(e);
+        }
 
-            using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this, imageListNormal))
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
+        protected override void OnDoubleClick(EventArgs e)
+        {
+            int dim = Dimensione;
+
+            using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this, _imageListNormal))
             {
                 cfg.ShowDialog();
 
@@ -103,28 +130,59 @@ namespace ConfiguratoreRibbon2
                     SetUpSmallButton();
                     SetSmallButtonDimension();
                 }
+
+                if (dim != Dimensione)
+                {
+                    OnPropertyChanged("Dimensione");
+                }
             }
+
+            base.OnDoubleClick(e);
         }
-
-        protected override void OnSizeChanged(EventArgs e)
+        protected override void OnMouseDown(MouseEventArgs mevent)
         {
-            base.OnSizeChanged(e);
+            _startPt = mevent.Location;
+            if (mevent.Clicks == 2)
+                OnDoubleClick(mevent);
 
-            if (Parent != null)
+            //base.OnMouseMove(mevent);
+        }
+        protected override void OnMouseMove(MouseEventArgs mevent)
+        {
+            if (mevent.Button == System.Windows.Forms.MouseButtons.Left && Math.Pow(mevent.Location.X - _startPt.X, 2) + Math.Pow(mevent.Location.Y - _startPt.Y, 2) > Math.Pow(SystemInformation.DragSize.Height, 2))
             {
-                Control parent = Parent;
-                var maxBtnWidth =
-                    (from btn in parent.Controls.OfType<Button>()
-                     select btn.Width).DefaultIfEmpty().Max();
-                var maxCmbWidth =
-                    (from cmb in parent.Controls.OfType<ComboBox>()
-                     select cmb.Width).DefaultIfEmpty().Max();
-                var maxLabelWidth =
-                    (from lbl in parent.Controls.OfType<Label>()
-                     select (int)Utility.MeasureTextSize(lbl).Width).DefaultIfEmpty().Max();
+                //rettangolo di spostamento
+                //ControlPaint.DrawReversibleFrame(_selectionRect, this.BackColor, FrameStyle.Thick);
+                //Point centerPoint = PointToScreen(new Point(mevent.X - DisplayRectangle.Width / 2, mevent.Y - DisplayRectangle.Height / 2));
+                //_selectionRect = new Rectangle(centerPoint, this.DisplayRectangle.Size);
+                //ControlPaint.DrawReversibleFrame(_selectionRect, this.BackColor, FrameStyle.Thick);
 
-                parent.Width = Enumerable.Max(new int[] { maxBtnWidth, maxCmbWidth, maxLabelWidth });
+
+                DoDragDrop(this, DragDropEffects.Move);
             }
+
+            //base.OnMouseMove(mevent);
+        }
+        protected override void OnMouseUp(MouseEventArgs mevent)
+        {
+            //if (mevent.Button == System.Windows.Forms.MouseButtons.Left)
+            //{
+            //    //ControlPaint.DrawReversibleFrame(_selectionRect, this.BackColor, FrameStyle.Thick);
+            //    //_selectionRect = new Rectangle(new Point(0, 0), new Size(0, 0));
+            //    OnClick(mevent);
+            //}
+
+            //base.OnMouseUp(mevent);
+        }
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            base.OnMouseEnter(e);
+            BackColor = Color.FromKnownColor(KnownColor.ControlDark);
+        }
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            base.OnMouseLeave(e);
+            BackColor = Color.FromKnownColor(KnownColor.Control);
         }
     }
 }
