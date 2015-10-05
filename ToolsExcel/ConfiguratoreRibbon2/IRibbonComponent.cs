@@ -11,6 +11,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         string Descrizione { get; set; }
         string ScreenTip { get; set; }
         string Label { get; set; }
-        string Nome { get; set; }
+        //string Nome { get; set; }
     }
 }

@@ -29,7 +29,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public string ScreenTip { get; set; }
         public bool ToggleButton { get; set; }
         public string Label { get { return Text; } set { Text = value; } }
-        public string Nome { get { return Name; } set { Name = value; } }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

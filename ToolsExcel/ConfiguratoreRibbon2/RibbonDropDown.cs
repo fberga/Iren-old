@@ -13,12 +13,13 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         private TextBox _label = new TextBox();
         private ComboBox _cmb = new ComboBox();
+        private Point _startPt = new Point(int.MaxValue, int.MaxValue);
 
 
 
         public string Descrizione { get; set; }
         public string ScreenTip { get; set; }
-        public string Nome { get; set; }
+        //public string Nome { get; set; }
         public string Label { get { return _label.Text; } set { } }
         public int Slot { get { return 2; } }
 
@@ -100,17 +101,27 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             BackColor = Color.FromKnownColor(KnownColor.ControlDark);
             _label.BackColor = BackColor;
         }
-        protected override void OnMouseMove(MouseEventArgs e)
+        protected override void OnMouseMove(MouseEventArgs mevent)
         {
- 	        base.OnMouseMove(e);
-            ControlMouseMove(this, e);
+            if (mevent.Button == System.Windows.Forms.MouseButtons.Left && Math.Pow(mevent.Location.X - _startPt.X, 2) + Math.Pow(mevent.Location.Y - _startPt.Y, 2) > Math.Pow(SystemInformation.DragSize.Height, 2))
+                DoDragDrop(this, DragDropEffects.Move);
+
+            ControlMouseMove(this, mevent);
         }
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
             ControlMouseLeave(this, e);
         }
+        protected override void OnMouseDown(MouseEventArgs mevent)
+        {
+            _startPt = mevent.Location;
+            Select();
+            if (mevent.Clicks == 2)
+                OnDoubleClick(mevent);
 
+            //base.OnMouseMove(mevent);
+        }
         private void ControlMouseLeave(object sender, EventArgs e)
         {
             BackColor = Color.FromKnownColor(KnownColor.Control);

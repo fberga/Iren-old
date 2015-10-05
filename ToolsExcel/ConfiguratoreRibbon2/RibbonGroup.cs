@@ -17,7 +17,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public RibbonGroup() 
             : base()
         {
-            Dock = DockStyle.Left;
+            //Dock = DockStyle.Left;
             Padding = new Padding(4, 4, 4, 4);
 
             Controls.Add(_label);
@@ -54,8 +54,9 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             _label.Name = NEW_GROUP_PREFIX.Replace(" ", "") + prog;
             _label.Text = NEW_GROUP_PREFIX + " " + prog;
 
+            Top = ribbon.Padding.Top;
             Width = (int)(Utility.MeasureTextSize(_label).Width + 20);
-
+            Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom;
             _label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
         }
 
@@ -78,6 +79,36 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             base.OnControlAdded(e);
             Utility.UpdateGroupDimension(this);
+        }
+
+        private void CompactCtrls()
+        {
+            var ctrls = Controls
+                .OfType<ControlContainer>()
+                .OrderBy(c => c.Left)
+                .ToList();
+           
+           if (ctrls.Count > 0)
+            {
+                ctrls[0].Left = Padding.Left;
+                for (int i = 1; i < ctrls.Count; i++)
+                    ctrls[i].Left = ctrls[i - 1].Right;
+            }
+        }
+
+        protected override void OnControlRemoved(ControlEventArgs e)
+        {
+            base.OnControlRemoved(e);
+            CompactCtrls();
+            Utility.UpdateGroupDimension(this);
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            if(Parent != null)
+                Utility.GroupsDisplacement(Parent);
         }
     }
 }

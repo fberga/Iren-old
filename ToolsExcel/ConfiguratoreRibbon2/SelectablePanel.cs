@@ -46,5 +46,19 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             Invalidate();
             base.OnLostFocus(e);
         }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.KeyValue == 46)
+                if (Controls.Count > 0)
+                {
+                    if (MessageBox.Show("Cancellare?", "ATTENZIONE!!!", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        Dispose();
+                }
+                else
+                    Dispose();
+        }
     }
 }

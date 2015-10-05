@@ -29,13 +29,11 @@
         private void InitializeComponent()
         {
             this.chkToggleButton = new System.Windows.Forms.CheckBox();
-            this.txtName = new System.Windows.Forms.TextBox();
             this.txtDesc = new System.Windows.Forms.TextBox();
             this.txtLabel = new System.Windows.Forms.TextBox();
             this.txtScreenTip = new System.Windows.Forms.TextBox();
             this.radioDimLarge = new System.Windows.Forms.RadioButton();
             this.radioDimSmall = new System.Windows.Forms.RadioButton();
-            this.lbName = new System.Windows.Forms.Label();
             this.lbDesc = new System.Windows.Forms.Label();
             this.lbLabel = new System.Windows.Forms.Label();
             this.lbScreenTip = new System.Windows.Forms.Label();
@@ -53,7 +51,7 @@
             // chkToggleButton
             // 
             this.chkToggleButton.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.chkToggleButton.Location = new System.Drawing.Point(74, 239);
+            this.chkToggleButton.Location = new System.Drawing.Point(74, 206);
             this.chkToggleButton.Margin = new System.Windows.Forms.Padding(0);
             this.chkToggleButton.Name = "chkToggleButton";
             this.chkToggleButton.Size = new System.Drawing.Size(128, 24);
@@ -61,18 +59,10 @@
             this.chkToggleButton.Text = "Toggle Button";
             this.chkToggleButton.UseVisualStyleBackColor = true;
             // 
-            // txtName
-            // 
-            this.txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtName.Location = new System.Drawing.Point(188, 8);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(251, 26);
-            this.txtName.TabIndex = 2;
-            // 
             // txtDesc
             // 
             this.txtDesc.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtDesc.Location = new System.Drawing.Point(188, 40);
+            this.txtDesc.Location = new System.Drawing.Point(188, 7);
             this.txtDesc.Multiline = true;
             this.txtDesc.Name = "txtDesc";
             this.txtDesc.Size = new System.Drawing.Size(251, 76);
@@ -81,7 +71,7 @@
             // txtLabel
             // 
             this.txtLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtLabel.Location = new System.Drawing.Point(188, 122);
+            this.txtLabel.Location = new System.Drawing.Point(188, 89);
             this.txtLabel.Name = "txtLabel";
             this.txtLabel.Size = new System.Drawing.Size(251, 26);
             this.txtLabel.TabIndex = 4;
@@ -89,7 +79,7 @@
             // txtScreenTip
             // 
             this.txtScreenTip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtScreenTip.Location = new System.Drawing.Point(188, 154);
+            this.txtScreenTip.Location = new System.Drawing.Point(188, 121);
             this.txtScreenTip.Multiline = true;
             this.txtScreenTip.Name = "txtScreenTip";
             this.txtScreenTip.Size = new System.Drawing.Size(251, 76);
@@ -106,7 +96,6 @@
             this.radioDimLarge.TabStop = true;
             this.radioDimLarge.Text = "Grande";
             this.radioDimLarge.UseVisualStyleBackColor = true;
-            this.radioDimLarge.Click += new System.EventHandler(this.radioDimLarge_Click);
             // 
             // radioDimSmall
             // 
@@ -118,19 +107,10 @@
             this.radioDimSmall.Text = "Piccolo";
             this.radioDimSmall.UseVisualStyleBackColor = true;
             // 
-            // lbName
-            // 
-            this.lbName.AutoSize = true;
-            this.lbName.Location = new System.Drawing.Point(75, 10);
-            this.lbName.Name = "lbName";
-            this.lbName.Size = new System.Drawing.Size(51, 20);
-            this.lbName.TabIndex = 7;
-            this.lbName.Text = "Nome";
-            // 
             // lbDesc
             // 
             this.lbDesc.AutoSize = true;
-            this.lbDesc.Location = new System.Drawing.Point(75, 42);
+            this.lbDesc.Location = new System.Drawing.Point(75, 9);
             this.lbDesc.Name = "lbDesc";
             this.lbDesc.Size = new System.Drawing.Size(92, 20);
             this.lbDesc.TabIndex = 8;
@@ -139,7 +119,7 @@
             // lbLabel
             // 
             this.lbLabel.AutoSize = true;
-            this.lbLabel.Location = new System.Drawing.Point(75, 124);
+            this.lbLabel.Location = new System.Drawing.Point(75, 91);
             this.lbLabel.Name = "lbLabel";
             this.lbLabel.Size = new System.Drawing.Size(48, 20);
             this.lbLabel.TabIndex = 9;
@@ -148,7 +128,7 @@
             // lbScreenTip
             // 
             this.lbScreenTip.AutoSize = true;
-            this.lbScreenTip.Location = new System.Drawing.Point(75, 156);
+            this.lbScreenTip.Location = new System.Drawing.Point(75, 123);
             this.lbScreenTip.Name = "lbScreenTip";
             this.lbScreenTip.Size = new System.Drawing.Size(85, 20);
             this.lbScreenTip.TabIndex = 10;
@@ -157,7 +137,7 @@
             // lbDimension
             // 
             this.lbDimension.AutoSize = true;
-            this.lbDimension.Location = new System.Drawing.Point(75, 280);
+            this.lbDimension.Location = new System.Drawing.Point(75, 247);
             this.lbDimension.Name = "lbDimension";
             this.lbDimension.Size = new System.Drawing.Size(93, 20);
             this.lbDimension.TabIndex = 11;
@@ -169,7 +149,7 @@
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.radioDimLarge);
             this.panel1.Controls.Add(this.radioDimSmall);
-            this.panel1.Location = new System.Drawing.Point(188, 272);
+            this.panel1.Location = new System.Drawing.Point(188, 239);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(251, 68);
             this.panel1.TabIndex = 12;
@@ -179,7 +159,7 @@
             this.panelBottom.Controls.Add(this.btnApplica);
             this.panelBottom.Controls.Add(this.btnAnnulla);
             this.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelBottom.Location = new System.Drawing.Point(5, 350);
+            this.panelBottom.Location = new System.Drawing.Point(5, 319);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(437, 48);
             this.panelBottom.TabIndex = 13;
@@ -214,7 +194,7 @@
             // imgButton
             // 
             this.imgButton.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.imgButton.Location = new System.Drawing.Point(8, 8);
+            this.imgButton.Location = new System.Drawing.Point(5, 7);
             this.imgButton.Name = "imgButton";
             this.imgButton.Size = new System.Drawing.Size(50, 50);
             this.imgButton.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
@@ -228,18 +208,16 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnAnnulla;
-            this.ClientSize = new System.Drawing.Size(447, 403);
+            this.ClientSize = new System.Drawing.Size(447, 372);
             this.Controls.Add(this.panelBottom);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.lbDimension);
             this.Controls.Add(this.lbScreenTip);
             this.Controls.Add(this.lbLabel);
             this.Controls.Add(this.lbDesc);
-            this.Controls.Add(this.lbName);
             this.Controls.Add(this.txtScreenTip);
             this.Controls.Add(this.txtLabel);
             this.Controls.Add(this.txtDesc);
-            this.Controls.Add(this.txtName);
             this.Controls.Add(this.imgButton);
             this.Controls.Add(this.chkToggleButton);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -260,13 +238,11 @@
 
         private System.Windows.Forms.CheckBox chkToggleButton;
         private System.Windows.Forms.PictureBox imgButton;
-        private System.Windows.Forms.TextBox txtName;
         private System.Windows.Forms.TextBox txtDesc;
         private System.Windows.Forms.TextBox txtLabel;
         private System.Windows.Forms.TextBox txtScreenTip;
         private System.Windows.Forms.RadioButton radioDimSmall;
         private System.Windows.Forms.RadioButton radioDimLarge;
-        private System.Windows.Forms.Label lbName;
         private System.Windows.Forms.Label lbDesc;
         private System.Windows.Forms.Label lbLabel;
         private System.Windows.Forms.Label lbScreenTip;

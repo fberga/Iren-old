@@ -24,7 +24,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             _imgList = imgList;
 
             imgButton.ImageLocation = _btn.ImageKey;
-            txtName.Text = _btn.Nome;
+            //txtName.Text = _btn.Nome;
             txtLabel.Text = _btn.Label;
 
             txtDesc.Text = _btn.Descrizione;
@@ -53,7 +53,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private void Applica_Click(object sender, EventArgs e)
         {
             _btn.ImageKey = imgButton.ImageLocation;
-            _btn.Nome = txtName.Text;
+            //_btn.Nome = txtName.Text;
             _btn.Label = txtLabel.Text;
 
             _btn.Descrizione = txtDesc.Text;
@@ -68,11 +68,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
             Close();
-        }
-
-        private void radioDimLarge_Click(object sender, EventArgs e)
-        {
-            
         }
 
         public new DialogResult ShowDialog()

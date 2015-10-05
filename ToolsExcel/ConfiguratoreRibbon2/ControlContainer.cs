@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    class ControlContainer : Panel
+    class ControlContainer : SelectablePanel
     {
         public int FreeSlot { get; private set; }
         public int CtrlCount { get; private set; }
@@ -16,10 +16,22 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         public ControlContainer()
         {
-            BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            //BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             FreeSlot = 3;
             CtrlCount = 0;
             AllowDrop = true;
+            Padding = new Padding(1, 1, 0, 0);
+        }
+
+        protected override void OnPaint(PaintEventArgs pe)
+        {
+            //base.OnPaint(pe);
+            if (this.Focused)
+            {
+                var rc = this.ClientRectangle;
+                //rc.Inflate(1, 1);
+                ControlPaint.DrawFocusRectangle(pe.Graphics, rc);
+            }
         }
 
         public void SetContainerWidth()
@@ -36,6 +48,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         protected override void OnControlAdded(ControlEventArgs e)
         {
             SetContainerWidth();
+
+            if (CtrlCount == 0 && Parent != null)
+                BorderStyle = System.Windows.Forms.BorderStyle.None;
+
             CtrlCount += 1;
 
             FreeSlot -= ((IRibbonComponent)e.Control).Slot;
@@ -53,6 +69,9 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             SetContainerWidth();
             CtrlCount -= 1;
 
+            if (CtrlCount == 0)
+                BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+
             FreeSlot += ((IRibbonComponent)e.Control).Slot;
 
             if (e.Control.GetType() == typeof(RibbonButton))
@@ -68,10 +87,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         private void CompactCtrls()
         {
-            var ctrls = Controls;//Utility.GetAll(this).OrderBy(c => c.Top).ToList();
+            var ctrls = Controls;
             if (ctrls.Count > 0)
             {
-                ctrls[0].Top = 0;
+                ctrls[0].Top = Padding.Top;
                 for (int i = 1; i < ctrls.Count; i++)
                     ctrls[i].Top = ctrls[i - 1].Bottom;
             }
@@ -94,13 +113,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             if (ctrl.Parent != this)
             {
                 int slot = ((IRibbonComponent)ctrl).Slot;
-
-                if (slot == 3 && FreeSlot < 3)
-                    drgevent.Effect = DragDropEffects.None;
-                else if (slot == 1 && FreeSlot == 0)
-                    drgevent.Effect = DragDropEffects.None;
-                else
+                if(slot <= FreeSlot)
                     drgevent.Effect = DragDropEffects.Move;
+                else
+                    drgevent.Effect = DragDropEffects.None;
             }
 
             base.OnDragEnter(drgevent);
@@ -113,52 +129,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             base.OnDragOver(drgevent);
         }
-
-        //private void DisplaceObjects(DragEventArgs drgevent, int height)
-        //{
-        //    //trova a quale oggetto si sovrappone e sposta lui e tutti quelli sotto
-        //    Point ptOver = PointToClient(new Point(drgevent.X, drgevent.Y));
-        //    Control overlap = GetChildAtPoint(ptOver);
-        //    if (overlap != null && overlap != drgevent.Data.GetData(drgevent.Data.GetFormats()[0]) as Control)
-        //    {
-        //        //trovo a quale slot appartiene
-        //        var slot = _slots
-        //                    .Where(kv => kv.Value.Equals(overlap))
-        //                    .Select(kv => kv.Key).First();
-
-        //        //metto sopra
-        //        if (ptOver.Y - overlap.Top > overlap.Height / 2.0d)
-        //        {
-        //            for (int i = slot; i <= 3; i++)
-        //            {
-        //                if(_slots.ContainsKey(i))
-        //                    _slots[i].Top = (i) * _slots[i].Height;
-        //            }
-        //        }
-        //        //metto sotto
-        //        else
-        //        {
-        //            for (int i = slot; i <= 3; i++)
-        //            {
-        //                if (_slots.ContainsKey(i))
-        //                    _slots[i].Top = (i - 1) * _slots[i].Height;
-        //            }
-        //        }
-                
-
-
-        //        var ctrls =
-        //        Utility.GetAll(this)
-        //        .Where(c => c.Top >= overlap.Top);
-
-        //        foreach (Control c in ctrls)
-        //        {
-        //            c.Top += height;
-        //        }
-        //    }
-            
-        //}
-
         protected override void OnSizeChanged(EventArgs e)
         {
             base.OnSizeChanged(e);
@@ -167,7 +137,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 Utility.UpdateGroupDimension(Parent);
             }
         }
-
         protected override void OnDragDrop(DragEventArgs drgevent)
         {            
             Control ctrl = drgevent.Data.GetData(drgevent.Data.GetFormats()[0]) as Control;
@@ -187,8 +156,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 }
 
                 Controls.Add(ctrl);
-                ctrl.Left = 0;
-                ctrl.Top = top;
+                ctrl.Left = Padding.Left;
+                ctrl.Top = top == 0 ? Padding.Top : top;
 
             }
             base.OnDragDrop(drgevent);

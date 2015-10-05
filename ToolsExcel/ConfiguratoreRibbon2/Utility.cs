@@ -103,7 +103,24 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
 
             parent.Width = Math.Max(txtWidth.Width, totWidth);
-            parent.Invalidate();
+            parent.Invalidate();            
+        }
+
+        public static void GroupsDisplacement(Control ribbon)
+        {
+            var groups = ribbon.Controls.OfType<RibbonGroup>()
+                .OrderBy(g => g.Left)
+                .ToList();
+
+            if (groups.Count > 0)
+            {
+                int left = ribbon.Padding.Left;
+                foreach (RibbonGroup group in groups)
+                {
+                    group.Left = left;
+                    left = group.Right;
+                }
+            }            
         }
 
         public static string PrepareLabelForControlName(string label)

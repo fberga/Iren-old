@@ -104,6 +104,7 @@
     <EmbeddedResource Include="SelettoreImmagini.resx">
       <DependentUpon>SelettoreImmagini.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="App.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -116,12 +117,23 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\addDropDown.png" />
+    <Content Include="Resources\addEmptySlot.png" />
     <Content Include="Resources\addGroup.png" />
     <Content Include="Resources\addButton.png" />
     <Content Include="Resources\downArrow.png" />
     <Content Include="Resources\leftArrow.png" />
     <Content Include="Resources\rightArrow.png" />
     <Content Include="Resources\upArrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">
+      <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
+      <Name>ToolsExcelBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelCore\ToolsExcelCore.csproj">
+      <Project>{40a0918e-793b-41f0-8235-5a9e601b2e2b}</Project>
+      <Name>ToolsExcelCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
