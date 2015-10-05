@@ -14,7 +14,6 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <DefineConstants>VSTO40</DefineConstants>
     <OfficeApplication>Excel</OfficeApplication>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
     <ProjectGuid>{1B9E82E6-D745-4C5A-987D-66F8E326A2B1}</ProjectGuid>
     <SolutionID>6aeb1723-6173-4b03-aef5-49f61d217f8c</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
@@ -26,11 +25,11 @@
     <VSTO_TrustAssembliesLocation>
     </VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\pc1009235\Applicazioni\PSO\Offerte MSD\</PublishUrl>
-    <InstallUrl>\\pc1009235\Applicazioni\PSO\Offerte MSD\</InstallUrl>
+    <PublishUrl>\\pc1009235\Applicazioni\PSO\OfferteMSD\</PublishUrl>
+    <InstallUrl>\\pc1009235\Applicazioni\PSO\OfferteMSD\</InstallUrl>
     <TargetCulture>it</TargetCulture>
     <ApplicationVersion>1.0.0.0</ApplicationVersion>
-    <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
+    <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
@@ -43,12 +42,22 @@
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
       <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft .NET Framework 4 %28x86 e x64%29</ProductName>
       <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
       <Visible>False</Visible>
-      <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
+      <ProductName>Microsoft Visual Studio 2010 Tools per Office Runtime %28x86 e x64%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
@@ -159,10 +168,12 @@
       <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="App.config" />
+    <Content Include="Data\OfferteMSD.xlsm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="OfferteMSD.xlsm" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="OfferteMSD_TemporaryKey.pfx" />
     <None Include="ThisWorkbook.Designer.xml">
       <DependentUpon>ThisWorkbook.cs</DependentUpon>
     </None>
@@ -178,6 +189,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FileCopyPDA\FileCopyPDA.csproj">
+      <Project>{d56b88d5-d5d9-4804-85c3-71bd2a4e7159}</Project>
+      <Name>FileCopyPDA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">
       <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
       <Name>ToolsExcelBase</Name>
@@ -203,10 +218,11 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>OfferteMSD_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>FDD7AD017B24F9764879B2EBFD67695076647C96</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -214,10 +230,10 @@
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="OfferteMSD.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]OfferteMSD.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\OfferteMSD.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+        <Host Name="Excel Document" Path=".\OfferteMSD.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" PublishedHash="7D52CD3CB9E1AD70053FE2447F6906EA4B12DD40" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" PublishedHash="2E0E6354C2AC2879BC120BDF71AD8770BB9684B3" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" PublishedHash="BCD13B7EA806933DBA4A5BEACF649D94200743A1" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

@@ -3,9 +3,12 @@ using Iren.ToolsExcel.Utility;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.ToolsExcel
@@ -28,11 +31,169 @@ namespace Iren.ToolsExcel
         {
             bool o = base.AzioneInformazione(siglaEntita, siglaAzione, azionePadre, giorno, parametro);
 
+            //non ho fatto nulla, la connessione non si apre e l'azione padre è CARICA... rientro nel caso del caricamento da XML
+            if (o == false && !DataBase.OpenConnection() && azionePadre.Equals("CARICA")) 
+            {
+                //tipo file da caricare
+                string tf = siglaAzione.ToString();
+                DataTable azioneInformazione = CaricaXML("pathExportFile" + tf, "formatoNomeFile" + tf, siglaEntita, tf) ?? new DataTable();
+
+                if (azioneInformazione.Rows.Count == 0)
+                {
+                    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
+                    return false;
+                }
+                else
+                {
+                    string sheet = DefinedNames.GetSheetName(siglaEntita);
+                    DefinedNames definedNames = new DefinedNames(sheet);
+
+                    ScriviInformazione(siglaEntita, azioneInformazione.DefaultView, definedNames);
+                    DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
+                }
+            }
+
+            DataBase.CloseConnection();
             string name = DefinedNames.GetSheetName(siglaEntita);
             Sheet s = new Sheet(Workbook.Sheets[name]);
             s.AggiornaColori();
 
             return o;
+        }
+
+        private DataTable CaricaXML(string pathCfg, string nameFormatCfg, object siglaEntita, string tipoFile)
+        {
+            string path = Esporta.PreparePath(Workbook.GetUsrConfigElement(pathCfg));
+            var name = Workbook.GetUsrConfigElement(nameFormatCfg);
+
+            if(!Directory.Exists(path))
+            {
+                //TODO segnalare directory non accessibile
+                return null;
+            }
+
+            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+            string codiceRUP = categoriaEntita[0]["CodiceRUP"].ToString();
+
+
+            string nomeFile = Esporta.PrepareName(name.Value, codiceRUP) + "*.xml";
+
+
+            string[] files = Directory.GetFiles(path, nomeFile, SearchOption.TopDirectoryOnly);
+
+            if (files.Length > 0)
+            {
+                foreach (string file in files)
+                {
+                    if (tipoFile == "US")
+                        return LeggiUS(file, siglaEntita.ToString(), codiceRUP);
+                    else if (tipoFile == "FMS")
+                        return LeggiFMS(file, siglaEntita.ToString(), codiceRUP);
+                }
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("Nessun file " + tipoFile + " trovato per l'UP " + codiceRUP, Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+            }
+
+            return null;
+        }
+
+        private DataTable LeggiUS(string file, string siglaEntita, string codiceRUP)
+        {
+            XDocument fileUS = XDocument.Load(file);
+            XNamespace ns = fileUS.Root.Name.Namespace;//"urn:XML-PIPE";
+
+            DataTable oDT = new DataTable()
+            {
+                Columns =
+                {
+                    {"SiglaEntita", typeof(string)},
+                    {"SiglaInformazione", typeof(string)},
+                    {"Data", typeof(string)},
+                    {"Valore", typeof(double)},
+                    {"BackColor", typeof(int)},
+                    {"ForeColor", typeof(int)},
+                    {"Commento", typeof(double)}
+                }
+            };
+
+            var PIPTransactions = fileUS.Element(ns + "PIPEDocument").Elements(ns + "PIPTransaction");
+
+            foreach (var PIPTransaction in PIPTransactions)
+            {
+                var UnitSchedule = PIPTransaction.Element(ns + "UnitSchedule");
+                if (UnitSchedule.Attribute("Cummulative").Value.ToUpper() != "NO")
+                {
+                    if(UnitSchedule.Element(ns + "UnitReferenceNumber").Value == codiceRUP)
+                    {
+                        string date = "";
+                        foreach (var ele in UnitSchedule.Elements())
+                        {
+                            if (ele.Name == ns + "Date")
+                            {
+                                date = ele.Value;
+                            }
+                            else if(ele.Name == ns + "Quantity")
+                            {
+                                DataRow r = oDT.NewRow();
+                                r["SiglaEntita"] = siglaEntita;
+                                r["SiglaInformazione"] = "PROGRAMMA_" + Simboli.Mercato;
+                                r["Data"] = date + int.Parse(ele.Attribute("Hour").Value).ToString("00");
+                                r["Valore"] = double.Parse(ele.Value, CultureInfo.InstalledUICulture);
+                                oDT.Rows.Add(r);
+                            }
+                        }
+                    }
+                }
+            }
+            return oDT;
+        }
+        private DataTable LeggiFMS(string file, string siglaEntita, string codiceRUP)
+        {
+            XDocument fileUS = XDocument.Load(file);
+            XNamespace ns = fileUS.Root.Name.Namespace;
+
+            DataTable oDT = new DataTable()
+            {
+                Columns =
+                {
+                    {"SiglaEntita", typeof(string)},
+                    {"SiglaInformazione", typeof(string)},
+                    {"Data", typeof(string)},
+                    {"Valore", typeof(double)},
+                    {"BackColor", typeof(int)},
+                    {"ForeColor", typeof(int)},
+                    {"Commento", typeof(double)}
+                }
+            };
+
+            var PIPTransactions = fileUS.Element(ns + "PIPEDocument").Elements(ns + "PIPTransaction");
+
+            foreach (var PIPTransaction in PIPTransactions)
+            {
+                var FifteenMinuteSchedule = PIPTransaction.Element(ns + "FifteenMinuteSchedule");
+                if (FifteenMinuteSchedule.Element(ns + "UnitReferenceNumber").Value == codiceRUP)
+                {
+                    string date = FifteenMinuteSchedule.Element(ns + "Date").Value;
+                    var HourDetails = FifteenMinuteSchedule.Elements(ns + "HourDetail");
+
+                    foreach (var ele in HourDetails)
+                    {
+                        for (int i = 1; i < 5; i++)
+                        {
+                            DataRow r = oDT.NewRow();
+                            r["SiglaEntita"] = siglaEntita;
+                            r["SiglaInformazione"] = "PROGRAMMAQ" + i + "_" + Simboli.Mercato;
+                            r["Data"] = date + int.Parse(ele.Element(ns + "Hour").Value).ToString("00");
+                            r["Valore"] = double.Parse(ele.Elements(ns + "Quantity").Where(e => e.Attribute("QuarterInterval").Value == i.ToString()).First().Value, CultureInfo.InstalledUICulture);
+                            oDT.Rows.Add(r);
+                        }
+                    }
+                }
+            }
+            return oDT;
         }
 
         protected override void ScriviCella(Excel.Worksheet ws, DefinedNames definedNames, object siglaEntita, DataRowView info, string suffissoData, string suffissoOra, object risultato, bool saveToDB, bool fromCarica)

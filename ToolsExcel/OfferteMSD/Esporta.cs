@@ -30,8 +30,7 @@ namespace Iren.ToolsExcel
             {
                 case "E_OFFERTA_MSD":
 
-                    var path = Workbook.GetUsrConfigElement("pathOfferteSuggerite");
-                    string pathStr = PreparePath(path.Value);
+                    string pathStr = PreparePath(Workbook.GetUsrConfigElement("pathOfferteSuggerite"));
 
                     if (Directory.Exists(pathStr))
                     {

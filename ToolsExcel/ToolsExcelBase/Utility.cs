@@ -6,11 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Deployment.Application;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
@@ -107,7 +109,9 @@ namespace Iren.ToolsExcel.Utility
                 ENTITA_PARAMETRO_D = "EntitaParametroD",
                 ENTITA_PARAMETRO_H = "EntitaParametroH",
                 ENTITA_PROPRIETA = "EntitaProprieta",
-                ENTITA_RAMPA = "EntitaRampa",    
+                ENTITA_RAMPA = "EntitaRampa",
+                EXPORT_XML = "ExportXML",
+                LISTA_APPLICAZIONI = "ListaApplicazioni",
                 LOG = "Log",
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
@@ -216,112 +220,115 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         public static void SalvaModificheDB() 
         {
-            //prendo la tabella di modifica e controllo se è nulla
-            DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
-            if (modifiche != null && DataBase.DB.IdUtenteAttivo != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
+            if (LocalDB != null)
             {
-                //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
-                DataTable dt = modifiche.Copy();
-                dt.TableName = modifiche.TableName;
-                dt.Namespace = "";
-
-                //vari path per la funzione del salvataggio delle modifiche sul server
-                var path = Workbook.GetUsrConfigElement("pathExportModifiche");
-
-                //path del caricatore sul server
-                string cartellaRemota = Esporta.PreparePath(path.Value);
-                //path della cartella di emergenza
-                string cartellaEmergenza = Esporta.PreparePath(path.Emergenza);
-                //path della cartella di archivio in cui copiare i file in caso di esito positivo nel saltavaggio
-                string cartellaArchivio = Esporta.PreparePath(path.Archivio);
-
-                string fileName = "";
-                //se la connessione è aperta (in emergenza forzata sarà sempre false) ed esiste la cartella del caricatore
-                if (OpenConnection() && Directory.Exists(cartellaRemota))
+                //prendo la tabella di modifica e controllo se è nulla
+                DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
+                if (modifiche != null && DataBase.DB.IdUtenteAttivo != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
                 {
-                    //metto in lavorazione i file nella cartella di emergenza
-                    string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
-                    bool executed = false;
-                    if (fileEmergenza.Length > 0)
+                    //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
+                    DataTable dt = modifiche.Copy();
+                    dt.TableName = modifiche.TableName;
+                    dt.Namespace = "";
+
+                    //vari path per la funzione del salvataggio delle modifiche sul server
+                    var path = Workbook.GetUsrConfigElement("pathExportModifiche");
+
+                    //path del caricatore sul server
+                    string cartellaRemota = path.Value;
+                    //path della cartella di emergenza
+                    string cartellaEmergenza = path.Emergenza;
+                    //path della cartella di archivio in cui copiare i file in caso di esito positivo nel saltavaggio
+                    string cartellaArchivio = path.Archivio;
+
+                    string fileName = "";
+                    //se la connessione è aperta (in emergenza forzata sarà sempre false) ed esiste la cartella del caricatore
+                    if (OpenConnection() && Directory.Exists(cartellaRemota))
                     {
-                        if (System.Windows.Forms.MessageBox.Show("Sono presenti delle modifiche non ancora salvate sul DB. Procedere con il salvataggio? \n\nPremere Sì per inviare i dati al server, No per cancellare definitivamente le modifiche.", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                        //metto in lavorazione i file nella cartella di emergenza
+                        string[] fileEmergenza = Directory.GetFiles(cartellaEmergenza);
+                        bool executed = false;
+                        if (fileEmergenza.Length > 0)
                         {
-                            //il nome file contiene la data, quindi li metto in ordine cronologico
-                            Array.Sort<string>(fileEmergenza);
-                            foreach (string file in fileEmergenza)
+                            if (System.Windows.Forms.MessageBox.Show("Sono presenti delle modifiche non ancora salvate sul DB. Procedere con il salvataggio? \n\nPremere Sì per inviare i dati al server, No per cancellare definitivamente le modifiche.", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                             {
-                                File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
-
-                                executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
-                                if (executed)
+                                //il nome file contiene la data, quindi li metto in ordine cronologico
+                                Array.Sort<string>(fileEmergenza);
+                                foreach (string file in fileEmergenza)
                                 {
-                                    if (!Directory.Exists(cartellaArchivio))
-                                        Directory.CreateDirectory(cartellaArchivio);
+                                    File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
 
-                                    File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
-                                }
-                                else
-                                {
-                                    System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                                    executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
+                                    if (executed)
+                                    {
+                                        if (!Directory.Exists(cartellaArchivio))
+                                            Directory.CreateDirectory(cartellaArchivio);
+
+                                        File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                                    }
+                                    else
+                                    {
+                                        System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                                    }
                                 }
                             }
+                            else
+                            {
+                                foreach (string file in fileEmergenza)
+                                    File.Delete(file);
+                            }
+                        }
+
+                        //controllo se la tabella è vuota
+                        if (dt.Rows.Count == 0)
+                            return;
+
+                        //salvo le modifiche appena effettuate
+                        fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                        dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
+
+                        //se la query indica che il processo è andato a buon fine, sposto in archivio
+                        executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
+                        if (executed)
+                        {
+                            if (!Directory.Exists(cartellaArchivio))
+                                Directory.CreateDirectory(cartellaArchivio);
+
+                            File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
                         }
                         else
                         {
-                            foreach (string file in fileEmergenza)
-                                File.Delete(file);
+                            fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                            dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
+
+                            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. Il file è si trova in " + Environment.MachineName);
+
+                            System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                         }
-                    }
-
-                    //controllo se la tabella è vuota
-                    if (dt.Rows.Count == 0)
-                        return;
-
-                    //salvo le modifiche appena effettuate
-                    fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
-                    dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
-
-                    //se la query indica che il processo è andato a buon fine, sposto in archivio
-                    executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
-                    if (executed)
-                    {
-                        if (!Directory.Exists(cartellaArchivio))
-                            Directory.CreateDirectory(cartellaArchivio);
-
-                        File.Move(fileName, Path.Combine(cartellaArchivio, fileName.Split('\\').Last()));
                     }
                     else
                     {
+                        if (dt.Rows.Count == 0)
+                            return;
+
+                        //metto le modifiche nella cartella emergenza
                         fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
-                        dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
+                        try
+                        {
+                            dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            Directory.CreateDirectory(cartellaEmergenza);
+                            dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
+                        }
 
-                        Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. Il file è si trova in " + Environment.MachineName);
-                        
-                        System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        System.Windows.Forms.MessageBox.Show("A causa di problemi di rete le modifiche sono state salvate in locale", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
                     }
+
+                    //svuoto la tabella di modifiche
+                    modifiche.Clear();
                 }
-                else
-                {
-                    if (dt.Rows.Count == 0)
-                        return;
-
-                    //metto le modifiche nella cartella emergenza
-                    fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
-                    try
-                    {
-                        dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        Directory.CreateDirectory(cartellaEmergenza);
-                        dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
-                    }
-
-                    System.Windows.Forms.MessageBox.Show("A causa di problemi di rete le modifiche sono state salvate in locale", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
-                }
-
-                //svuoto la tabella di modifiche
-                modifiche.Clear();
             }
         }
         /// <summary>
@@ -707,6 +714,7 @@ namespace Iren.ToolsExcel.Utility
             CreaTabellaAddressFrom();
             CreaTabellaAddressTo();
             CreaTabellaModifica();
+            CreaTabellaExportXML();
             CreaTabellaEditabili();
             CreaTabellaSalvaDB();
             CreaTabellaAnnotaModifica();
@@ -724,6 +732,7 @@ namespace Iren.ToolsExcel.Utility
             _appIDs = appIDs;
 
             InitStrutturaNomi();
+            CaricaApplicazioni();
             CaricaAzioni();
             CaricaCategorie();
             CaricaApplicazioneRibbon();
@@ -885,6 +894,35 @@ namespace Iren.ToolsExcel.Utility
                 return false;
             }
         }
+        private static bool CreaTabellaExportXML()
+        {
+            try
+            {
+                string name = Tab.EXPORT_XML;
+                ResetTable(name);
+                DataTable dt = new DataTable(name)
+                {
+                    Columns =
+                    {
+                        {"SiglaEntita", typeof(string)},
+                        {"SiglaInformazione", typeof(string)},
+                        {"Data", typeof(string)},
+                        {"Valore", typeof(string)},
+                        {"AnnotaModifica", typeof(string)},
+                        {"IdApplicazione", typeof(string)},
+                        {"IdUtente", typeof(string)}
+                    }
+                };
+
+                dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
+                _localDB.Tables.Add(dt);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
         private static bool CreaTabellaCheck()
         {
             try
@@ -947,6 +985,18 @@ namespace Iren.ToolsExcel.Utility
                 dt.TableName = tableName;
                 _localDB.Tables.Add(dt);
             }
+        }
+        /// <summary>
+        /// Carica la lista di tutte le applicazioni disponibili.
+        /// </summary>
+        public static void CaricaApplicazioni()
+        {
+            QryParams parameters = new QryParams() 
+                {
+                    {"@IdApplicazione", 0}
+                };
+
+            CaricaDati(Tab.LISTA_APPLICAZIONI, SP.APPLICAZIONE, parameters);
         }
         /// <summary>
         /// Carica i dati necessari alla creazione del menu ribbon.
@@ -1454,12 +1504,17 @@ namespace Iren.ToolsExcel.Utility
                     if (isProtected)
                         Main.Unprotect(Simboli.pwd);
 
+
+                    Riepilogo main = new Riepilogo(Utility.Workbook.Main);
+
                     if (DataBase.OpenConnection())
                     {
                         Dictionary<Core.DataBase.NomiDB, ConnectionState> stato = DataBase.StatoDB;
                         Simboli.SQLServerOnline = stato[Core.DataBase.NomiDB.SQLSERVER] == ConnectionState.Open;
                         Simboli.ImpiantiOnline = stato[Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
                         Simboli.ElsagOnline = stato[Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
+
+                        main.UpdateData();
 
                         DataBase.CloseConnection();
                     }
@@ -1468,6 +1523,8 @@ namespace Iren.ToolsExcel.Utility
                         Simboli.SQLServerOnline = false;
                         Simboli.ImpiantiOnline = false;
                         Simboli.ElsagOnline = false;
+
+                        main.RiepilogoInEmergenza();
                     }
 
                     if (isProtected)
@@ -1532,7 +1589,6 @@ namespace Iren.ToolsExcel.Utility
         public static UserConfigElement GetUsrConfigElement(string configKey)
         {
             var settings = GetUsrConfiguration();
-
             return (UserConfigElement)settings.Items[configKey];
         }
 
@@ -1625,15 +1681,14 @@ namespace Iren.ToolsExcel.Utility
         private static bool Init(string dbName, string appID, DateTime dataAttiva)
         {
             //CryptHelper.CryptSection("connectionStrings", "appSettings");
-
             //controllo le aree di rete (se presenti)
             var usrConfig = GetUsrConfiguration();
             Dictionary<string, string> pathNonDisponibili = new Dictionary<string, string>();
             foreach (UserConfigElement ele in usrConfig.Items)
             {
-                if (ele.ToCheckPath == "true")
+                if (ele.Type == UserConfigElement.ElementType.path)
                 {
-                    string pathStr = Esporta.PreparePath(ele.Value);
+                    string pathStr = ele.Value;
 
                     try { System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(pathStr); }
                     catch { pathNonDisponibili.Add(ele.Desc, pathStr); }
@@ -1720,8 +1775,25 @@ namespace Iren.ToolsExcel.Utility
             _wb = wb;
             _wbVersion = wbVersion;
 
-            Window = new Win32Window(new IntPtr(Workbook.Application.Hwnd));
-
+            //UPDATE
+            string updatePath = Path.Combine(wb.Path, "UPDATE");
+            if (Directory.Exists(updatePath) && Directory.GetFiles(updatePath, wb.Name).Any())
+            {
+                string name = wb.Name;
+                string fullName = wb.FullName;
+                wb.SaveAs(Path.Combine(wb.Path, "old_" + wb.Name));
+                File.Copy(Path.Combine(updatePath, name), fullName, true);
+                File.Delete(Path.Combine(updatePath, name));
+                Application.Workbooks.Open(fullName);
+                Simboli.Aborted = true;
+                wb.Windows[1].Visible = false;
+                return;
+            }
+            else
+            {
+                Window = new Win32Window(new IntPtr(Workbook.Application.Hwnd));
+                try { if (File.Exists(Path.Combine(wb.Path, "old_" + wb.Name))) File.Delete(Path.Combine(wb.Path, "old_" + wb.Name)); } catch { }
+            }
 
             Application.ScreenUpdating = false;
             Application.Iteration = true;
@@ -1765,7 +1837,7 @@ namespace Iren.ToolsExcel.Utility
             if (wasProtected)
                 Sheet.Protected = true;
             Application.ScreenUpdating = true;
-            Application.EnableEvents = true;            
+            Application.EnableEvents = true;
         }
         #endregion
 
@@ -1797,27 +1869,28 @@ namespace Iren.ToolsExcel.Utility
         }
         public static void Close()
         {
-            Simboli.EmergenzaForzata = false;
-            Application.ScreenUpdating = false;
-            if (WB.Application.DisplayDocumentActionTaskPane)
-                WB.Application.DisplayDocumentActionTaskPane = false;
-
-            Main.Select();
-            if (Simboli.ModificaDati)
+            if (DataBase.LocalDB != null)
             {
-                Sheet.Protected = false;
-                Simboli.ModificaDati = false;
-                Sheet.AbilitaModifica(false);
-                Sheet.SalvaModifiche();
-                Sheet.Protected = true;
+                Simboli.EmergenzaForzata = false;
+                Application.ScreenUpdating = false;
+                if (WB.Application.DisplayDocumentActionTaskPane)
+                    WB.Application.DisplayDocumentActionTaskPane = false;
+
+                Main.Select();
+                if (Simboli.ModificaDati)
+                {
+                    Sheet.Protected = false;
+                    Simboli.ModificaDati = false;
+                    Sheet.AbilitaModifica(false);
+                    Sheet.SalvaModifiche();
+                    Sheet.Protected = true;
+                }
+                DataBase.SalvaModificheDB();
+                InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log off - " + Environment.UserName + " - " + Environment.MachineName);
+
+                Application.ScreenUpdating = true;
             }
-            DataBase.SalvaModificheDB();
-            InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log off - " + Environment.UserName + " - " + Environment.MachineName);
             Save();
-
-            Application.ScreenUpdating = true;
-
-            //Window.ReleaseHandle();
         }
         #endregion
 

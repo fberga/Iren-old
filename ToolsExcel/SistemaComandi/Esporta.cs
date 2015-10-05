@@ -31,14 +31,13 @@ namespace Iren.ToolsExcel
             {
                 case "E_VDT":
                     DataView entitaAssetto = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].DefaultView;
-                    entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+                    entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
 
                     Dictionary<string,int> assettoFasce = new Dictionary<string,int>();
                     foreach (DataRowView assetto in entitaAssetto)
                         assettoFasce.Add((string)assetto["IdAssetto"], (int)assetto["NumeroFasce"]);
 
-                    var path = Workbook.GetUsrConfigElement("pathExportSisComTerna");
-                    string pathStr = PreparePath(path.Value);
+                    string pathStr = PreparePath(Workbook.GetUsrConfigElement("pathExportSisComTerna"));
 
                     if (Directory.Exists(pathStr))
                     {

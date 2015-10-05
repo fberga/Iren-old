@@ -42,10 +42,10 @@ namespace Iren.ToolsExcel.Base
                 BeginInvoke(new ShowDelegate(ShowSplashScreen));
                 return;
             }
-            
 
+            Stopwatch watch = Stopwatch.StartNew();
             base.Show(Workbook.Window);
-
+            watch.Stop();
             if (!this.IsDisposed)
                 Application.Run(this);
         }

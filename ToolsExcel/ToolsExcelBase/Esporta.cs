@@ -134,20 +134,26 @@ namespace Iren.ToolsExcel.Base
         /// Prepara il path sostituendo le parti dinamiche con valori appropriati.
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="codRup"></param>
         /// <returns></returns>
-        public static string PreparePath(string path, string codRup = "")
+        public static string PreparePath(UserConfigElement path)
+        {
+            //Controllo stato connessione
+            
+            string p = DataBase.OpenConnection() ? path.Value : path.Emergenza;
+            DataBase.CloseConnection();
+
+            return p;
+        }
+
+        public static string PrepareName(string name, string codRup = "")
         {
             Regex options = new Regex(@"\[\w+\]");
-            path = options.Replace(path, match =>
+            name = options.Replace(name, match =>
             {
                 string opt = match.Value.Replace("[", "").Replace("]", "");
                 string o = "";
                 switch (opt.ToLowerInvariant())
                 {
-                    case "appname":
-                        o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
-                        break;
                     case "msd":
                         o = Simboli.Mercato;
                         break;
@@ -164,8 +170,28 @@ namespace Iren.ToolsExcel.Base
                 return o;
             });
 
-            return path;
+            return name;
         }
+
+        //public static string PreparePathNoEmergency(string path)
+        //{
+        //    Regex options = new Regex(@"\[\w+\]");
+        //    path = options.Replace(path, match =>
+        //    {
+        //        string opt = match.Value.Replace("[", "").Replace("]", "");
+        //        string o = "";
+        //        switch (opt.ToLowerInvariant())
+        //        {
+        //            case "appname":
+        //                o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
+        //                break;
+        //        }
+
+        //        return o;
+        //    });
+
+        //    return path;
+        //}
 
         #endregion
     }

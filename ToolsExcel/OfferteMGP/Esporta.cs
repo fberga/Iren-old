@@ -27,15 +27,13 @@ namespace Iren.ToolsExcel
             if (entitaAzione.Count == 0)
                 return false;
 
-            UserConfigElement path;
             string pathStr;
 
             switch (siglaAzione.ToString())
             {
                 case "DATO_TOPICO":
 
-                    path = Workbook.GetUsrConfigElement("pathExportDatiTopici");
-                    pathStr = PreparePath(path.Value);
+                    pathStr = PreparePath(Workbook.GetUsrConfigElement("pathExportDatiTopici"));
 
                     if (Directory.Exists(pathStr))
                     {
@@ -52,8 +50,7 @@ namespace Iren.ToolsExcel
                     break;
                 case "E_OFFERTA_MGP":
 
-                    path = Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP_GME");
-                    pathStr = PreparePath(path.Value);
+                    pathStr = PreparePath(Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP_GME"));
 
                     if (Directory.Exists(pathStr))
                     {
@@ -67,8 +64,7 @@ namespace Iren.ToolsExcel
                         return false;
                     }
 
-                    path = Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP");
-                    pathStr = PreparePath(path.Value);
+                    pathStr = PreparePath(Workbook.GetUsrConfigElement("pathExportOFFERTE_MGP"));
 
                     if (Directory.Exists(pathStr))
                     {

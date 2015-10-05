@@ -15,6 +15,18 @@ using System.IO;
 
 // ***************************************************** SISTEMA COMANDI ***************************************************** //
 
+
+
+
+/*
+ 
+EventInfo ei = btnCalendar.GetType().GetEvent("Click");
+MethodInfo hi = GetType().GetMethod("btnCalendar_Click", BindingFlags.Instance | BindingFlags.NonPublic);
+Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
+ei.AddEventHandler(btnCalendar, d);
+ 
+ */
+
 namespace Iren.ToolsExcel
 {
     public partial class ToolsExcelRibbon
@@ -123,10 +135,61 @@ namespace Iren.ToolsExcel
                 //aggiungo un altro handler per cell click
                 Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
                 Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
+
+                //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
+                DataBase.DB.PropertyChanged += StatoDB_Changed;
+                StatoDB_Changed(null, null);
             }
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
+            SplashScreen.Close();
+        }
+
+        private void StatoDB_Changed(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (DataBase.OpenConnection())
+            {
+                if (Controls["btnEsportaXML"].Enabled)
+                    Controls["btnEsportaXML"].Enabled = false;
+                if (Controls["btnImportaXML"].Enabled)
+                    Controls["btnImportaXML"].Enabled = false;
+
+                if (_enabledControls.Contains("btnProduzione"))
+                    Controls["btnProduzione"].Enabled = true;
+                if (_enabledControls.Contains("btnTest"))
+                    Controls["btnTest"].Enabled = true;
+                if (_enabledControls.Contains("btnDev"))
+                    Controls["btnDev"].Enabled = true;
+                if (_enabledControls.Contains("btnAggiornaDati"))
+                    Controls["btnAggiornaDati"].Enabled = true;
+                if (_enabledControls.Contains("btnAggiornaStruttura"))
+                    Controls["btnAggiornaStruttura"].Enabled = true;
+                if (_enabledControls.Contains("btnConfiguraParametri"))
+                    Controls["btnConfiguraParametri"].Enabled = true;
+                
+                DataBase.CloseConnection();
+            }
+            else
+            {
+                if (_enabledControls.Contains("btnEsportaXML"))
+                    Controls["btnEsportaXML"].Enabled = true;
+                if (_enabledControls.Contains("btnImportaXML"))
+                    Controls["btnImportaXML"].Enabled = true;
+
+                if (Controls["btnProduzione"].Enabled)
+                    Controls["btnProduzione"].Enabled = false;
+                if (Controls["btnTest"].Enabled)
+                    Controls["btnTest"].Enabled = false;
+                if (Controls["btnDev"].Enabled)
+                    Controls["btnDev"].Enabled = false;
+                if (Controls["btnAggiornaDati"].Enabled)
+                    Controls["btnAggiornaDati"].Enabled = false;
+                if (Controls["btnAggiornaStruttura"].Enabled)
+                    Controls["btnAggiornaStruttura"].Enabled = false;
+                if (Controls["btnConfiguraParametri"].Enabled)
+                    Controls["btnConfiguraParametri"].Enabled = false;
+            }
         }
         /// <summary>
         /// Handler del click sul tasto di configurazione dei parametri. Apre il form che permette di modificare i valori dei parametri definiti per il foglio.
@@ -136,7 +199,8 @@ namespace Iren.ToolsExcel
         private void btnConfiguraParametri_Click(object sender, RibbonControlEventArgs e)
         {
             FormModificaParametri form = new FormModificaParametri();
-            form.Show();
+            if(!form.IsDisposed)
+                form.Show();
         }
         /// <summary>
         /// Handler del SheetSelectionChange. Funzione che controlla se la cella selezionata è un Check. Si trova qui e non dentro la Classe Base.Handler perché deve interagire con l'errorPane 
@@ -249,8 +313,6 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
-            DateTime dataOld = DataBase.DataAttiva;
-
             //apro il form calendario
             Forms.FormCalendar cal = new FormCalendar();
 
@@ -258,25 +320,26 @@ namespace Iren.ToolsExcel
             cal.Left = System.Windows.Forms.Cursor.Position.X - 20;
 
             DateTime calDate = cal.ShowDialog();
-
+            cal.Dispose();
+            Workbook.Application.Windows[1].Activate();
             //verifico che la data sia stata cambiata
-            if (calDate != dataOld)
+            if (calDate != DataBase.DataAttiva)
             {
-                Workbook.ScreenUpdating = false;
+                //Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
+                SplashScreen.Show();
 
                 Workbook.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
                 btnCalendar.Label = calDate.ToString("dddd dd MMM yyyy");
 
                 Aggiorna aggiorna = new Aggiorna();
                 if (DataBase.OpenConnection())
-                {                    
+                {
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
-
                     DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
-                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + dataOld.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
+                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
 
                     if (stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1))
                         aggiorna.Struttura(avoidRepositoryUpdate: false);
@@ -350,7 +413,7 @@ namespace Iren.ToolsExcel
                 rampe.ShowDialog();
                 rampe.Dispose();
             }
-
+            selUP.Dispose();
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
@@ -434,6 +497,8 @@ namespace Iren.ToolsExcel
                 Workbook.AggiornaLabelStatoDB();
 
                 AbilitaTasti(true);
+                //disabilito i tasti legati alla connessione se necessario
+                StatoDB_Changed(null, null);
             }
             Sheet.AbilitaModifica(btnModifica.Checked);
 
@@ -516,6 +581,7 @@ namespace Iren.ToolsExcel
                     SplashScreen.Close();
                 }
             }
+            selUP.Dispose();
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
@@ -526,8 +592,9 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnConfigura_Click(object sender, RibbonControlEventArgs e)
         {
-            FormConfig conf = new FormConfig();
+            FormConfiguraPercorsi conf = new FormConfiguraPercorsi();
             conf.ShowDialog();
+            conf.Dispose();
         }
         /// <summary>
         /// Handler del click dei tasti delle varie applicazioni. Abilita il foglio selezionato.
@@ -556,6 +623,7 @@ namespace Iren.ToolsExcel
         private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
         {
             Simboli.EmergenzaForzata = btnForzaEmergenza.Checked;
+            StatoDB_Changed(null, null);
         }
         /// <summary>
         /// Handler del click del tasto di chiusura. Chiude l'applicativo.
@@ -565,8 +633,7 @@ namespace Iren.ToolsExcel
         private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
         {
             TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
-            var path = Utility.Workbook.GetUsrConfigElement("backup");
-            string pathStr = Esporta.PreparePath(path.Value);
+            string pathStr = Utility.Workbook.GetUsrConfigElement("backup").Value;
             if (!Directory.Exists(pathStr))
                 Directory.CreateDirectory(pathStr);
 
@@ -804,6 +871,24 @@ namespace Iren.ToolsExcel
         }
 
         #endregion        
+
+        private void btnEsportaXML_Click(object sender, RibbonControlEventArgs e)
+        {
+            Workbook.ScreenUpdating = false;
+            SplashScreen.Show();
+            SplashScreen.UpdateStatus("Esporto tutte le informazioni del foglio");
+
+            EsportaXML exp = new EsportaXML();
+            exp.RunExport();
+            SplashScreen.Close();
+            Workbook.ScreenUpdating = true;
+        }
+
+        private void btnImportaXML_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormImportXML frmXML = new FormImportXML();
+            frmXML.ShowDialog();
+        }
     }
 
     #region Controls Collection

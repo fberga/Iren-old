@@ -213,14 +213,28 @@
             this.checkBox11 = new System.Windows.Forms.CheckBox();
             this.checkBox12 = new System.Windows.Forms.CheckBox();
             this.groupChiudi = new System.Windows.Forms.Panel();
-            this.lbgroupChiudi = new System.Windows.Forms.Label();
-            this.lbForzaEmergenza = new System.Windows.Forms.Label();
             this.lbChiudi = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.lbgroupChiudi = new System.Windows.Forms.Label();
             this.btnChiudi = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.groupEmergenza = new System.Windows.Forms.Panel();
+            this.lbEsporta2XML = new System.Windows.Forms.Label();
+            this.lbImportaXML = new System.Windows.Forms.Label();
+            this.panel30 = new System.Windows.Forms.Panel();
+            this.btnImportaXML = new System.Windows.Forms.Button();
+            this.checkBox88 = new System.Windows.Forms.CheckBox();
+            this.checkBox89 = new System.Windows.Forms.CheckBox();
+            this.checkBox90 = new System.Windows.Forms.CheckBox();
+            this.lbEmergenza = new System.Windows.Forms.Label();
+            this.panel29 = new System.Windows.Forms.Panel();
+            this.btnEsportaXML = new System.Windows.Forms.Button();
+            this.checkBox85 = new System.Windows.Forms.CheckBox();
+            this.checkBox86 = new System.Windows.Forms.CheckBox();
+            this.checkBox87 = new System.Windows.Forms.CheckBox();
+            this.lbForzaEmergenza = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnForzaEmergenza = new System.Windows.Forms.Button();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
@@ -281,6 +295,9 @@
             this.panel4.SuspendLayout();
             this.groupChiudi.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.groupEmergenza.SuspendLayout();
+            this.panel30.SuspendLayout();
+            this.panel29.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panelMenuTop.SuspendLayout();
             this.groupBoxAmbienti.SuspendLayout();
@@ -294,7 +311,7 @@
             this.ribbonModel.Margin = new System.Windows.Forms.Padding(10);
             this.ribbonModel.Name = "ribbonModel";
             this.ribbonModel.SelectedIndex = 0;
-            this.ribbonModel.Size = new System.Drawing.Size(1746, 226);
+            this.ribbonModel.Size = new System.Drawing.Size(1836, 226);
             this.ribbonModel.TabIndex = 0;
             // 
             // tabFrontOffice
@@ -304,7 +321,7 @@
             this.tabFrontOffice.Location = new System.Drawing.Point(4, 22);
             this.tabFrontOffice.Name = "tabFrontOffice";
             this.tabFrontOffice.Padding = new System.Windows.Forms.Padding(5);
-            this.tabFrontOffice.Size = new System.Drawing.Size(1738, 200);
+            this.tabFrontOffice.Size = new System.Drawing.Size(1828, 200);
             this.tabFrontOffice.TabIndex = 0;
             this.tabFrontOffice.Text = "Front Office";
             // 
@@ -312,9 +329,10 @@
             // 
             this.groupsPanel.BackColor = System.Drawing.Color.WhiteSmoke;
             this.groupsPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Inset;
-            this.groupsPanel.ColumnCount = 13;
+            this.groupsPanel.ColumnCount = 14;
             this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 110F));
+            this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
+            this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 190F));
             this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 110F));
             this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
             this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
@@ -327,17 +345,18 @@
             this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.groupsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.groupsPanel.Controls.Add(this.panelRowHeader, 0, 0);
-            this.groupsPanel.Controls.Add(this.groupStagione, 11, 0);
-            this.groupsPanel.Controls.Add(this.groupMSD, 10, 0);
-            this.groupsPanel.Controls.Add(this.groupErrori, 9, 0);
-            this.groupsPanel.Controls.Add(this.groupApplicativi, 8, 0);
-            this.groupsPanel.Controls.Add(this.groupAmbienti, 7, 0);
-            this.groupsPanel.Controls.Add(this.groupAzioni, 6, 0);
-            this.groupsPanel.Controls.Add(this.groupAggiorna, 5, 0);
-            this.groupsPanel.Controls.Add(this.groupModifica, 4, 0);
-            this.groupsPanel.Controls.Add(this.groupCalendario, 3, 0);
-            this.groupsPanel.Controls.Add(this.groupConfigura, 2, 0);
+            this.groupsPanel.Controls.Add(this.groupStagione, 12, 0);
+            this.groupsPanel.Controls.Add(this.groupMSD, 11, 0);
+            this.groupsPanel.Controls.Add(this.groupErrori, 10, 0);
+            this.groupsPanel.Controls.Add(this.groupApplicativi, 9, 0);
+            this.groupsPanel.Controls.Add(this.groupAmbienti, 8, 0);
+            this.groupsPanel.Controls.Add(this.groupAzioni, 7, 0);
+            this.groupsPanel.Controls.Add(this.groupAggiorna, 6, 0);
+            this.groupsPanel.Controls.Add(this.groupModifica, 5, 0);
+            this.groupsPanel.Controls.Add(this.groupCalendario, 4, 0);
+            this.groupsPanel.Controls.Add(this.groupConfigura, 3, 0);
             this.groupsPanel.Controls.Add(this.groupChiudi, 1, 0);
+            this.groupsPanel.Controls.Add(this.groupEmergenza, 2, 0);
             this.groupsPanel.Location = new System.Drawing.Point(-4, -20);
             this.groupsPanel.Margin = new System.Windows.Forms.Padding(0);
             this.groupsPanel.Name = "groupsPanel";
@@ -393,7 +412,7 @@
             // 
             this.groupStagione.Controls.Add(this.panel28);
             this.groupStagione.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupStagione.Location = new System.Drawing.Point(1534, 2);
+            this.groupStagione.Location = new System.Drawing.Point(1686, 2);
             this.groupStagione.Margin = new System.Windows.Forms.Padding(0);
             this.groupStagione.Name = "groupStagione";
             this.groupStagione.Padding = new System.Windows.Forms.Padding(10);
@@ -470,7 +489,7 @@
             // 
             this.groupMSD.Controls.Add(this.panel27);
             this.groupMSD.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupMSD.Location = new System.Drawing.Point(1432, 2);
+            this.groupMSD.Location = new System.Drawing.Point(1584, 2);
             this.groupMSD.Margin = new System.Windows.Forms.Padding(0);
             this.groupMSD.Name = "groupMSD";
             this.groupMSD.Padding = new System.Windows.Forms.Padding(10);
@@ -549,7 +568,7 @@
             this.groupErrori.Controls.Add(this.lbErrori);
             this.groupErrori.Controls.Add(this.panel26);
             this.groupErrori.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupErrori.Location = new System.Drawing.Point(1360, 2);
+            this.groupErrori.Location = new System.Drawing.Point(1512, 2);
             this.groupErrori.Margin = new System.Windows.Forms.Padding(0);
             this.groupErrori.Name = "groupErrori";
             this.groupErrori.Padding = new System.Windows.Forms.Padding(10);
@@ -649,7 +668,7 @@
             this.groupApplicativi.Controls.Add(this.panel24);
             this.groupApplicativi.Controls.Add(this.panel25);
             this.groupApplicativi.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupApplicativi.Location = new System.Drawing.Point(828, 2);
+            this.groupApplicativi.Location = new System.Drawing.Point(980, 2);
             this.groupApplicativi.Margin = new System.Windows.Forms.Padding(0);
             this.groupApplicativi.Name = "groupApplicativi";
             this.groupApplicativi.Padding = new System.Windows.Forms.Padding(10);
@@ -1313,7 +1332,7 @@
             this.groupAmbienti.Controls.Add(this.panel13);
             this.groupAmbienti.Controls.Add(this.panel14);
             this.groupAmbienti.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupAmbienti.Location = new System.Drawing.Point(676, 2);
+            this.groupAmbienti.Location = new System.Drawing.Point(828, 2);
             this.groupAmbienti.Margin = new System.Windows.Forms.Padding(0);
             this.groupAmbienti.Name = "groupAmbienti";
             this.groupAmbienti.Padding = new System.Windows.Forms.Padding(10);
@@ -1514,7 +1533,7 @@
             this.groupAzioni.Controls.Add(this.panel10);
             this.groupAzioni.Controls.Add(this.panel11);
             this.groupAzioni.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupAzioni.Location = new System.Drawing.Point(524, 2);
+            this.groupAzioni.Location = new System.Drawing.Point(676, 2);
             this.groupAzioni.Margin = new System.Windows.Forms.Padding(0);
             this.groupAzioni.Name = "groupAzioni";
             this.groupAzioni.Padding = new System.Windows.Forms.Padding(10);
@@ -1712,7 +1731,7 @@
             this.groupAggiorna.Controls.Add(this.panel7);
             this.groupAggiorna.Controls.Add(this.panel8);
             this.groupAggiorna.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupAggiorna.Location = new System.Drawing.Point(422, 2);
+            this.groupAggiorna.Location = new System.Drawing.Point(574, 2);
             this.groupAggiorna.Margin = new System.Windows.Forms.Padding(0);
             this.groupAggiorna.Name = "groupAggiorna";
             this.groupAggiorna.Padding = new System.Windows.Forms.Padding(10);
@@ -1850,7 +1869,7 @@
             this.groupModifica.Controls.Add(this.lbModifica);
             this.groupModifica.Controls.Add(this.panel6);
             this.groupModifica.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupModifica.Location = new System.Drawing.Point(350, 2);
+            this.groupModifica.Location = new System.Drawing.Point(502, 2);
             this.groupModifica.Margin = new System.Windows.Forms.Padding(0);
             this.groupModifica.Name = "groupModifica";
             this.groupModifica.Padding = new System.Windows.Forms.Padding(10);
@@ -1930,7 +1949,7 @@
             this.groupCalendario.Controls.Add(this.lbCalendario);
             this.groupCalendario.Controls.Add(this.panel5);
             this.groupCalendario.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupCalendario.Location = new System.Drawing.Point(278, 2);
+            this.groupCalendario.Location = new System.Drawing.Point(430, 2);
             this.groupCalendario.Margin = new System.Windows.Forms.Padding(0);
             this.groupCalendario.Name = "groupCalendario";
             this.groupCalendario.Padding = new System.Windows.Forms.Padding(10);
@@ -2012,7 +2031,7 @@
             this.groupConfigura.Controls.Add(this.panel3);
             this.groupConfigura.Controls.Add(this.panel4);
             this.groupConfigura.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupConfigura.Location = new System.Drawing.Point(166, 2);
+            this.groupConfigura.Location = new System.Drawing.Point(318, 2);
             this.groupConfigura.Margin = new System.Windows.Forms.Padding(0);
             this.groupConfigura.Name = "groupConfigura";
             this.groupConfigura.Padding = new System.Windows.Forms.Padding(10);
@@ -2146,41 +2165,20 @@
             // 
             // groupChiudi
             // 
-            this.groupChiudi.Controls.Add(this.lbgroupChiudi);
-            this.groupChiudi.Controls.Add(this.lbForzaEmergenza);
             this.groupChiudi.Controls.Add(this.lbChiudi);
             this.groupChiudi.Controls.Add(this.panel1);
-            this.groupChiudi.Controls.Add(this.panel2);
             this.groupChiudi.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupChiudi.Location = new System.Drawing.Point(54, 2);
             this.groupChiudi.Margin = new System.Windows.Forms.Padding(0);
             this.groupChiudi.Name = "groupChiudi";
             this.groupChiudi.Padding = new System.Windows.Forms.Padding(10);
-            this.groupChiudi.Size = new System.Drawing.Size(110, 223);
+            this.groupChiudi.Size = new System.Drawing.Size(70, 223);
             this.groupChiudi.TabIndex = 0;
-            // 
-            // lbgroupChiudi
-            // 
-            this.lbgroupChiudi.AutoSize = true;
-            this.lbgroupChiudi.Location = new System.Drawing.Point(37, 117);
-            this.lbgroupChiudi.Name = "lbgroupChiudi";
-            this.lbgroupChiudi.Size = new System.Drawing.Size(36, 13);
-            this.lbgroupChiudi.TabIndex = 4;
-            this.lbgroupChiudi.Text = "Chiudi";
-            // 
-            // lbForzaEmergenza
-            // 
-            this.lbForzaEmergenza.Location = new System.Drawing.Point(49, 68);
-            this.lbForzaEmergenza.Name = "lbForzaEmergenza";
-            this.lbForzaEmergenza.Size = new System.Drawing.Size(60, 38);
-            this.lbForzaEmergenza.TabIndex = 3;
-            this.lbForzaEmergenza.Text = "Forza Emergenza";
-            this.lbForzaEmergenza.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // lbChiudi
             // 
             this.lbChiudi.AutoSize = true;
-            this.lbChiudi.Location = new System.Drawing.Point(12, 68);
+            this.lbChiudi.Location = new System.Drawing.Point(16, 68);
             this.lbChiudi.Name = "lbChiudi";
             this.lbChiudi.Size = new System.Drawing.Size(36, 13);
             this.lbChiudi.TabIndex = 2;
@@ -2188,14 +2186,24 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.lbgroupChiudi);
             this.panel1.Controls.Add(this.btnChiudi);
             this.panel1.Controls.Add(this.checkBox1);
             this.panel1.Controls.Add(this.checkBox2);
             this.panel1.Controls.Add(this.checkBox3);
-            this.panel1.Location = new System.Drawing.Point(14, 33);
+            this.panel1.Location = new System.Drawing.Point(18, 33);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(32, 182);
             this.panel1.TabIndex = 1;
+            // 
+            // lbgroupChiudi
+            // 
+            this.lbgroupChiudi.AutoSize = true;
+            this.lbgroupChiudi.Location = new System.Drawing.Point(-1, 84);
+            this.lbgroupChiudi.Name = "lbgroupChiudi";
+            this.lbgroupChiudi.Size = new System.Drawing.Size(36, 13);
+            this.lbgroupChiudi.TabIndex = 4;
+            this.lbgroupChiudi.Text = "Chiudi";
             // 
             // btnChiudi
             // 
@@ -2235,13 +2243,162 @@
             this.checkBox3.TabIndex = 0;
             this.checkBox3.UseVisualStyleBackColor = true;
             // 
+            // groupEmergenza
+            // 
+            this.groupEmergenza.Controls.Add(this.lbEsporta2XML);
+            this.groupEmergenza.Controls.Add(this.lbImportaXML);
+            this.groupEmergenza.Controls.Add(this.panel30);
+            this.groupEmergenza.Controls.Add(this.lbEmergenza);
+            this.groupEmergenza.Controls.Add(this.panel29);
+            this.groupEmergenza.Controls.Add(this.lbForzaEmergenza);
+            this.groupEmergenza.Controls.Add(this.panel2);
+            this.groupEmergenza.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupEmergenza.Location = new System.Drawing.Point(129, 5);
+            this.groupEmergenza.Name = "groupEmergenza";
+            this.groupEmergenza.Size = new System.Drawing.Size(184, 217);
+            this.groupEmergenza.TabIndex = 11;
+            // 
+            // lbEsporta2XML
+            // 
+            this.lbEsporta2XML.Location = new System.Drawing.Point(63, 65);
+            this.lbEsporta2XML.Name = "lbEsporta2XML";
+            this.lbEsporta2XML.Size = new System.Drawing.Size(60, 38);
+            this.lbEsporta2XML.TabIndex = 6;
+            this.lbEsporta2XML.Text = "Esporta dati in XML";
+            this.lbEsporta2XML.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // lbImportaXML
+            // 
+            this.lbImportaXML.Location = new System.Drawing.Point(122, 64);
+            this.lbImportaXML.Name = "lbImportaXML";
+            this.lbImportaXML.Size = new System.Drawing.Size(62, 38);
+            this.lbImportaXML.TabIndex = 6;
+            this.lbImportaXML.Text = "Importa dati da XML";
+            this.lbImportaXML.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // panel30
+            // 
+            this.panel30.Controls.Add(this.btnImportaXML);
+            this.panel30.Controls.Add(this.checkBox88);
+            this.panel30.Controls.Add(this.checkBox89);
+            this.panel30.Controls.Add(this.checkBox90);
+            this.panel30.Location = new System.Drawing.Point(137, 30);
+            this.panel30.Name = "panel30";
+            this.panel30.Size = new System.Drawing.Size(32, 182);
+            this.panel30.TabIndex = 5;
+            // 
+            // btnImportaXML
+            // 
+            this.btnImportaXML.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.import_xml;
+            this.btnImportaXML.FlatAppearance.BorderSize = 0;
+            this.btnImportaXML.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnImportaXML.Location = new System.Drawing.Point(0, 0);
+            this.btnImportaXML.Name = "btnImportaXML";
+            this.btnImportaXML.Size = new System.Drawing.Size(32, 32);
+            this.btnImportaXML.TabIndex = 2;
+            this.btnImportaXML.UseVisualStyleBackColor = true;
+            // 
+            // checkBox88
+            // 
+            this.checkBox88.AutoSize = true;
+            this.checkBox88.Location = new System.Drawing.Point(9, 162);
+            this.checkBox88.Name = "checkBox88";
+            this.checkBox88.Size = new System.Drawing.Size(15, 14);
+            this.checkBox88.TabIndex = 2;
+            this.checkBox88.UseVisualStyleBackColor = true;
+            // 
+            // checkBox89
+            // 
+            this.checkBox89.AutoSize = true;
+            this.checkBox89.Location = new System.Drawing.Point(9, 139);
+            this.checkBox89.Name = "checkBox89";
+            this.checkBox89.Size = new System.Drawing.Size(15, 14);
+            this.checkBox89.TabIndex = 1;
+            this.checkBox89.UseVisualStyleBackColor = true;
+            // 
+            // checkBox90
+            // 
+            this.checkBox90.AutoSize = true;
+            this.checkBox90.Location = new System.Drawing.Point(9, 116);
+            this.checkBox90.Name = "checkBox90";
+            this.checkBox90.Size = new System.Drawing.Size(15, 14);
+            this.checkBox90.TabIndex = 0;
+            this.checkBox90.UseVisualStyleBackColor = true;
+            // 
+            // lbEmergenza
+            // 
+            this.lbEmergenza.AutoSize = true;
+            this.lbEmergenza.Location = new System.Drawing.Point(63, 114);
+            this.lbEmergenza.Name = "lbEmergenza";
+            this.lbEmergenza.Size = new System.Drawing.Size(60, 13);
+            this.lbEmergenza.TabIndex = 0;
+            this.lbEmergenza.Text = "Emergenza";
+            // 
+            // panel29
+            // 
+            this.panel29.Controls.Add(this.btnEsportaXML);
+            this.panel29.Controls.Add(this.checkBox85);
+            this.panel29.Controls.Add(this.checkBox86);
+            this.panel29.Controls.Add(this.checkBox87);
+            this.panel29.Location = new System.Drawing.Point(77, 30);
+            this.panel29.Name = "panel29";
+            this.panel29.Size = new System.Drawing.Size(32, 182);
+            this.panel29.TabIndex = 5;
+            // 
+            // btnEsportaXML
+            // 
+            this.btnEsportaXML.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.export_xml;
+            this.btnEsportaXML.FlatAppearance.BorderSize = 0;
+            this.btnEsportaXML.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEsportaXML.Location = new System.Drawing.Point(0, 0);
+            this.btnEsportaXML.Name = "btnEsportaXML";
+            this.btnEsportaXML.Size = new System.Drawing.Size(32, 32);
+            this.btnEsportaXML.TabIndex = 2;
+            this.btnEsportaXML.UseVisualStyleBackColor = true;
+            // 
+            // checkBox85
+            // 
+            this.checkBox85.AutoSize = true;
+            this.checkBox85.Location = new System.Drawing.Point(9, 162);
+            this.checkBox85.Name = "checkBox85";
+            this.checkBox85.Size = new System.Drawing.Size(15, 14);
+            this.checkBox85.TabIndex = 2;
+            this.checkBox85.UseVisualStyleBackColor = true;
+            // 
+            // checkBox86
+            // 
+            this.checkBox86.AutoSize = true;
+            this.checkBox86.Location = new System.Drawing.Point(9, 139);
+            this.checkBox86.Name = "checkBox86";
+            this.checkBox86.Size = new System.Drawing.Size(15, 14);
+            this.checkBox86.TabIndex = 1;
+            this.checkBox86.UseVisualStyleBackColor = true;
+            // 
+            // checkBox87
+            // 
+            this.checkBox87.AutoSize = true;
+            this.checkBox87.Location = new System.Drawing.Point(9, 116);
+            this.checkBox87.Name = "checkBox87";
+            this.checkBox87.Size = new System.Drawing.Size(15, 14);
+            this.checkBox87.TabIndex = 0;
+            this.checkBox87.UseVisualStyleBackColor = true;
+            // 
+            // lbForzaEmergenza
+            // 
+            this.lbForzaEmergenza.Location = new System.Drawing.Point(0, 65);
+            this.lbForzaEmergenza.Name = "lbForzaEmergenza";
+            this.lbForzaEmergenza.Size = new System.Drawing.Size(60, 38);
+            this.lbForzaEmergenza.TabIndex = 3;
+            this.lbForzaEmergenza.Text = "Forza Emergenza";
+            this.lbForzaEmergenza.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.btnForzaEmergenza);
             this.panel2.Controls.Add(this.checkBox4);
             this.panel2.Controls.Add(this.checkBox5);
             this.panel2.Controls.Add(this.checkBox6);
-            this.panel2.Location = new System.Drawing.Point(63, 33);
+            this.panel2.Location = new System.Drawing.Point(14, 30);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(32, 182);
             this.panel2.TabIndex = 3;
@@ -2316,7 +2473,7 @@
             this.panelMenuTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelMenuTop.Location = new System.Drawing.Point(3, 229);
             this.panelMenuTop.Name = "panelMenuTop";
-            this.panelMenuTop.Size = new System.Drawing.Size(1746, 190);
+            this.panelMenuTop.Size = new System.Drawing.Size(1836, 190);
             this.panelMenuTop.TabIndex = 9;
             // 
             // groupBoxAmbienti
@@ -2428,7 +2585,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gainsboro;
-            this.ClientSize = new System.Drawing.Size(1752, 420);
+            this.ClientSize = new System.Drawing.Size(1842, 420);
             this.Controls.Add(this.panelMenuTop);
             this.Controls.Add(this.ribbonModel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -2516,6 +2673,12 @@
             this.groupChiudi.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.groupEmergenza.ResumeLayout(false);
+            this.groupEmergenza.PerformLayout();
+            this.panel30.ResumeLayout(false);
+            this.panel30.PerformLayout();
+            this.panel29.ResumeLayout(false);
+            this.panel29.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.panelMenuTop.ResumeLayout(false);
@@ -2737,5 +2900,19 @@
         private System.Windows.Forms.Label labelGruppi;
         private System.Windows.Forms.ComboBox cmbGruppi;
         private System.Windows.Forms.ListBox listBoxUtenti;
+        private System.Windows.Forms.Panel groupEmergenza;
+        private System.Windows.Forms.Label lbEsporta2XML;
+        private System.Windows.Forms.Label lbImportaXML;
+        private System.Windows.Forms.Panel panel30;
+        private System.Windows.Forms.Button btnImportaXML;
+        private System.Windows.Forms.CheckBox checkBox88;
+        private System.Windows.Forms.CheckBox checkBox89;
+        private System.Windows.Forms.CheckBox checkBox90;
+        private System.Windows.Forms.Label lbEmergenza;
+        private System.Windows.Forms.Panel panel29;
+        private System.Windows.Forms.Button btnEsportaXML;
+        private System.Windows.Forms.CheckBox checkBox85;
+        private System.Windows.Forms.CheckBox checkBox86;
+        private System.Windows.Forms.CheckBox checkBox87;
     }
 }

@@ -42,30 +42,33 @@ namespace Iren.ToolsExcel
 
         private void Log_Startup(object sender, EventArgs e)
         {
-            Unprotect(Simboli.pwd);
-            try
+            if (!Simboli.Aborted)
             {
-                _logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
-            }
-            catch (Exception)
-            {
-                _logObj = Controls.AddListObject(Range["A1"], "LogList");
-            }
-            _logObj.AutoSetDataBoundColumnHeaders = true;
+                Unprotect(Simboli.pwd);
+                try
+                {
+                    _logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
+                }
+                catch (Exception)
+                {
+                    _logObj = Controls.AddListObject(Range["A1"], "LogList");
+                }
+                _logObj.AutoSetDataBoundColumnHeaders = true;
 
-            if (DataBase.OpenConnection())
-            {
-                _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
-                _logObj.Range.EntireColumn.AutoFit();
-                _logObj.TableStyle = "TableStyleLight16";
+                if (DataBase.OpenConnection())
+                {
+                    _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
+                    _logObj.Range.EntireColumn.AutoFit();
+                    _logObj.TableStyle = "TableStyleLight16";
 
-                Excel.Range rng = Columns[2];
-                rng.NumberFormat = "dd/MM/yyyy";
-                rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                    Excel.Range rng = Columns[2];
+                    rng.NumberFormat = "dd/MM/yyyy";
+                    rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
 
-                DataBase.CloseConnection();
+                    DataBase.CloseConnection();
+                }
+                Protect(Simboli.pwd);
             }
-            Protect(Simboli.pwd);
         }
 
         #endregion

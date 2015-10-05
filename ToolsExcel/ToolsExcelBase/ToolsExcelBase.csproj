@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationNotFoundException.cs" />
+    <Compile Include="EsportaXML.cs" />
     <Compile Include="Modifica.cs" />
     <Compile Include="Carica.cs" />
     <Compile Include="Check.cs" />
@@ -119,7 +120,6 @@
     <Resource Include="Resources\calendario-icon.png" />
     <Resource Include="Resources\params-config-icon.png" />
     <Resource Include="Resources\PencilAngled_16xMD_color.png" />
-    <Resource Include="Resources\PSO.png" />
     <Resource Include="Resources\rampe-icon.png" />
     <Resource Include="Resources\modificaNO-icon.png" />
     <Resource Include="Resources\modificaSI-icon.png" />
@@ -158,7 +158,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\export-xml.png" />
     <Content Include="Resources\ExtensionManager_vsix_OSReg.ico" />
+    <Content Include="Resources\import-xml.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

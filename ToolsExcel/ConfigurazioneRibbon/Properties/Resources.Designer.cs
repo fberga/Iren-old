@@ -123,6 +123,16 @@ namespace ConfigurazioneRibbon.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap export_xml {
+            get {
+                object obj = ResourceManager.GetObject("export_xml", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap forzaemergenza_icon {
             get {
                 object obj = ResourceManager.GetObject("forzaemergenza_icon", resourceCulture);
@@ -136,6 +146,16 @@ namespace ConfigurazioneRibbon.Properties {
         internal static System.Drawing.Bitmap gas_icon {
             get {
                 object obj = ResourceManager.GetObject("gas_icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap import_xml {
+            get {
+                object obj = ResourceManager.GetObject("import_xml", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

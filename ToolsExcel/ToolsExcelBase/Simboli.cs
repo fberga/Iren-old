@@ -1,6 +1,7 @@
 ﻿using Iren.ToolsExcel.Core;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 
 namespace Iren.ToolsExcel.Base
@@ -31,12 +32,12 @@ namespace Iren.ToolsExcel.Base
                     if (isProtected)
                         Utility.Workbook.Main.Unprotect(pwd);
 
-                    Riepilogo main = new Riepilogo(Utility.Workbook.Main);
-                    if (value)
-                        main.RiepilogoInEmergenza();
-                    else
-                        if (Utility.DataBase.OpenConnection())
-                            main.UpdateData();
+                    //Riepilogo main = new Riepilogo(Utility.Workbook.Main);
+                    //if (value)
+                    //    main.RiepilogoInEmergenza();
+                    //else
+                    //    if (Utility.DataBase.OpenConnection())
+                    //        main.UpdateData();
 
                     Utility.Workbook.AggiornaLabelStatoDB();
 
@@ -48,6 +49,8 @@ namespace Iren.ToolsExcel.Base
                 }
             }
         }
+
+        public static bool Aborted { get; set; }
 
         public static string pwd = "";
 
@@ -207,6 +210,5 @@ namespace Iren.ToolsExcel.Base
         public static int[] rgbSfondo = { 228, 144, 144 };
         public static int[] rgbLinee = { 176, 0, 0 };
         public static int[] rgbTitolo = { 206, 58, 58 };
-
     }
 }

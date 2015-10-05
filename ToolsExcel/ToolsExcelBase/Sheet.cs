@@ -167,7 +167,7 @@ namespace Iren.ToolsExcel.Base
             DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
             DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
 
-            DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
+            //DataTable modifiche = DataBase.LocalDB.Tables[DataBase.Tab.MODIFICA];
 
             //controllo quali entità sono state modificate
             //List<object> entitaModificate =

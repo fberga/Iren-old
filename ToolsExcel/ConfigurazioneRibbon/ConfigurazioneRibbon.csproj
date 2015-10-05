@@ -162,6 +162,12 @@
     <Resource Include="..\ToolsExcelBase\resources\ExtensionManager_vsix_OSReg.ico">
       <Link>Resources\ExtensionManager_vsix_OSReg.ico</Link>
     </Resource>
+    <Resource Include="..\ToolsExcelBase\resources\import-xml.png">
+      <Link>Resources\import-xml.png</Link>
+    </Resource>
+    <Resource Include="..\ToolsExcelBase\resources\export-xml.png">
+      <Link>Resources\export-xml.png</Link>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">

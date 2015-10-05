@@ -31,43 +31,54 @@ namespace Iren.ToolsExcel.Forms
             this.Text = Simboli.nomeApplicazione + " - Modifica Parametri";
 
             _entita = new DataView(Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA]);
-            _parametri = Utility.DataBase.Select(Utility.DataBase.SP.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.DataBase.DB.IdApplicazione) ?? new DataTable();
+            if(Utility.DataBase.OpenConnection())
+            {
+                _parametri = Utility.DataBase.Select(Utility.DataBase.SP.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.DataBase.DB.IdApplicazione) ?? new DataTable();
 
-            _parametriD = new DataView(_parametri);
-            _parametriH = new DataView(_parametri);
+                _parametriD = new DataView(_parametri);
+                _parametriH = new DataView(_parametri);
 
-            cmbEntita.ValueMember = "SiglaEntita";
-            cmbEntita.DisplayMember = "DesEntita";
+                cmbEntita.ValueMember = "SiglaEntita";
+                cmbEntita.DisplayMember = "DesEntita";
 
-            cmbParametriD.DisplayMember = "Descrizione";
-            cmbParametriH.DisplayMember = "Descrizione";
+                cmbParametriD.DisplayMember = "Descrizione";
+                cmbParametriH.DisplayMember = "Descrizione";
 
-            cmbEntita.DataSource = _entita;
-            cmbParametriD.DataSource = _parametriD;
-            cmbParametriH.DataSource = _parametriH;
+                cmbEntita.DataSource = _entita;
+                cmbParametriD.DataSource = _parametriD;
+                cmbParametriH.DataSource = _parametriH;
 
-            //TODO rimuovere quando saranno utilizzati i parametri orari
-            ((Control)tabPageParH).Visible = false;
+                //TODO rimuovere quando saranno utilizzati i parametri orari
+                ((Control)tabPageParH).Visible = false;
+            }
+            else
+            {
+                MessageBox.Show("Non è possibile modificare i valori dei parametri in assenza di connessione...", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+            }
         }
 
         private void cmbEntita_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _parametriD.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'D'";
-            _parametriH.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'H'";
+            if (_parametri.Columns.Contains("SiglaEntita"))
+            {
+                _parametriD.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'D'";
+                _parametriH.RowFilter = "SiglaEntita = '" + cmbEntita.SelectedValue + "' AND Dettaglio = 'H'";
 
-            if (_parametriD.Count == 0)
-                ((Control)tabPageParD).Enabled = false;
-            else
-                ((Control)tabPageParD).Enabled = true;
+                if (_parametriD.Count == 0)
+                    ((Control)tabPageParD).Enabled = false;
+                else
+                    ((Control)tabPageParD).Enabled = true;
 
-            //TODO abilitare quando saranno utilizzati i parametri orari
-            //if (_parametriH.Count == 0)
-            //    ((Control)tabPageParH).Enabled = false;
-            //else
-            //    ((Control)tabPageParH).Enabled = true;
+                //TODO abilitare quando saranno utilizzati i parametri orari
+                //if (_parametriH.Count == 0)
+                //    ((Control)tabPageParH).Enabled = false;
+                //else
+                //    ((Control)tabPageParH).Enabled = true;
 
-            cmbParametriH_SelectedIndexChanged(null, null);
-            cmbParametriD_SelectedIndexChanged(null, null);
+                cmbParametriH_SelectedIndexChanged(null, null);
+                cmbParametriD_SelectedIndexChanged(null, null);
+            }
         }
         private void cmbParametriH_SelectedIndexChanged(object sender, EventArgs e)
         {
