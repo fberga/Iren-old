@@ -69,7 +69,7 @@ namespace Iren.ToolsExcel.Core
                 foreach (SqlParameter par in cmd.Parameters)
                 {
                     if(parameters.ContainsKey(par.ParameterName))
-                        par.Value = parameters[par.ParameterName];
+                        par.Value = parameters[par.ParameterName];                    
                 }
             }
             catch (Exception)

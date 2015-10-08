@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    public class RibbonButton : SelectableButton, INotifyPropertyChanged, IRibbonComponent
+    public class RibbonButton : SelectableButton, INotifyPropertyChanged, IRibbonControl
     {
         const string NEW_BUTTON_PREFIX = "New Button";
 
@@ -23,15 +23,46 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         private Point _startPt = new Point(int.MaxValue, int.MaxValue);
 
+        public int IdTipologia { get { return ToggleButton ? 2 : 1; } }
         public int Slot { get { return Dimensione == 1 ? 3 : 1; } }
-        public int Dimensione { get; set; }
+
+        private int _dimensione = 1;
+        public int Dimensione {
+            get
+            {
+                return _dimensione;
+            }
+            set 
+            {
+                _dimensione = value;
+                if (_dimensione == 1)
+                {
+                    SetUpLargeButton();
+                    SetLargeButtonDimension();
+                }
+                else if (_dimensione == 0)
+                {
+                    SetUpSmallButton();
+                    SetSmallButtonDimension();
+                }
+            } 
+        }
         public string Descrizione { get; set; }
         public string ScreenTip { get; set; }
         public bool ToggleButton { get; set; }
         public string Label { get { return Text; } set { Text = value; } }
+        public string ImageName { get { return ImageKey; } }
+        public int ID { get; private set; }        
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public RibbonButton(ImageList normal, ImageList small, string imageKey, int id)
+        {
+            _imageListNormal = normal;
+            _imageListSmall = small;
+            ImageKey = imageKey;
+            ID = id;
+        }
         public RibbonButton(ImageList normal, ImageList small)
         {
             _imageListNormal = normal;
@@ -43,7 +74,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             using (SelettoreImmagini chooseImageDialog = new SelettoreImmagini(_imageListNormal))
             {
                 if (chooseImageDialog.ShowDialog() == DialogResult.OK)
-                    ImageKey = chooseImageDialog.FileName;
+                    ImageKey = chooseImageDialog.ResourceName;
             }
         }
         public RibbonButton(Control ribbon, ImageList normal, ImageList small)
@@ -119,16 +150,16 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             {
                 cfg.ShowDialog();
 
-                if (Dimensione == 1)
-                {
-                    SetUpLargeButton();
-                    SetLargeButtonDimension();
-                }
-                else if (Dimensione == 0)
-                {
-                    SetUpSmallButton();
-                    SetSmallButtonDimension();
-                }
+                //if (Dimensione == 1)
+                //{
+                //    SetUpLargeButton();
+                //    SetLargeButtonDimension();
+                //}
+                //else if (Dimensione == 0)
+                //{
+                //    SetUpSmallButton();
+                //    SetSmallButtonDimension();
+                //}
 
                 if (dim != Dimensione)
                 {

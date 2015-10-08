@@ -8,8 +8,18 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
+    class SP
+    {
+        public const string CONTROLLO = "RIBBON.spControllo";
+        public const string APPLICAZIONI = "spApplicazioneProprieta";
+        public const string INSERT_CONTROLLO = "RIBBON.spInsertControllo";
+        public const string INSERT_GRUPPO = "RIBBON.spInsertGruppo";
+        public const string INSERT_GRUPPO_CONTROLLO = "RIBBON.spInsertGruppoControllo";
+        public const string APPLICAZIONE_UTENTE_RIBBON = "RIBBON.spGruppoControllo";
+    }
+
     class Utility
-    {       
+    {
         public static IEnumerable<Control> GetAll(Control control, Type type = null)
         {
             var controls = control.Controls.Cast<Control>();
@@ -96,7 +106,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 (from p in parent.Controls.OfType<ControlContainer>()
                  select p.Width).DefaultIfEmpty().Sum() + 20;
 
-            var containers = parent.Controls.OfType<ControlContainer>().DefaultIfEmpty().ToArray();
+            var containers = parent.Controls.OfType<ControlContainer>()
+                .OrderBy(c => c.Left)
+                .DefaultIfEmpty()
+                .ToArray();
 
             for (int i = 1; i < containers.Length; i++)
                 containers[i].Left = containers[i - 1].Right;
@@ -109,7 +122,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public static void GroupsDisplacement(Control ribbon)
         {
             var groups = ribbon.Controls.OfType<RibbonGroup>()
-                .OrderBy(g => g.Left)
+                //.OrderBy(g => g.Left)
                 .ToList();
 
             if (groups.Count > 0)
@@ -127,6 +140,24 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             return label.Replace(" ", "");
         }
+        
+        public static Image GetResurceImage(string name)
+        {
+            return Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(name) as Image;
+        }
 
+        public static Control CreateEmptyContainer(Control parent)
+        {
+            ControlContainer container = new ControlContainer();
+            container.Size = new Size(50, parent.Height - 30);
+
+            var left =
+                (from p in parent.Controls.OfType<ControlContainer>()
+                 select p.Right).DefaultIfEmpty().Max();
+
+            container.Left = left == 0 ? parent.Padding.Left : left + 10;
+            container.Top = parent.Padding.Top;
+            return container;
+        }
     }
 }

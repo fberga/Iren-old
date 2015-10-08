@@ -5,12 +5,16 @@ using System.Text;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    interface IRibbonComponent
+    interface IRibbonControl
     {
         int Slot { get; }
-        string Descrizione { get; set; }
+        string Descrizione { get; }
+        string ImageName { get; }
         string ScreenTip { get; set; }
         string Label { get; set; }
-        //string Nome { get; set; }
+        bool ToggleButton { get; }
+        int Dimensione { get; }
+        int IdTipologia { get; }
+        int ID { get; }
     }
 }

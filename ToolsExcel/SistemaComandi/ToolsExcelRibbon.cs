@@ -115,7 +115,7 @@ namespace Iren.ToolsExcel
 
                 //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
                 btnModifica.Checked = false;
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
                 btnModifica.Label = "Modifica NO";
                 try
                 {
@@ -475,7 +475,7 @@ namespace Iren.ToolsExcel
             {
                 AbilitaTasti(false);
                 btnModifica.Enabled = true;
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI;
                 btnModifica.Label = "Modifica SI";
                 Workbook.WB.SheetChange += Handler.StoreEdit;
                 //Aggiungo handler per azioni custom nel caso servisse
@@ -487,7 +487,7 @@ namespace Iren.ToolsExcel
                 //salva modifiche sul db
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO_icon;
+                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
                 btnModifica.Label = "Modifica NO";
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 //Rimuovo handler per azioni custom nel caso servisse
@@ -693,6 +693,24 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = true;
         }
 
+        private void btnEsportaXML_Click(object sender, RibbonControlEventArgs e)
+        {
+            Workbook.ScreenUpdating = false;
+            SplashScreen.Show();
+            SplashScreen.UpdateStatus("Esporto tutte le informazioni del foglio");
+
+            EsportaXML exp = new EsportaXML();
+            exp.RunExport();
+            SplashScreen.Close();
+            Workbook.ScreenUpdating = true;
+        }
+
+        private void btnImportaXML_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormImportXML frmXML = new FormImportXML();
+            frmXML.ShowDialog();
+        }
+
         #endregion
 
         #region Metodi
@@ -872,23 +890,7 @@ namespace Iren.ToolsExcel
 
         #endregion        
 
-        private void btnEsportaXML_Click(object sender, RibbonControlEventArgs e)
-        {
-            Workbook.ScreenUpdating = false;
-            SplashScreen.Show();
-            SplashScreen.UpdateStatus("Esporto tutte le informazioni del foglio");
-
-            EsportaXML exp = new EsportaXML();
-            exp.RunExport();
-            SplashScreen.Close();
-            Workbook.ScreenUpdating = true;
-        }
-
-        private void btnImportaXML_Click(object sender, RibbonControlEventArgs e)
-        {
-            FormImportXML frmXML = new FormImportXML();
-            frmXML.ShowDialog();
-        }
+        
     }
 
     #region Controls Collection

@@ -463,6 +463,18 @@ namespace Iren.ToolsExcel.Utility
             return false;
         }
 
+        public static bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams)
+        {
+            if (OpenConnection())
+            {
+                bool o = _db.Insert(storedProcedure, parameters, out outParams);
+                CloseConnection();
+                return o;
+            }
+            outParams = null;
+            return false;
+        }
+
         #endregion
 
         #region Metodi

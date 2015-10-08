@@ -112,42 +112,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\azioni-icon.png" />
-    <Resource Include="Resources\validazioneTL-icon.png" />
-    <Resource Include="Resources\unitComm-icon.png" />
-    <Resource Include="Resources\errorpane-icon.png" />
-    <Resource Include="Resources\ottimizzatore-icon.png" />
-    <Resource Include="Resources\calendario-icon.png" />
-    <Resource Include="Resources\params-config-icon.png" />
-    <Resource Include="Resources\PencilAngled_16xMD_color.png" />
-    <Resource Include="Resources\rampe-icon.png" />
-    <Resource Include="Resources\modificaNO-icon.png" />
-    <Resource Include="Resources\modificaSI-icon.png" />
-    <Resource Include="Resources\settings-icon.png" />
-    <Resource Include="Resources\forzaemergenza-icon.png" />
-    <Resource Include="Resources\gas-icon.png" />
-    <Resource Include="Resources\aggiornadati-icon.png" />
-    <Resource Include="Resources\invioProgrammi-icon.png" />
-    <Resource Include="Resources\dev-icon.png" />
-    <Resource Include="Resources\prod-icon.png" />
-    <Resource Include="Resources\Symbols_Critical_16xLG.png" />
-    <Resource Include="Resources\TableRowDelete.jpg" />
-    <Resource Include="Resources\TableRowsInsertAbove.jpg" />
-    <Resource Include="Resources\TableRowsInsertAboveSmall.jpg" />
-    <Resource Include="Resources\TableRowsInsertBelow.jpg" />
-    <Resource Include="Resources\TableRowsInsertBelowSmall.jpg" />
-    <Resource Include="Resources\test-icon.png" />
-    <Resource Include="Resources\offerteMB-icon.png" />
-    <Resource Include="Resources\offerteMGP-icon.png" />
-    <Resource Include="Resources\offerteMSD-icon.png" />
-    <Resource Include="Resources\previsioneCT-icon.png" />
-    <Resource Include="Resources\prezziMSD-icon.png" />
-    <Resource Include="Resources\progrImpianti-icon.png" />
-    <Resource Include="Resources\salva-icon.png" />
-    <Resource Include="Resources\sisCom-icon.png" />
-    <Resource Include="Resources\aggiornastruttura-icon.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -157,10 +121,42 @@
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Content Include="Resources\export-xml.png" />
-    <Content Include="Resources\ExtensionManager_vsix_OSReg.ico" />
-    <Content Include="Resources\import-xml.png" />
+    <Content Include="Resources\728.GIF" />
+    <Content Include="Resources\aggiornaDati.png" />
+    <Content Include="Resources\aggiornaStruttura.png" />
+    <Content Include="Resources\azioni.png" />
+    <Content Include="Resources\calendario.png" />
+    <Content Include="Resources\chiudi.png" />
+    <Content Include="Resources\configuraParametri.png" />
+    <Content Include="Resources\configuraPercorsi.png" />
+    <Content Include="Resources\dev.png" />
+    <Content Include="Resources\esportaXML.png" />
+    <Content Include="Resources\forzaEmergenza.png" />
+    <Content Include="Resources\importaXML.png" />
+    <Content Include="Resources\invioProgrammi.png" />
+    <Content Include="Resources\modificaNO.png" />
+    <Content Include="Resources\modificaSI.png" />
+    <Content Include="Resources\offerteMB.png" />
+    <Content Include="Resources\offerteMGP.png" />
+    <Content Include="Resources\offerteMSD.png" />
+    <Content Include="Resources\ottimizzatore.png" />
+    <Content Include="Resources\pannelloErrori.png" />
+    <Content Include="Resources\previsioneCT.png" />
+    <Content Include="Resources\previsioneGas.png" />
+    <Content Include="Resources\prezziMSD.png" />
+    <Content Include="Resources\prod.png" />
+    <Content Include="Resources\programmazioneImpianti.png" />
+    <Content Include="Resources\PSO.ico" />
+    <Content Include="Resources\rampe.png" />
+    <Content Include="Resources\sistemaComandi.png" />
+    <Content Include="Resources\TableRowDelete.png" />
+    <Content Include="Resources\TableRowsInsertAboveSmall.png" />
+    <Content Include="Resources\TableRowsInsertBelowSmall.png" />
+    <Content Include="Resources\test.png" />
+    <Content Include="Resources\unitCommitment.png" />
+    <Content Include="Resources\validazioneTL.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

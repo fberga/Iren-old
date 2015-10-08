@@ -23,7 +23,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             _btn = btn;
             _imgList = imgList;
 
-            imgButton.ImageLocation = _btn.ImageKey;
+            imgButton.Name = _btn.ImageKey;
+            imgButton.Image = Utility.GetResurceImage(_btn.ImageKey);
             //txtName.Text = _btn.Nome;
             txtLabel.Text = _btn.Label;
 
@@ -46,14 +47,16 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             using (SelettoreImmagini chooseImageDialog = new SelettoreImmagini(_imgList))
             {
                 if (chooseImageDialog.ShowDialog() == DialogResult.OK)
-                    imgButton.ImageLocation = chooseImageDialog.FileName;
+                {
+                    imgButton.Name = chooseImageDialog.ResourceName;
+                    imgButton.Image = chooseImageDialog.Img;
+                }
             }
         }
 
         private void Applica_Click(object sender, EventArgs e)
         {
-            _btn.ImageKey = imgButton.ImageLocation;
-            //_btn.Nome = txtName.Text;
+            _btn.ImageKey = imgButton.Name;
             _btn.Label = txtLabel.Text;
 
             _btn.Descrizione = txtDesc.Text;

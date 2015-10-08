@@ -172,6 +172,34 @@ namespace Iren.ToolsExcel.Core
                 return false;
             }
         }
+        public bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams)
+        {
+            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
+                parameters.Add("@IdApplicazione", _idApplicazione);
+            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
+                parameters.Add("@IdUtente", _idUtenteAttivo);
+            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
+                parameters.Add("@Data", _dataAttiva);
+
+            try
+            {
+                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters);
+                cmd.ExecuteNonQuery();
+                outParams = new Dictionary<string, object>();
+                
+                foreach (SqlParameter par in cmd.Parameters)
+                {
+                    if (par.Direction == ParameterDirection.InputOutput || par.Direction == ParameterDirection.Output || par.Direction == ParameterDirection.ReturnValue)
+                        outParams.Add(par.ParameterName, par.Value);
+                }
+                return true;
+            }
+            catch (TimeoutException)
+            {
+                outParams = null;
+                return false;
+            }
+        }
         /// <summary>
         /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
         /// </summary>

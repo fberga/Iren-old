@@ -60,7 +60,13 @@
     <Compile Include="ControlContainer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="IRibbonComponent.cs" />
+    <Compile Include="ControlliEsistenti.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ControlliEsistenti.Designer.cs">
+      <DependentUpon>ControlliEsistenti.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IRibbonControl.cs" />
     <Compile Include="RibbonButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -90,6 +96,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ConfiguratoreTasto.resx">
       <DependentUpon>ConfiguratoreTasto.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ControlliEsistenti.resx">
+      <DependentUpon>ControlliEsistenti.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

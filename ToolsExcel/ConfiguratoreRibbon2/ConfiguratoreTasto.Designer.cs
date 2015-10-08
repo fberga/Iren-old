@@ -62,7 +62,7 @@
             // txtDesc
             // 
             this.txtDesc.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtDesc.Location = new System.Drawing.Point(188, 7);
+            this.txtDesc.Location = new System.Drawing.Point(188, 39);
             this.txtDesc.Multiline = true;
             this.txtDesc.Name = "txtDesc";
             this.txtDesc.Size = new System.Drawing.Size(251, 76);
@@ -71,7 +71,7 @@
             // txtLabel
             // 
             this.txtLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtLabel.Location = new System.Drawing.Point(188, 89);
+            this.txtLabel.Location = new System.Drawing.Point(188, 7);
             this.txtLabel.Name = "txtLabel";
             this.txtLabel.Size = new System.Drawing.Size(251, 26);
             this.txtLabel.TabIndex = 4;
@@ -110,7 +110,7 @@
             // lbDesc
             // 
             this.lbDesc.AutoSize = true;
-            this.lbDesc.Location = new System.Drawing.Point(75, 9);
+            this.lbDesc.Location = new System.Drawing.Point(75, 41);
             this.lbDesc.Name = "lbDesc";
             this.lbDesc.Size = new System.Drawing.Size(92, 20);
             this.lbDesc.TabIndex = 8;
@@ -119,7 +119,7 @@
             // lbLabel
             // 
             this.lbLabel.AutoSize = true;
-            this.lbLabel.Location = new System.Drawing.Point(75, 91);
+            this.lbLabel.Location = new System.Drawing.Point(75, 9);
             this.lbLabel.Name = "lbLabel";
             this.lbLabel.Size = new System.Drawing.Size(48, 20);
             this.lbLabel.TabIndex = 9;

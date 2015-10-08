@@ -118,91 +118,91 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="aggiornadati_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\aggiornadati-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="aggiornaDati" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\aggiornadati.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="aggiornastruttura_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\aggiornastruttura-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="aggiornaStruttura" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\aggiornastruttura.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="azioni_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\azioni-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="azioni" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\azioni.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="calendario_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\calendario-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="calendario" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\calendario.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="dev_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\dev-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="chiudi" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\chiudi.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="errorpane_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\errorpane-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="configuraParametri" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\configuraparametri.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="forzaemergenza_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\forzaemergenza-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="configuraPercorsi" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\configurapercorsi.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="gas_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\gas-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="dev" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\dev.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="invioProgrammi_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\invioprogrammi-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="esportaXML" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\esportaxml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="modificaNO_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\modificano-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="forzaEmergenza" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\forzaemergenza.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="modificaSI_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\modificasi-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="importaXML" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\importaxml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="offerteMB_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\offertemb-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="invioProgrammi" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\invioprogrammi.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="offerteMGP_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\offertemgp-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="modificaNO" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\modificano.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="offerteMSD_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\offertemsd-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="modificaSI" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\modificasi.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ottimizzatore_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\ottimizzatore-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="offerteMB" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\offertemb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="params_config_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\params-config-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="offerteMGP" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\offertemgp.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="previsioneCT_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\previsionect-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="offerteMSD" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\offertemsd.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="prezziMSD_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\prezzimsd-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ottimizzatore" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\ottimizzatore.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="prod_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\prod-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="pannelloErrori" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\pannelloerrori.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="progrImpianti_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\progrimpianti-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="previsioneCT" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\previsionect.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="rampe_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\rampe-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="previsioneGas" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\previsionegas.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="salva_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\salva-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="prezziMSD" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\prezzimsd.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="settings_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\settings-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="prod" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\prod.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="sisCom_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\siscom-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="programmazioneImpianti" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\programmazioneimpianti.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="test_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\test-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="rampe" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\rampe.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="unitComm_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\unitcomm-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="sistemaComandi" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\sistemacomandi.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="validazioneTL_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\validazionetl-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="test" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\test.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="export_xml" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\export-xml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="unitCommitment" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\unitcommitment.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="import_xml" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\import-xml.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="validazioneTL" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\validazionetl.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

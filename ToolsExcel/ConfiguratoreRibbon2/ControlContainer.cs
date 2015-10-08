@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             CtrlCount += 1;
 
-            FreeSlot -= ((IRibbonComponent)e.Control).Slot;
+            FreeSlot -= ((IRibbonControl)e.Control).Slot;
 
             if (e.Control.GetType() == typeof(RibbonButton))
             {
@@ -72,7 +72,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             if (CtrlCount == 0)
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 
-            FreeSlot += ((IRibbonComponent)e.Control).Slot;
+            FreeSlot += ((IRibbonControl)e.Control).Slot;
 
             if (e.Control.GetType() == typeof(RibbonButton))
             {
@@ -112,7 +112,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             Control ctrl = drgevent.Data.GetData(drgevent.Data.GetFormats()[0]) as Control;
             if (ctrl.Parent != this)
             {
-                int slot = ((IRibbonComponent)ctrl).Slot;
+                int slot = ((IRibbonControl)ctrl).Slot;
                 if(slot <= FreeSlot)
                     drgevent.Effect = DragDropEffects.Move;
                 else
@@ -145,11 +145,11 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             if (ctrl != null)
             {
                 
-                int slot = ((IRibbonComponent)ctrl).Slot;
+                int slot = ((IRibbonControl)ctrl).Slot;
                 if (slot < 3)
                 {
                     top =
-                        Utility.GetAll(this, typeof(IRibbonComponent))
+                        Utility.GetAll(this, typeof(IRibbonControl))
                         .Select(b => b.Bottom)
                         .DefaultIfEmpty()
                         .Max();

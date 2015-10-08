@@ -14,6 +14,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         TextBox _label = new TextBox();
         public string Label { get { return _label.Text; } set { _label.Text = value; } }
 
+        public int ID { get; private set; }
+        
         public RibbonGroup() 
             : base()
         {
@@ -51,13 +53,17 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             int prog = Utility.FindLastOfItsKind(ribbon, NEW_GROUP_PREFIX, typeof(TextBox)) + 1;
 
-            _label.Name = NEW_GROUP_PREFIX.Replace(" ", "") + prog;
-            _label.Text = NEW_GROUP_PREFIX + " " + prog;
+            Label = NEW_GROUP_PREFIX + " " + prog;
 
             Top = ribbon.Padding.Top;
             Width = (int)(Utility.MeasureTextSize(_label).Width + 20);
             Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom;
             _label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
+        }
+        public RibbonGroup(Control ribbon, int id)
+            : this(ribbon)
+        {
+            ID = id;
         }
 
         protected override void OnPaint(PaintEventArgs pe)
@@ -66,7 +72,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             var rc = this.ClientRectangle;
             ControlPaint.DrawBorder3D(pe.Graphics, rc, Border3DStyle.Etched, Border3DSide.Right);
         }
-
         protected override void OnDoubleClick(EventArgs e)
         {
             base.OnDoubleClick(e);
@@ -74,11 +79,23 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             _label.Focus();
             _label.SelectAll();
         }
-
         protected override void OnControlAdded(ControlEventArgs e)
         {
             base.OnControlAdded(e);
             Utility.UpdateGroupDimension(this);
+        }
+        protected override void OnControlRemoved(ControlEventArgs e)
+        {
+            base.OnControlRemoved(e);
+            CompactCtrls();
+            Utility.UpdateGroupDimension(this);
+        }
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            if(Parent != null)
+                Utility.GroupsDisplacement(Parent);
         }
 
         private void CompactCtrls()
@@ -87,28 +104,13 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 .OfType<ControlContainer>()
                 .OrderBy(c => c.Left)
                 .ToList();
-           
-           if (ctrls.Count > 0)
+
+            if (ctrls.Count > 0)
             {
                 ctrls[0].Left = Padding.Left;
                 for (int i = 1; i < ctrls.Count; i++)
                     ctrls[i].Left = ctrls[i - 1].Right;
             }
-        }
-
-        protected override void OnControlRemoved(ControlEventArgs e)
-        {
-            base.OnControlRemoved(e);
-            CompactCtrls();
-            Utility.UpdateGroupDimension(this);
-        }
-
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-
-            if(Parent != null)
-                Utility.GroupsDisplacement(Parent);
         }
     }
 }

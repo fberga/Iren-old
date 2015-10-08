@@ -13,8 +13,9 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
     {
         ImageList _imgs;
 
-        public string FileName { get; private set; }
+        public string ResourceName { get; private set; }
         public int Index { get; private set; }
+        public Image Img { get; private set; }
 
         public SelettoreImmagini(ImageList imgs)
         {
@@ -28,8 +29,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             foreach(string img in _imgs.Images.Keys)
             {
                 ListViewItem item = new ListViewItem();
-                string name = img.Split('\\').Last();
-                item.Text = name;
+                item.Text = img;
                 item.ToolTipText = img;
                 item.ImageIndex = i++;
                 item.ImageKey = img;
@@ -49,8 +49,9 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             if (imageListView.SelectedItems.Count > 0)
             {
-                FileName = imageListView.SelectedItems[0].ImageKey;
+                ResourceName = imageListView.SelectedItems[0].ImageKey;
                 Index = imageListView.SelectedIndices[0];
+                Img = Utility.GetResurceImage(ResourceName);
                 DialogResult = System.Windows.Forms.DialogResult.OK;
                 Close();
             }
