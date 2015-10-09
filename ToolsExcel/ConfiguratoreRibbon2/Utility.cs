@@ -16,6 +16,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public const string INSERT_GRUPPO = "RIBBON.spInsertGruppo";
         public const string INSERT_GRUPPO_CONTROLLO = "RIBBON.spInsertGruppoControllo";
         public const string APPLICAZIONE_UTENTE_RIBBON = "RIBBON.spGruppoControllo";
+        public const string CONTROLLO_FUNZIONE = "RIBBON.spControlloFunzione";
+        public const string FUNZIONE = "RIBBON.spFunzione";
     }
 
     class Utility

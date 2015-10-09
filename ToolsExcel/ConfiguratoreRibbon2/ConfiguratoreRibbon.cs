@@ -59,54 +59,57 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             DataTable ribbon = DataBase.Select(SP.APPLICAZIONE_UTENTE_RIBBON, "@IdApplicazione=" + appID + ";@IdUtente=" + usrID);
 
-            string group = "";
-            RibbonGroup grp = null;
-            foreach (DataRow r in ribbon.Rows)
+            if (ribbon != null)
             {
-                if (!r["NomeGruppo"].Equals(group))
+                string group = "";
+                RibbonGroup grp = null;
+                foreach (DataRow r in ribbon.Rows)
                 {
-                    group = r["NomeGruppo"].ToString();
-                    
-                    grp = new RibbonGroup(panelRibbonLayout, (int)r["IdGruppo"]);                    
-                    panelRibbonLayout.Controls.Add(grp);
-                    grp.Label = r["LabelGruppo"].ToString();
-                }
-                
-                Control container = Utility.CreateEmptyContainer(grp);
-                switch((int)r["IdTipologiaControllo"]) 
-                {
-                    case 1:
-                    case 2:                       
-                        grp.Controls.Add(container);
+                    if (!r["NomeGruppo"].Equals(group))
+                    {
+                        group = r["NomeGruppo"].ToString();
 
-                        RibbonButton btn = new RibbonButton(imageListNormal, imageListSmall, r["Immagine"].ToString(), (int)r["IdControllo"]);
-                        container.Controls.Add(btn);
+                        grp = new RibbonGroup(panelRibbonLayout, (int)r["IdGruppo"]);
+                        panelRibbonLayout.Controls.Add(grp);
+                        grp.Label = r["LabelGruppo"].ToString();
+                    }
 
-                        btn.Top = container.Padding.Top;
-                        btn.Left = container.Padding.Left;
+                    Control container = Utility.CreateEmptyContainer(grp);
+                    switch ((int)r["IdTipologiaControllo"])
+                    {
+                        case 1:
+                        case 2:
+                            grp.Controls.Add(container);
 
-                        btn.Descrizione = r["Descrizione"].ToString();
-                        btn.Label = r["Label"].ToString();
-                        btn.ScreenTip = r["ScreenTip"].ToString();
-                        btn.Dimensione = (int)r["ControlSize"];
-                        btn.ToggleButton = r["IdTipologiaControllo"].Equals(2);
+                            RibbonButton btn = new RibbonButton(imageListNormal, imageListSmall, r["Immagine"].ToString(), (int)r["IdControllo"]);
+                            container.Controls.Add(btn);
 
-                        break;
-                    case 3:                        
-                        grp.Controls.Add(container);
+                            btn.Top = container.Padding.Top;
+                            btn.Left = container.Padding.Left;
 
-                        RibbonDropDown drpD = new RibbonDropDown((int)r["IdControllo"]);
-                        container.Controls.Add(drpD);
+                            btn.Descrizione = r["Descrizione"].ToString();
+                            btn.Label = r["Label"].ToString();
+                            btn.ScreenTip = r["ScreenTip"].ToString();
+                            btn.Dimensione = (int)r["ControlSize"];
+                            btn.ToggleButton = r["IdTipologiaControllo"].Equals(2);
 
-                        drpD.Top = container.Padding.Top;
-                        drpD.Left = container.Padding.Left;
+                            break;
+                        case 3:
+                            grp.Controls.Add(container);
 
-                        drpD.Descrizione = r["Descrizione"].ToString();
-                        drpD.Label = r["Label"].ToString();
-                        drpD.SetWidth();
-                        drpD.ScreenTip = r["ScreenTip"].ToString();
+                            RibbonDropDown drpD = new RibbonDropDown((int)r["IdControllo"]);
+                            container.Controls.Add(drpD);
 
-                        break;
+                            drpD.Top = container.Padding.Top;
+                            drpD.Left = container.Padding.Left;
+
+                            drpD.Descrizione = r["Descrizione"].ToString();
+                            drpD.Label = r["Label"].ToString();
+                            drpD.SetWidth();
+                            drpD.ScreenTip = r["ScreenTip"].ToString();
+
+                            break;
+                    }
                 }
             }
         }

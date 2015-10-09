@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSOLauncher", "PSOLauncher\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfiguratoreRibbon2", "ConfiguratoreRibbon2\ConfiguratoreRibbon2.csproj", "{08707F85-68F4-4010-8243-F236B58F6E43}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProvaRibbon", "ProvaRibbon\ProvaRibbon.csproj", "{664701A6-AB7C-4414-8423-31E65BB9985E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -217,6 +219,16 @@ Global
 		{08707F85-68F4-4010-8243-F236B58F6E43}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{08707F85-68F4-4010-8243-F236B58F6E43}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{08707F85-68F4-4010-8243-F236B58F6E43}.Release|x86.ActiveCfg = Release|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{664701A6-AB7C-4414-8423-31E65BB9985E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

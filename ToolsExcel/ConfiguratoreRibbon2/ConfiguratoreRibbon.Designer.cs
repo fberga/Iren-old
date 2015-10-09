@@ -81,7 +81,7 @@
             this.toolStripSeparator3});
             this.toolStripTopMenu.Location = new System.Drawing.Point(244, 0);
             this.toolStripTopMenu.Name = "toolStripTopMenu";
-            this.toolStripTopMenu.Size = new System.Drawing.Size(382, 56);
+            this.toolStripTopMenu.Size = new System.Drawing.Size(359, 56);
             this.toolStripTopMenu.TabIndex = 2;
             this.toolStripTopMenu.Text = "Drop down";
             // 
@@ -270,9 +270,9 @@
             this.tableLayoutForm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutForm.ColumnCount = 5;
             this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 244F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 382F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 232F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 247F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 359F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 233F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 269F));
             this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 416F));
             this.tableLayoutForm.Controls.Add(this.panelRibbonLayout, 0, 1);
             this.tableLayoutForm.Controls.Add(this.toolStripTopMenu, 1, 0);

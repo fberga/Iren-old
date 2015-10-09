@@ -52,7 +52,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public bool ToggleButton { get; set; }
         public string Label { get { return Text; } set { Text = value; } }
         public string ImageName { get { return ImageKey; } }
-        public int ID { get; private set; }        
+        public int ID { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -144,29 +144,27 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         protected override void OnDoubleClick(EventArgs e)
         {
-            int dim = Dimensione;
-
-            using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this, _imageListNormal))
+            if (ID == 0)
             {
-                cfg.ShowDialog();
+                int dim = Dimensione;
 
-                //if (Dimensione == 1)
-                //{
-                //    SetUpLargeButton();
-                //    SetLargeButtonDimension();
-                //}
-                //else if (Dimensione == 0)
-                //{
-                //    SetUpSmallButton();
-                //    SetSmallButtonDimension();
-                //}
-
-                if (dim != Dimensione)
+                using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this, _imageListNormal))
                 {
-                    OnPropertyChanged("Dimensione");
+                    cfg.ShowDialog();
+
+                    if (dim != Dimensione)
+                    {
+                        OnPropertyChanged("Dimensione");
+                    }
                 }
             }
+            else
+            {
+                RibbonGroup grp = Parent.Parent as RibbonGroup;
 
+                AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62);
+                afForm.Show();
+            }
             base.OnDoubleClick(e);
         }
         protected override void OnMouseDown(MouseEventArgs mevent)

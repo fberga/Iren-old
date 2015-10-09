@@ -45,6 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssegnaFunzioni.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AssegnaFunzioni.Designer.cs">
+      <DependentUpon>AssegnaFunzioni.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConfiguratoreRibbon.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -91,6 +97,9 @@
       <DependentUpon>SelettoreImmagini.cs</DependentUpon>
     </Compile>
     <Compile Include="Utility.cs" />
+    <EmbeddedResource Include="AssegnaFunzioni.resx">
+      <DependentUpon>AssegnaFunzioni.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ConfiguratoreRibbon.resx">
       <DependentUpon>ConfiguratoreRibbon.cs</DependentUpon>
     </EmbeddedResource>

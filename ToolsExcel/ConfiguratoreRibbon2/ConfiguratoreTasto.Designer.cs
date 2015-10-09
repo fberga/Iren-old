@@ -38,20 +38,22 @@
             this.lbLabel = new System.Windows.Forms.Label();
             this.lbScreenTip = new System.Windows.Forms.Label();
             this.lbDimension = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panelDimensione = new System.Windows.Forms.Panel();
             this.panelBottom = new System.Windows.Forms.Panel();
             this.btnApplica = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.imgButton = new System.Windows.Forms.PictureBox();
-            this.panel1.SuspendLayout();
+            this.panelContent = new System.Windows.Forms.Panel();
+            this.panelDimensione.SuspendLayout();
             this.panelBottom.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imgButton)).BeginInit();
+            this.panelContent.SuspendLayout();
             this.SuspendLayout();
             // 
             // chkToggleButton
             // 
             this.chkToggleButton.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.chkToggleButton.Location = new System.Drawing.Point(74, 206);
+            this.chkToggleButton.Location = new System.Drawing.Point(75, 205);
             this.chkToggleButton.Margin = new System.Windows.Forms.Padding(0);
             this.chkToggleButton.Name = "chkToggleButton";
             this.chkToggleButton.Size = new System.Drawing.Size(128, 24);
@@ -62,7 +64,7 @@
             // txtDesc
             // 
             this.txtDesc.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtDesc.Location = new System.Drawing.Point(188, 39);
+            this.txtDesc.Location = new System.Drawing.Point(189, 39);
             this.txtDesc.Multiline = true;
             this.txtDesc.Name = "txtDesc";
             this.txtDesc.Size = new System.Drawing.Size(251, 76);
@@ -71,7 +73,7 @@
             // txtLabel
             // 
             this.txtLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtLabel.Location = new System.Drawing.Point(188, 7);
+            this.txtLabel.Location = new System.Drawing.Point(189, 7);
             this.txtLabel.Name = "txtLabel";
             this.txtLabel.Size = new System.Drawing.Size(251, 26);
             this.txtLabel.TabIndex = 4;
@@ -79,7 +81,7 @@
             // txtScreenTip
             // 
             this.txtScreenTip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtScreenTip.Location = new System.Drawing.Point(188, 121);
+            this.txtScreenTip.Location = new System.Drawing.Point(189, 121);
             this.txtScreenTip.Multiline = true;
             this.txtScreenTip.Name = "txtScreenTip";
             this.txtScreenTip.Size = new System.Drawing.Size(251, 76);
@@ -143,32 +145,32 @@
             this.lbDimension.TabIndex = 11;
             this.lbDimension.Text = "Dimensione";
             // 
-            // panel1
+            // panelDimensione
             // 
-            this.panel1.BackColor = System.Drawing.SystemColors.Window;
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.radioDimLarge);
-            this.panel1.Controls.Add(this.radioDimSmall);
-            this.panel1.Location = new System.Drawing.Point(188, 239);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(251, 68);
-            this.panel1.TabIndex = 12;
+            this.panelDimensione.BackColor = System.Drawing.SystemColors.Window;
+            this.panelDimensione.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelDimensione.Controls.Add(this.radioDimLarge);
+            this.panelDimensione.Controls.Add(this.radioDimSmall);
+            this.panelDimensione.Location = new System.Drawing.Point(189, 239);
+            this.panelDimensione.Name = "panelDimensione";
+            this.panelDimensione.Size = new System.Drawing.Size(251, 68);
+            this.panelDimensione.TabIndex = 12;
             // 
             // panelBottom
             // 
             this.panelBottom.Controls.Add(this.btnApplica);
             this.panelBottom.Controls.Add(this.btnAnnulla);
-            this.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelBottom.Location = new System.Drawing.Point(5, 319);
+            this.panelBottom.Location = new System.Drawing.Point(0, 315);
+            this.panelBottom.Margin = new System.Windows.Forms.Padding(0);
             this.panelBottom.Name = "panelBottom";
-            this.panelBottom.Size = new System.Drawing.Size(437, 48);
+            this.panelBottom.Size = new System.Drawing.Size(443, 48);
             this.panelBottom.TabIndex = 13;
             // 
             // btnApplica
             // 
             this.btnApplica.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnApplica.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnApplica.Location = new System.Drawing.Point(211, 0);
+            this.btnApplica.Location = new System.Drawing.Point(217, 0);
             this.btnApplica.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnApplica.Name = "btnApplica";
             this.btnApplica.Size = new System.Drawing.Size(113, 48);
@@ -182,7 +184,7 @@
             this.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnAnnulla.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnAnnulla.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAnnulla.Location = new System.Drawing.Point(324, 0);
+            this.btnAnnulla.Location = new System.Drawing.Point(330, 0);
             this.btnAnnulla.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAnnulla.Name = "btnAnnulla";
             this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
@@ -202,35 +204,48 @@
             this.imgButton.TabStop = false;
             this.imgButton.Click += new System.EventHandler(this.ChangeBtnImage);
             // 
+            // panelContent
+            // 
+            this.panelContent.Controls.Add(this.panelDimensione);
+            this.panelContent.Controls.Add(this.lbDimension);
+            this.panelContent.Controls.Add(this.lbScreenTip);
+            this.panelContent.Controls.Add(this.lbLabel);
+            this.panelContent.Controls.Add(this.lbDesc);
+            this.panelContent.Controls.Add(this.txtScreenTip);
+            this.panelContent.Controls.Add(this.txtLabel);
+            this.panelContent.Controls.Add(this.txtDesc);
+            this.panelContent.Controls.Add(this.imgButton);
+            this.panelContent.Controls.Add(this.chkToggleButton);
+            this.panelContent.Location = new System.Drawing.Point(0, 0);
+            this.panelContent.Margin = new System.Windows.Forms.Padding(0);
+            this.panelContent.Name = "panelContent";
+            this.panelContent.Size = new System.Drawing.Size(443, 316);
+            this.panelContent.TabIndex = 14;
+            // 
             // ConfiguratoreTasto
             // 
             this.AcceptButton = this.btnApplica;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.CancelButton = this.btnAnnulla;
-            this.ClientSize = new System.Drawing.Size(447, 372);
+            this.ClientSize = new System.Drawing.Size(740, 550);
+            this.Controls.Add(this.panelContent);
             this.Controls.Add(this.panelBottom);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.lbDimension);
-            this.Controls.Add(this.lbScreenTip);
-            this.Controls.Add(this.lbLabel);
-            this.Controls.Add(this.lbDesc);
-            this.Controls.Add(this.txtScreenTip);
-            this.Controls.Add(this.txtLabel);
-            this.Controls.Add(this.txtDesc);
-            this.Controls.Add(this.imgButton);
-            this.Controls.Add(this.chkToggleButton);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "ConfiguratoreTasto";
             this.Padding = new System.Windows.Forms.Padding(5);
             this.Text = "Applicazione";
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
+            this.panelDimensione.ResumeLayout(false);
+            this.panelDimensione.PerformLayout();
             this.panelBottom.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.imgButton)).EndInit();
+            this.panelContent.ResumeLayout(false);
+            this.panelContent.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -247,9 +262,10 @@
         private System.Windows.Forms.Label lbLabel;
         private System.Windows.Forms.Label lbScreenTip;
         private System.Windows.Forms.Label lbDimension;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelDimensione;
         private System.Windows.Forms.Panel panelBottom;
         private System.Windows.Forms.Button btnApplica;
         private System.Windows.Forms.Button btnAnnulla;
+        private System.Windows.Forms.Panel panelContent;
     }
 }
