@@ -57,18 +57,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -76,154 +76,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\aggiornadati-icon.png">
-      <Link>Resources\aggiornadati-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\aggiornastruttura-icon.png">
-      <Link>Resources\aggiornastruttura-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\azioni-icon.png">
-      <Link>Resources\azioni-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\calendario-icon.png">
-      <Link>Resources\calendario-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\dev-icon.png">
-      <Link>Resources\dev-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\errorpane-icon.png">
-      <Link>Resources\errorpane-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\export-xml.png">
-      <Link>Resources\export-xml.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\ExtensionManager_vsix_OSReg.ico">
-      <Link>Resources\ExtensionManager_vsix_OSReg.ico</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\forzaemergenza-icon.png">
-      <Link>Resources\forzaemergenza-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\gas-icon.png">
-      <Link>Resources\gas-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\import-xml.png">
-      <Link>Resources\import-xml.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\invioProgrammi-icon.png">
-      <Link>Resources\invioProgrammi-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\modificaNO-icon.png">
-      <Link>Resources\modificaNO-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\modificaSI-icon.png">
-      <Link>Resources\modificaSI-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\offerteMB-icon.png">
-      <Link>Resources\offerteMB-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\offerteMGP-icon.png">
-      <Link>Resources\offerteMGP-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\offerteMSD-icon.png">
-      <Link>Resources\offerteMSD-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\ottimizzatore-icon.png">
-      <Link>Resources\ottimizzatore-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\params-config-icon.png">
-      <Link>Resources\params-config-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\previsioneCT-icon.png">
-      <Link>Resources\previsioneCT-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\prezziMSD-icon.png">
-      <Link>Resources\prezziMSD-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\prod-icon.png">
-      <Link>Resources\prod-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\progrImpianti-icon.png">
-      <Link>Resources\progrImpianti-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\rampe-icon.png">
-      <Link>Resources\rampe-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\salva-icon.png">
-      <Link>Resources\salva-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\settings-icon.png">
-      <Link>Resources\settings-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\sisCom-icon.png">
-      <Link>Resources\sisCom-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\test-icon.png">
-      <Link>Resources\test-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\unitComm-icon.png">
-      <Link>Resources\unitComm-icon.png</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\toolsexcelbase\resources\validazioneTL-icon.png">
-      <Link>Resources\validazioneTL-icon.png</Link>
-    </CodeAnalysisDictionary>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

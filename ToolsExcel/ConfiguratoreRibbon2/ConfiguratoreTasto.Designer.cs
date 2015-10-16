@@ -44,6 +44,8 @@
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.imgButton = new System.Windows.Forms.PictureBox();
             this.panelContent = new System.Windows.Forms.Panel();
+            this.lbName = new System.Windows.Forms.Label();
+            this.txtName = new System.Windows.Forms.TextBox();
             this.panelDimensione.SuspendLayout();
             this.panelBottom.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.imgButton)).BeginInit();
@@ -53,7 +55,7 @@
             // chkToggleButton
             // 
             this.chkToggleButton.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.chkToggleButton.Location = new System.Drawing.Point(75, 205);
+            this.chkToggleButton.Location = new System.Drawing.Point(75, 231);
             this.chkToggleButton.Margin = new System.Windows.Forms.Padding(0);
             this.chkToggleButton.Name = "chkToggleButton";
             this.chkToggleButton.Size = new System.Drawing.Size(128, 24);
@@ -64,7 +66,7 @@
             // txtDesc
             // 
             this.txtDesc.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtDesc.Location = new System.Drawing.Point(189, 39);
+            this.txtDesc.Location = new System.Drawing.Point(189, 71);
             this.txtDesc.Multiline = true;
             this.txtDesc.Name = "txtDesc";
             this.txtDesc.Size = new System.Drawing.Size(251, 76);
@@ -73,7 +75,7 @@
             // txtLabel
             // 
             this.txtLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtLabel.Location = new System.Drawing.Point(189, 7);
+            this.txtLabel.Location = new System.Drawing.Point(189, 39);
             this.txtLabel.Name = "txtLabel";
             this.txtLabel.Size = new System.Drawing.Size(251, 26);
             this.txtLabel.TabIndex = 4;
@@ -81,7 +83,7 @@
             // txtScreenTip
             // 
             this.txtScreenTip.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtScreenTip.Location = new System.Drawing.Point(189, 121);
+            this.txtScreenTip.Location = new System.Drawing.Point(189, 153);
             this.txtScreenTip.Multiline = true;
             this.txtScreenTip.Name = "txtScreenTip";
             this.txtScreenTip.Size = new System.Drawing.Size(251, 76);
@@ -112,7 +114,7 @@
             // lbDesc
             // 
             this.lbDesc.AutoSize = true;
-            this.lbDesc.Location = new System.Drawing.Point(75, 41);
+            this.lbDesc.Location = new System.Drawing.Point(78, 73);
             this.lbDesc.Name = "lbDesc";
             this.lbDesc.Size = new System.Drawing.Size(92, 20);
             this.lbDesc.TabIndex = 8;
@@ -121,7 +123,7 @@
             // lbLabel
             // 
             this.lbLabel.AutoSize = true;
-            this.lbLabel.Location = new System.Drawing.Point(75, 9);
+            this.lbLabel.Location = new System.Drawing.Point(78, 41);
             this.lbLabel.Name = "lbLabel";
             this.lbLabel.Size = new System.Drawing.Size(48, 20);
             this.lbLabel.TabIndex = 9;
@@ -130,7 +132,7 @@
             // lbScreenTip
             // 
             this.lbScreenTip.AutoSize = true;
-            this.lbScreenTip.Location = new System.Drawing.Point(75, 123);
+            this.lbScreenTip.Location = new System.Drawing.Point(75, 155);
             this.lbScreenTip.Name = "lbScreenTip";
             this.lbScreenTip.Size = new System.Drawing.Size(85, 20);
             this.lbScreenTip.TabIndex = 10;
@@ -139,7 +141,7 @@
             // lbDimension
             // 
             this.lbDimension.AutoSize = true;
-            this.lbDimension.Location = new System.Drawing.Point(75, 247);
+            this.lbDimension.Location = new System.Drawing.Point(75, 265);
             this.lbDimension.Name = "lbDimension";
             this.lbDimension.Size = new System.Drawing.Size(93, 20);
             this.lbDimension.TabIndex = 11;
@@ -151,7 +153,7 @@
             this.panelDimensione.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelDimensione.Controls.Add(this.radioDimLarge);
             this.panelDimensione.Controls.Add(this.radioDimSmall);
-            this.panelDimensione.Location = new System.Drawing.Point(189, 239);
+            this.panelDimensione.Location = new System.Drawing.Point(189, 257);
             this.panelDimensione.Name = "panelDimensione";
             this.panelDimensione.Size = new System.Drawing.Size(251, 68);
             this.panelDimensione.TabIndex = 12;
@@ -160,7 +162,7 @@
             // 
             this.panelBottom.Controls.Add(this.btnApplica);
             this.panelBottom.Controls.Add(this.btnAnnulla);
-            this.panelBottom.Location = new System.Drawing.Point(0, 315);
+            this.panelBottom.Location = new System.Drawing.Point(0, 328);
             this.panelBottom.Margin = new System.Windows.Forms.Padding(0);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(443, 48);
@@ -206,6 +208,8 @@
             // 
             // panelContent
             // 
+            this.panelContent.Controls.Add(this.lbName);
+            this.panelContent.Controls.Add(this.txtName);
             this.panelContent.Controls.Add(this.panelDimensione);
             this.panelContent.Controls.Add(this.lbDimension);
             this.panelContent.Controls.Add(this.lbScreenTip);
@@ -219,8 +223,25 @@
             this.panelContent.Location = new System.Drawing.Point(0, 0);
             this.panelContent.Margin = new System.Windows.Forms.Padding(0);
             this.panelContent.Name = "panelContent";
-            this.panelContent.Size = new System.Drawing.Size(443, 316);
+            this.panelContent.Size = new System.Drawing.Size(443, 329);
             this.panelContent.TabIndex = 14;
+            // 
+            // lbName
+            // 
+            this.lbName.AutoSize = true;
+            this.lbName.Location = new System.Drawing.Point(78, 9);
+            this.lbName.Name = "lbName";
+            this.lbName.Size = new System.Drawing.Size(51, 20);
+            this.lbName.TabIndex = 14;
+            this.lbName.Text = "Nome";
+            // 
+            // txtName
+            // 
+            this.txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtName.Location = new System.Drawing.Point(189, 7);
+            this.txtName.Name = "txtName";
+            this.txtName.Size = new System.Drawing.Size(251, 26);
+            this.txtName.TabIndex = 13;
             // 
             // ConfiguratoreTasto
             // 
@@ -267,5 +288,7 @@
         private System.Windows.Forms.Button btnApplica;
         private System.Windows.Forms.Button btnAnnulla;
         private System.Windows.Forms.Panel panelContent;
+        private System.Windows.Forms.Label lbName;
+        private System.Windows.Forms.TextBox txtName;
     }
 }

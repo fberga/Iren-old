@@ -121,13 +121,16 @@ namespace Iren.ToolsExcel.Core
         /// Imposta i parametri principali da utilizzare in quasi tutti i comandi.
         /// </summary>
         /// <param name="dataAttiva">La data di riferimento.</param>
-        /// <param name="idUtenteAttivo">Id dell'utente che ha eseguito il login.</param>
+        /// <param name="idUtente">Id dell'utente che ha eseguito il login.</param>
         /// <param name="idApplicazione">Id dell'applicazione aperta.</param>
-        public void SetParameters(string dataAttiva, int idUtenteAttivo, int idApplicazione)
+        public void SetParameters(string dataAttiva = null, int idUtente = int.MinValue, int idApplicazione = int.MinValue)
         {
-            _dataAttiva = dataAttiva;
-            _idUtenteAttivo = idUtenteAttivo;
-            _idApplicazione = idApplicazione;
+            if (dataAttiva != null)
+                _dataAttiva = dataAttiva;
+            if (idUtente != int.MinValue)
+                _idUtenteAttivo = idUtente;
+            if (idApplicazione != int.MinValue)
+                _idApplicazione = idApplicazione;
         }
         /// <summary>
         /// Cambia la data di riferimento.
@@ -152,7 +155,7 @@ namespace Iren.ToolsExcel.Core
         /// <param name="storedProcedure">Nome della stored procedure.</param>
         /// <param name="parameters">Parametri richiesti dalla stored procedure.</param>
         /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
-        public bool Insert(string storedProcedure, QryParams parameters)
+        public bool Insert(string storedProcedure, QryParams parameters, int timeout = 300)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -163,7 +166,7 @@ namespace Iren.ToolsExcel.Core
 
             try
             {
-                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters);
+                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters, timeout);
                 cmd.ExecuteNonQuery();
                 return cmd.Parameters[0].Value.Equals(0);
             }
@@ -172,7 +175,11 @@ namespace Iren.ToolsExcel.Core
                 return false;
             }
         }
-        public bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams)
+        public bool Insert(string storedProcedure, string parameters, int timeout = 300)
+        {
+            return Insert(storedProcedure, getParamsFromString(parameters), timeout);
+        }
+        public bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams, int timeout = 300)
         {
             if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
                 parameters.Add("@IdApplicazione", _idApplicazione);
@@ -183,7 +190,7 @@ namespace Iren.ToolsExcel.Core
 
             try
             {
-                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters);
+                SqlCommand cmd = _cmd.SqlCmd(storedProcedure, parameters, timeout);
                 cmd.ExecuteNonQuery();
                 outParams = new Dictionary<string, object>();
                 
@@ -200,6 +207,10 @@ namespace Iren.ToolsExcel.Core
                 return false;
             }
         }
+        public bool Insert(string storedProcedure, string parameters, out Dictionary<string, object> outParams, int timeout = 300)
+        {
+            return Insert(storedProcedure, getParamsFromString(parameters), out outParams, timeout);
+        }
         /// <summary>
         /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
         /// </summary>
@@ -211,27 +222,29 @@ namespace Iren.ToolsExcel.Core
         {
             return Select(_cmd, storedProcedure, parameters, timeout);
         }
-        /// <summary>
-        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
-        /// </summary>
-        /// <param name="storedProcedure">Nome della stored procedure.</param>
-        /// <param name="parameters">Stringa del tipo "@param=valore;..." che rappresenta i parametri richiesti dalla stored procedure.</param>
-        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
-        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, String parameters, int timeout = 300)
         {
             return Select(storedProcedure, getParamsFromString(parameters), timeout);
         }
-        /// <summary>
-        /// Funzione per l'esecuzione di una stored procedure di selezone di valori. Restituisce una tabella contenente i record restituiti dal comando.
-        /// </summary>
-        /// <param name="storedProcedure">Nome della stored procedure.</param>
-        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
-        /// <returns>Tabella contenente i record restituiti dalla stored procedure.</returns>
         public DataTable Select(string storedProcedure, int timeout = 300)
         {
             QryParams parameters = new QryParams();
             return Select(storedProcedure, parameters, timeout);
+        }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di cancellazione (solo mnemonico, esegue funzione insert).
+        /// </summary>
+        /// <param name="storedProcedure">Nome della stored procedure.</param>
+        /// <param name="parameters">Parametri richiesti dalla stored procedure.</param>
+        /// <param name="timeout">Time out di esecuzione della stored procedure.</param>
+        /// <returns>Restituisce true se la query è andata a buon fine, false se è andata in timeout.</returns>
+        public bool Delete(string storedProcedure, QryParams parameters, int timeout = 300)
+        {
+            return Insert(storedProcedure, parameters, timeout);
+        }
+        public bool Delete(string storedProcedure, string parameters, int timeout = 300)
+        {
+            return Delete(storedProcedure, getParamsFromString(parameters), timeout);
         }
 
         /// <summary>
@@ -325,13 +338,12 @@ namespace Iren.ToolsExcel.Core
                 parameters.Add("@Data", _dataAttiva);
             try
             {
+                DataTable dt = new DataTable();
                 using (SqlDataReader dr = cmd.SqlCmd(storedProcedure, parameters, timeout).ExecuteReader())
                 {
-                    DataTable dt = new DataTable();
                     dt.Load(dr);
-
-                    return dt;
                 }
+                return dt;
             }
             catch (SqlException)
             {

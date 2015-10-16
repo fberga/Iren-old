@@ -9,24 +9,26 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    public partial class SelettoreImmagini : Form
+    public partial class CreaTasto : Form
     {
-        ImageList _imgs;
 
         public string ResourceName { get; private set; }
-        public int Index { get; private set; }
         public Image Img { get; private set; }
+        public string BtnName { get { return txtName.Text; } }
+        public string BtnText { get { return txtLabel.Text; } }
 
-        public SelettoreImmagini(ImageList imgs)
+        public CreaTasto(Control ribbon)
         {
             InitializeComponent();
 
-            _imgs = imgs;
+            int prog = Utility.FindLastOfItsKind(ribbon, RibbonButton.NEW_BUTTON_PREFIX, typeof(RibbonButton)) + 1;
+            txtLabel.Text = RibbonButton.NEW_BUTTON_PREFIX + " " + prog;
+            txtName.Text = txtLabel.Text.Replace(" ", "_");
 
-            imageListView.LargeImageList = _imgs;
+            imageListView.LargeImageList = Utility.ImageListNormal;
 
             int i = 0;
-            foreach(string img in _imgs.Images.Keys)
+            foreach (string img in Utility.ImageListNormal.Images.Keys)
             {
                 ListViewItem item = new ListViewItem();
                 item.Text = img;
@@ -47,18 +49,22 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         private void Applica_Click(object sender, EventArgs e)
         {
-            if (imageListView.SelectedItems.Count > 0)
+            if (txtLabel.Text == "" || txtName.Text == "")
             {
-                ResourceName = imageListView.SelectedItems[0].ImageKey;
-                Index = imageListView.SelectedIndices[0];
-                Img = Utility.GetResurceImage(ResourceName);
-                DialogResult = System.Windows.Forms.DialogResult.OK;
-                Close();
+                MessageBox.Show("Inserire un nome e/o un label per il tasto.", "ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else
-            {
-                MessageBox.Show(char.ToUpper('è') + " necessario selezionare un'immagine prima di proseguire...", "ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            if (imageListView.SelectedItems.Count == 0)
+            { 
+                MessageBox.Show("Selezionare un'immagine per il tasto.", "ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
+
+            ResourceName = imageListView.SelectedItems[0].ImageKey;            
+            Img = Utility.GetResurceImage(ResourceName);
+            DialogResult = System.Windows.Forms.DialogResult.OK;
+            Close();
         }
 
         public new DialogResult ShowDialog()

@@ -21,6 +21,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             CtrlCount = 0;
             AllowDrop = true;
             Padding = new Padding(1, 1, 0, 0);
+            Font = Utility.StdFont;
         }
 
         protected override void OnPaint(PaintEventArgs pe)

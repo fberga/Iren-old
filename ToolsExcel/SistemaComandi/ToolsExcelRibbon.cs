@@ -247,7 +247,7 @@ namespace Iren.ToolsExcel
             if (DataBase.OpenConnection())
             {
                 int count = 0;
-                foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Name == "groupAmbienti").Items)
+                foreach (RibbonToggleButton button in FrontOffice.Groups.First(g => g.Label.ToLower() == "ambienti").Items)
                 {
                     if (button.Checked)
                     {
@@ -258,8 +258,8 @@ namespace Iren.ToolsExcel
                 //se maggiore di 1 allora c'è un cambio ambiente altrimenti doppio click sullo stesso e non faccio nulla
                 if (count > 1)
                 {
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Name);
-                    DataBase.SwitchEnvironment(ambienteScelto.Name.Replace("btn", ""));
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Label);
+                    DataBase.SwitchEnvironment(ambienteScelto.Label);
 
                     btnAggiornaStruttura_Click(null, null);
                 }
@@ -328,14 +328,14 @@ namespace Iren.ToolsExcel
                 //Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
                 SplashScreen.Show();
-
+                
                 Workbook.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
-                btnCalendar.Label = calDate.ToString("dddd dd MMM yyyy");
+                ((RibbonButton)sender).Label = calDate.ToString("dddd dd MMM yyyy");
 
                 Aggiorna aggiorna = new Aggiorna();
                 if (DataBase.OpenConnection())
                 {
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + btnCalendar.Label);
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + ((RibbonButton)sender).Label);
                     DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
@@ -469,14 +469,14 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Simboli.ModificaDati = btnModifica.Checked;
+            Simboli.ModificaDati = ((RibbonToggleButton)sender).Checked;
 
-            if (btnModifica.Checked) 
+            if (((RibbonToggleButton)sender).Checked) 
             {
                 AbilitaTasti(false);
-                btnModifica.Enabled = true;
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI;
-                btnModifica.Label = "Modifica SI";
+                ((RibbonToggleButton)sender).Enabled = true;
+                ((RibbonToggleButton)sender).Image = Iren.ToolsExcel.Base.Properties.Resources.modificaSI;
+                ((RibbonToggleButton)sender).Label = "Modifica SI";
                 Workbook.WB.SheetChange += Handler.StoreEdit;
                 //Aggiungo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange += _modificaCustom.Range; 
@@ -487,8 +487,8 @@ namespace Iren.ToolsExcel
                 //salva modifiche sul db
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
-                btnModifica.Label = "Modifica NO";
+                ((RibbonToggleButton)sender).Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
+                ((RibbonToggleButton)sender).Label = "Modifica NO";
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 //Rimuovo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange -= _modificaCustom.Range;
@@ -500,7 +500,7 @@ namespace Iren.ToolsExcel
                 //disabilito i tasti legati alla connessione se necessario
                 StatoDB_Changed(null, null);
             }
-            Sheet.AbilitaModifica(btnModifica.Checked);
+            Sheet.AbilitaModifica(((RibbonToggleButton)sender).Checked);
 
             Workbook.RefreshLog();
 
@@ -612,6 +612,7 @@ namespace Iren.ToolsExcel
             else
             {
                 btn.Checked = false;
+                //TODO Controllare e cambiare il path
                 Handler.SwitchWorksheet(btn.Name.Substring(3));
             }
         }
@@ -622,7 +623,7 @@ namespace Iren.ToolsExcel
         /// <param name="e"></param>
         private void btnForzaEmergenza_Click(object sender, RibbonControlEventArgs e)
         {
-            Simboli.EmergenzaForzata = btnForzaEmergenza.Checked;
+            Simboli.EmergenzaForzata = ((RibbonToggleButton)sender).Checked;
             StatoDB_Changed(null, null);
         }
         /// <summary>

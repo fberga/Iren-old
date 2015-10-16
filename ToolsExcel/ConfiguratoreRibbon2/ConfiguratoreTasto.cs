@@ -12,23 +12,25 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
     public partial class ConfiguratoreTasto : Form
     {
         RibbonButton _btn;
-        ImageList _imgList;
-        bool _applica = false;
 
-
-        public ConfiguratoreTasto(RibbonButton btn, ImageList imgList)
+        public ConfiguratoreTasto(RibbonButton btn, Control ribbon)
+            : this(btn)
+        {
+            int prog = Utility.FindLastOfItsKind(ribbon, RibbonButton.NEW_BUTTON_PREFIX, typeof(RibbonButton)) + 1;
+            txtLabel.Text = RibbonButton.NEW_BUTTON_PREFIX + " " + prog;
+            txtName.Text = txtLabel.Text.Replace(" ", "_");
+        }
+        public ConfiguratoreTasto(RibbonButton btn)
         {
             InitializeComponent();
 
             _btn = btn;
-            _imgList = imgList;
 
             imgButton.Name = _btn.ImageKey;
             imgButton.Image = Utility.GetResurceImage(_btn.ImageKey);
-            //txtName.Text = _btn.Nome;
-            txtLabel.Text = _btn.Label;
+            txtLabel.Text = _btn.Text;
 
-            txtDesc.Text = _btn.Descrizione;
+            txtDesc.Text = _btn.Description;
             txtScreenTip.Text = _btn.ScreenTip;
             chkToggleButton.Checked = _btn.ToggleButton;            
             if (_btn.Slot == 1) 
@@ -44,7 +46,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         private void ChangeBtnImage(object sender, EventArgs e)
         {
-            using (SelettoreImmagini chooseImageDialog = new SelettoreImmagini(_imgList))
+            using (CambiaImmagine chooseImageDialog = new CambiaImmagine())
             {
                 if (chooseImageDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -57,31 +59,21 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private void Applica_Click(object sender, EventArgs e)
         {
             _btn.ImageKey = imgButton.Name;
-            _btn.Label = txtLabel.Text;
+            _btn.Text = txtLabel.Text;
 
-            _btn.Descrizione = txtDesc.Text;
+            _btn.Description = txtDesc.Text;
             _btn.ScreenTip = txtScreenTip.Text;
             _btn.ToggleButton = chkToggleButton.Checked;
-            _btn.Dimensione = radioDimSmall.Checked ? 0 : 1;
+            _btn.Dimension = radioDimSmall.Checked ? 0 : 1;
 
-            _applica = true;
+            DialogResult = DialogResult.OK;
             Close();
         }
 
         private void btnAnnulla_Click(object sender, EventArgs e)
         {
+            DialogResult = DialogResult.Cancel;
             Close();
-        }
-
-        public new DialogResult ShowDialog()
-        {
-            if (base.ShowDialog() == DialogResult.Cancel)
-                return DialogResult.Cancel;
-
-            if(_applica == true)
-                return DialogResult.OK;
-
-            return DialogResult.Cancel;
         }
     }
 }

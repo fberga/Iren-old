@@ -9,10 +9,11 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     class RibbonGroup : SelectablePanel
     {
-        const string NEW_GROUP_PREFIX = "New Group";
+        public const string NEW_GROUP_PREFIX = "New Group";
 
-        TextBox _label = new TextBox();
-        public string Label { get { return _label.Text; } set { _label.Text = value; } }
+        private TextBox Label { get; set; }
+        public string Text { get { return Label.Text; } set { Label.Text = value; } }
+        public string Name { get; set; }
 
         public int ID { get; private set; }
         
@@ -20,28 +21,30 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             : base()
         {
             //Dock = DockStyle.Left;
-            Padding = new Padding(4, 4, 4, 4);
+            this.Padding = new Padding(4, 4, 4, 4);
 
-            Controls.Add(_label);
-            _label.Dock = DockStyle.Bottom;
-            _label.AutoSize = false;
-            _label.TextAlign = HorizontalAlignment.Center;
-            _label.Click += SelectAllText;
-            _label.Leave += CheckTextChanged;
+            this.Label = new TextBox();
 
-            _label.BorderStyle = BorderStyle.None;
+            this.Controls.Add(this.Label);
+            this.Label.Dock = DockStyle.Bottom;
+            this.Label.AutoSize = false;
+            this.Label.TextAlign = HorizontalAlignment.Center;
+            this.Label.Click += SelectAllText;
+            this.Label.Leave += CheckTextChanged;
+
+            this.Label.BorderStyle = BorderStyle.None;
         }
 
         private void SelectAllText(object sender, EventArgs e)
         {
-            _label.SelectAll();
+            this.Label.SelectAll();
         }
 
         private void CheckTextChanged(object sender, EventArgs e)
         {
-            if(_label.Name != _label.Text.Replace(" ", ""))
+            if (this.Label.Name != this.Text)
             {
-                _label.Name = _label.Text.Replace(" ", "");
+                this.Label.Name = this.Text;
                 Utility.UpdateGroupDimension(this);
             }
         }
@@ -49,21 +52,31 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public RibbonGroup(Control ribbon)
             : this()
         {
+            using (ConfiguraControllo cc = new ConfiguraControllo(ribbon, typeof(RibbonGroup)))
+            {
+                if (cc.ShowDialog() == DialogResult.OK)
+                {
+                    Name = cc.CtrlName;
+                    Text = cc.CtrlText;
+                }
+                else
+                {
+                    Dispose();
+                    return;
+                }
+            }
+
             BackColor = ControlPaint.LightLight(ribbon.BackColor);
 
-            int prog = Utility.FindLastOfItsKind(ribbon, NEW_GROUP_PREFIX, typeof(TextBox)) + 1;
-
-            Label = NEW_GROUP_PREFIX + " " + prog;
-
-            Top = ribbon.Padding.Top;
-            Width = (int)(Utility.MeasureTextSize(_label).Width + 20);
-            Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom;
-            _label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
+            this.Top = ribbon.Padding.Top;
+            this.Width = (int)(Utility.MeasureTextSize(this.Label).Width + 20);
+            this.Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom;
+            this.Label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
         }
         public RibbonGroup(Control ribbon, int id)
             : this(ribbon)
         {
-            ID = id;
+            this.ID = id;
         }
 
         protected override void OnPaint(PaintEventArgs pe)
@@ -72,13 +85,13 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             var rc = this.ClientRectangle;
             ControlPaint.DrawBorder3D(pe.Graphics, rc, Border3DStyle.Etched, Border3DSide.Right);
         }
-        protected override void OnDoubleClick(EventArgs e)
-        {
-            base.OnDoubleClick(e);
+        //protected override void OnDoubleClick(EventArgs e)
+        //{
+        //    this.Label.Focus();
+        //    this.Label.SelectAll();
 
-            _label.Focus();
-            _label.SelectAll();
-        }
+        //    base.OnDoubleClick(e);
+        //}
         protected override void OnControlAdded(ControlEventArgs e)
         {
             base.OnControlAdded(e);
@@ -86,28 +99,29 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         }
         protected override void OnControlRemoved(ControlEventArgs e)
         {
-            base.OnControlRemoved(e);
-            CompactCtrls();
+            this.CompactCtrls();
             Utility.UpdateGroupDimension(this);
+
+            base.OnControlRemoved(e);
         }
         protected override void OnSizeChanged(EventArgs e)
         {
-            base.OnSizeChanged(e);
-
             if(Parent != null)
                 Utility.GroupsDisplacement(Parent);
+            
+            base.OnSizeChanged(e);
         }
 
         private void CompactCtrls()
         {
-            var ctrls = Controls
+            var ctrls = this.Controls
                 .OfType<ControlContainer>()
                 .OrderBy(c => c.Left)
                 .ToList();
 
             if (ctrls.Count > 0)
             {
-                ctrls[0].Left = Padding.Left;
+                ctrls[0].Left = this.Padding.Left;
                 for (int i = 1; i < ctrls.Count; i++)
                     ctrls[i].Left = ctrls[i - 1].Right;
             }

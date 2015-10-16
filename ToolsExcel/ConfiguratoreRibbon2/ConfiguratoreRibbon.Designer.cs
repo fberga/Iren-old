@@ -28,14 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.toolStripTopMenu = new System.Windows.Forms.ToolStrip();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.Salva = new System.Windows.Forms.ToolStripButton();
+            this.copiaA = new System.Windows.Forms.ToolStripButton();
+            this.Ricarica = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.AddGroup = new System.Windows.Forms.ToolStripButton();
-            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.nuovoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.scegliToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addDropdown = new System.Windows.Forms.ToolStripButton();
+            this.addGroup = new System.Windows.Forms.ToolStripDropDownButton();
+            this.nuovoGruppo = new System.Windows.Forms.ToolStripMenuItem();
+            this.gruppoEsistente = new System.Windows.Forms.ToolStripMenuItem();
+            this.addTasto = new System.Windows.Forms.ToolStripDropDownButton();
+            this.nuovoTasto = new System.Windows.Forms.ToolStripMenuItem();
+            this.tastoEsistente = new System.Windows.Forms.ToolStripMenuItem();
+            this.addCombo = new System.Windows.Forms.ToolStripDropDownButton();
+            this.nuovoCombo = new System.Windows.Forms.ToolStripMenuItem();
+            this.comboEsistente = new System.Windows.Forms.ToolStripMenuItem();
             this.addEmptyContainer = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.ctrlLeftButton = new System.Windows.Forms.ToolStripButton();
@@ -44,18 +51,16 @@
             this.ctrlRightButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.panelRibbonLayout = new System.Windows.Forms.Panel();
-            this.imageListSmall = new System.Windows.Forms.ImageList(this.components);
-            this.imageListNormal = new System.Windows.Forms.ImageList(this.components);
             this.panelApplicazione = new System.Windows.Forms.Panel();
             this.cmbApplicazioni = new System.Windows.Forms.ComboBox();
             this.lbTitoloApplicazione = new System.Windows.Forms.Label();
             this.tableLayoutForm = new System.Windows.Forms.TableLayoutPanel();
+            this.cmbUtenti = new System.Windows.Forms.ComboBox();
+            this.lbUtenti = new System.Windows.Forms.Label();
             this.panelBottom = new System.Windows.Forms.Panel();
-            this.btnSalva = new System.Windows.Forms.Button();
             this.toolStripTopMenu.SuspendLayout();
             this.panelApplicazione.SuspendLayout();
             this.tableLayoutForm.SuspendLayout();
-            this.panelBottom.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStripTopMenu
@@ -64,14 +69,19 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.toolStripTopMenu.BackColor = System.Drawing.SystemColors.Control;
+            this.tableLayoutForm.SetColumnSpan(this.toolStripTopMenu, 4);
             this.toolStripTopMenu.Dock = System.Windows.Forms.DockStyle.None;
             this.toolStripTopMenu.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStripTopMenu.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.toolStripTopMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripSeparator4,
+            this.Salva,
+            this.copiaA,
+            this.Ricarica,
             this.toolStripSeparator2,
-            this.AddGroup,
-            this.toolStripDropDownButton1,
-            this.addDropdown,
+            this.addGroup,
+            this.addTasto,
+            this.addCombo,
             this.addEmptyContainer,
             this.toolStripSeparator1,
             this.ctrlLeftButton,
@@ -79,63 +89,128 @@
             this.ctrlUpButton,
             this.ctrlRightButton,
             this.toolStripSeparator3});
-            this.toolStripTopMenu.Location = new System.Drawing.Point(244, 0);
+            this.toolStripTopMenu.Location = new System.Drawing.Point(484, 0);
             this.toolStripTopMenu.Name = "toolStripTopMenu";
-            this.toolStripTopMenu.Size = new System.Drawing.Size(359, 56);
+            this.toolStripTopMenu.Size = new System.Drawing.Size(1037, 56);
             this.toolStripTopMenu.TabIndex = 2;
             this.toolStripTopMenu.Text = "Drop down";
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 56);
+            // 
+            // Salva
+            // 
+            this.Salva.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.save;
+            this.Salva.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Salva.Name = "Salva";
+            this.Salva.Size = new System.Drawing.Size(38, 53);
+            this.Salva.Text = "Salva";
+            this.Salva.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.Salva.Click += new System.EventHandler(this.ApplicaConfigurazione_Click);
+            // 
+            // copiaA
+            // 
+            this.copiaA.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.copia;
+            this.copiaA.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.copiaA.Name = "copiaA";
+            this.copiaA.Size = new System.Drawing.Size(51, 53);
+            this.copiaA.Text = "Copia a";
+            this.copiaA.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            // 
+            // Ricarica
+            // 
+            this.Ricarica.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.ricarica;
+            this.Ricarica.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.Ricarica.Name = "Ricarica";
+            this.Ricarica.Size = new System.Drawing.Size(52, 53);
+            this.Ricarica.Text = "Ricarica";
+            this.Ricarica.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.Ricarica.Click += new System.EventHandler(this.RicaricaRibbon_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(6, 56);
             // 
-            // AddGroup
+            // addGroup
             // 
-            this.AddGroup.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.addGroup;
-            this.AddGroup.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.AddGroup.Name = "AddGroup";
-            this.AddGroup.Size = new System.Drawing.Size(51, 53);
-            this.AddGroup.Text = "Gruppo";
-            this.AddGroup.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.AddGroup.Click += new System.EventHandler(this.AggiungiGruppo_Click);
+            this.addGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.nuovoGruppo,
+            this.gruppoEsistente});
+            this.addGroup.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.addGroup;
+            this.addGroup.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.addGroup.Name = "addGroup";
+            this.addGroup.Size = new System.Drawing.Size(60, 53);
+            this.addGroup.Text = "Gruppo";
+            this.addGroup.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             // 
-            // toolStripDropDownButton1
+            // nuovoGruppo
             // 
-            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.nuovoToolStripMenuItem,
-            this.scegliToolStripMenuItem});
-            this.toolStripDropDownButton1.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.addButton;
-            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            this.toolStripDropDownButton1.Size = new System.Drawing.Size(49, 53);
-            this.toolStripDropDownButton1.Text = "Tasto";
-            this.toolStripDropDownButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.nuovoGruppo.Name = "nuovoGruppo";
+            this.nuovoGruppo.Size = new System.Drawing.Size(168, 22);
+            this.nuovoGruppo.Text = "Crea nuovo";
+            this.nuovoGruppo.Click += new System.EventHandler(this.AggiungiGruppo_Click);
             // 
-            // nuovoToolStripMenuItem
+            // gruppoEsistente
             // 
-            this.nuovoToolStripMenuItem.Name = "nuovoToolStripMenuItem";
-            this.nuovoToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.nuovoToolStripMenuItem.Text = "Nuovo";
-            this.nuovoToolStripMenuItem.Click += new System.EventHandler(this.AggiungiTasto_Click);
+            this.gruppoEsistente.Name = "gruppoEsistente";
+            this.gruppoEsistente.Size = new System.Drawing.Size(168, 22);
+            this.gruppoEsistente.Text = "Scegli tra esistenti";
+            this.gruppoEsistente.Click += new System.EventHandler(this.ScegliGruppoEsistente_Click);
             // 
-            // scegliToolStripMenuItem
+            // addTasto
             // 
-            this.scegliToolStripMenuItem.Name = "scegliToolStripMenuItem";
-            this.scegliToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.scegliToolStripMenuItem.Text = "Scegli tra esistenti";
-            this.scegliToolStripMenuItem.Click += new System.EventHandler(this.scegliToolStripMenuItem_Click);
+            this.addTasto.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.nuovoTasto,
+            this.tastoEsistente});
+            this.addTasto.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.addButton;
+            this.addTasto.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.addTasto.Name = "addTasto";
+            this.addTasto.Size = new System.Drawing.Size(49, 53);
+            this.addTasto.Text = "Tasto";
+            this.addTasto.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             // 
-            // addDropdown
+            // nuovoTasto
             // 
-            this.addDropdown.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.addDropDown;
-            this.addDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.addDropdown.Name = "addDropdown";
-            this.addDropdown.Size = new System.Drawing.Size(70, 53);
-            this.addDropdown.Text = "Drop down";
-            this.addDropdown.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.addDropdown.ToolTipText = "Aggiungi drop down";
-            this.addDropdown.Click += new System.EventHandler(this.AggiungiDropDown_Click);
+            this.nuovoTasto.Name = "nuovoTasto";
+            this.nuovoTasto.Size = new System.Drawing.Size(168, 22);
+            this.nuovoTasto.Text = "Crea Nuovo";
+            this.nuovoTasto.Click += new System.EventHandler(this.AggiungiNuovoTasto_Click);
+            // 
+            // tastoEsistente
+            // 
+            this.tastoEsistente.Name = "tastoEsistente";
+            this.tastoEsistente.Size = new System.Drawing.Size(168, 22);
+            this.tastoEsistente.Text = "Scegli tra esistenti";
+            this.tastoEsistente.Click += new System.EventHandler(this.ScegliTastoEsistente_Click);
+            // 
+            // addCombo
+            // 
+            this.addCombo.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.nuovoCombo,
+            this.comboEsistente});
+            this.addCombo.Image = global::Iren.ToolsExcel.ConfiguratoreRibbon.Properties.Resources.addDropDown;
+            this.addCombo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.addCombo.Name = "addCombo";
+            this.addCombo.Size = new System.Drawing.Size(60, 53);
+            this.addCombo.Text = "Combo";
+            this.addCombo.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            // 
+            // nuovoCombo
+            // 
+            this.nuovoCombo.Name = "nuovoCombo";
+            this.nuovoCombo.Size = new System.Drawing.Size(168, 22);
+            this.nuovoCombo.Text = "Crea Nuovo";
+            this.nuovoCombo.Click += new System.EventHandler(this.AggiungiNuovoCombo_Click);
+            // 
+            // comboEsistente
+            // 
+            this.comboEsistente.Name = "comboEsistente";
+            this.comboEsistente.Size = new System.Drawing.Size(168, 22);
+            this.comboEsistente.Text = "Scegli tra esistenti";
+            this.comboEsistente.Click += new System.EventHandler(this.ScegliComboEsistente_Click);
             // 
             // addEmptyContainer
             // 
@@ -222,38 +297,31 @@
             this.panelRibbonLayout.Size = new System.Drawing.Size(1517, 208);
             this.panelRibbonLayout.TabIndex = 3;
             // 
-            // imageListSmall
-            // 
-            this.imageListSmall.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.imageListSmall.ImageSize = new System.Drawing.Size(16, 16);
-            this.imageListSmall.TransparentColor = System.Drawing.Color.Transparent;
-            // 
-            // imageListNormal
-            // 
-            this.imageListNormal.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.imageListNormal.ImageSize = new System.Drawing.Size(32, 32);
-            this.imageListNormal.TransparentColor = System.Drawing.Color.Transparent;
-            // 
             // panelApplicazione
             // 
             this.panelApplicazione.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelApplicazione.Controls.Add(this.cmbUtenti);
             this.panelApplicazione.Controls.Add(this.cmbApplicazioni);
+            this.panelApplicazione.Controls.Add(this.lbUtenti);
             this.panelApplicazione.Controls.Add(this.lbTitoloApplicazione);
             this.panelApplicazione.Location = new System.Drawing.Point(3, 3);
             this.panelApplicazione.Name = "panelApplicazione";
-            this.panelApplicazione.Size = new System.Drawing.Size(238, 50);
+            this.panelApplicazione.Size = new System.Drawing.Size(478, 50);
             this.panelApplicazione.TabIndex = 15;
             // 
             // cmbApplicazioni
             // 
+            this.cmbApplicazioni.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbApplicazioni.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbApplicazioni.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmbApplicazioni.FormattingEnabled = true;
-            this.cmbApplicazioni.Location = new System.Drawing.Point(6, 23);
+            this.cmbApplicazioni.Location = new System.Drawing.Point(0, 23);
             this.cmbApplicazioni.Name = "cmbApplicazioni";
-            this.cmbApplicazioni.Size = new System.Drawing.Size(229, 24);
+            this.cmbApplicazioni.Size = new System.Drawing.Size(236, 24);
             this.cmbApplicazioni.TabIndex = 14;
+            this.cmbApplicazioni.SelectedValueChanged += new System.EventHandler(this.CambioApplicazione);
             // 
             // lbTitoloApplicazione
             // 
@@ -269,11 +337,11 @@
             this.tableLayoutForm.AutoSize = true;
             this.tableLayoutForm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutForm.ColumnCount = 5;
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 244F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 359F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 233F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 269F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 416F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 484F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 505F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 249F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 183F));
             this.tableLayoutForm.Controls.Add(this.panelRibbonLayout, 0, 1);
             this.tableLayoutForm.Controls.Add(this.toolStripTopMenu, 1, 0);
             this.tableLayoutForm.Controls.Add(this.panelBottom, 4, 2);
@@ -285,33 +353,41 @@
             this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 56F));
             this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 212F));
             this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutForm.Size = new System.Drawing.Size(1521, 316);
             this.tableLayoutForm.TabIndex = 16;
+            // 
+            // cmbUtenti
+            // 
+            this.cmbUtenti.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbUtenti.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbUtenti.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmbUtenti.FormattingEnabled = true;
+            this.cmbUtenti.Location = new System.Drawing.Point(242, 23);
+            this.cmbUtenti.Name = "cmbUtenti";
+            this.cmbUtenti.Size = new System.Drawing.Size(236, 24);
+            this.cmbUtenti.TabIndex = 14;
+            this.cmbUtenti.SelectedValueChanged += new System.EventHandler(this.CambioUtente);
+            // 
+            // lbUtenti
+            // 
+            this.lbUtenti.AutoSize = true;
+            this.lbUtenti.Location = new System.Drawing.Point(246, 4);
+            this.lbUtenti.Name = "lbUtenti";
+            this.lbUtenti.Size = new System.Drawing.Size(47, 16);
+            this.lbUtenti.TabIndex = 13;
+            this.lbUtenti.Text = "Utente";
             // 
             // panelBottom
             // 
             this.panelBottom.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelBottom.Controls.Add(this.btnSalva);
-            this.panelBottom.Location = new System.Drawing.Point(1105, 268);
+            this.panelBottom.Location = new System.Drawing.Point(1338, 268);
             this.panelBottom.Margin = new System.Windows.Forms.Padding(0);
             this.panelBottom.Name = "panelBottom";
-            this.panelBottom.Size = new System.Drawing.Size(416, 48);
+            this.panelBottom.Size = new System.Drawing.Size(183, 48);
             this.panelBottom.TabIndex = 14;
-            // 
-            // btnSalva
-            // 
-            this.btnSalva.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnSalva.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSalva.Location = new System.Drawing.Point(303, 0);
-            this.btnSalva.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.btnSalva.Name = "btnSalva";
-            this.btnSalva.Size = new System.Drawing.Size(113, 48);
-            this.btnSalva.TabIndex = 8;
-            this.btnSalva.Text = "Salva";
-            this.btnSalva.UseVisualStyleBackColor = true;
-            this.btnSalva.Click += new System.EventHandler(this.btnSalva_Click);
             // 
             // ConfiguratoreRibbon
             // 
@@ -331,7 +407,6 @@
             this.panelApplicazione.PerformLayout();
             this.tableLayoutForm.ResumeLayout(false);
             this.tableLayoutForm.PerformLayout();
-            this.panelBottom.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -341,27 +416,34 @@
 
         private System.Windows.Forms.ToolStrip toolStripTopMenu;
         private System.Windows.Forms.Panel panelRibbonLayout;
-        private System.Windows.Forms.ToolStripButton AddGroup;
-        private System.Windows.Forms.ImageList imageListSmall;
-        private System.Windows.Forms.ImageList imageListNormal;
         private System.Windows.Forms.ToolStripButton ctrlDownButton;
         private System.Windows.Forms.ToolStripButton ctrlLeftButton;
         private System.Windows.Forms.ToolStripButton ctrlRightButton;
         private System.Windows.Forms.ToolStripButton ctrlUpButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton addDropdown;
         private System.Windows.Forms.ToolStripButton addEmptyContainer;
         private System.Windows.Forms.Label lbTitoloApplicazione;
         private System.Windows.Forms.ComboBox cmbApplicazioni;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.Panel panelApplicazione;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
-        private System.Windows.Forms.ToolStripMenuItem nuovoToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem scegliToolStripMenuItem;
+        private System.Windows.Forms.ToolStripDropDownButton addTasto;
+        private System.Windows.Forms.ToolStripMenuItem nuovoTasto;
+        private System.Windows.Forms.ToolStripMenuItem tastoEsistente;
         private System.Windows.Forms.TableLayoutPanel tableLayoutForm;
         private System.Windows.Forms.Panel panelBottom;
-        private System.Windows.Forms.Button btnSalva;
+        private System.Windows.Forms.ToolStripDropDownButton addCombo;
+        private System.Windows.Forms.ToolStripMenuItem nuovoCombo;
+        private System.Windows.Forms.ToolStripMenuItem comboEsistente;
+        private System.Windows.Forms.ToolStripButton Salva;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripButton Ricarica;
+        private System.Windows.Forms.ToolStripDropDownButton addGroup;
+        private System.Windows.Forms.ToolStripMenuItem nuovoGruppo;
+        private System.Windows.Forms.ToolStripMenuItem gruppoEsistente;
+        private System.Windows.Forms.ToolStripButton copiaA;
+        private System.Windows.Forms.ComboBox cmbUtenti;
+        private System.Windows.Forms.Label lbUtenti;
     }
 }
 

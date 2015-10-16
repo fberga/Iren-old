@@ -606,7 +606,7 @@
             // 
             // btnMostraErrorPane
             // 
-            this.btnMostraErrorPane.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.errorpane_icon;
+            this.btnMostraErrorPane.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.pannelloErrori;
             this.btnMostraErrorPane.FlatAppearance.BorderSize = 0;
             this.btnMostraErrorPane.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnMostraErrorPane.Location = new System.Drawing.Point(0, 0);
@@ -796,7 +796,7 @@
             // 
             // btnPrevisioneGas
             // 
-            this.btnPrevisioneGas.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.gas_icon;
+            this.btnPrevisioneGas.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.previsioneGas;
             this.btnPrevisioneGas.FlatAppearance.BorderSize = 0;
             this.btnPrevisioneGas.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPrevisioneGas.Location = new System.Drawing.Point(0, 0);
@@ -845,7 +845,7 @@
             // 
             // btnUnitCommitment
             // 
-            this.btnUnitCommitment.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.unitComm_icon;
+            this.btnUnitCommitment.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.unitCommitment;
             this.btnUnitCommitment.FlatAppearance.BorderSize = 0;
             this.btnUnitCommitment.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnUnitCommitment.Location = new System.Drawing.Point(0, 0);
@@ -894,7 +894,7 @@
             // 
             // btnPrezziMSD
             // 
-            this.btnPrezziMSD.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.prezziMSD_icon;
+            this.btnPrezziMSD.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.prezziMSD;
             this.btnPrezziMSD.FlatAppearance.BorderSize = 0;
             this.btnPrezziMSD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPrezziMSD.Location = new System.Drawing.Point(0, 0);
@@ -943,7 +943,7 @@
             // 
             // btnValidazioneTL
             // 
-            this.btnValidazioneTL.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.validazioneTL_icon;
+            this.btnValidazioneTL.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.validazioneTL;
             this.btnValidazioneTL.FlatAppearance.BorderSize = 0;
             this.btnValidazioneTL.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnValidazioneTL.Location = new System.Drawing.Point(0, 0);
@@ -992,7 +992,7 @@
             // 
             // btnPrevisioneCT
             // 
-            this.btnPrevisioneCT.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.previsioneCT_icon;
+            this.btnPrevisioneCT.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.previsioneCT;
             this.btnPrevisioneCT.FlatAppearance.BorderSize = 0;
             this.btnPrevisioneCT.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPrevisioneCT.Location = new System.Drawing.Point(0, 0);
@@ -1041,7 +1041,7 @@
             // 
             // btnProgrammazioneImpianti
             // 
-            this.btnProgrammazioneImpianti.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.progrImpianti_icon;
+            this.btnProgrammazioneImpianti.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.programmazioneImpianti;
             this.btnProgrammazioneImpianti.FlatAppearance.BorderSize = 0;
             this.btnProgrammazioneImpianti.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProgrammazioneImpianti.Location = new System.Drawing.Point(0, 0);
@@ -1090,7 +1090,7 @@
             // 
             // btnOfferteMGP
             // 
-            this.btnOfferteMGP.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.offerteMGP_icon;
+            this.btnOfferteMGP.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.offerteMGP;
             this.btnOfferteMGP.FlatAppearance.BorderSize = 0;
             this.btnOfferteMGP.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnOfferteMGP.Location = new System.Drawing.Point(0, 0);
@@ -1139,7 +1139,7 @@
             // 
             // btnOfferteMSD
             // 
-            this.btnOfferteMSD.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.offerteMSD_icon;
+            this.btnOfferteMSD.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.offerteMSD;
             this.btnOfferteMSD.FlatAppearance.BorderSize = 0;
             this.btnOfferteMSD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnOfferteMSD.Location = new System.Drawing.Point(0, 0);
@@ -1188,7 +1188,7 @@
             // 
             // btnOfferteMB
             // 
-            this.btnOfferteMB.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.offerteMB_icon;
+            this.btnOfferteMB.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.offerteMB;
             this.btnOfferteMB.FlatAppearance.BorderSize = 0;
             this.btnOfferteMB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnOfferteMB.Location = new System.Drawing.Point(0, 0);
@@ -1237,7 +1237,7 @@
             // 
             // btnInvioProgrammi
             // 
-            this.btnInvioProgrammi.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.invioProgrammi_icon;
+            this.btnInvioProgrammi.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.invioProgrammi;
             this.btnInvioProgrammi.FlatAppearance.BorderSize = 0;
             this.btnInvioProgrammi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnInvioProgrammi.Location = new System.Drawing.Point(0, 0);
@@ -1286,7 +1286,7 @@
             // 
             // btnSistemaComandi
             // 
-            this.btnSistemaComandi.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.sisCom_icon;
+            this.btnSistemaComandi.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.sistemaComandi;
             this.btnSistemaComandi.FlatAppearance.BorderSize = 0;
             this.btnSistemaComandi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSistemaComandi.Location = new System.Drawing.Point(0, 0);
@@ -1389,7 +1389,7 @@
             // 
             // btnDev
             // 
-            this.btnDev.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.dev_icon;
+            this.btnDev.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.dev;
             this.btnDev.FlatAppearance.BorderSize = 0;
             this.btnDev.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnDev.Location = new System.Drawing.Point(0, 0);
@@ -1438,7 +1438,7 @@
             // 
             // btnTest
             // 
-            this.btnTest.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.test_icon;
+            this.btnTest.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.test;
             this.btnTest.FlatAppearance.BorderSize = 0;
             this.btnTest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTest.Location = new System.Drawing.Point(0, 0);
@@ -1487,7 +1487,7 @@
             // 
             // btnProduzione
             // 
-            this.btnProduzione.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.prod_icon;
+            this.btnProduzione.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.prod;
             this.btnProduzione.FlatAppearance.BorderSize = 0;
             this.btnProduzione.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnProduzione.Location = new System.Drawing.Point(0, 0);
@@ -1589,7 +1589,7 @@
             // 
             // btnAzioni
             // 
-            this.btnAzioni.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.azioni_icon;
+            this.btnAzioni.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.azioni;
             this.btnAzioni.FlatAppearance.BorderSize = 0;
             this.btnAzioni.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAzioni.Location = new System.Drawing.Point(0, 0);
@@ -1638,7 +1638,7 @@
             // 
             // btnOttimizza
             // 
-            this.btnOttimizza.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.ottimizzatore_icon;
+            this.btnOttimizza.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.ottimizzatore;
             this.btnOttimizza.FlatAppearance.BorderSize = 0;
             this.btnOttimizza.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnOttimizza.Location = new System.Drawing.Point(0, 0);
@@ -1687,7 +1687,7 @@
             // 
             // btnRampe
             // 
-            this.btnRampe.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.rampe_icon;
+            this.btnRampe.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.rampe;
             this.btnRampe.FlatAppearance.BorderSize = 0;
             this.btnRampe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnRampe.Location = new System.Drawing.Point(0, 0);
@@ -1778,7 +1778,7 @@
             // 
             // btnAggiornaDati
             // 
-            this.btnAggiornaDati.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.aggiornadati_icon;
+            this.btnAggiornaDati.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.aggiornaDati;
             this.btnAggiornaDati.FlatAppearance.BorderSize = 0;
             this.btnAggiornaDati.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAggiornaDati.Location = new System.Drawing.Point(0, 0);
@@ -1827,7 +1827,7 @@
             // 
             // btnAggiornaStruttura
             // 
-            this.btnAggiornaStruttura.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.aggiornastruttura_icon;
+            this.btnAggiornaStruttura.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.aggiornaStruttura;
             this.btnAggiornaStruttura.FlatAppearance.BorderSize = 0;
             this.btnAggiornaStruttura.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnAggiornaStruttura.Location = new System.Drawing.Point(0, 0);
@@ -1907,7 +1907,7 @@
             // 
             // btnModifica
             // 
-            this.btnModifica.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.modificaSI_icon;
+            this.btnModifica.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.modificaSI;
             this.btnModifica.FlatAppearance.BorderSize = 0;
             this.btnModifica.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnModifica.Location = new System.Drawing.Point(0, 0);
@@ -1987,7 +1987,7 @@
             // 
             // btnCalendar
             // 
-            this.btnCalendar.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.calendario_icon;
+            this.btnCalendar.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.calendario;
             this.btnCalendar.FlatAppearance.BorderSize = 0;
             this.btnCalendar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCalendar.Location = new System.Drawing.Point(0, 0);
@@ -2078,7 +2078,7 @@
             // 
             // btnConfigura
             // 
-            this.btnConfigura.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.settings_icon;
+            this.btnConfigura.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.configuraPercorsi;
             this.btnConfigura.FlatAppearance.BorderSize = 0;
             this.btnConfigura.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConfigura.Location = new System.Drawing.Point(0, 0);
@@ -2127,7 +2127,7 @@
             // 
             // btnConfiguraParametri
             // 
-            this.btnConfiguraParametri.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.params_config_icon;
+            this.btnConfiguraParametri.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.configuraParametri;
             this.btnConfiguraParametri.FlatAppearance.BorderSize = 0;
             this.btnConfiguraParametri.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConfiguraParametri.Location = new System.Drawing.Point(0, 0);
@@ -2207,7 +2207,7 @@
             // 
             // btnChiudi
             // 
-            this.btnChiudi.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.salva_icon;
+            this.btnChiudi.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.chiudi;
             this.btnChiudi.FlatAppearance.BorderSize = 0;
             this.btnChiudi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnChiudi.Location = new System.Drawing.Point(0, 0);
@@ -2289,7 +2289,7 @@
             // 
             // btnImportaXML
             // 
-            this.btnImportaXML.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.import_xml;
+            this.btnImportaXML.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.importaXML;
             this.btnImportaXML.FlatAppearance.BorderSize = 0;
             this.btnImportaXML.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnImportaXML.Location = new System.Drawing.Point(0, 0);
@@ -2347,7 +2347,7 @@
             // 
             // btnEsportaXML
             // 
-            this.btnEsportaXML.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.export_xml;
+            this.btnEsportaXML.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.esportaXML;
             this.btnEsportaXML.FlatAppearance.BorderSize = 0;
             this.btnEsportaXML.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnEsportaXML.Location = new System.Drawing.Point(0, 0);
@@ -2405,7 +2405,7 @@
             // 
             // btnForzaEmergenza
             // 
-            this.btnForzaEmergenza.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.forzaemergenza_icon;
+            this.btnForzaEmergenza.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.forzaEmergenza;
             this.btnForzaEmergenza.FlatAppearance.BorderSize = 0;
             this.btnForzaEmergenza.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnForzaEmergenza.Location = new System.Drawing.Point(0, 0);
@@ -2491,7 +2491,7 @@
             // chkAmbienteDev
             // 
             this.chkAmbienteDev.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chkAmbienteDev.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.dev_icon;
+            this.chkAmbienteDev.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.dev;
             this.chkAmbienteDev.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.chkAmbienteDev.FlatAppearance.BorderSize = 0;
             this.chkAmbienteDev.Location = new System.Drawing.Point(5, 32);
@@ -2503,7 +2503,7 @@
             // chkAmbienteTest
             // 
             this.chkAmbienteTest.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chkAmbienteTest.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.test_icon;
+            this.chkAmbienteTest.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.test;
             this.chkAmbienteTest.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.chkAmbienteTest.FlatAppearance.BorderSize = 0;
             this.chkAmbienteTest.Location = new System.Drawing.Point(57, 32);
@@ -2515,7 +2515,7 @@
             // chkAmbienteProduzione
             // 
             this.chkAmbienteProduzione.Appearance = System.Windows.Forms.Appearance.Button;
-            this.chkAmbienteProduzione.BackgroundImage = global::ConfigurazioneRibbon.Properties.Resources.prod_icon;
+            this.chkAmbienteProduzione.BackgroundImage = Iren.ToolsExcel.Base.Properties.Resources.prod;
             this.chkAmbienteProduzione.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.chkAmbienteProduzione.FlatAppearance.BorderSize = 0;
             this.chkAmbienteProduzione.Location = new System.Drawing.Point(109, 33);

@@ -20,8 +20,18 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
     {
         private string[] _ambienti;
 
+        //public static int IdApplicazione { get; private set; }
+        public static List<int> IdUtenti { get { return new List<int>() { 62 }; } }// private set; }
+
+        public static List<int> ControlliUtilizzati { get; private set; }
+        public static List<int> GruppiUtilizzati { get; private set; }
+        public static List<int> GruppoControlloUtilizzati { get; private set; }
+        public static List<int> GruppoControlloCancellati { get; set; }
+
         public ConfiguratoreRibbon()
         {
+            Utility.InitializeUtility();
+            Utility.StdFont = this.Font;
             InitializeComponent();
 
             //trovo tutte le risorse disponibili in Iren.ToolsExcel.Base
@@ -35,8 +45,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             foreach (var img in imgs)
             {
-                imageListNormal.Images.Add(img.Key as string, img.Value as Image);
-                imageListSmall.Images.Add(img.Key as string, img.Value as Image);
+                Utility.ImageListNormal.Images.Add(img.Key as string, img.Value as Image);
+                Utility.ImageListSmall.Images.Add(img.Key as string, img.Value as Image);
             }
 
             //inizializzazione connessione
@@ -51,69 +61,53 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 cmbApplicazioni.ValueMember = "IdApplicazione";
                 cmbApplicazioni.DataSource = applicazioni;
             }
-            //carico l'eventiale ribbon già definita
-            CaricaAnteprimaRibbon(1, 62);
+
+            //carico la lista degli utenti
+            DataTable utenti = DataBase.Select(SP.UTENTI, "@IdUtenteGruppo=5");
+            if (utenti != null)
+            {
+                cmbUtenti.DisplayMember = "Nome";
+                cmbUtenti.ValueMember = "IdUtente";
+                cmbUtenti.DataSource = utenti;
+            }
         }
 
-        private void CaricaAnteprimaRibbon(int appID, int usrID)
+        private void CaricaAnteprimaRibbon()
         {
-            DataTable ribbon = DataBase.Select(SP.APPLICAZIONE_UTENTE_RIBBON, "@IdApplicazione=" + appID + ";@IdUtente=" + usrID);
+            ControlliUtilizzati = new List<int>();
+            GruppiUtilizzati = new List<int>();
+            GruppoControlloUtilizzati = new List<int>();
+            GruppoControlloCancellati = new List<int>();
+
+            DataTable ribbon = DataBase.Select(SP.GRUPPO_CONTROLLO);
+            DataTable funzioni = DataBase.Select(SP.CONTROLLO_FUNZIONE);
 
             if (ribbon != null)
             {
-                string group = "";
+                int idGroup = -1;
                 RibbonGroup grp = null;
                 foreach (DataRow r in ribbon.Rows)
                 {
-                    if (!r["NomeGruppo"].Equals(group))
-                    {
-                        group = r["NomeGruppo"].ToString();
+                    //prendo nota di cosa è utilizzato.
+                    GruppoControlloUtilizzati.Add((int)r["IdGruppoControllo"]);
+                    ControlliUtilizzati.Add((int)r["IdControllo"]);
+                    GruppiUtilizzati.Add((int)r["IdGruppo"]);
 
+                    if (!r["IdGruppo"].Equals(idGroup))
+                    {
+                        idGroup = (int)r["IdGruppo"];
                         grp = new RibbonGroup(panelRibbonLayout, (int)r["IdGruppo"]);
                         panelRibbonLayout.Controls.Add(grp);
-                        grp.Label = r["LabelGruppo"].ToString();
+                        grp.Text = r["LabelGruppo"].ToString();
                     }
-
-                    Control container = Utility.CreateEmptyContainer(grp);
-                    switch ((int)r["IdTipologiaControllo"])
-                    {
-                        case 1:
-                        case 2:
-                            grp.Controls.Add(container);
-
-                            RibbonButton btn = new RibbonButton(imageListNormal, imageListSmall, r["Immagine"].ToString(), (int)r["IdControllo"]);
-                            container.Controls.Add(btn);
-
-                            btn.Top = container.Padding.Top;
-                            btn.Left = container.Padding.Left;
-
-                            btn.Descrizione = r["Descrizione"].ToString();
-                            btn.Label = r["Label"].ToString();
-                            btn.ScreenTip = r["ScreenTip"].ToString();
-                            btn.Dimensione = (int)r["ControlSize"];
-                            btn.ToggleButton = r["IdTipologiaControllo"].Equals(2);
-
-                            break;
-                        case 3:
-                            grp.Controls.Add(container);
-
-                            RibbonDropDown drpD = new RibbonDropDown((int)r["IdControllo"]);
-                            container.Controls.Add(drpD);
-
-                            drpD.Top = container.Padding.Top;
-                            drpD.Left = container.Padding.Left;
-
-                            drpD.Descrizione = r["Descrizione"].ToString();
-                            drpD.Label = r["Label"].ToString();
-                            drpD.SetWidth();
-                            drpD.ScreenTip = r["ScreenTip"].ToString();
-
-                            break;
-                    }
+                    
+                    Control ctrl = Utility.AddControlToGroup(grp, r, funzioni);
+                    ctrl.ContextMenuStrip = new DisabilitaMenuStrip();
                 }
             }
         }
 
+        //SPOSTAMENTI
         private void MoveDown_Click(object sender, EventArgs e)
         {
             IRibbonControl ctrl = ActiveControl as IRibbonControl;
@@ -177,24 +171,31 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             }
         }
 
-        
-        private Control CreateEmptyContainer()
+        private bool IsRibbonGroupSelected()
         {
             if (ActiveControl.GetType() != typeof(RibbonGroup))
             {
                 MessageBox.Show("Nessun gruppo selezionato...", "ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return null;
+                return false;
             }
-
-            return Utility.CreateEmptyContainer(ActiveControl);   
+            return true;
         }
 
-        private void AggiungiTasto_Click(object sender, EventArgs e)
+        private Control CreateEmptyContainer()
+        {
+            if (IsRibbonGroupSelected())
+                return Utility.CreateEmptyContainer(ActiveControl);
+
+            return null;   
+        }
+
+        //TASTI
+        private void AggiungiNuovoTasto_Click(object sender, EventArgs e)
         {
             Control container = CreateEmptyContainer();
             if (container != null)
             {
-                RibbonButton newBtn = new RibbonButton(panelRibbonLayout, imageListNormal, imageListSmall);
+                RibbonButton newBtn = new RibbonButton(panelRibbonLayout);
                 if (newBtn.ImageKey != "")
                 {
                     container.Controls.Add(newBtn);
@@ -204,43 +205,76 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 }
             }
         }
-        private void AggiungiDropDown_Click(object sender, EventArgs e)
+        private void ScegliTastoEsistente_Click(object sender, EventArgs e)
+        {
+            if (IsRibbonGroupSelected())
+            {
+                using (ControlliEsistenti ctrlForm = new ControlliEsistenti(ActiveControl, 1, 2))
+                {
+                    ctrlForm.ShowDialog();
+                }
+            }
+        }
+        
+        //COMBO
+        private void AggiungiNuovoCombo_Click(object sender, EventArgs e)
         {
             Control container = CreateEmptyContainer();
             if (container != null)
             {
-                RibbonDropDown newDrpDwn = new RibbonDropDown(panelRibbonLayout);
-                container.Controls.Add(newDrpDwn);
-                newDrpDwn.Top = container.Padding.Top;
-                newDrpDwn.Left = container.Padding.Left;
+                RibbonComboBox newDrpDwn = new RibbonComboBox(panelRibbonLayout);
+                if(!newDrpDwn.IsDisposed)
+                {
+                    container.Controls.Add(newDrpDwn);
+                    newDrpDwn.Top = container.Padding.Top;
+                    newDrpDwn.Left = container.Padding.Left;
 
-                ActiveControl.Controls.Add(container);
+                    ActiveControl.Controls.Add(container);
+                }
             }
         }
-        private void AggiungiContenitoreVuoto_Click(object sender, EventArgs e)
+        private void ScegliComboEsistente_Click(object sender, EventArgs e)
         {
-            Control container = CreateEmptyContainer();
-            if(container != null)
-                ActiveControl.Controls.Add(container);
+            if (IsRibbonGroupSelected())
+            {
+                using (ControlliEsistenti ctrlForm = new ControlliEsistenti(ActiveControl, 3))
+                {
+                    ctrlForm.ShowDialog();
+                }
+            }
         }
+        
+
+        //GRUPPI
         private void AggiungiGruppo_Click(object sender, EventArgs e)
         {
             RibbonGroup newGroup = new RibbonGroup(panelRibbonLayout);
-            int left = panelRibbonLayout.Controls.OfType<RibbonGroup>()
-                .Select(c => c.Right)
-                .DefaultIfEmpty()
-                .Max();
-
-            newGroup.Left = left == 0 ? panelRibbonLayout.Padding.Left : left;
-            panelRibbonLayout.Controls.Add(newGroup);
-
-
-            //newGroup.BringToFront();
-            newGroup.Select();
+            if(!newGroup.IsDisposed)
+                Utility.AddGroupToRibbon(panelRibbonLayout, newGroup);
+        }
+        private void ScegliGruppoEsistente_Click(object sender, EventArgs e)
+        {
+            using (GruppiEsistenti grpForm = new GruppiEsistenti(panelRibbonLayout))
+            {
+                grpForm.ShowDialog();
+            }
         }
 
-        private void btnSalva_Click(object sender, EventArgs e)
+        //VUOTI
+        private void AggiungiContenitoreVuoto_Click(object sender, EventArgs e)
         {
+            Control container = CreateEmptyContainer();
+            if (container != null)
+                ActiveControl.Controls.Add(container);
+        }
+
+        private void ApplicaConfigurazione_Click(object sender, EventArgs e)
+        {
+            //rimuovo i componenti cancellati
+            if(GruppoControlloCancellati.Count > 0) 
+            {
+                DataBase.Delete(SP.DELETE_GRUPPO_CONTROLLO, "@Ids=" + string.Join(",", GruppoControlloCancellati));
+            }
             //trovo tutti i gruppi
             var groups =
                 panelRibbonLayout.Controls.OfType<RibbonGroup>().OrderBy(g => g.Left);
@@ -257,7 +291,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 if (DataBase.Insert(SP.INSERT_GRUPPO, new Core.QryParams()
                     {
                         {"@Id", group.ID},
-                        {"@Label", group.Label}
+                        {"@Nome", group.Name},
+                        {"@Label", group.Text}
                     }, out outP))
                     groupId = (int)outP["@Id"];
 
@@ -273,33 +308,64 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                         int ctrlId = -1;
                         if (DataBase.Insert(SP.INSERT_CONTROLLO, new Core.QryParams()
                             {
-                                {"@Id", ctrl.ID},
+                                {"@Id", ctrl.IdControllo},
                                 {"@IdTipologiaControllo", ctrl.IdTipologia},
-                                {"@Descrizione", ctrl.Descrizione ?? ""},
-                                {"@Immagine", ctrl.ImageName ?? ""},
-                                {"@Label", ctrl.Label ?? ""},
-                                {"@ScreenTip", ctrl.ScreenTip ?? ""},
-                                {"@ControlSize", ctrl.Dimensione}
+                                {"@Nome", ctrl.Name},
+                                {"@Descrizione", ctrl.Description},
+                                {"@Immagine", ctrl.ImageKey},
+                                {"@Label", ctrl.Text},
+                                {"@ScreenTip", ctrl.ScreenTip},
+                                {"@ControlSize", ctrl.Dimension}
                             }, out outP))
                             ctrlId = (int)outP["@Id"];
 
-                        DataBase.Insert(SP.INSERT_GRUPPO_CONTROLLO, new Core.QryParams() { 
+                        if(DataBase.Insert(SP.INSERT_GRUPPO_CONTROLLO, new Core.QryParams() { 
+                            {"@Id", 0},
                             {"@IdApplicazione", 1},
 	                        {"@IdUtente", 62},
 	                        {"@IdGruppo", groupId},
 	                        {"@IdControllo", ctrlId},
+                            {"@Abilitato", ctrl.Enabled ? "1" : "0"},
 	                        {"@Ordine", ordine++}
-                        });
+                        }, out outP))
+                        {
+                            int ordineFunzioni = 1;
+                            foreach(int idFunzione in ctrl.Functions)
+                            {
+                                DataBase.Insert(SP.INSERT_CONTROLLO_FUNZIONE, new Core.QryParams()
+                                {
+                                    {"@IdGruppoControllo", outP["@Id"]},
+                                    {"@IdFunzione", idFunzione},
+                                    {"@Ordine", ordineFunzioni++},
+                                });
+                            }
+                        }
                     }
                 }
             }
+            //refresh dell'anteprima
+            RicaricaRibbon_Click(null, null);
+        }
+        private void RicaricaRibbon_Click(object sender, EventArgs e)
+        {
+            panelRibbonLayout.Controls.Clear();
+            CaricaAnteprimaRibbon();
         }
 
-        private void scegliToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CambioApplicazione(object sender, EventArgs e)
         {
-            ControlliEsistenti ctrlForm = new ControlliEsistenti(imageListSmall, imageListNormal, 1, 2);
+            if (cmbApplicazioni.SelectedValue != null)
+                DataBase.DB.SetParameters(idApplicazione: (int)cmbApplicazioni.SelectedValue);
 
-            ctrlForm.Show();
-        }        
+            RicaricaRibbon_Click(null, null);
+        }
+
+        private void CambioUtente(object sender, EventArgs e)
+        {
+            if(cmbUtenti.SelectedValue != null)
+                DataBase.DB.SetParameters(idUtente: (int)cmbUtenti.SelectedValue);
+
+            RicaricaRibbon_Click(null, null);
+        }
     }
 }

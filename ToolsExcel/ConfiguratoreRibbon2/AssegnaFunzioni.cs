@@ -12,46 +12,53 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     partial class AssegnaFunzioni : Form
     {
+        int _idGruppoControllo = -1;
+        IRibbonControl _ctrl;
+
         public AssegnaFunzioni(IRibbonControl ctrl, RibbonGroup grp, int appID, int usrID)
         {
             InitializeComponent();
+            _ctrl = ctrl;
 
-            DataTable ribbon = DataBase.Select(SP.APPLICAZIONE_UTENTE_RIBBON, "@IdApplicazione=" + appID + ";@IdUtente=" + usrID);
-            if (ribbon != null)
+            DataTable allFunctions = DataBase.Select(SP.FUNZIONE);
+            foreach (int idFunzione in ctrl.Functions)
             {
-                var id =
-                    (from r in ribbon.AsEnumerable()
-                     where r["IdControllo"].Equals(ctrl.ID) && r["IdGruppo"].Equals(grp.ID)
-                     select (int)r["IdGruppoControllo"]).FirstOrDefault();
+                var func =
+                    (from r in allFunctions.AsEnumerable()
+                        where r["IdFunzione"].Equals(idFunzione)
+                        select r).First();
 
-                DataTable allFunctions = DataBase.Select(SP.FUNZIONE);
-                DataTable ctrlFunctions = DataBase.Select(SP.CONTROLLO_FUNZIONE, "@IdGruppoControllo=" + id);
+                TreeNode f = new TreeNode();
+                f.Text = func["NomeFunzione"].ToString();
+                f.Tag = func["IdFunzione"];
 
-                if (ctrlFunctions != null)
+                if (!treeViewUtilized.Nodes.ContainsKey(func["Evento"].ToString()))
                 {
-                    var usedFunctionsIds = new HashSet<object>(ctrlFunctions.AsEnumerable().Select(r => r["IdFunzione"]));
-                    var unusedFunctions = allFunctions.AsEnumerable().Where(r => !usedFunctionsIds.Contains(r["IdFunzione"])).ToList();
-
-                    foreach (var func in unusedFunctions)
-                    {
-                        TreeNode f = new TreeNode();
-                        f.Text = func["NomeFunzione"].ToString();
-                        f.Tag = func["IdFunzione"];
-
-                        if (!treeViewNotUtilized.Nodes.ContainsKey(func["Evento"].ToString()))
-                        {
-                            TreeNode evento = new TreeNode(func["Evento"].ToString());
-                            evento.Name = func["Evento"].ToString();
-                            treeViewNotUtilized.Nodes.Add(evento);
-                        }
-
-                        treeViewNotUtilized.Nodes[func["Evento"].ToString()].Nodes.Add(f);
-                    }
-
+                    TreeNode evento = new TreeNode(func["Evento"].ToString());
+                    evento.Name = func["Evento"].ToString();
+                    treeViewUtilized.Nodes.Add(evento);
                 }
+
+                treeViewUtilized.Nodes[func["Evento"].ToString()].Nodes.Add(f);
+                allFunctions.Rows.Remove(func);
+            }
+
+            foreach (DataRow func in allFunctions.Rows)
+            {
+                TreeNode f = new TreeNode();
+                f.Text = func["NomeFunzione"].ToString();
+                f.Tag = func["IdFunzione"];
+
+                if (!treeViewNotUtilized.Nodes.ContainsKey(func["Evento"].ToString()))
+                {
+                    TreeNode evento = new TreeNode(func["Evento"].ToString());
+                    evento.Name = func["Evento"].ToString();
+                    treeViewNotUtilized.Nodes.Add(evento);
+                }
+
+                treeViewNotUtilized.Nodes[func["Evento"].ToString()].Nodes.Add(f);
             }
         }
-
         private void AggiungiFunzione_Click(object sender, EventArgs e)
         {
             TreeNode selected = treeViewNotUtilized.SelectedNode;
@@ -72,7 +79,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 treeViewUtilized.Nodes[pName].Nodes.Add(selected);
             }
         }
-
         private void RimuoviFunzione_Click(object sender, EventArgs e)
         {
             TreeNode selected = treeViewUtilized.SelectedNode;
@@ -91,6 +97,52 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                     treeViewUtilized.Nodes[pName].Nodes.Remove(selected);
                 
                 treeViewNotUtilized.Nodes[pName].Nodes.Add(selected);
+            }
+        }
+        private void AssegnaFunzioni_Click(object sender, EventArgs e)
+        {
+            foreach (TreeNode FunctionType in treeViewUtilized.Nodes)
+            {
+                _ctrl.Functions = new List<int>();
+                foreach (TreeNode function in FunctionType.Nodes)
+                    _ctrl.Functions.Add((int)function.Tag);
+            }
+
+            DialogResult = System.Windows.Forms.DialogResult.OK;
+            Close();
+        }
+        private void AnnullaCambiamenti_Click(object sender, EventArgs e)
+        {
+            DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            Close();
+        }
+
+        private void SpostaSotto_Click(object sender, EventArgs e)
+        {
+            if (treeViewUtilized.SelectedNode != null && treeViewUtilized.SelectedNode.Tag != null
+                && treeViewUtilized.SelectedNode.NextNode != null && treeViewUtilized.SelectedNode.NextNode.Tag != null)
+            {
+                int i = treeViewUtilized.SelectedNode.Index;
+                TreeNode n = treeViewUtilized.SelectedNode;
+                TreeNode parent = treeViewUtilized.SelectedNode.Parent;
+                
+                treeViewUtilized.SelectedNode.Remove();
+                parent.Nodes.Insert(i + 1, n);
+                treeViewUtilized.SelectedNode = n;
+            }
+        }
+        private void SpostaSopra_Click(object sender, EventArgs e)
+        {
+            if (treeViewUtilized.SelectedNode != null && treeViewUtilized.SelectedNode.Tag != null
+                && treeViewUtilized.SelectedNode.PrevNode != null && treeViewUtilized.SelectedNode.PrevNode.Tag != null)
+            {
+                int i = treeViewUtilized.SelectedNode.Index;
+                TreeNode n = treeViewUtilized.SelectedNode;
+                TreeNode parent = treeViewUtilized.SelectedNode.Parent;
+
+                treeViewUtilized.SelectedNode.Remove();
+                parent.Nodes.Insert(i - 1, n);
+                treeViewUtilized.SelectedNode = n;
             }
         }
     }

@@ -7,9 +7,9 @@ using System.Windows.Forms;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    class RibbonDropDown : SelectablePanel, IRibbonControl
+    class RibbonComboBox : SelectablePanel, IRibbonControl
     {
-        const string NEW_DROPDOWN_PREFIX = "New Dropdown";
+        public const string NEW_COMBO_PREFIX = "New Combo";
 
         private TextBox _label = new TextBox();
         private ComboBox _cmb = new ComboBox();
@@ -17,18 +17,20 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
 
         public int IdTipologia { get { return 3; } set { IdTipologia = value; } }
-        public string Descrizione { get; set; }
+        public string Description { get; set; }
         public string ScreenTip { get; set; }
-        //public string Nome { get; set; }
-        public string Label { get { return _label.Text; } set { _label.Text = value; } }
+        public string Name { get; set; }
+        public string Text { get { return _label.Text; } set { _label.Text = value; } }
         public int Slot { get { return 2; } }
-        public int Dimensione { get { return -1; } }
+        public int Dimension { get { return -1; } }
         public bool ToggleButton { get { return false; } }
-        public string ImageName { get { return ""; } }
-        public int ID { get; private set; }
+        public string ImageKey { get { return ""; } }
+        public int IdControllo { get; private set; }
+        public List<int> Functions { get; set; }
+        public bool Enabled { get; set; }
 
-        public RibbonDropDown()
-        {
+        public RibbonComboBox()
+        {            
             this.Padding = new Padding(4, (33 - _label.Height) / 2, 4, 4);
             this.Controls.Add(_cmb);
             this.Controls.Add(_label);
@@ -54,6 +56,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             _cmb.Left = Padding.Left;
 
             _cmb.Width = 40;
+            Font = Utility.StdFont;
+            Functions = new List<int>();
         }
 
         private void AvoidNewLine(object sender, KeyEventArgs e)
@@ -64,23 +68,28 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 Parent.Focus();
             }
         }
-        public RibbonDropDown(int id)
+        public RibbonComboBox(int id)
             : this()
         {
-            ID = id;
+            IdControllo = id;
         }
-        public RibbonDropDown(Control ribbon)
+        public RibbonComboBox(Control ribbon)
             : this()
-        {            
-            int prog = Utility.FindLastOfItsKind(ribbon, NEW_DROPDOWN_PREFIX, typeof(RibbonDropDown)) + 1;
-            
-            Name = NEW_DROPDOWN_PREFIX.Replace(" ", "") + prog;
-            //_label.Font = ribbon.Font;
-            _label.Text = NEW_DROPDOWN_PREFIX + " " + prog;
+        {
+            using (ConfiguraControllo cc = new ConfiguraControllo(ribbon, typeof(RibbonComboBox)))
+            {
+                if (cc.ShowDialog() == DialogResult.OK)
+                {
+                    Name = cc.CtrlName;
+                    Text = cc.CtrlText;
+                }
+                else
+                {
+                    Dispose();
+                    return;
+                }
+            }
             _label.TextAlign = HorizontalAlignment.Left;
-            
-            this.Font = ribbon.Font;
-
             
             SetWidth();
         }
@@ -119,6 +128,26 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             base.OnSizeChanged(e);
         }
 
+        protected override void OnDoubleClick(EventArgs e)
+        {
+            if (IdControllo == 0)
+            {
+                
+            }
+            else
+            {
+                RibbonGroup grp = Parent.Parent as RibbonGroup;
+
+                using (AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62))
+                {
+                    if (afForm.ShowDialog() == DialogResult.OK)
+                    {
+
+                    }
+                }
+            }
+            base.OnDoubleClick(e);
+        }
         protected void ControlMouseMove(object sender, MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -150,6 +179,13 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             BackColor = Color.FromKnownColor(KnownColor.Control);
             _label.BackColor = BackColor;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (ConfiguratoreRibbon.ControlliUtilizzati.Contains(IdControllo))
+                ConfiguratoreRibbon.GruppoControlloCancellati.Add(ConfiguratoreRibbon.GruppoControlloUtilizzati[ConfiguratoreRibbon.ControlliUtilizzati.IndexOf(IdControllo)]);
+            base.Dispose(disposing);
         }
     }
 }

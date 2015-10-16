@@ -189,6 +189,14 @@
       <Project>{40a0918e-793b-41f0-8235-5a9e601b2e2b}</Project>
       <Name>ToolsExcelCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelForms\ToolsExcelForms.csproj">
+      <Project>{f4c66fe5-1dc0-447b-b341-ff1960b78045}</Project>
+      <Name>ToolsExcelForms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelUserConfig\ToolsExcelUserConfig.csproj">
+      <Project>{3e119690-1387-4fe3-89c1-756220fedeee}</Project>
+      <Name>ToolsExcelUserConfig</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

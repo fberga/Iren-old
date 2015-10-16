@@ -8,13 +8,16 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
     interface IRibbonControl
     {
         int Slot { get; }
-        string Descrizione { get; }
-        string ImageName { get; }
+        string Description { get; }
+        string Name { get; set; }
+        string ImageKey { get; }
         string ScreenTip { get; set; }
-        string Label { get; set; }
+        string Text { get; set; }
         bool ToggleButton { get; }
-        int Dimensione { get; }
+        int Dimension { get; }
         int IdTipologia { get; }
-        int ID { get; }
+        int IdControllo { get; }
+        List<int> Functions { get; set; }
+        bool Enabled { get; set; }
     }
 }

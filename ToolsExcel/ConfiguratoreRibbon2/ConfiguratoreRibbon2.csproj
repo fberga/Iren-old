@@ -51,6 +51,12 @@
     <Compile Include="AssegnaFunzioni.Designer.cs">
       <DependentUpon>AssegnaFunzioni.cs</DependentUpon>
     </Compile>
+    <Compile Include="CambiaImmagine.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CambiaImmagine.Designer.cs">
+      <DependentUpon>CambiaImmagine.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConfiguratoreRibbon.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -72,11 +78,26 @@
     <Compile Include="ControlliEsistenti.Designer.cs">
       <DependentUpon>ControlliEsistenti.cs</DependentUpon>
     </Compile>
+    <Compile Include="ConfiguraControllo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfiguraControllo.Designer.cs">
+      <DependentUpon>ConfiguraControllo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DisabilitaMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GruppiEsistenti.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GruppiEsistenti.Designer.cs">
+      <DependentUpon>GruppiEsistenti.cs</DependentUpon>
+    </Compile>
     <Compile Include="IRibbonControl.cs" />
     <Compile Include="RibbonButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="RibbonDropDown.cs">
+    <Compile Include="RibbonComboBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SelectableButton.cs">
@@ -90,15 +111,18 @@
     <Compile Include="RibbonGroup.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="SelettoreImmagini.cs">
+    <Compile Include="CreaTasto.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SelettoreImmagini.Designer.cs">
-      <DependentUpon>SelettoreImmagini.cs</DependentUpon>
+    <Compile Include="CreaTasto.Designer.cs">
+      <DependentUpon>CreaTasto.cs</DependentUpon>
     </Compile>
     <Compile Include="Utility.cs" />
     <EmbeddedResource Include="AssegnaFunzioni.resx">
       <DependentUpon>AssegnaFunzioni.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CambiaImmagine.resx">
+      <DependentUpon>CambiaImmagine.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ConfiguratoreRibbon.resx">
       <DependentUpon>ConfiguratoreRibbon.cs</DependentUpon>
@@ -108,6 +132,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ControlliEsistenti.resx">
       <DependentUpon>ControlliEsistenti.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConfiguraControllo.resx">
+      <DependentUpon>ConfiguraControllo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GruppiEsistenti.resx">
+      <DependentUpon>GruppiEsistenti.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -119,8 +149,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SelettoreImmagini.resx">
-      <DependentUpon>SelettoreImmagini.cs</DependentUpon>
+    <EmbeddedResource Include="CreaTasto.resx">
+      <DependentUpon>CreaTasto.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="App.config" />
     <None Include="Properties\Settings.settings">
@@ -138,9 +168,12 @@
     <Content Include="Resources\addEmptySlot.png" />
     <Content Include="Resources\addGroup.png" />
     <Content Include="Resources\addButton.png" />
+    <Content Include="Resources\copia.png" />
     <Content Include="Resources\downArrow.png" />
     <Content Include="Resources\leftArrow.png" />
+    <Content Include="Resources\ricarica.png" />
     <Content Include="Resources\rightArrow.png" />
+    <Content Include="Resources\save.png" />
     <Content Include="Resources\upArrow.png" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -10,18 +11,40 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     class SP
     {
-        public const string CONTROLLO = "RIBBON.spControllo";
         public const string APPLICAZIONI = "spApplicazioneProprieta";
+        public const string UTENTI = "spUtenteGruppo";
+
+        public const string CONTROLLO = "RIBBON.spControllo";
         public const string INSERT_CONTROLLO = "RIBBON.spInsertControllo";
+        
         public const string INSERT_GRUPPO = "RIBBON.spInsertGruppo";
+        
+        public const string GRUPPO_CONTROLLO = "RIBBON.spGruppoControllo";
         public const string INSERT_GRUPPO_CONTROLLO = "RIBBON.spInsertGruppoControllo";
-        public const string APPLICAZIONE_UTENTE_RIBBON = "RIBBON.spGruppoControllo";
+        public const string DELETE_GRUPPO_CONTROLLO = "RIBBON.spDeleteGruppoControllo";
+        
+        public const string INSERT_CONTROLLO_FUNZIONE = "RIBBON.spInsertControlloFunzione";
         public const string CONTROLLO_FUNZIONE = "RIBBON.spControlloFunzione";
+        
         public const string FUNZIONE = "RIBBON.spFunzione";
     }
 
     class Utility
     {
+        public static ImageList ImageListNormal { get; set; }
+        public static ImageList ImageListSmall { get; set; }
+
+        public static Font StdFont { get; set; }
+
+        public static void InitializeUtility() 
+        {
+            Utility.ImageListNormal = new ImageList();
+            Utility.ImageListNormal.ImageSize = new System.Drawing.Size(32, 32);
+
+            Utility.ImageListSmall = new ImageList();
+            Utility.ImageListSmall.ImageSize = new System.Drawing.Size(16, 16);
+        }
+
         public static IEnumerable<Control> GetAll(Control control, Type type = null)
         {
             var controls = control.Controls.Cast<Control>();
@@ -34,10 +57,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public static int FindLastOfItsKind(Control ctrl, string prefix, Type type)
         {
             var progs = GetAll(ctrl, type)
-                .Where(c => c.Name.StartsWith(PrepareLabelForControlName(prefix)))
+                .Where(c => c.Text.StartsWith(prefix))
                 .Select(c =>
                 {
-                    string num = Regex.Match(c.Name, @"\d+").Value;
+                    string num = Regex.Match(c.Text, @"\d+").Value;
                     int progNum = 0;
                     int.TryParse(num, out progNum);
                     return progNum;
@@ -60,7 +83,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             //se è un tasto a dimensione piccola, calcolo normalmente
             int dim = 1;
             if (ctrl.GetType() == typeof(RibbonButton))
-                dim = ((RibbonButton)ctrl).Dimensione;
+                dim = ((RibbonButton)ctrl).Dimension;
 
             if (!s.Contains(' ') || ctrl.GetType() == typeof(TextBox) || dim == 0)
                 return ctrl.CreateGraphics().MeasureString(s, ctrl.Font, int.MaxValue);
@@ -160,6 +183,71 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             container.Left = left == 0 ? parent.Padding.Left : left + 10;
             container.Top = parent.Padding.Top;
             return container;
+        }
+
+        public static Control AddControlToGroup(RibbonGroup grp, DataRow r, DataTable funzioni)
+        {
+            Control container = Utility.CreateEmptyContainer(grp);
+            IRibbonControl ctrl = null;
+            switch ((int)r["IdTipologiaControllo"])
+            {
+                case 1:
+                case 2:
+                    grp.Controls.Add(container);
+
+                    RibbonButton btn = new RibbonButton(r["Immagine"].ToString(), (int)r["IdControllo"]);
+                    container.Controls.Add(btn);
+
+                    btn.Top = container.Padding.Top;
+                    btn.Left = container.Padding.Left;
+
+                    btn.Description = r["Descrizione"].ToString();
+                    btn.Text = r["Label"].ToString();
+                    btn.ScreenTip = r["ScreenTip"].ToString();
+                    btn.Dimension = (int)r["ControlSize"];
+                    btn.ToggleButton = r["IdTipologiaControllo"].Equals(2);
+                    ctrl = btn;
+                    break;
+                case 3:
+                    grp.Controls.Add(container);
+
+                    RibbonComboBox drpD = new RibbonComboBox((int)r["IdControllo"]);
+                    container.Controls.Add(drpD);
+
+                    drpD.Top = container.Padding.Top;
+                    drpD.Left = container.Padding.Left;
+
+                    drpD.Description = r["Descrizione"].ToString();
+                    drpD.Text = r["Label"].ToString();
+                    drpD.SetWidth();
+                    drpD.ScreenTip = r["ScreenTip"].ToString();
+                    ctrl = drpD;
+                    break;
+            }
+            ctrl.Enabled = r["Abilitato"].Equals("1");
+
+            if (ctrl != null && funzioni != null)
+            {
+                var functions = funzioni.AsEnumerable()
+                    .Where(func => func["IdGruppoControllo"].Equals(r["IdGruppoControllo"]));
+
+                foreach (var func in functions)
+                    ctrl.Functions.Add((int)func["IdFunzione"]);
+            }
+
+            return ctrl as Control;
+        }
+
+        public static void AddGroupToRibbon(Control ribbon, Control group)
+        {
+            int left = ribbon.Controls.OfType<RibbonGroup>()
+                .Select(c => c.Right)
+                .DefaultIfEmpty()
+                .Max();
+
+            group.Left = left == 0 ? ribbon.Padding.Left : left;
+            ribbon.Controls.Add(group);
+            group.Select();
         }
     }
 }

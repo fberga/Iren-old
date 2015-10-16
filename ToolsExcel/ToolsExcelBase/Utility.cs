@@ -452,26 +452,46 @@ namespace Iren.ToolsExcel.Utility
         /// <param name="storedProcedure">Stored procedure.</param>
         /// <param name="parameters">Parametri della stored procedure.</param>
         /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
-        public static bool Insert(string storedProcedure, QryParams parameters)
+        public static bool Insert(string storedProcedure, QryParams parameters, int timeout = 300)
         {
             if (OpenConnection())
             {
-                bool o = _db.Insert(storedProcedure, parameters);
+                bool o = _db.Insert(storedProcedure, parameters, timeout);
                 CloseConnection();
                 return o;
             }
             return false;
         }
-
-        public static bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams)
+        public static bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams, int timeout = 300)
         {
             if (OpenConnection())
             {
-                bool o = _db.Insert(storedProcedure, parameters, out outParams);
+                bool o = _db.Insert(storedProcedure, parameters, out outParams, timeout);
                 CloseConnection();
                 return o;
             }
             outParams = null;
+            return false;
+        }
+
+        public static bool Delete(string storedProcedure, QryParams parameters, int timeout = 300)
+        {
+            if (OpenConnection())
+            {
+                bool o = _db.Delete(storedProcedure, parameters, timeout);
+                CloseConnection();
+                return o;
+            }
+            return false;
+        }
+        public static bool Delete(string storedProcedure, string parameters, int timeout = 300)
+        {
+            if (OpenConnection())
+            {
+                bool o = _db.Delete(storedProcedure, parameters, timeout);
+                CloseConnection();
+                return o;
+            }
             return false;
         }
 

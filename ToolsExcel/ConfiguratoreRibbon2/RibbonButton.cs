@@ -11,23 +11,18 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     public class RibbonButton : SelectableButton, INotifyPropertyChanged, IRibbonControl
     {
-        const string NEW_BUTTON_PREFIX = "New Button";
+        public const string NEW_BUTTON_PREFIX = "New Button";
 
         private Size largeBtnMinSize = new Size(50, 100);
         private Size smallBtnMaxSize = new Size(250, 33);
 
-        private ImageList _imageListNormal = new ImageList();
-        private ImageList _imageListSmall = new ImageList();
-
-        private Rectangle _selectionRect = new Rectangle(new Point(0, 0), new Size(0, 0));
-
         private Point _startPt = new Point(int.MaxValue, int.MaxValue);
 
         public int IdTipologia { get { return ToggleButton ? 2 : 1; } }
-        public int Slot { get { return Dimensione == 1 ? 3 : 1; } }
+        public int Slot { get { return Dimension == 1 ? 3 : 1; } }
 
         private int _dimensione = 1;
-        public int Dimensione {
+        public int Dimension {
             get
             {
                 return _dimensione;
@@ -47,51 +42,54 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 }
             } 
         }
-        public string Descrizione { get; set; }
+        public string Description { get; set; }
         public string ScreenTip { get; set; }
         public bool ToggleButton { get; set; }
-        public string Label { get { return Text; } set { Text = value; } }
-        public string ImageName { get { return ImageKey; } }
-        public int ID { get; private set; }
+        public int IdControllo { get; private set; }
+        public List<int> Functions { get; set; }
+        //public bool Enabled { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public RibbonButton(ImageList normal, ImageList small, string imageKey, int id)
+        public RibbonButton(string imageKey, int id)
         {
-            _imageListNormal = normal;
-            _imageListSmall = small;
             ImageKey = imageKey;
-            ID = id;
+            IdControllo = id;
+            Font = Utility.StdFont;
+            Functions = new List<int>();
         }
-        public RibbonButton(ImageList normal, ImageList small)
+        public RibbonButton(Control ribbon)
         {
-            _imageListNormal = normal;
-            _imageListSmall = small;
-
-            SetUpLargeButton();
-            Dimensione = 1;
-
-            using (SelettoreImmagini chooseImageDialog = new SelettoreImmagini(_imageListNormal))
-            {
-                if (chooseImageDialog.ShowDialog() == DialogResult.OK)
-                    ImageKey = chooseImageDialog.ResourceName;
-            }
-        }
-        public RibbonButton(Control ribbon, ImageList normal, ImageList small)
-            : this(normal, small)
-        {
-            int prog = Utility.FindLastOfItsKind(ribbon, NEW_BUTTON_PREFIX, typeof(RibbonButton)) + 1;
-            Name = NEW_BUTTON_PREFIX.Replace(" ","") + prog;
-            Text = NEW_BUTTON_PREFIX + " " + prog;
-            this.Font = ribbon.Font;
+            Font = Utility.StdFont;
+            Functions = new List<int>();
             
+            SetUpLargeButton();
+            Dimension = 1;
+
+            using (ConfiguratoreTasto configuraTasto = new ConfiguratoreTasto(this, ribbon))
+            {
+                if (configuraTasto.ShowDialog() != DialogResult.OK)
+                {
+                    this.Dispose();
+                    return;
+                }
+            }
+
             SetLargeButtonDimension();
         }
-
+        //public RibbonButton(Control ribbon)
+        //    : this()
+        //{
+        //    int prog = Utility.FindLastOfItsKind(ribbon, NEW_BUTTON_PREFIX, typeof(RibbonButton)) + 1;
+        //    Name = NEW_BUTTON_PREFIX.Replace(" ","") + prog;
+        //    Text = NEW_BUTTON_PREFIX + " " + prog;
+            
+        //    SetLargeButtonDimension();
+        //}
 
         public void SetUpLargeButton()
         {
-            ImageList = _imageListNormal;
+            ImageList = Utility.ImageListNormal;
             MaximumSize = new Size(int.MaxValue, int.MaxValue);
             MinimumSize = largeBtnMinSize;
             ImageAlign = ContentAlignment.TopCenter;
@@ -102,7 +100,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         }
         public void SetUpSmallButton()
         {
-            ImageList = _imageListSmall;
+            ImageList = Utility.ImageListSmall;
             MinimumSize = new Size(0, 0);
             MaximumSize = smallBtnMaxSize;
             ImageAlign = ContentAlignment.MiddleLeft;
@@ -144,15 +142,15 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         protected override void OnDoubleClick(EventArgs e)
         {
-            if (ID == 0)
+            if (IdControllo == 0)
             {
-                int dim = Dimensione;
+                int dim = Dimension;
 
-                using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this, _imageListNormal))
+                using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this))
                 {
                     cfg.ShowDialog();
 
-                    if (dim != Dimensione)
+                    if (dim != Dimension)
                     {
                         OnPropertyChanged("Dimensione");
                     }
@@ -162,8 +160,13 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             {
                 RibbonGroup grp = Parent.Parent as RibbonGroup;
 
-                AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62);
-                afForm.Show();
+                using (AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62))
+                {
+                    if (afForm.ShowDialog() == DialogResult.OK)
+                    {
+
+                    }
+                }
             }
             base.OnDoubleClick(e);
         }
@@ -211,6 +214,14 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             base.OnMouseLeave(e);
             BackColor = Color.FromKnownColor(KnownColor.Control);
+        }
+
+        protected override void Dispose(bool disposing)
+        {            
+            if (ConfiguratoreRibbon.ControlliUtilizzati.Contains(IdControllo))
+                ConfiguratoreRibbon.GruppoControlloCancellati.Add(ConfiguratoreRibbon.GruppoControlloUtilizzati[ConfiguratoreRibbon.ControlliUtilizzati.IndexOf(IdControllo)]);
+
+            base.Dispose(disposing);
         }
     }
 }
