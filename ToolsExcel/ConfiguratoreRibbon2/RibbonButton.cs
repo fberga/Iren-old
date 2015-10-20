@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -17,6 +18,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private Size smallBtnMaxSize = new Size(250, 33);
 
         private Point _startPt = new Point(int.MaxValue, int.MaxValue);
+        private bool _enabled;
 
         public int IdTipologia { get { return ToggleButton ? 2 : 1; } }
         public int Slot { get { return Dimension == 1 ? 3 : 1; } }
@@ -47,12 +49,36 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public bool ToggleButton { get; set; }
         public int IdControllo { get; private set; }
         public List<int> Functions { get; set; }
-        //public bool Enabled { get; set; }
+        public new bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+            set
+            {                
+                _enabled = value;
+
+                if (!value) 
+                {
+                    Image = MakeGrayscale(Image);
+                    ForeColor = System.Drawing.Color.Gray;
+                }
+                else
+                {
+                    Image = Utility.ImageListNormal.Images[ImageKey];
+                    if(Parent != null)
+                        ForeColor = Parent.ForeColor;
+                }
+                Invalidate();
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public RibbonButton(string imageKey, int id)
         {
+            Enabled = true;
             ImageKey = imageKey;
             IdControllo = id;
             Font = Utility.StdFont;
@@ -60,6 +86,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         }
         public RibbonButton(Control ribbon)
         {
+            Enabled = true;
             Font = Utility.StdFont;
             Functions = new List<int>();
             
@@ -77,15 +104,6 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             SetLargeButtonDimension();
         }
-        //public RibbonButton(Control ribbon)
-        //    : this()
-        //{
-        //    int prog = Utility.FindLastOfItsKind(ribbon, NEW_BUTTON_PREFIX, typeof(RibbonButton)) + 1;
-        //    Name = NEW_BUTTON_PREFIX.Replace(" ","") + prog;
-        //    Text = NEW_BUTTON_PREFIX + " " + prog;
-            
-        //    SetLargeButtonDimension();
-        //}
 
         public void SetUpLargeButton()
         {
@@ -140,31 +158,31 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             }
         }
 
-        protected override void OnDoubleClick(EventArgs e)
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
         {
-            if (IdControllo == 0)
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                int dim = Dimension;
-
-                using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this))
+                if (IdControllo == 0)
                 {
-                    cfg.ShowDialog();
+                    int dim = Dimension;
 
-                    if (dim != Dimension)
+                    using (ConfiguratoreTasto cfg = new ConfiguratoreTasto(this))
                     {
-                        OnPropertyChanged("Dimensione");
+                        cfg.ShowDialog();
+
+                        if (dim != Dimension)
+                        {
+                            OnPropertyChanged("Dimensione");
+                        }
                     }
                 }
-            }
-            else
-            {
-                RibbonGroup grp = Parent.Parent as RibbonGroup;
-
-                using (AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62))
+                else
                 {
-                    if (afForm.ShowDialog() == DialogResult.OK)
-                    {
+                    RibbonGroup grp = Parent.Parent as RibbonGroup;
 
+                    using (AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62))
+                    {
+                        afForm.ShowDialog();
                     }
                 }
             }
@@ -174,36 +192,14 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             _startPt = mevent.Location;
             if (mevent.Clicks == 2)
-                OnDoubleClick(mevent);
-
-            //base.OnMouseMove(mevent);
+                OnMouseDoubleClick(mevent);
         }
         protected override void OnMouseMove(MouseEventArgs mevent)
         {
             if (mevent.Button == System.Windows.Forms.MouseButtons.Left && Math.Pow(mevent.Location.X - _startPt.X, 2) + Math.Pow(mevent.Location.Y - _startPt.Y, 2) > Math.Pow(SystemInformation.DragSize.Height, 2))
             {
-                //rettangolo di spostamento
-                //ControlPaint.DrawReversibleFrame(_selectionRect, this.BackColor, FrameStyle.Thick);
-                //Point centerPoint = PointToScreen(new Point(mevent.X - DisplayRectangle.Width / 2, mevent.Y - DisplayRectangle.Height / 2));
-                //_selectionRect = new Rectangle(centerPoint, this.DisplayRectangle.Size);
-                //ControlPaint.DrawReversibleFrame(_selectionRect, this.BackColor, FrameStyle.Thick);
-
-
                 DoDragDrop(this, DragDropEffects.Move);
             }
-
-            //base.OnMouseMove(mevent);
-        }
-        protected override void OnMouseUp(MouseEventArgs mevent)
-        {
-            //if (mevent.Button == System.Windows.Forms.MouseButtons.Left)
-            //{
-            //    //ControlPaint.DrawReversibleFrame(_selectionRect, this.BackColor, FrameStyle.Thick);
-            //    //_selectionRect = new Rectangle(new Point(0, 0), new Size(0, 0));
-            //    OnClick(mevent);
-            //}
-
-            //base.OnMouseUp(mevent);
         }
         protected override void OnMouseEnter(EventArgs e)
         {
@@ -216,12 +212,76 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             BackColor = Color.FromKnownColor(KnownColor.Control);
         }
 
+        protected override void OnPaint(PaintEventArgs pe)
+        {
+            base.OnPaint(pe);
+            if (!Enabled)
+            {
+                
+
+                //ForeColor = System.Drawing.Color.Gray;
+
+                //ColorMatrix matrix = new ColorMatrix(new float[][]{
+                //    new float[] {0.299f, 0.299f, 0.299f, 0, 0},
+                //    new float[] {0.587f, 0.587f, 0.587f, 0, 0},
+                //    new float[] {0.114f, 0.114f, 0.114f, 0, 0},
+                //    new float[] {     0,      0,      0, 1, 0},
+                //    new float[] {     0,      0,      0, 0, 0}
+                //});
+
+                //Image image = (Bitmap)Image.Clone();
+                //ImageAttributes attributes = new ImageAttributes();
+                //attributes.SetColorMatrix(matrix);
+                //using (Graphics graphics = Graphics.FromImage(image))
+                //{
+                //    graphics.DrawImage(
+                //        image,
+                //        new Rectangle(0, 0, image.Width, image.Height),
+                //        0,
+                //        0,
+                //        image.Width,
+                //        image.Height,
+                //        GraphicsUnit.Pixel,
+                //        attributes
+                //    );
+                //}
+                //Image = image;
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {            
             if (ConfiguratoreRibbon.ControlliUtilizzati.Contains(IdControllo))
                 ConfiguratoreRibbon.GruppoControlloCancellati.Add(ConfiguratoreRibbon.GruppoControlloUtilizzati[ConfiguratoreRibbon.ControlliUtilizzati.IndexOf(IdControllo)]);
 
             base.Dispose(disposing);
+        }
+
+
+        private Image MakeGrayscale(Image original)
+        {
+            Image newBitmap = new Bitmap(original.Width, original.Height);
+            Graphics g = Graphics.FromImage(newBitmap);
+            ColorMatrix colorMatrix = new ColorMatrix(
+                new float[][] 
+            {
+                new float[] {.299f, .299f, .299f, 0, 0},
+                new float[] {.587f, .587f, .587f, 0, 0},
+                new float[] {.114f, .114f, .114f, 0, 0},
+                new float[] {0, 0, 0, 1, 0},
+                new float[] {0, 0, 0, 0, 1}
+            });
+
+            ImageAttributes attributes = new ImageAttributes();
+            attributes.SetColorMatrix(colorMatrix);
+            g.DrawImage(
+                original,
+                new Rectangle(0, 0, original.Width, original.Height),
+                0, 0, original.Width, original.Height,
+                GraphicsUnit.Pixel, attributes);
+
+            g.Dispose();
+            return newBitmap;
         }
     }
 }

@@ -28,8 +28,8 @@ namespace Iren.ToolsExcel.PostDeployment
             string destFile = Path.Combine(destPath, file);
 
             //creo cartella sul desktop e inserisco il link al file
-            string desktopPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "PSO");
-            string desktopLink = Path.Combine(desktopPath, file + ".lnk");
+            //string desktopPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "PSO");
+            //string desktopLink = Path.Combine(desktopPath, file + ".lnk");
 
             switch (args.InstallationStatus)
             {
@@ -44,14 +44,14 @@ namespace Iren.ToolsExcel.PostDeployment
 
                     ServerDocument.AddCustomization(destFile, deploymentManifestUri);
 
-                    if (!Directory.Exists(desktopPath))
-                        Directory.CreateDirectory(desktopPath);
+                    //if (!Directory.Exists(desktopPath))
+                    //    Directory.CreateDirectory(desktopPath);
 
-                    var shell = new WshShell();
-                    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(desktopLink);
-                    shortcut.Description = "Collegamento all'applicazione " + file;
-                    shortcut.TargetPath = destFile;
-                    shortcut.Save();
+                    //var shell = new WshShell();
+                    //IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(desktopLink);
+                    //shortcut.Description = "Collegamento all'applicazione " + file;
+                    //shortcut.TargetPath = destFile;
+                    //shortcut.Save();
 
                     break;
                 case AddInInstallationStatus.Update:

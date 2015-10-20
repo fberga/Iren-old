@@ -87,7 +87,7 @@
             this.listBoxFunzioni.Location = new System.Drawing.Point(487, 235);
             this.listBoxFunzioni.Name = "listBoxFunzioni";
             this.listBoxFunzioni.Size = new System.Drawing.Size(236, 294);
-            this.listBoxFunzioni.TabIndex = 22;
+            this.listBoxFunzioni.TabIndex = 2;
             // 
             // lbApplicazioni
             // 
@@ -109,7 +109,7 @@
             this.listBoxApplicazioni.Location = new System.Drawing.Point(245, 235);
             this.listBoxApplicazioni.Name = "listBoxApplicazioni";
             this.listBoxApplicazioni.Size = new System.Drawing.Size(236, 294);
-            this.listBoxApplicazioni.TabIndex = 20;
+            this.listBoxApplicazioni.TabIndex = 1;
             this.listBoxApplicazioni.SelectedValueChanged += new System.EventHandler(this.CambioApplicazione);
             // 
             // panelRibbonLayout
@@ -155,7 +155,7 @@
             this.btnAggiungi.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAggiungi.Name = "btnAggiungi";
             this.btnAggiungi.Size = new System.Drawing.Size(113, 48);
-            this.btnAggiungi.TabIndex = 8;
+            this.btnAggiungi.TabIndex = 3;
             this.btnAggiungi.Text = "Aggiungi";
             this.btnAggiungi.UseVisualStyleBackColor = true;
             this.btnAggiungi.Click += new System.EventHandler(this.AggiungiGruppo_Click);
@@ -169,7 +169,7 @@
             this.btnChiudi.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnChiudi.Name = "btnChiudi";
             this.btnChiudi.Size = new System.Drawing.Size(113, 48);
-            this.btnChiudi.TabIndex = 7;
+            this.btnChiudi.TabIndex = 4;
             this.btnChiudi.Text = "Chiudi";
             this.btnChiudi.UseVisualStyleBackColor = true;
             // 

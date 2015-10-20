@@ -59,7 +59,7 @@
             this.chkToggleButton.Margin = new System.Windows.Forms.Padding(0);
             this.chkToggleButton.Name = "chkToggleButton";
             this.chkToggleButton.Size = new System.Drawing.Size(128, 24);
-            this.chkToggleButton.TabIndex = 0;
+            this.chkToggleButton.TabIndex = 5;
             this.chkToggleButton.Text = "Toggle Button";
             this.chkToggleButton.UseVisualStyleBackColor = true;
             // 
@@ -78,7 +78,7 @@
             this.txtLabel.Location = new System.Drawing.Point(189, 39);
             this.txtLabel.Name = "txtLabel";
             this.txtLabel.Size = new System.Drawing.Size(251, 26);
-            this.txtLabel.TabIndex = 4;
+            this.txtLabel.TabIndex = 2;
             // 
             // txtScreenTip
             // 
@@ -87,7 +87,7 @@
             this.txtScreenTip.Multiline = true;
             this.txtScreenTip.Name = "txtScreenTip";
             this.txtScreenTip.Size = new System.Drawing.Size(251, 76);
-            this.txtScreenTip.TabIndex = 5;
+            this.txtScreenTip.TabIndex = 4;
             // 
             // radioDimLarge
             // 
@@ -96,7 +96,7 @@
             this.radioDimLarge.Location = new System.Drawing.Point(3, 35);
             this.radioDimLarge.Name = "radioDimLarge";
             this.radioDimLarge.Size = new System.Drawing.Size(81, 24);
-            this.radioDimLarge.TabIndex = 0;
+            this.radioDimLarge.TabIndex = 1;
             this.radioDimLarge.TabStop = true;
             this.radioDimLarge.Text = "Grande";
             this.radioDimLarge.UseVisualStyleBackColor = true;
@@ -107,7 +107,7 @@
             this.radioDimSmall.Location = new System.Drawing.Point(3, 5);
             this.radioDimSmall.Name = "radioDimSmall";
             this.radioDimSmall.Size = new System.Drawing.Size(77, 24);
-            this.radioDimSmall.TabIndex = 1;
+            this.radioDimSmall.TabIndex = 0;
             this.radioDimSmall.Text = "Piccolo";
             this.radioDimSmall.UseVisualStyleBackColor = true;
             // 
@@ -156,7 +156,7 @@
             this.panelDimensione.Location = new System.Drawing.Point(189, 257);
             this.panelDimensione.Name = "panelDimensione";
             this.panelDimensione.Size = new System.Drawing.Size(251, 68);
-            this.panelDimensione.TabIndex = 12;
+            this.panelDimensione.TabIndex = 6;
             // 
             // panelBottom
             // 
@@ -176,7 +176,7 @@
             this.btnApplica.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnApplica.Name = "btnApplica";
             this.btnApplica.Size = new System.Drawing.Size(113, 48);
-            this.btnApplica.TabIndex = 8;
+            this.btnApplica.TabIndex = 7;
             this.btnApplica.Text = "Applica";
             this.btnApplica.UseVisualStyleBackColor = true;
             this.btnApplica.Click += new System.EventHandler(this.Applica_Click);
@@ -190,7 +190,7 @@
             this.btnAnnulla.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAnnulla.Name = "btnAnnulla";
             this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
-            this.btnAnnulla.TabIndex = 7;
+            this.btnAnnulla.TabIndex = 8;
             this.btnAnnulla.Text = "Annulla";
             this.btnAnnulla.UseVisualStyleBackColor = true;
             this.btnAnnulla.Click += new System.EventHandler(this.btnAnnulla_Click);
@@ -241,7 +241,7 @@
             this.txtName.Location = new System.Drawing.Point(189, 7);
             this.txtName.Name = "txtName";
             this.txtName.Size = new System.Drawing.Size(251, 26);
-            this.txtName.TabIndex = 13;
+            this.txtName.TabIndex = 1;
             // 
             // ConfiguratoreTasto
             // 

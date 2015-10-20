@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -78,11 +79,11 @@
     <Compile Include="ControlliEsistenti.Designer.cs">
       <DependentUpon>ControlliEsistenti.cs</DependentUpon>
     </Compile>
-    <Compile Include="ConfiguraControllo.cs">
+    <Compile Include="ConfiguratoreControllo.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ConfiguraControllo.Designer.cs">
-      <DependentUpon>ConfiguraControllo.cs</DependentUpon>
+    <Compile Include="ConfiguratoreControllo.Designer.cs">
+      <DependentUpon>ConfiguratoreControllo.cs</DependentUpon>
     </Compile>
     <Compile Include="DisabilitaMenuStrip.cs">
       <SubType>Component</SubType>
@@ -133,8 +134,8 @@
     <EmbeddedResource Include="ControlliEsistenti.resx">
       <DependentUpon>ControlliEsistenti.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConfiguraControllo.resx">
-      <DependentUpon>ConfiguraControllo.cs</DependentUpon>
+    <EmbeddedResource Include="ConfiguratoreControllo.resx">
+      <DependentUpon>ConfiguratoreControllo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GruppiEsistenti.resx">
       <DependentUpon>GruppiEsistenti.cs</DependentUpon>

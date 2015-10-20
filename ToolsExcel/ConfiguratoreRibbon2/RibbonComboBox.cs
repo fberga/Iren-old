@@ -19,15 +19,15 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public int IdTipologia { get { return 3; } set { IdTipologia = value; } }
         public string Description { get; set; }
         public string ScreenTip { get; set; }
-        public string Name { get; set; }
-        public string Text { get { return _label.Text; } set { _label.Text = value; } }
+        //public new string Name { get; set; }
+        public new string Text { get { return base.Text; } set { base.Text = _label.Text = value; } }
         public int Slot { get { return 2; } }
         public int Dimension { get { return -1; } }
         public bool ToggleButton { get { return false; } }
         public string ImageKey { get { return ""; } }
         public int IdControllo { get; private set; }
         public List<int> Functions { get; set; }
-        public bool Enabled { get; set; }
+        public new bool Enabled { get { return base.Enabled; } set { base.Enabled = _cmb.Enabled = _label.Enabled = value; } }
 
         public RibbonComboBox()
         {            
@@ -76,7 +76,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public RibbonComboBox(Control ribbon)
             : this()
         {
-            using (ConfiguraControllo cc = new ConfiguraControllo(ribbon, typeof(RibbonComboBox)))
+            using (ConfiguratoreControllo cc = new ConfiguratoreControllo(ribbon, typeof(RibbonComboBox)))
             {
                 if (cc.ShowDialog() == DialogResult.OK)
                 {
@@ -128,21 +128,28 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             base.OnSizeChanged(e);
         }
 
-        protected override void OnDoubleClick(EventArgs e)
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
         {
-            if (IdControllo == 0)
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                
-            }
-            else
-            {
-                RibbonGroup grp = Parent.Parent as RibbonGroup;
-
-                using (AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62))
+                if (IdControllo == 0)
                 {
-                    if (afForm.ShowDialog() == DialogResult.OK)
+                    using (ConfiguratoreControllo cfgCtrl = new ConfiguratoreControllo(this, Parent, GetType()))
                     {
+                        if (cfgCtrl.ShowDialog() == DialogResult.OK)
+                        {
+                            Text = cfgCtrl.CtrlText;
+                            Name = cfgCtrl.CtrlName;
+                        }
+                    }
+                }
+                else
+                {
+                    RibbonGroup grp = Parent.Parent as RibbonGroup;
 
+                    using (AssegnaFunzioni afForm = new AssegnaFunzioni(this, grp, 1, 62))
+                    {
+                        afForm.ShowDialog();
                     }
                 }
             }

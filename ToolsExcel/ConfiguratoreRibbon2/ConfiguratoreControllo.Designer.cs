@@ -1,6 +1,6 @@
 ﻿namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
-    partial class ConfiguraControllo
+    partial class ConfiguratoreControllo
     {
         /// <summary>
         /// Required designer variable.
@@ -59,7 +59,7 @@
             this.btnApplica.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.btnApplica.Name = "btnApplica";
             this.btnApplica.Size = new System.Drawing.Size(113, 48);
-            this.btnApplica.TabIndex = 8;
+            this.btnApplica.TabIndex = 2;
             this.btnApplica.Text = "Applica";
             this.btnApplica.UseVisualStyleBackColor = true;
             this.btnApplica.Click += new System.EventHandler(this.Applica_Click);
@@ -73,7 +73,7 @@
             this.btnAnnulla.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.btnAnnulla.Name = "btnAnnulla";
             this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
-            this.btnAnnulla.TabIndex = 7;
+            this.btnAnnulla.TabIndex = 3;
             this.btnAnnulla.Text = "Annulla";
             this.btnAnnulla.UseVisualStyleBackColor = true;
             this.btnAnnulla.Click += new System.EventHandler(this.Annulla_Click);
@@ -103,7 +103,7 @@
             this.txtName.Location = new System.Drawing.Point(82, 3);
             this.txtName.Name = "txtName";
             this.txtName.Size = new System.Drawing.Size(312, 26);
-            this.txtName.TabIndex = 16;
+            this.txtName.TabIndex = 0;
             // 
             // txtLabel
             // 
@@ -111,7 +111,7 @@
             this.txtLabel.Location = new System.Drawing.Point(82, 36);
             this.txtLabel.Name = "txtLabel";
             this.txtLabel.Size = new System.Drawing.Size(312, 26);
-            this.txtLabel.TabIndex = 17;
+            this.txtLabel.TabIndex = 1;
             // 
             // lbNome
             // 

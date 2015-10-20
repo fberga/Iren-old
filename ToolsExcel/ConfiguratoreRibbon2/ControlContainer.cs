@@ -163,5 +163,23 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             }
             base.OnDragDrop(drgevent);
         }
+
+        protected override void OnMouseClick(MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                Control c = null;
+                foreach (Control ctrl in Controls)
+                {
+                    if (ctrl.DisplayRectangle.IntersectsWith(new Rectangle(e.Location, new Size(1, 1)))) 
+                    {
+                        c = ctrl;
+                        break;
+                    }
+                }
+
+
+            }
+        }
     }
 }

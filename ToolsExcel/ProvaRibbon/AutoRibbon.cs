@@ -11,6 +11,9 @@ using System.Reflection;
 using Iren.ToolsExcel.Forms;
 using System.Collections;
 using Excel = Microsoft.Office.Interop.Excel;
+using System.IO;
+using Microsoft.Office.Tools;
+using System.Configuration;
 
 namespace ProvaRibbon
 {
@@ -51,10 +54,8 @@ namespace ProvaRibbon
         /// Proprietà che permette l'indicizzazione per nome dei vari tasti della barra Ribbon. 
         /// La necessità di questa proprietà deriva dalla necessità di abilitare/disabilitare/nascondere i tasti leggendo i parametri del DB.
         /// </summary>
-        public ControlCollection Controls
-        {
-            get { return _controls; }
-        }
+        public ControlCollection Controls { get; private set; }
+        public List<RibbonGroup> Groups { get; private set; }
 
         #endregion
 
@@ -83,9 +84,11 @@ namespace ProvaRibbon
             if (DataBase.OpenConnection())
             {
                 //TODO salvare anche questo negli XML
-                DataTable dt = DataBase.Select("RIBBON.spGruppoControllo", "@IdApplicazione=1;@IdUtente=62");
+                DataTable dt = DataBase.Select("RIBBON.spGruppoControllo", "@IdApplicazione=" + ConfigurationManager.AppSettings["AppID"] + ";@IdUtente=62");
 
                 Microsoft.Office.Tools.Ribbon.RibbonGroup grp = this.Factory.CreateRibbonGroup();
+                Groups = new List<RibbonGroup>();
+                
                 int idGruppo = -1;
 
                 foreach (DataRow r in dt.Rows)
@@ -94,9 +97,11 @@ namespace ProvaRibbon
                     {
                         idGruppo = (int)r["IdGruppo"];
                         grp = this.Factory.CreateRibbonGroup();
+                        grp.Name = r["NomeGruppo"].ToString();
                         grp.Label = r["LabelGruppo"].ToString();
 
                         this.FrontOffice.Groups.Add(grp);
+                        Groups.Add(grp);
                     }
 
                     RibbonControl ctrl = null;
@@ -108,8 +113,10 @@ namespace ProvaRibbon
                         newBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
                         newBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
                         newBtn.Label = r["Label"].ToString();
+                        newBtn.Name = r["Nome"].ToString();
+                        newBtn.Description = r["Descrizione"].ToString();
+                        newBtn.ScreenTip = r["ScreenTip"].ToString();
                         newBtn.ShowImage = true;
-                        
                         grp.Items.Add(newBtn);
                         ctrl = newBtn;
                     }
@@ -120,6 +127,9 @@ namespace ProvaRibbon
                         newTglBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
                         newTglBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
                         newTglBtn.Label = r["Label"].ToString();
+                        newTglBtn.Name = r["Nome"].ToString();
+                        newTglBtn.Description = r["Descrizione"].ToString();
+                        newTglBtn.ScreenTip = r["ScreenTip"].ToString();
                         newTglBtn.ShowImage = true;
 
                         grp.Items.Add(newTglBtn);
@@ -132,8 +142,7 @@ namespace ProvaRibbon
                         RibbonComboBox cmb = this.Factory.CreateRibbonComboBox();
                         cmb.ShowLabel = false;
                         cmb.Text = null;
-
-                        cmb.ItemsLoading += cmb_ItemsLoading;
+                        cmb.Name = r["Nome"].ToString();
 
                         grp.Items.Add(lb);
                         grp.Items.Add(cmb);
@@ -148,8 +157,10 @@ namespace ProvaRibbon
                         MethodInfo hi = GetType().GetMethod(f["NomeFunzione"].ToString(), BindingFlags.Instance | BindingFlags.NonPublic);
                         Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
                         ei.AddEventHandler(ctrl, d);
-                    }
+                    }                    
                 }
+
+                Controls = new ControlCollection(this);
             }
         }
 
@@ -160,12 +171,12 @@ namespace ProvaRibbon
         /// </summary>       
         private void AutoRibbon_Load(object sender, RibbonUIEventArgs e)
         {
-            Initialize();
-            Workbook.ScreenUpdating = false;
-            Sheet.Protected = false;
+            //Initialize();
+            //Workbook.ScreenUpdating = false;
+            //Sheet.Protected = false;
 
             //forzo aggiornamento label iniziale
-            Iren.ToolsExcel.Utility.Workbook.AggiornaLabelStatoDB();
+            //Iren.ToolsExcel.Utility.Workbook.AggiornaLabelStatoDB();
 
             //se non sono in debug toglie le intestazioni
 #if !DEBUG
@@ -178,25 +189,25 @@ namespace ProvaRibbon
 #endif
             //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
             bool isUpdated = true;
-            if (Workbook.CategorySheets.Count == 0 || Repository.DaAggiornare)
-            {
-                Aggiorna aggiorna = new Aggiorna();
-                isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
-            }
+            //if (Workbook.CategorySheets.Count == 0 || Repository.DaAggiornare)
+            //{
+            //    Aggiorna aggiorna = new Aggiorna();
+            //    isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
+            //}
 
             if (isUpdated)
             {
-                btnCalendar.Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
+                ((RibbonButton)Controls["btnCalendario"]).Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
 
                 //seleziono l'ambiente attivo
                 ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
 
-                RefreshChecks();
+                //RefreshChecks();
 
                 //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
-                btnModifica.Checked = false;
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
-                btnModifica.Label = "Modifica NO";
+                ((RibbonToggleButton)Controls["btnModifica"]).Checked = false;
+                ((RibbonToggleButton)Controls["btnModifica"]).Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
+                ((RibbonToggleButton)Controls["btnModifica"]).Label = "Modifica NO";
                 try
                 {
                     Sheet.AbilitaModifica(false);
@@ -221,9 +232,9 @@ namespace ProvaRibbon
                 StatoDB_Changed(null, null);
             }
 
-            Sheet.Protected = true;
-            Workbook.ScreenUpdating = true;
-            SplashScreen.Close();
+            //Sheet.Protected = true;
+            //Workbook.ScreenUpdating = true;
+            //SplashScreen.Close();
         }
 
         private void StatoDB_Changed(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -338,7 +349,7 @@ namespace ProvaRibbon
                 //se maggiore di 1 allora c'è un cambio ambiente altrimenti doppio click sullo stesso e non faccio nulla
                 if (count > 1)
                 {
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Label);
+                    Workbook.InsertLog(Iren.ToolsExcel.Core.DataBase.TipologiaLOG.LogModifica, "Attivato ambiente " + ambienteScelto.Label);
                     DataBase.SwitchEnvironment(ambienteScelto.Label);
 
                     btnAggiornaStruttura_Click(null, null);
@@ -374,7 +385,7 @@ namespace ProvaRibbon
 
                 Aggiorna aggiorna = new Aggiorna();
                 if (aggiorna.Struttura(avoidRepositoryUpdate: false))
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
+                    Workbook.InsertLog(Iren.ToolsExcel.Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
                 RefreshChecks();
 
@@ -394,7 +405,7 @@ namespace ProvaRibbon
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
             //apro il form calendario
-            Forms.FormCalendar cal = new FormCalendar();
+            Iren.ToolsExcel.Forms.FormCalendar cal = new FormCalendar();
 
             cal.Top = System.Windows.Forms.Cursor.Position.Y - 20;
             cal.Left = System.Windows.Forms.Cursor.Position.X - 20;
@@ -415,7 +426,7 @@ namespace ProvaRibbon
                 Aggiorna aggiorna = new Aggiorna();
                 if (DataBase.OpenConnection())
                 {
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + ((RibbonButton)sender).Label);
+                    Workbook.InsertLog(Iren.ToolsExcel.Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + ((RibbonButton)sender).Label);
                     DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
@@ -473,14 +484,14 @@ namespace ProvaRibbon
                     if (System.Windows.Forms.MessageBox.Show("L'operazione selezionata non è disponibile per l'UP selezionata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                         && selUP.ShowDialog().ToString() != "")
                     {
-                        Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
+                        Iren.ToolsExcel.Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
                         rampe.ShowDialog();
                         rampe.Dispose();
                     }
                 }
                 else
                 {
-                    Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
+                    Iren.ToolsExcel.Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
                     rampe.ShowDialog();
                     rampe.Dispose();
                 }
@@ -489,7 +500,7 @@ namespace ProvaRibbon
             else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                 && selUP.ShowDialog().ToString() != "")
             {
-                Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
+                Iren.ToolsExcel.Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
                 rampe.ShowDialog();
                 rampe.Dispose();
             }
@@ -512,7 +523,7 @@ namespace ProvaRibbon
 
                 Aggiorna aggiorna = new Aggiorna();
                 if (aggiorna.Dati())
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
+                    Workbook.InsertLog(Iren.ToolsExcel.Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna Dati");
 
                 RefreshChecks();
 
@@ -713,14 +724,14 @@ namespace ProvaRibbon
         /// <param name="e"></param>
         private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
         {
-            TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
-            string pathStr = Utility.Workbook.GetUsrConfigElement("backup").Value;
-            if (!Directory.Exists(pathStr))
-                Directory.CreateDirectory(pathStr);
+            //TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
+            //string pathStr = Iren.ToolsExcel.Utility.Workbook.GetUsrConfigElement("backup").Value;
+            //if (!Directory.Exists(pathStr))
+            //    Directory.CreateDirectory(pathStr);
 
-            string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
+            //string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
-            Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
+            //Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
             Globals.ThisWorkbook.ThisApplication.Quit();
         }
         /// <summary>
@@ -751,7 +762,7 @@ namespace ProvaRibbon
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Simboli.AppID = Simboli.GetAppIDByMercato(cmbMSD.Text);
+            //Simboli.AppID = Simboli.GetAppIDByMercato(cmbMSD.Text);
             Aggiorna aggiorna = new Aggiorna();
             aggiorna.Struttura(avoidRepositoryUpdate: true);
 
@@ -768,7 +779,7 @@ namespace ProvaRibbon
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Simboli.Stagione = cmbStagione.Text;
+            //Simboli.Stagione = cmbStagione.Text;
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
@@ -816,142 +827,142 @@ namespace ProvaRibbon
         /// </summary>
         private void Initialize()
         {
-            _controls = new ControlCollection(this);
-            DataView controlli = new DataView();
+            
+            //DataView controlli = new DataView();
 
-            if (DataBase.OpenConnection())
-            {
-                Repository.CaricaApplicazioneRibbon();
-                controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-                DataBase.CloseConnection();
-            }
-            else
-            {
-                try
-                {
-                    controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-                }
-                catch
-                {
-                    controlli = new DataView();
-                }
-            }
+            //if (DataBase.OpenConnection())
+            //{
+            //    //Repository.CaricaApplicazioneRibbon();
+            //    //controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+            //    DataBase.CloseConnection();
+            //}
+            //else
+            //{
+            //    try
+            //    {
+            //        controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+            //    }
+            //    catch
+            //    {
+            //        controlli = new DataView();
+            //    }
+            //}
 
-            if (controlli.Count > 0)
-            {
-                foreach (DataRowView controllo in controlli)
-                {
-                    Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
-                    Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
-                    if (controllo["Abilitato"].Equals("1"))
-                        _enabledControls.Add(controllo["NomeControllo"].ToString());
+//            if (controlli.Count > 0)
+//            {
+//                foreach (DataRowView controllo in controlli)
+//                {
+//                    Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
+//                    Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
+//                    if (controllo["Abilitato"].Equals("1"))
+//                        _enabledControls.Add(controllo["NomeControllo"].ToString());
 
-                    if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
-                    {
-                        ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
-                    }
-                }
+//                    if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
+//                    {
+//                        ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
+//                    }
+//                }
 
-                List<RibbonGroup> groups = FrontOffice.Groups.ToList();
-                foreach (RibbonGroup group in groups)
-                    group.Visible = group.Items.Any(c => c.Visible);
-            }
-            else
-            {
-                foreach (RibbonControl control in Controls)
-                {
-#if !DEBUG
-                    control.Visible = true;
-                    control.Enabled = false;
-#else
-                    control.Visible = true;
-                    control.Enabled = true;
-#endif
+//                List<RibbonGroup> groups = FrontOffice.Groups.ToList();
+//                foreach (RibbonGroup group in groups)
+//                    group.Visible = group.Items.Any(c => c.Visible);
+//            }
+//            else
+//            {
+//                foreach (RibbonControl control in Controls)
+//                {
+//#if !DEBUG
+//                    control.Visible = true;
+//                    control.Enabled = false;
+//#else
+//                    control.Visible = true;
+//                    control.Enabled = true;
+//#endif
 
-                    if (control.GetType().ToString().Contains("ToggleButton"))
-                        ((RibbonToggleButton)control).Checked = false;
-                }
-            }
+//                    if (control.GetType().ToString().Contains("ToggleButton"))
+//                        ((RibbonToggleButton)control).Checked = false;
+//                }
+//            }
 
             //ComboBox mercati
-            if (groupMSD.Visible)
-            {
-                if (Workbook.AppSettings("Mercati") != null)
-                {
-                    string[] mercati = Workbook.AppSettings("Mercati").Split('|');
-                    cmbMSD.Items.Clear();
-                    foreach (string mercato in mercati)
-                    {
-                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-                        i.Label = mercato;
-                        cmbMSD.Items.Add(i);
-                    }
+            //if (groupMSD.Visible)
+            //{
+            //    if (Workbook.AppSettings("Mercati") != null)
+            //    {
+            //        string[] mercati = Workbook.AppSettings("Mercati").Split('|');
+            //        cmbMSD.Items.Clear();
+            //        foreach (string mercato in mercati)
+            //        {
+            //            RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+            //            i.Label = mercato;
+            //            cmbMSD.Items.Add(i);
+            //        }
 
-                    cmbMSD.TextChanged -= cmbMSD_TextChanged;
-                    cmbMSD.Text = Simboli.Mercato;
-                    cmbMSD.TextChanged += cmbMSD_TextChanged;
-                }
-            }
+            //        cmbMSD.TextChanged -= cmbMSD_TextChanged;
+            //        cmbMSD.Text = Simboli.Mercato;
+            //        cmbMSD.TextChanged += cmbMSD_TextChanged;
+            //    }
+            //}
 
             //ComboBox stagioni
-            if (groupStagione.Visible)
-            {
-                if (Workbook.AppSettings("Stagioni") != null)
-                {
-                    string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
-                    cmbStagione.Items.Clear();
-                    foreach (string stagione in stagioni)
-                    {
-                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-                        i.Label = stagione;
-                        cmbStagione.Items.Add(i);
-                    }
+            //if (groupStagione.Visible)
+            //{
+            //    if (Workbook.AppSettings("Stagioni") != null)
+            //    {
+            //        string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
+            //        cmbStagione.Items.Clear();
+            //        foreach (string stagione in stagioni)
+            //        {
+            //            RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+            //            i.Label = stagione;
+            //            cmbStagione.Items.Add(i);
+            //        }
 
-                    cmbStagione.TextChanged -= cmbStagione_TextChanged;
-                    cmbStagione.Text = Simboli.Stagione;
-                    cmbStagione.TextChanged += cmbStagione_TextChanged;
-                }
-            }
+            //        cmbStagione.TextChanged -= cmbStagione_TextChanged;
+            //        cmbStagione.Text = Simboli.Stagione;
+            //        cmbStagione.TextChanged += cmbStagione_TextChanged;
+            //    }
+            //}
         }
         /// <summary>
         /// Metodo che seleziona il tasto corretto tra quelli degli applicativi presenti nella Tab Front Office. La selezione avviene in base all'ID applicazione scritto sul file di configurazione.
         /// </summary>
         private void CheckTastoApplicativo()
         {
-            switch (Workbook.AppSettings("AppID"))
+            switch (ConfigurationManager.AppSettings["AppID"])
             {
                 case "1":
-                    btnOfferteMGP.Checked = true;
+                    ((RibbonToggleButton)Controls["btnOfferteMGP"]).Checked = true;
                     break;
                 case "2":
                 case "3":
                 case "4":
                 case "13":
-                    btnInvioProgrammi.Checked = true;
+                    ((RibbonToggleButton)Controls["btnInvioProgrammi"]).Checked = true;
                     break;
                 case "5":
-                    btnProgrammazioneImpianti.Checked = true;
+                    ((RibbonToggleButton)Controls["btnProgrammazioneImpianti"]).Checked = true;
                     break;
                 case "6":
-                    btnUnitCommitment.Checked = true;
+                    ((RibbonToggleButton)Controls["btnUnitCommitment"]).Checked = true;
                     break;
                 case "7":
-                    btnPrezziMSD.Checked = true;
+                    ((RibbonToggleButton)Controls["btnPrezziMSD"]).Checked = true;
                     break;
                 case "8":
-                    btnSistemaComandi.Checked = true;
+                    ((RibbonToggleButton)Controls["btnSistemaComandi"]).Checked = true;
                     break;
                 case "9":
-                    btnOfferteMSD.Checked = true;
+                    ((RibbonToggleButton)Controls["btnOfferteMSD"]).Checked = true;
                     break;
                 case "10":
-                    btnOfferteMB.Checked = true;
+                    ((RibbonToggleButton)Controls["btnOfferteMB"]).Checked = true;
                     break;
                 case "11":
-                    btnValidazioneTL.Checked = true;
+                    ((RibbonToggleButton)Controls["btnValidazioneTL"]).Checked = true;
                     break;
                 case "12":
-                    btnPrevisioneCT.Checked = true;
+                    ((RibbonToggleButton)Controls["btnPrevisioneCT"]).Checked = true;
                     break;
             }
 
@@ -1009,10 +1020,7 @@ namespace ProvaRibbon
 
         internal ControlCollection(AutoRibbon ribbon)
         {
-            _ribbon = ribbon;
-            List<RibbonGroup> groups = ribbon.FrontOffice.Groups.ToList();
-
-            foreach (RibbonGroup group in groups)
+            foreach (RibbonGroup group in ribbon.Groups)
                 foreach (RibbonControl control in group.Items)
                     _controls.Add(control.Name, control);
         }

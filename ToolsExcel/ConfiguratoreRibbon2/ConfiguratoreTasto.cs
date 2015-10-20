@@ -29,7 +29,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             imgButton.Name = _btn.ImageKey;
             imgButton.Image = Utility.GetResurceImage(_btn.ImageKey);
             txtLabel.Text = _btn.Text;
-
+            txtName.Text = _btn.Name;
             txtDesc.Text = _btn.Description;
             txtScreenTip.Text = _btn.ScreenTip;
             chkToggleButton.Checked = _btn.ToggleButton;            
@@ -58,9 +58,14 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
         private void Applica_Click(object sender, EventArgs e)
         {
+            if (imgButton.Name == "")
+            {
+                MessageBox.Show("Selezionare un'immagine prima di creare il tasto.", "ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             _btn.ImageKey = imgButton.Name;
             _btn.Text = txtLabel.Text;
-
+            _btn.Name = txtName.Text;
             _btn.Description = txtDesc.Text;
             _btn.ScreenTip = txtScreenTip.Text;
             _btn.ToggleButton = chkToggleButton.Checked;

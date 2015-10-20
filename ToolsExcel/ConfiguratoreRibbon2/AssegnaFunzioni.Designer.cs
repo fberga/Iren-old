@@ -53,7 +53,7 @@
             this.treeViewNotUtilized.Name = "treeViewNotUtilized";
             this.tableLayoutPanel1.SetRowSpan(this.treeViewNotUtilized, 2);
             this.treeViewNotUtilized.Size = new System.Drawing.Size(282, 453);
-            this.treeViewNotUtilized.TabIndex = 2;
+            this.treeViewNotUtilized.TabIndex = 0;
             // 
             // treeViewUtilized
             // 
@@ -73,7 +73,7 @@
             this.btnRimuovi.Margin = new System.Windows.Forms.Padding(4);
             this.btnRimuovi.Name = "btnRimuovi";
             this.btnRimuovi.Size = new System.Drawing.Size(28, 30);
-            this.btnRimuovi.TabIndex = 4;
+            this.btnRimuovi.TabIndex = 2;
             this.btnRimuovi.UseVisualStyleBackColor = true;
             this.btnRimuovi.Click += new System.EventHandler(this.RimuoviFunzione_Click);
             // 
@@ -87,7 +87,7 @@
             this.btnAggiungi.Margin = new System.Windows.Forms.Padding(4);
             this.btnAggiungi.Name = "btnAggiungi";
             this.btnAggiungi.Size = new System.Drawing.Size(28, 30);
-            this.btnAggiungi.TabIndex = 5;
+            this.btnAggiungi.TabIndex = 1;
             this.btnAggiungi.UseVisualStyleBackColor = true;
             this.btnAggiungi.Click += new System.EventHandler(this.AggiungiFunzione_Click);
             // 
@@ -132,7 +132,7 @@
             this.btnOk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(113, 48);
-            this.btnOk.TabIndex = 9;
+            this.btnOk.TabIndex = 4;
             this.btnOk.Text = "Ok";
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.AssegnaFunzioni_Click);
@@ -145,7 +145,7 @@
             this.btnAnnulla.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAnnulla.Name = "btnAnnulla";
             this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
-            this.btnAnnulla.TabIndex = 8;
+            this.btnAnnulla.TabIndex = 5;
             this.btnAnnulla.Text = "Annulla";
             this.btnAnnulla.UseVisualStyleBackColor = true;
             this.btnAnnulla.Click += new System.EventHandler(this.AnnullaCambiamenti_Click);

@@ -103,7 +103,7 @@
             this.btnAggiungi.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAggiungi.Name = "btnAggiungi";
             this.btnAggiungi.Size = new System.Drawing.Size(113, 48);
-            this.btnAggiungi.TabIndex = 8;
+            this.btnAggiungi.TabIndex = 4;
             this.btnAggiungi.Text = "Aggiungi";
             this.btnAggiungi.UseVisualStyleBackColor = true;
             this.btnAggiungi.Click += new System.EventHandler(this.AggiungiControllo_Click);
@@ -117,7 +117,7 @@
             this.btnChiudi.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnChiudi.Name = "btnChiudi";
             this.btnChiudi.Size = new System.Drawing.Size(113, 48);
-            this.btnChiudi.TabIndex = 7;
+            this.btnChiudi.TabIndex = 5;
             this.btnChiudi.Text = "Chiudi";
             this.btnChiudi.UseVisualStyleBackColor = true;
             // 
@@ -166,6 +166,7 @@
             this.txtLabel.ReadOnly = true;
             this.txtLabel.Size = new System.Drawing.Size(579, 22);
             this.txtLabel.TabIndex = 18;
+            this.txtLabel.TabStop = false;
             // 
             // panelDimensione
             // 
@@ -187,7 +188,6 @@
             this.radioDimLarge.Name = "radioDimLarge";
             this.radioDimLarge.Size = new System.Drawing.Size(71, 20);
             this.radioDimLarge.TabIndex = 0;
-            this.radioDimLarge.TabStop = true;
             this.radioDimLarge.Text = "Grande";
             this.radioDimLarge.UseVisualStyleBackColor = true;
             // 
@@ -248,6 +248,7 @@
             this.txtScreenTip.ReadOnly = true;
             this.txtScreenTip.Size = new System.Drawing.Size(579, 60);
             this.txtScreenTip.TabIndex = 12;
+            this.txtScreenTip.TabStop = false;
             // 
             // txtDesc
             // 
@@ -258,6 +259,7 @@
             this.txtDesc.ReadOnly = true;
             this.txtDesc.Size = new System.Drawing.Size(579, 60);
             this.txtDesc.TabIndex = 11;
+            this.txtDesc.TabStop = false;
             // 
             // lbGruppi
             // 
@@ -297,7 +299,7 @@
             this.listBoxGruppi.Location = new System.Drawing.Point(245, 235);
             this.listBoxGruppi.Name = "listBoxGruppi";
             this.listBoxGruppi.Size = new System.Drawing.Size(236, 264);
-            this.listBoxGruppi.TabIndex = 18;
+            this.listBoxGruppi.TabIndex = 1;
             this.listBoxGruppi.SelectedIndexChanged += new System.EventHandler(this.SelectedGroupChanged);
             // 
             // listBoxApplicazioni
@@ -308,7 +310,7 @@
             this.listBoxApplicazioni.Location = new System.Drawing.Point(487, 235);
             this.listBoxApplicazioni.Name = "listBoxApplicazioni";
             this.listBoxApplicazioni.Size = new System.Drawing.Size(236, 264);
-            this.listBoxApplicazioni.TabIndex = 19;
+            this.listBoxApplicazioni.TabIndex = 2;
             this.listBoxApplicazioni.SelectedIndexChanged += new System.EventHandler(this.SelectedApplicationChanged);
             // 
             // listBoxFunzioni
@@ -319,7 +321,7 @@
             this.listBoxFunzioni.Location = new System.Drawing.Point(729, 235);
             this.listBoxFunzioni.Name = "listBoxFunzioni";
             this.listBoxFunzioni.Size = new System.Drawing.Size(236, 264);
-            this.listBoxFunzioni.TabIndex = 20;
+            this.listBoxFunzioni.TabIndex = 3;
             // 
             // ControlliEsistenti
             // 

@@ -52,12 +52,11 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.panelRibbonLayout = new System.Windows.Forms.Panel();
             this.panelApplicazione = new System.Windows.Forms.Panel();
+            this.cmbUtenti = new System.Windows.Forms.ComboBox();
             this.cmbApplicazioni = new System.Windows.Forms.ComboBox();
+            this.lbUtenti = new System.Windows.Forms.Label();
             this.lbTitoloApplicazione = new System.Windows.Forms.Label();
             this.tableLayoutForm = new System.Windows.Forms.TableLayoutPanel();
-            this.cmbUtenti = new System.Windows.Forms.ComboBox();
-            this.lbUtenti = new System.Windows.Forms.Label();
-            this.panelBottom = new System.Windows.Forms.Panel();
             this.toolStripTopMenu.SuspendLayout();
             this.panelApplicazione.SuspendLayout();
             this.tableLayoutForm.SuspendLayout();
@@ -69,7 +68,6 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.toolStripTopMenu.BackColor = System.Drawing.SystemColors.Control;
-            this.tableLayoutForm.SetColumnSpan(this.toolStripTopMenu, 4);
             this.toolStripTopMenu.Dock = System.Windows.Forms.DockStyle.None;
             this.toolStripTopMenu.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStripTopMenu.ImageScalingSize = new System.Drawing.Size(32, 32);
@@ -89,10 +87,11 @@
             this.ctrlUpButton,
             this.ctrlRightButton,
             this.toolStripSeparator3});
-            this.toolStripTopMenu.Location = new System.Drawing.Point(484, 0);
+            this.toolStripTopMenu.Location = new System.Drawing.Point(485, 0);
             this.toolStripTopMenu.Name = "toolStripTopMenu";
-            this.toolStripTopMenu.Size = new System.Drawing.Size(1037, 56);
+            this.toolStripTopMenu.Size = new System.Drawing.Size(1035, 56);
             this.toolStripTopMenu.TabIndex = 2;
+            this.toolStripTopMenu.TabStop = true;
             this.toolStripTopMenu.Text = "Drop down";
             // 
             // toolStripSeparator4
@@ -287,6 +286,9 @@
             // 
             // panelRibbonLayout
             // 
+            this.panelRibbonLayout.AutoScroll = true;
+            this.panelRibbonLayout.AutoScrollMargin = new System.Drawing.Size(30, 0);
+            this.panelRibbonLayout.AutoSize = true;
             this.panelRibbonLayout.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutForm.SetColumnSpan(this.panelRibbonLayout, 100);
             this.panelRibbonLayout.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -294,7 +296,7 @@
             this.panelRibbonLayout.Margin = new System.Windows.Forms.Padding(2);
             this.panelRibbonLayout.Name = "panelRibbonLayout";
             this.panelRibbonLayout.Padding = new System.Windows.Forms.Padding(2);
-            this.panelRibbonLayout.Size = new System.Drawing.Size(1517, 208);
+            this.panelRibbonLayout.Size = new System.Drawing.Size(1516, 208);
             this.panelRibbonLayout.TabIndex = 3;
             // 
             // panelApplicazione
@@ -308,8 +310,20 @@
             this.panelApplicazione.Controls.Add(this.lbTitoloApplicazione);
             this.panelApplicazione.Location = new System.Drawing.Point(3, 3);
             this.panelApplicazione.Name = "panelApplicazione";
-            this.panelApplicazione.Size = new System.Drawing.Size(478, 50);
+            this.panelApplicazione.Size = new System.Drawing.Size(479, 50);
             this.panelApplicazione.TabIndex = 15;
+            // 
+            // cmbUtenti
+            // 
+            this.cmbUtenti.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbUtenti.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbUtenti.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmbUtenti.FormattingEnabled = true;
+            this.cmbUtenti.Location = new System.Drawing.Point(242, 23);
+            this.cmbUtenti.Name = "cmbUtenti";
+            this.cmbUtenti.Size = new System.Drawing.Size(236, 24);
+            this.cmbUtenti.TabIndex = 1;
+            this.cmbUtenti.SelectedValueChanged += new System.EventHandler(this.CambioUtente);
             // 
             // cmbApplicazioni
             // 
@@ -320,8 +334,17 @@
             this.cmbApplicazioni.Location = new System.Drawing.Point(0, 23);
             this.cmbApplicazioni.Name = "cmbApplicazioni";
             this.cmbApplicazioni.Size = new System.Drawing.Size(236, 24);
-            this.cmbApplicazioni.TabIndex = 14;
+            this.cmbApplicazioni.TabIndex = 0;
             this.cmbApplicazioni.SelectedValueChanged += new System.EventHandler(this.CambioApplicazione);
+            // 
+            // lbUtenti
+            // 
+            this.lbUtenti.AutoSize = true;
+            this.lbUtenti.Location = new System.Drawing.Point(246, 4);
+            this.lbUtenti.Name = "lbUtenti";
+            this.lbUtenti.Size = new System.Drawing.Size(47, 16);
+            this.lbUtenti.TabIndex = 13;
+            this.lbUtenti.Text = "Utente";
             // 
             // lbTitoloApplicazione
             // 
@@ -335,16 +358,14 @@
             // tableLayoutForm
             // 
             this.tableLayoutForm.AutoSize = true;
-            this.tableLayoutForm.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.tableLayoutForm.ColumnCount = 5;
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 484F));
-            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 505F));
+            this.tableLayoutForm.ColumnCount = 2;
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 485F));
+            this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 1035F));
             this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 249F));
             this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutForm.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 183F));
             this.tableLayoutForm.Controls.Add(this.panelRibbonLayout, 0, 1);
             this.tableLayoutForm.Controls.Add(this.toolStripTopMenu, 1, 0);
-            this.tableLayoutForm.Controls.Add(this.panelBottom, 4, 2);
             this.tableLayoutForm.Controls.Add(this.panelApplicazione, 0, 0);
             this.tableLayoutForm.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutForm.MinimumSize = new System.Drawing.Size(1520, 316);
@@ -354,40 +375,8 @@
             this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 212F));
             this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
             this.tableLayoutForm.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutForm.Size = new System.Drawing.Size(1521, 316);
+            this.tableLayoutForm.Size = new System.Drawing.Size(1520, 316);
             this.tableLayoutForm.TabIndex = 16;
-            // 
-            // cmbUtenti
-            // 
-            this.cmbUtenti.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.cmbUtenti.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbUtenti.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cmbUtenti.FormattingEnabled = true;
-            this.cmbUtenti.Location = new System.Drawing.Point(242, 23);
-            this.cmbUtenti.Name = "cmbUtenti";
-            this.cmbUtenti.Size = new System.Drawing.Size(236, 24);
-            this.cmbUtenti.TabIndex = 14;
-            this.cmbUtenti.SelectedValueChanged += new System.EventHandler(this.CambioUtente);
-            // 
-            // lbUtenti
-            // 
-            this.lbUtenti.AutoSize = true;
-            this.lbUtenti.Location = new System.Drawing.Point(246, 4);
-            this.lbUtenti.Name = "lbUtenti";
-            this.lbUtenti.Size = new System.Drawing.Size(47, 16);
-            this.lbUtenti.TabIndex = 13;
-            this.lbUtenti.Text = "Utente";
-            // 
-            // panelBottom
-            // 
-            this.panelBottom.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelBottom.Location = new System.Drawing.Point(1338, 268);
-            this.panelBottom.Margin = new System.Windows.Forms.Padding(0);
-            this.panelBottom.Name = "panelBottom";
-            this.panelBottom.Size = new System.Drawing.Size(183, 48);
-            this.panelBottom.TabIndex = 14;
             // 
             // ConfiguratoreRibbon
             // 
@@ -395,7 +384,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1550, 383);
+            this.ClientSize = new System.Drawing.Size(1553, 383);
             this.Controls.Add(this.tableLayoutForm);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -431,7 +420,6 @@
         private System.Windows.Forms.ToolStripMenuItem nuovoTasto;
         private System.Windows.Forms.ToolStripMenuItem tastoEsistente;
         private System.Windows.Forms.TableLayoutPanel tableLayoutForm;
-        private System.Windows.Forms.Panel panelBottom;
         private System.Windows.Forms.ToolStripDropDownButton addCombo;
         private System.Windows.Forms.ToolStripMenuItem nuovoCombo;
         private System.Windows.Forms.ToolStripMenuItem comboEsistente;

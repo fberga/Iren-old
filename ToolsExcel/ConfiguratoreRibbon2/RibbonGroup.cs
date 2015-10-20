@@ -12,52 +12,48 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         public const string NEW_GROUP_PREFIX = "New Group";
 
         private TextBox Label { get; set; }
-        public string Text { get { return Label.Text; } set { Label.Text = value; } }
-        public string Name { get; set; }
+        public new string Text { get { return base.Text; } set { base.Text = Label.Text = value; } }
+        //public string Name { get; set; }
 
-        public int ID { get; private set; }
+        public int IdGruppo { get; private set; }
         
         public RibbonGroup() 
             : base()
         {
-            //Dock = DockStyle.Left;
             this.Padding = new Padding(4, 4, 4, 4);
 
             this.Label = new TextBox();
 
+            this.Label.ReadOnly = true;
             this.Controls.Add(this.Label);
             this.Label.Dock = DockStyle.Bottom;
             this.Label.AutoSize = false;
             this.Label.TextAlign = HorizontalAlignment.Center;
-            this.Label.Click += SelectAllText;
             this.Label.Leave += CheckTextChanged;
 
             this.Label.BorderStyle = BorderStyle.None;
         }
-
-        private void SelectAllText(object sender, EventArgs e)
-        {
-            this.Label.SelectAll();
-        }
-
-        private void CheckTextChanged(object sender, EventArgs e)
-        {
-            if (this.Label.Name != this.Text)
-            {
-                this.Label.Name = this.Text;
-                Utility.UpdateGroupDimension(this);
-            }
-        }
-
-        public RibbonGroup(Control ribbon)
+        public RibbonGroup(Control ribbon, int id)
             : this()
         {
-            using (ConfiguraControllo cc = new ConfiguraControllo(ribbon, typeof(RibbonGroup)))
+            this.IdGruppo = id;
+
+            BackColor = ControlPaint.LightLight(ribbon.BackColor);
+
+            this.Top = ribbon.Padding.Top;
+            this.Width = (int)(Utility.MeasureTextSize(this.Label).Width + 20);
+            this.Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom - 20;
+            this.Label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
+        }
+        public RibbonGroup(Control ribbon)
+            : this(ribbon, 0)
+        {
+            using (ConfiguratoreControllo cfgCtrl = new ConfiguratoreControllo(ribbon, typeof(RibbonGroup)))
             {
-                if (cc.ShowDialog() == DialogResult.OK)
+                if (cfgCtrl.ShowDialog() == DialogResult.OK)
                 {
-                    Name = cc.CtrlName;
-                    Text = cc.CtrlText;
+                    Name = cfgCtrl.CtrlName;
+                    Text = cfgCtrl.CtrlText;
                 }
                 else
                 {
@@ -73,11 +69,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             this.Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom;
             this.Label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
         }
-        public RibbonGroup(Control ribbon, int id)
-            : this(ribbon)
-        {
-            this.ID = id;
-        }
+        
 
         protected override void OnPaint(PaintEventArgs pe)
         {
@@ -85,13 +77,25 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             var rc = this.ClientRectangle;
             ControlPaint.DrawBorder3D(pe.Graphics, rc, Border3DStyle.Etched, Border3DSide.Right);
         }
-        //protected override void OnDoubleClick(EventArgs e)
-        //{
-        //    this.Label.Focus();
-        //    this.Label.SelectAll();
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        {
+            if(e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                if (IdGruppo == 0)
+                {
+                    using (ConfiguratoreControllo cfgCtrl = new ConfiguratoreControllo(this, Parent, GetType()))
+                    {
+                        if (cfgCtrl.ShowDialog() == DialogResult.OK)
+                        {
+                            Text = cfgCtrl.CtrlText;
+                            Name = cfgCtrl.CtrlName;
+                        }
+                    }
+                }
+            }
 
-        //    base.OnDoubleClick(e);
-        //}
+            base.OnDoubleClick(e);
+        }
         protected override void OnControlAdded(ControlEventArgs e)
         {
             base.OnControlAdded(e);
@@ -112,6 +116,19 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             base.OnSizeChanged(e);
         }
 
+
+        //private void SelectAllText(object sender, EventArgs e)
+        //{
+        //    this.Label.SelectAll();
+        //}
+        private void CheckTextChanged(object sender, EventArgs e)
+        {
+            if (this.Label.Name != this.Text)
+            {
+                this.Label.Name = this.Text;
+                Utility.UpdateGroupDimension(this);
+            }
+        }
         private void CompactCtrls()
         {
             var ctrls = this.Controls

@@ -13,6 +13,7 @@ using Iren.ToolsExcel.Utility;
 using Iren.ToolsExcel.Base;
 using System.Globalization;
 using System.Collections;
+using System.Configuration;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
@@ -32,7 +33,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             Utility.InitializeUtility();
             Utility.StdFont = this.Font;
-            InitializeComponent();
+            InitializeComponent();            
 
             //trovo tutte le risorse disponibili in Iren.ToolsExcel.Base
             var resourceSet = Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetResourceSet(CultureInfo.InstalledUICulture, true, true);
@@ -52,9 +53,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             //inizializzazione connessione
             _ambienti = Workbook.AppSettings("Ambienti").Split('|');
             DataBase.InitNewDB(_ambienti[0]);
+            //DataBase.DB.SetParameters(idUtente: 62);
 
             //carico la lista di applicazioni configurabili
-            DataTable applicazioni = DataBase.Select(SP.APPLICAZIONI, "@IdApplicazione=0");
+            DataTable applicazioni = DataBase.Select(SP.APPLICAZIONI, "@IdApplicazione=0;@IdUtente=1");
             if (applicazioni != null)
             {
                 cmbApplicazioni.DisplayMember = "DesApplicazione";
@@ -290,7 +292,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 int groupId = -1;
                 if (DataBase.Insert(SP.INSERT_GRUPPO, new Core.QryParams()
                     {
-                        {"@Id", group.ID},
+                        {"@Id", group.IdGruppo},
                         {"@Nome", group.Name},
                         {"@Label", group.Text}
                     }, out outP))
@@ -321,8 +323,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
                         if(DataBase.Insert(SP.INSERT_GRUPPO_CONTROLLO, new Core.QryParams() { 
                             {"@Id", 0},
-                            {"@IdApplicazione", 1},
-	                        {"@IdUtente", 62},
+                            //{"@IdApplicazione", },
+	                        //{"@IdUtente", 62},
 	                        {"@IdGruppo", groupId},
 	                        {"@IdControllo", ctrlId},
                             {"@Abilitato", ctrl.Enabled ? "1" : "0"},
