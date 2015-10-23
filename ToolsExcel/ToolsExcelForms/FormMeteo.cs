@@ -21,8 +21,8 @@ namespace Iren.ToolsExcel.Forms
             InitializeComponent();
 
             _carica = carica;
-            _entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            _entita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
             _riepilogo = riepilogo;
 
@@ -32,7 +32,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void frmMETEO_Load(object sender, EventArgs e)
         {
-            _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA' AND IdApplicazione = " + Simboli.AppID;
+            _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             string filtro = "";
             foreach (DataRowView prop in _entitaProprieta)
@@ -43,7 +43,7 @@ namespace Iren.ToolsExcel.Forms
             if (filtro.Length > 0)
             {
                 filtro = "SiglaEntita IN (" + filtro.Remove(filtro.Length - 1) + ")";
-                _entita.RowFilter = filtro + " AND IdApplicazione = " + Simboli.AppID;
+                _entita.RowFilter = filtro + " AND IdApplicazione = " + Workbook.IdApplicazione;
             }
 
 
@@ -112,7 +112,7 @@ namespace Iren.ToolsExcel.Forms
                 if (rbt.Checked)
                 {
                     //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
-                    _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "' AND IdApplicazione = " + Simboli.AppID;
+                    _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                     DataBase.Insert("spUpdateFonteMeteo", new Core.QryParams() 
                     {
@@ -138,8 +138,8 @@ namespace Iren.ToolsExcel.Forms
                         });
                 }
 
-                _entita.RowFilter = "IdApplicazione = " + Simboli.AppID;
-                _entitaProprieta.RowFilter = "IdApplicazione = " + Simboli.AppID;
+                _entita.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
+                _entitaProprieta.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
                 this.Close();
             }
         }

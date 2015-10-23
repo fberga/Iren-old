@@ -77,8 +77,16 @@ namespace Iren.ToolsExcel.Utility
                 INSERT_PARAMETRO = "PAR.spInsertParametro",
                 VALORI_PARAMETRI = "PAR.spValoriParametri",
                 UPDATE_PARAMETRO = "PAR.spUpdateParametro";
+
+            public struct RIBBON 
+            {
+                public const string GRUPPO_CONTROLLO = "RIBBON.spGruppoControllo",
+                    CONTROLLO_APPLICAZIONE = "RIBBON.spControlloApplicazione",
+                    CONTROLLO_FUNZIONE = "RIBBON.spControlloFunzione";
+            }
+                
         }
-        public struct Tab
+        public struct TAB
         {
             public const string ADDRESS_FROM = "AddressFrom",
                 ADDRESS_TO = "AddressTo",
@@ -120,6 +128,13 @@ namespace Iren.ToolsExcel.Utility
                 SELECTION = "Selection",
                 TIPOLOGIA_CHECK = "TipologiaCheck",
                 UTENTE = "Utente";
+
+            public struct RIBBON
+            {
+                public const string GRUPPO_CONTROLLO = "GruppoControllo",
+                    CONTROLLO_APPLICAZIONE = "ControlloApplicazione",
+                    CONTROLLO_FUNZIONE = "ControlloFunzione";
+            }
         }
 
         #endregion
@@ -135,7 +150,7 @@ namespace Iren.ToolsExcel.Utility
 
         public static DataSet LocalDB { get { return _localDB; } }
         public static Core.DataBase DB { get { return _db; } }
-        public static DateTime DataAttiva { get { return _db.DataAttiva; } }
+        //public static DateTime DataAttiva { get { return _db.DataAttiva; } }
         public static Dictionary<Core.DataBase.NomiDB, ConnectionState> StatoDB
         {
             get
@@ -226,7 +241,7 @@ namespace Iren.ToolsExcel.Utility
             if (LocalDB != null)
             {
                 //prendo la tabella di modifica e controllo se è nulla
-                DataTable modifiche = LocalDB.Tables[Tab.MODIFICA];
+                DataTable modifiche = LocalDB.Tables[TAB.MODIFICA];
                 if (modifiche != null && DataBase.DB.IdUtenteAttivo != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
                 {
                     //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
@@ -529,18 +544,18 @@ namespace Iren.ToolsExcel.Utility
                 DataTable dt = Select(SP.APPLICAZIONE_LOG);
                 if (dt != null)
                 {
-                    dt.TableName = Tab.LOG;
+                    dt.TableName = TAB.LOG;
 
-                    bool sameSchema = dt.Columns.Count == _localDB.Tables[Tab.LOG].Columns.Count;
+                    bool sameSchema = dt.Columns.Count == _localDB.Tables[TAB.LOG].Columns.Count;
 
                     for (int i = 0; i < dt.Columns.Count && sameSchema; i++)
-                        if (_localDB.Tables[Tab.LOG].Columns[i].ColumnName != dt.Columns[i].ColumnName)
+                        if (_localDB.Tables[TAB.LOG].Columns[i].ColumnName != dt.Columns[i].ColumnName)
                             sameSchema = false;
 
                     //svuoto la tabella allo stato attuale
-                    _localDB.Tables[Tab.LOG].Clear();
+                    _localDB.Tables[TAB.LOG].Clear();
                     //la riempio con tutte le rige comprese le nuove
-                    _localDB.Tables[Tab.LOG].Merge(dt);
+                    _localDB.Tables[TAB.LOG].Merge(dt);
 
                     if (Workbook.Log.ListObjects.Count > 0)
                         Workbook.Log.ListObjects[1].Range.EntireColumn.AutoFit();
@@ -560,7 +575,7 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         public static string SuffissoDATA1
         {
-            get { return GetSuffissoData(DataBase.DataAttiva); }
+            get { return GetSuffissoData(Workbook.DataAttiva); }
         }
 
         #endregion
@@ -574,7 +589,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns>Ore di intervallo.</returns>
         public static int GetOreIntervallo(DateTime fine)
         {
-            return GetOreIntervallo(DataBase.DataAttiva, fine);
+            return GetOreIntervallo(Workbook.DataAttiva, fine);
         }
         /// <summary>
         /// Restituisce le ore di intervallo tra una data inizio e fine specificate.
@@ -612,7 +627,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns>Stringa del tipo DATAx con x = 1 se giorno è data attiva, x = 2 se giorno è data attiva + 1, e così via.</returns>
         public static string GetSuffissoData(DateTime giorno)
         {
-            return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
+            return GetSuffissoData(Utility.Workbook.DataAttiva, giorno);
         }
         /// <summary>
         /// Restituisce il suffisso del giorno rispetto alla data attiva.
@@ -621,7 +636,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns>Stringa del tipo DATAx con x = 1 se giorno è data attiva, x = 2 se giorno è data attiva + 1, e così via.</returns>
         public static string GetSuffissoData(string giorno)
         {
-            return GetSuffissoData(Utility.DataBase.DataAttiva, giorno);
+            return GetSuffissoData(Utility.Workbook.DataAttiva, giorno);
         }
         /// <summary>
         /// Restituisce il suffisso del giorno rispetto alla data inizio.
@@ -1435,17 +1450,17 @@ namespace Iren.ToolsExcel.Utility
         public void InitStrutturaNomi()
         {
 
-            this[DataBase.Tab.NOMI_DEFINITI] = DefinedNames.GetDefaultNameTable(DataBase.Tab.NOMI_DEFINITI);
-            this[DataBase.Tab.DATE_DEFINITE] = DefinedNames.GetDefaultDateTable(DataBase.Tab.DATE_DEFINITE);
-            this[DataBase.Tab.ADDRESS_FROM] = DefinedNames.GetDefaultAddressFromTable(DataBase.Tab.ADDRESS_FROM);
-            this[DataBase.Tab.ADDRESS_TO] = DefinedNames.GetDefaultAddressToTable(DataBase.Tab.ADDRESS_TO);
-            this[DataBase.Tab.EDITABILI] = DefinedNames.GetDefaultEditableTable(DataBase.Tab.EDITABILI);
-            this[DataBase.Tab.SALVADB] = DefinedNames.GetDefaultSaveTable(DataBase.Tab.SALVADB);
-            this[DataBase.Tab.ANNOTA] = DefinedNames.GetDefaultToNoteTable(DataBase.Tab.ANNOTA);
-            this[DataBase.Tab.CHECK] = DefinedNames.GetDefaultCheckTable(DataBase.Tab.CHECK);
-            this[DataBase.Tab.SELECTION] = DefinedNames.GetDefaultSelectionTable(DataBase.Tab.SELECTION);
-            this[DataBase.Tab.MODIFICA] = CreaTabellaModifica(DataBase.Tab.MODIFICA);
-            this[DataBase.Tab.EXPORT_XML] = CreaTabellaExportXML(DataBase.Tab.EXPORT_XML);
+            this[DataBase.TAB.NOMI_DEFINITI] = DefinedNames.GetDefaultNameTable(DataBase.TAB.NOMI_DEFINITI);
+            this[DataBase.TAB.DATE_DEFINITE] = DefinedNames.GetDefaultDateTable(DataBase.TAB.DATE_DEFINITE);
+            this[DataBase.TAB.ADDRESS_FROM] = DefinedNames.GetDefaultAddressFromTable(DataBase.TAB.ADDRESS_FROM);
+            this[DataBase.TAB.ADDRESS_TO] = DefinedNames.GetDefaultAddressToTable(DataBase.TAB.ADDRESS_TO);
+            this[DataBase.TAB.EDITABILI] = DefinedNames.GetDefaultEditableTable(DataBase.TAB.EDITABILI);
+            this[DataBase.TAB.SALVADB] = DefinedNames.GetDefaultSaveTable(DataBase.TAB.SALVADB);
+            this[DataBase.TAB.ANNOTA] = DefinedNames.GetDefaultToNoteTable(DataBase.TAB.ANNOTA);
+            this[DataBase.TAB.CHECK] = DefinedNames.GetDefaultCheckTable(DataBase.TAB.CHECK);
+            this[DataBase.TAB.SELECTION] = DefinedNames.GetDefaultSelectionTable(DataBase.TAB.SELECTION);
+            this[DataBase.TAB.MODIFICA] = CreaTabellaModifica(DataBase.TAB.MODIFICA);
+            this[DataBase.TAB.EXPORT_XML] = CreaTabellaExportXML(DataBase.TAB.EXPORT_XML);
         }
         private DataTable CreaTabellaModifica(string name)
         {
@@ -1526,7 +1541,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@IdApplicazione", 0}
                 };
 
-            CaricaDati(DataBase.Tab.LISTA_APPLICAZIONI, DataBase.SP.APPLICAZIONE, parameters);
+            CaricaDati(DataBase.TAB.LISTA_APPLICAZIONI, DataBase.SP.APPLICAZIONE, parameters);
         }
         /// <summary>
         /// Carica i dati necessari alla creazione del menu ribbon.
@@ -1534,7 +1549,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns></returns>
         private void CaricaApplicazioneRibbon()
         {
-            CaricaDati(DataBase.Tab.APPLICAZIONE_RIBBON, DataBase.SP.APPLICAZIONE_RIBBON, new QryParams());
+            CaricaDati(DataBase.TAB.APPLICAZIONE_RIBBON, DataBase.SP.APPLICAZIONE_RIBBON, new QryParams());
         }
         /// <summary>
         /// Carica le azioni.
@@ -1549,7 +1564,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@Visibile", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.AZIONE, DataBase.SP.AZIONE, parameters);
+            CaricaDati(DataBase.TAB.AZIONE, DataBase.SP.AZIONE, parameters);
         }
         /// <summary>
         /// Carica le categorie.
@@ -1563,7 +1578,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@Operativa", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.CATEGORIA, DataBase.SP.CATEGORIA, parameters);
+            CaricaDati(DataBase.TAB.CATEGORIA, DataBase.SP.CATEGORIA, parameters);
         }
         /// <summary>
         /// Carica la relazione azione categoria.
@@ -1577,7 +1592,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaCategoria", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.AZIONE_CATEGORIA, DataBase.SP.AZIONE_CATEGORIA, parameters);
+            CaricaDati(DataBase.TAB.AZIONE_CATEGORIA, DataBase.SP.AZIONE_CATEGORIA, parameters);
         }
         /// <summary>
         /// Carica la relazione categoria entita.
@@ -1591,7 +1606,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaEntita", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.CATEGORIA_ENTITA, DataBase.SP.CATEGORIA_ENTITA, parameters);
+            CaricaDati(DataBase.TAB.CATEGORIA_ENTITA, DataBase.SP.CATEGORIA_ENTITA, parameters);
         }
         /// <summary>
         /// Carica la relazione entità azione.
@@ -1605,7 +1620,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaAzione", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_AZIONE, DataBase.SP.ENTITA_AZIONE, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_AZIONE, DataBase.SP.ENTITA_AZIONE, parameters);
         }
         /// <summary>
         /// Carica la relazione entità azione calcolo.
@@ -1620,7 +1635,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaCalcolo", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_AZIONE_CALCOLO, DataBase.SP.ENTITA_AZIONE_CALCOLO, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_AZIONE_CALCOLO, DataBase.SP.ENTITA_AZIONE_CALCOLO, parameters);
         }
         /// <summary>
         /// Carica la relazione entità informazione.
@@ -1634,7 +1649,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaInformazione", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_INFORMAZIONE, DataBase.SP.ENTITA_INFORMAZIONE, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_INFORMAZIONE, DataBase.SP.ENTITA_INFORMAZIONE, parameters);
         }
         /// <summary>
         /// Carica la relazione entità azione informazione.
@@ -1649,7 +1664,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaInformazione", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_AZIONE_INFORMAZIONE, DataBase.SP.ENTITA_AZIONE_INFORMAZIONE, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_AZIONE_INFORMAZIONE, DataBase.SP.ENTITA_AZIONE_INFORMAZIONE, parameters);
         }
         /// <summary>
         /// Carica i calcoli.
@@ -1663,7 +1678,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@IdTipologiaCalcolo", 0}
                 };
 
-            CaricaDati(DataBase.Tab.CALCOLO, DataBase.SP.CALCOLO, parameters);
+            CaricaDati(DataBase.TAB.CALCOLO, DataBase.SP.CALCOLO, parameters);
         }
         /// <summary>
         /// Carica la relazione calcolo informazione.
@@ -1677,7 +1692,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaInformazione", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.CALCOLO_INFORMAZIONE, DataBase.SP.CALCOLO_INFORMAZIONE, parameters);
+            CaricaDati(DataBase.TAB.CALCOLO_INFORMAZIONE, DataBase.SP.CALCOLO_INFORMAZIONE, parameters);
         }
         /// <summary>
         /// Carica la relazione entità calcolo.
@@ -1691,7 +1706,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaCalcolo", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_CALCOLO, DataBase.SP.ENTITA_CALCOLO, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_CALCOLO, DataBase.SP.ENTITA_CALCOLO, parameters);
         }
         /// <summary>
         /// Carica la relazione entità grafico.
@@ -1705,7 +1720,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaGrafico", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_GRAFICO, DataBase.SP.ENTITA_GRAFICO, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_GRAFICO, DataBase.SP.ENTITA_GRAFICO, parameters);
         }
         /// <summary>
         /// Carica la relazione entità grafico informazione.
@@ -1720,7 +1735,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaInformazione", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_GRAFICO_INFORMAZIONE, DataBase.SP.ENTITA_GRAFICO_INFORMAZIONE, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_GRAFICO_INFORMAZIONE, DataBase.SP.ENTITA_GRAFICO_INFORMAZIONE, parameters);
         }
         /// <summary>
         /// Carica la relazione entità commitment.
@@ -1733,7 +1748,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaEntita", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_COMMITMENT, DataBase.SP.ENTITA_COMMITMENT, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_COMMITMENT, DataBase.SP.ENTITA_COMMITMENT, parameters);
         }
         /// <summary>
         /// Carica la relazione entità rampa.
@@ -1746,7 +1761,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaEntita", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_RAMPA, DataBase.SP.ENTITA_RAMPA, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_RAMPA, DataBase.SP.ENTITA_RAMPA, parameters);
         }
         /// <summary>
         /// Carica la relazione entità assetto.
@@ -1759,7 +1774,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaEntita", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_ASSETTO, DataBase.SP.ENTITA_ASSETTO, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_ASSETTO, DataBase.SP.ENTITA_ASSETTO, parameters);
         }
         /// <summary>
         /// Carica la relazione entità proprietà.
@@ -1767,7 +1782,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns></returns>
         private void CaricaEntitaProprieta()
         {
-            CaricaDati(DataBase.Tab.ENTITA_PROPRIETA, DataBase.SP.ENTITA_PROPRIETA, new QryParams());
+            CaricaDati(DataBase.TAB.ENTITA_PROPRIETA, DataBase.SP.ENTITA_PROPRIETA, new QryParams());
         }
         /// <summary>
         /// Carica la relazione entità informazione formattazione.
@@ -1781,7 +1796,7 @@ namespace Iren.ToolsExcel.Utility
                     {"@SiglaInformazione", Core.DataBase.ALL}
                 };
 
-            CaricaDati(DataBase.Tab.ENTITA_INFORMAZIONE_FORMATTAZIONE, DataBase.SP.ENTITA_INFORMAZIONE_FORMATTAZIONE, parameters);
+            CaricaDati(DataBase.TAB.ENTITA_INFORMAZIONE_FORMATTAZIONE, DataBase.SP.ENTITA_INFORMAZIONE_FORMATTAZIONE, parameters);
         }
         /// <summary>
         /// Carica la tipologia check.
@@ -1789,7 +1804,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns></returns>
         private void CaricaTipologiaCheck()
         {
-            CaricaDati(DataBase.Tab.TIPOLOGIA_CHECK, DataBase.SP.TIPOLOGIA_CHECK, new QryParams());
+            CaricaDati(DataBase.TAB.TIPOLOGIA_CHECK, DataBase.SP.TIPOLOGIA_CHECK, new QryParams());
         }
         /// <summary>
         /// Carica la relazione entità parametro giornaliero.
@@ -1797,7 +1812,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns></returns>
         private void CaricaEntitaParametroD()
         {
-            CaricaDati(DataBase.Tab.ENTITA_PARAMETRO_D, DataBase.SP.ENTITA_PARAMETRO_D, new QryParams());
+            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_D, DataBase.SP.ENTITA_PARAMETRO_D, new QryParams());
         }
         /// <summary>
         /// Carica la relazione entità parametro orario.
@@ -1805,7 +1820,7 @@ namespace Iren.ToolsExcel.Utility
         /// <returns></returns>
         private void CaricaEntitaParametroH()
         {
-            CaricaDati(DataBase.Tab.ENTITA_PARAMETRO_H, DataBase.SP.ENTITA_PARAMETRO_H, new QryParams());
+            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_H, DataBase.SP.ENTITA_PARAMETRO_H, new QryParams());
         }
 
         #endregion
@@ -1819,7 +1834,7 @@ namespace Iren.ToolsExcel.Utility
         {
             CaricaApplicazioni();
 
-            Applicazione = this[DataBase.Tab.LISTA_APPLICAZIONI].AsEnumerable()
+            Applicazione = this[DataBase.TAB.LISTA_APPLICAZIONI].AsEnumerable()
                 .Where(r => r["IdApplicazione"].Equals(IdApplicazione))
                 .FirstOrDefault();
 

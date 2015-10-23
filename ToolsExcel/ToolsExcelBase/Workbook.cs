@@ -85,7 +85,9 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         public static bool ScreenUpdating { get { return Application.ScreenUpdating; } set { Application.ScreenUpdating = value; } }
 
-
+        public static string Password { get { return _wb.Password; } }
+        public static int IdApplicazione { get { return _wb.IdApplicazione; } }
+        public static DateTime DataAttiva { get { return _wb.DataAttiva; } }
 
         public static Utility.Repository Repository { get; private set; }
 
@@ -151,17 +153,7 @@ namespace Iren.ToolsExcel.Utility
                 }
             }
 
-            Simboli.AppID = _wb.IdApplicazione.ToString();
-
-            if (_wb.IdApplicazione != idApplicazioneOLD || dataAttivaOld != _wb.DataAttiva)
-            {
-                Workbook.ChangeAppSettings("DataAttiva", _wb.DataAttiva.ToString("yyyyMMdd"));
-                Simboli.AppID = _wb.DataAttiva.ToString();
-
-                return true;
-            }
-
-            return false;
+            return _wb.IdApplicazione != idApplicazioneOLD || dataAttivaOld != _wb.DataAttiva;
         }
         /// <summary>
         /// Aggiorna la data per le applicazione Validazione TL e Previsione CT.
@@ -210,7 +202,7 @@ namespace Iren.ToolsExcel.Utility
                     isProtected = Main.ProtectContents;
 
                     if (isProtected)
-                        Main.Unprotect(Simboli.pwd);
+                        Main.Unprotect(Utility.Workbook.Password);
 
 
                     Riepilogo main = new Riepilogo(Utility.Workbook.Main);
@@ -236,7 +228,7 @@ namespace Iren.ToolsExcel.Utility
                     }
 
                     if (isProtected)
-                        Main.Protect(Simboli.pwd);
+                        Main.Protect(Utility.Workbook.Password);
                 }
                 catch { }
 
@@ -270,7 +262,7 @@ namespace Iren.ToolsExcel.Utility
 
             //cancello tutte le righe della tabella di log che verrà riempita ad ogni avvio/modifica del log.
             IEnumerable<XElement> log =
-                from tables in root.Elements(ns + Utility.DataBase.Tab.LOG)
+                from tables in root.Elements(ns + Utility.DataBase.TAB.LOG)
                 select tables;
 
             log.Remove();
@@ -346,21 +338,37 @@ namespace Iren.ToolsExcel.Utility
         #endregion
 
         #region Init
-        public static void InitLog()
+        private static void InitLog()
         {
-            DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
-            if (dtLog != null)
-            {
-                dtLog.TableName = DataBase.Tab.LOG;
-                if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.LOG))
-                    DataBase.LocalDB.Tables[DataBase.Tab.LOG].Merge(dtLog);
-                else
-                    DataBase.LocalDB.Tables.Add(dtLog);
+            //DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
+            //if (dtLog != null)
+            //{
+            //    dtLog.TableName = DataBase.Tab.LOG;
+            //    if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.LOG))
+            //        DataBase.LocalDB.Tables[DataBase.Tab.LOG].Merge(dtLog);
+            //    else
+            //        DataBase.LocalDB.Tables.Add(dtLog);
 
-                DataView dv = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
-                dv.Sort = "Data DESC";
+            //    DataView dv = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
+            //    dv.Sort = "Data DESC";
+            //}
+        }
+
+        public static void GetUtente(out int idUtente, out string nomeUtente)
+        {
+            DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, "@CodUtenteWindows=" + Environment.UserName);
+            if (dtUtente != null && dtUtente.Rows.Count > 0)
+            {
+                idUtente = (int)dtUtente.Rows[0]["IdUtente"];
+                nomeUtente = dtUtente.Rows[0]["Nome"].ToString();
+            } 
+            else 
+            {
+                idUtente = 0;
+                nomeUtente = "NON CONFIGURATO";
             }
         }
+        
         private static void InitUtente()
         {
             DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, new QryParams() { { "@CodUtenteWindows", Environment.UserName } });
@@ -456,6 +464,8 @@ namespace Iren.ToolsExcel.Utility
 
                 Repository.DaAggiornare = toUpdate;
 
+                DataBase.CloseConnection();
+
                 return false;
             }
             else //Emergenza
@@ -509,7 +519,7 @@ namespace Iren.ToolsExcel.Utility
             Repository = new Utility.Repository(wb);
             Update();
 
-            Application.ScreenUpdating = false;
+            ScreenUpdating = false;
             Application.Iteration = true;
             Application.MaxIterations = 100;
             Application.EnableEvents = false;
@@ -526,13 +536,11 @@ namespace Iren.ToolsExcel.Utility
             Main.Select();
             Application.WindowState = Excel.XlWindowState.xlMaximized;
 
-            Simboli.pwd = AppSettings("pwd");
-
             bool wasProtected = Sheet.Protected;
             if (wasProtected)
                 Sheet.Protected = false;
 
-            Workbook.ScreenUpdating = false;
+            ScreenUpdating = false;
 
             bool emergenza = Initialize();
 
@@ -547,7 +555,7 @@ namespace Iren.ToolsExcel.Utility
 
             if (wasProtected)
                 Sheet.Protected = true;
-            Application.ScreenUpdating = true;
+            ScreenUpdating = true;
             Application.EnableEvents = true;
         }
         #endregion
@@ -557,27 +565,24 @@ namespace Iren.ToolsExcel.Utility
         {
             Excel.Worksheet log = _wb.Sheets["Log"];
             bool prot = log.ProtectContents;
-            if (prot) log.Unprotect(Simboli.pwd);
+            if (prot) log.Unprotect(Password);
             DataBase db = new DataBase();
             db.InsertLog(logType, message);
-            if (prot) log.Protect(Simboli.pwd);
+            if (prot) log.Protect(Password);
         }
         public static void RefreshLog()
         {
             Excel.Worksheet log = _wb.Sheets["Log"];
             bool prot = log.ProtectContents;
-            if (prot) log.Unprotect(Simboli.pwd);
+            if (prot) log.Unprotect(Password);
             DataBase db = new DataBase();
             db.RefreshLog();
-            if (prot) log.Protect(Simboli.pwd);
+            if (prot) log.Protect(Password);
         }
         #endregion
 
         #region Close
-        public static void Save()
-        {
-            _wb.Base.Save();
-        }
+
         public static void Close()
         {
             if (DataBase.LocalDB != null)
@@ -601,7 +606,6 @@ namespace Iren.ToolsExcel.Utility
 
                 Application.ScreenUpdating = true;
             }
-            Save();
         }
         #endregion
 

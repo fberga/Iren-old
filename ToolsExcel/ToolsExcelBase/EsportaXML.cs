@@ -18,9 +18,9 @@ namespace Iren.ToolsExcel.Base
 
         public void RunExport()
         {
-            DataTable categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
-            DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
+            DataTable categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA];
+            DataView categorie = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA].DefaultView;
+            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
 
             foreach (DataRow entita in categoriaEntita.Rows)
             {
@@ -34,17 +34,17 @@ namespace Iren.ToolsExcel.Base
 
                     bool hasData0H24 = definedNames.HasData0H24;
 
-                    entitaInformazione.RowFilter = "(SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "') AND Editabile = '1' AND IdApplicazione = " + Simboli.AppID;
+                    entitaInformazione.RowFilter = "(SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "') AND Editabile = '1' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                    DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
+                    DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA];
                     int intervalloGiorni =
                         (from r in entitaProprieta.AsEnumerable()
-                         where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                         where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
                          select int.Parse(r["Valore"].ToString())).FirstOrDefault();
 
-                    DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
+                    DateTime dataFine = Workbook.DataAttiva.AddDays(Math.Max(
                         (from r in entitaProprieta.AsEnumerable()
-                         where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                         where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
                          select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
 
                     foreach (DataRowView info in entitaInformazione)
@@ -55,14 +55,14 @@ namespace Iren.ToolsExcel.Base
                         {
                             //prima cella della riga da salvare (non considera Data0H24)
                             Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(dataFine));
-                            Handler.StoreEdit(ws.Range[rng.ToString()], 0, true, DataBase.Tab.EXPORT_XML);
+                            Handler.StoreEdit(ws.Range[rng.ToString()], 0, true, DataBase.TAB.EXPORT_XML);
                         }
                         else
                         {
-                            for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
+                            for (DateTime giorno = Workbook.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                             {
                                 Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], Date.GetSuffissoData(giorno)).Extend(colOffset: Date.GetOreGiorno(giorno));
-                                Handler.StoreEdit(ws.Range[rng.ToString()], 0, true, DataBase.Tab.EXPORT_XML);
+                                Handler.StoreEdit(ws.Range[rng.ToString()], 0, true, DataBase.TAB.EXPORT_XML);
                             }
                         }
                     }
@@ -79,7 +79,7 @@ namespace Iren.ToolsExcel.Base
             if (!Directory.Exists(cartellaExport))
                 Directory.CreateDirectory(cartellaExport);
 
-            DataTable export = DataBase.LocalDB.Tables[DataBase.Tab.EXPORT_XML];
+            DataTable export = DataBase.LocalDB.Tables[DataBase.TAB.EXPORT_XML];
             export.WriteXml(fileName);
 
             //svuoto la tabella alla fine dell'utilizzo

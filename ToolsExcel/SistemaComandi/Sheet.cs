@@ -27,15 +27,15 @@ namespace Iren.ToolsExcel
             //profili PQNR
             if (_ws.Name == "Iren Termo")
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                DataView entitaRampa = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_RAMPA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Simboli.AppID;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaRampa = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_RAMPA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
                     DateTime dataFine;
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
                     
                     if (entitaProprieta.Count > 0)
                         dataFine = _dataInizio.AddDays(double.Parse("" + entitaProprieta[0]["Valore"]));
@@ -43,8 +43,8 @@ namespace Iren.ToolsExcel
                         dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
                     double pRif =
-                        (from r in DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].AsEnumerable()
-                         where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(entita["SiglaEntita"])
+                        (from r in DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].AsEnumerable()
+                         where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(entita["SiglaEntita"])
                             && r["SiglaProprieta"].Equals("SISTEMA_COMANDI_PRIF")
                          select Double.Parse(r["Valore"].ToString())).FirstOrDefault();
 
@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel
 
                     if (_ws.Range[rngPQNR.Columns[0].ToString()].Value != null)
                     {
-                        int assetti = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(entita["SiglaEntita"]));
+                        int assetti = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(entita["SiglaEntita"]));
 
                         double[] pMin = new double[oreIntervallo];
                         for (int i = 0; i < pMin.Length; i++) pMin[i] = double.MaxValue;
@@ -70,7 +70,7 @@ namespace Iren.ToolsExcel
                         for (int i = 0; i < oreIntervallo; i++)
                         {
                             pMin[i] = pMin[i] < pRif ? pRif : pMin[i];
-                            entitaRampa.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaRampa = '" + _ws.Range[rngPQNR.Columns[i].ToString()].Value + "' AND IdApplicazione = " + Simboli.AppID;
+                            entitaRampa.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaRampa = '" + _ws.Range[rngPQNR.Columns[i].ToString()].Value + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                             if (entitaRampa.Count > 0)
                             {
                                 for (int j = 0; j < 24; j++)

@@ -27,7 +27,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 .Where(r => !ConfiguratoreRibbon.GruppoControlloUtilizzati.Contains((int)r["IdGruppoControllo"]))
                 .Where(r => !ConfiguratoreRibbon.GruppiUtilizzati.Contains((int)r["IdGruppo"]))
                 .Select(r => new { LabelGruppo = r["LabelGruppo"], IdGruppo = r["IdGruppo"] })
-                .Distinct()
+                .Distinct()                
                 .ToList();
 
             listBoxGruppi.DisplayMember = "LabelGruppo";
@@ -48,15 +48,20 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             if (listBoxGruppi.SelectedValue != null)
             {
-                var applications = _allGroups.AsEnumerable()
+                
+
+                var users = _allGroups.AsEnumerable()
                     .Where(r => r["IdGruppo"].Equals(listBoxGruppi.SelectedValue))
-                    .Select(r => new { IdApplicazione = r["IdApplicazione"], DesApplicazione = r["DesApplicazione"] })
+                    .Select(r => new { IdUtente = r["IdUtente"]})
+                    .OrderBy(r => r.IdUtente)
                     .Distinct()
                     .ToList();
 
-                listBoxApplicazioni.DataSource = applications;
-                listBoxApplicazioni.ValueMember = "IdApplicazione";
-                listBoxApplicazioni.DisplayMember = "DesApplicazione";
+                
+
+                listBoxUtenti.DataSource = users;
+                listBoxUtenti.ValueMember = "IdUtente";
+                listBoxUtenti.DisplayMember = "IdUtente";
             }
         }
 
@@ -66,7 +71,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             {
                 //carico anteprima gruppo
                 var controls = _allGroups.AsEnumerable()
-                    .Where(r => r["IdGruppo"].Equals(listBoxGruppi.SelectedValue) && r["IdApplicazione"].Equals(listBoxApplicazioni.SelectedValue))
+                    .Where(r => r["IdGruppo"].Equals(listBoxGruppi.SelectedValue) && r["IdApplicazione"].Equals(listBoxApplicazioni.SelectedValue) && r["IdUtente"].Equals(listBoxUtenti.SelectedValue))
                     .ToList();
 
                 RibbonGroup grp = new RibbonGroup(panelRibbonLayout, (int)listBoxGruppi.SelectedValue);
@@ -80,6 +85,22 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                     ctrl.GotFocus += EvidenziaFunzioni;
                     ctrl.Tag = r["IdGruppoControllo"];
                 }
+            }
+        }
+
+        private void CambioUtente(object sender, EventArgs e)
+        {
+            if (listBoxUtenti.SelectedValue != null)
+            {
+                var applications = _allGroups.AsEnumerable()
+                    .Where(r => r["IdGruppo"].Equals(listBoxGruppi.SelectedValue) && r["IdUtente"].Equals(listBoxUtenti.SelectedValue))
+                    .Select(r => new { IdApplicazione = r["IdApplicazione"], DesApplicazione = r["DesApplicazione"] })
+                    .Distinct()
+                    .ToList();
+
+                listBoxApplicazioni.DataSource = applications;
+                listBoxApplicazioni.ValueMember = "IdApplicazione";
+                listBoxApplicazioni.DisplayMember = "DesApplicazione";
             }
         }
 

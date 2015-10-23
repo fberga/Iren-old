@@ -30,9 +30,9 @@ namespace Iren.ToolsExcel.Forms
         {
             DataSet tmp = new DataSet();
             tmp.ReadXml(openFileXMLImport.FileName);
-            _tabellaImportXML = tmp.Tables[DataBase.Tab.EXPORT_XML];
+            _tabellaImportXML = tmp.Tables[DataBase.TAB.EXPORT_XML];
 
-            foreach(DataColumn c in DataBase.LocalDB.Tables[DataBase.Tab.EXPORT_XML].Columns) 
+            foreach(DataColumn c in DataBase.LocalDB.Tables[DataBase.TAB.EXPORT_XML].Columns) 
             {
                 if(!_tabellaImportXML.Columns.Contains(c.ColumnName)) 
                 {
@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel.Forms
             DateTime dataMin = DateTime.ParseExact(strDataMin, "yyyyMMdd", CultureInfo.InvariantCulture);
             DateTime dataMax = DateTime.ParseExact(strDataMax, "yyyyMMdd", CultureInfo.InvariantCulture);
 
-            if(DataBase.DataAttiva < dataMin.Date || DataBase.DataAttiva > dataMax.Date)
+            if(Workbook.DataAttiva < dataMin.Date || Workbook.DataAttiva > dataMax.Date)
             {
                 System.Windows.Forms.MessageBox.Show("Il file non contiene elementi con date compatibili a quelle del foglio aperto. Non è possibile importare informazioni da questo file!", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 e.Cancel = true;
@@ -62,7 +62,7 @@ namespace Iren.ToolsExcel.Forms
             }
 
             var nomeApplicazione =
-                (from r in DataBase.LocalDB.Tables[DataBase.Tab.LISTA_APPLICAZIONI].AsEnumerable()
+                (from r in DataBase.LocalDB.Tables[DataBase.TAB.LISTA_APPLICAZIONI].AsEnumerable()
                  where r["IdApplicazione"].Equals(int.Parse(_tabellaImportXML.Rows[0]["IdApplicazione"].ToString()))
                  select r["DesApplicazione"]).First();
 
@@ -87,14 +87,14 @@ namespace Iren.ToolsExcel.Forms
             foreach (var ele in dtImport)
             {
                 var info =
-                    (from r in DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].AsEnumerable()
+                    (from r in DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].AsEnumerable()
                      where r["SiglaEntita"].Equals(ele.SiglaEntita) && r["SiglaInformazione"].Equals(ele.SiglaInformazione)
                      select r).FirstOrDefault();
 
                 if (info != null)
                 {
                     var desEntita =
-                        (from r in DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].AsEnumerable()
+                        (from r in DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
                          where r["SiglaEntita"].Equals(info["SiglaEntita"])
                          select r["DesEntita"]).First();
 
@@ -155,7 +155,7 @@ namespace Iren.ToolsExcel.Forms
                     var values =
                         from r in _tabellaImportXML.AsEnumerable()
                         where r["SiglaEntita"].Equals(c.SiglaEntita) && r["SiglaInformazione"].Equals(kv.Key) &&
-                            (r["Data"].ToString().Substring(0,8).CompareTo(DataBase.DataAttiva.ToString("yyyyMMdd")) >= 0)
+                            (r["Data"].ToString().Substring(0,8).CompareTo(Workbook.DataAttiva.ToString("yyyyMMdd")) >= 0)
                         select new { Data = r["Data"], Valore = r["Valore"] };
 
                     foreach (var val in values)

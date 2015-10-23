@@ -12,6 +12,8 @@ using Office = Microsoft.Office.Core;
 using System.Collections.Generic;
 using System.Collections;
 using System.IO;
+using Microsoft.VisualStudio.Tools.Applications;
+using System.Reflection;
 
 // ***************************************************** SISTEMA COMANDI ***************************************************** //
 
@@ -34,14 +36,6 @@ namespace Iren.ToolsExcel
         #region Variabili
         
         /// <summary>
-        /// Lista dei controlli (solo button e togglebutton).
-        /// </summary>
-        private ControlCollection _controls;
-        /// <summary>
-        /// lista degli id dei tasti abilitati.
-        /// </summary>
-        private List<string> _enabledControls = new List<string>();
-        /// <summary>
         /// Indica se tutti i tasti (a parte Aggiorna Struttura) sono disabilitati.
         /// </summary>
         private bool _allDisabled = false;
@@ -58,6 +52,16 @@ namespace Iren.ToolsExcel
         /// </summary>
         public Modifica _modificaCustom = new Modifica();
 
+
+        private int _idApplicazione = -1;
+        private int _idUtente = -1;
+        private string _nomeUtente = "";
+        private bool _updated = false;
+
+        private DataTable _dtControllo = null;
+        private DataTable _dtControlloApplicazione = null;
+        private DataTable _dtFunzioni = null;
+
         #endregion
 
         #region Proprietà
@@ -66,9 +70,170 @@ namespace Iren.ToolsExcel
         /// Proprietà che permette l'indicizzazione per nome dei vari tasti della barra Ribbon. 
         /// La necessità di questa proprietà deriva dalla necessità di abilitare/disabilitare/nascondere i tasti leggendo i parametri del DB.
         /// </summary>
-        public ControlCollection Controls
+        public ControlCollection Controls { get; private set; }
+        public GroupsCollection Groups { get; private set; }
+
+        #endregion
+
+        #region Initialize 2
+
+        public void InitializeComponent2()
         {
-            get { return _controls; }
+            string path = Environment.GetCommandLineArgs().LastOrDefault();
+            string tmpCopy = Environment.ExpandEnvironmentVariables(@"%TEMP%\tmpRibbonLayout.xlsm");
+
+            File.Copy(path, tmpCopy, true);
+
+            DataBase.Initialize(Simboli.DEV);
+
+            DataSet dsRibbonLayout = null;
+
+            using (ServerDocument xls = new ServerDocument(tmpCopy))
+            {
+                CachedDataHostItem dataHostItem1 =
+                    xls.CachedData.HostItems["Iren.ToolsExcel.ThisWorkbook"];
+
+                CachedDataItem idApplicazione = dataHostItem1.CachedData["idApplicazione"];
+                if (idApplicazione.Xml == null)
+                {
+                    _idApplicazione = int.Parse(Workbook.AppSettings("AppID"));
+                }
+                else
+                {
+                    _idApplicazione = int.Parse(idApplicazione.Xml);
+                }
+
+                CachedDataItem idUtente = dataHostItem1.CachedData["idUtente"];
+                if (idUtente.Xml == null)
+                {
+                    Workbook.GetUtente(out _idUtente, out _nomeUtente);
+                }
+                else
+                {
+                    _idUtente = int.Parse(idUtente.Xml);
+                }
+
+                CachedDataItem ribbonLayout = dataHostItem1.CachedData["ribbonDataSet"];
+                if (ribbonLayout.Schema != null && ribbonLayout.Xml != null)
+                {
+                    System.IO.StringReader schemaReader = new System.IO.StringReader(ribbonLayout.Schema);
+                    System.IO.StringReader xmlReader = new System.IO.StringReader(ribbonLayout.Xml);
+                    dsRibbonLayout = new DataSet();
+                    dsRibbonLayout.ReadXmlSchema(schemaReader);
+                    dsRibbonLayout.ReadXml(xmlReader);
+                }
+            }
+
+            File.Delete(tmpCopy);
+
+            if (dsRibbonLayout == null)
+            {
+                if (DataBase.OpenConnection())
+                {
+                    _updated = true;
+                    _dtControllo = DataBase.Select(DataBase.SP.RIBBON.GRUPPO_CONTROLLO, "@IdApplicazione=" + _idApplicazione + ";@IdUtente=" + _idUtente);
+                    _dtControllo.TableName = DataBase.TAB.RIBBON.GRUPPO_CONTROLLO;
+                    _dtControlloApplicazione = DataBase.Select(DataBase.SP.RIBBON.CONTROLLO_APPLICAZIONE);
+                    _dtControlloApplicazione.TableName = DataBase.TAB.RIBBON.CONTROLLO_APPLICAZIONE;
+                    _dtFunzioni = DataBase.Select(DataBase.SP.RIBBON.CONTROLLO_FUNZIONE);
+                    _dtFunzioni.TableName = DataBase.TAB.RIBBON.CONTROLLO_FUNZIONE;
+                }
+            }
+            else
+            {
+                _dtControllo = dsRibbonLayout.Tables[DataBase.TAB.RIBBON.GRUPPO_CONTROLLO];
+                _dtControlloApplicazione = dsRibbonLayout.Tables[DataBase.TAB.RIBBON.CONTROLLO_APPLICAZIONE];
+                _dtFunzioni = dsRibbonLayout.Tables[DataBase.TAB.RIBBON.CONTROLLO_FUNZIONE];
+            }
+
+            Microsoft.Office.Tools.Ribbon.RibbonGroup grp = this.Factory.CreateRibbonGroup();
+
+            Groups = new GroupsCollection(this);
+            Controls = new ControlCollection(this);
+
+            int idGruppo = -1;
+
+            foreach (DataRow r in _dtControllo.Rows)
+            {
+                if (!r["IdGruppo"].Equals(idGruppo))
+                {
+                    idGruppo = (int)r["IdGruppo"];
+                    grp = this.Factory.CreateRibbonGroup();
+                    grp.Name = r["NomeGruppo"].ToString();
+                    grp.Label = r["LabelGruppo"].ToString();
+
+                    this.FrontOffice.Groups.Add(grp);
+                    Groups.Add(grp);
+                }
+
+                RibbonControl ctrl = null;
+
+                if (typeof(RibbonButton).FullName.Equals(r["SiglaTipologiaControllo"]))
+                {
+                    RibbonButton newBtn = this.Factory.CreateRibbonButton();
+
+                    newBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
+                    newBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
+                    newBtn.Label = r["Label"].ToString();
+                    newBtn.Name = r["Nome"].ToString();
+                    newBtn.Description = r["Descrizione"].ToString();
+                    newBtn.ScreenTip = r["ScreenTip"].ToString();
+                    newBtn.ShowImage = true;
+                    grp.Items.Add(newBtn);
+                    ctrl = newBtn;
+                }
+                else if (typeof(RibbonToggleButton).FullName.Equals(r["SiglaTipologiaControllo"]))
+                {
+                    RibbonToggleButton newTglBtn = this.Factory.CreateRibbonToggleButton();
+
+                    newTglBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
+                    newTglBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
+                    newTglBtn.Label = r["Label"].ToString();
+                    newTglBtn.Name = r["Nome"].ToString();
+                    newTglBtn.Description = r["Descrizione"].ToString();
+                    newTglBtn.ScreenTip = r["ScreenTip"].ToString();
+                    newTglBtn.ShowImage = true;
+
+                    grp.Items.Add(newTglBtn);
+                    ctrl = newTglBtn;
+                }
+                else if (typeof(RibbonComboBox).FullName.Equals(r["SiglaTipologiaControllo"]))
+                {
+                    RibbonLabel lb = this.Factory.CreateRibbonLabel();
+                    lb.Label = r["Label"].ToString();
+                    RibbonComboBox cmb = this.Factory.CreateRibbonComboBox();
+                    cmb.ShowLabel = false;
+                    cmb.Text = null;
+                    cmb.Name = r["Nome"].ToString();
+
+                    grp.Items.Add(lb);
+                    grp.Items.Add(cmb);
+                    ctrl = cmb;
+                }
+                ctrl.Enabled = r["Abilitato"].Equals("1");
+
+                //aggiungo l'evento al controllo appena creato
+                var funzioni =
+                    from funz in _dtFunzioni.AsEnumerable()
+                    where funz["IdGruppoControllo"].Equals(r["IdGruppoControllo"])
+                    select funz;
+
+                foreach (DataRow f in funzioni)
+                {
+                    try
+                    {
+                        EventInfo ei = ctrl.GetType().GetEvent(f["Evento"].ToString());
+                        MethodInfo hi = GetType().GetMethod(f["NomeFunzione"].ToString(), BindingFlags.Instance | BindingFlags.NonPublic);
+                        Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, this, hi);
+                        ei.AddEventHandler(ctrl, d);
+                    }
+                    catch (System.ArgumentException e)
+                    {
+                        System.Windows.Forms.MessageBox.Show("Una delle funzioni collegate ai tasti non è definita!", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                    }
+                }
+                Controls.Add(ctrl);
+            }
         }
 
         #endregion
@@ -80,114 +245,130 @@ namespace Iren.ToolsExcel
         /// </summary>       
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
         {
-            Initialize();
-            Workbook.ScreenUpdating = false;
-            Sheet.Protected = false;
+            if (_updated)
+            {
+                Globals.ThisWorkbook.idApplicazione = _idApplicazione;
+                Globals.ThisWorkbook.idUtente = _idUtente;
+                Globals.ThisWorkbook.nomeUtente = _nomeUtente;
+                
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Clear();
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControllo);
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControlloApplicazione);
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtFunzioni);
+            }
+
+//            Initialize();
+//            Workbook.ScreenUpdating = false;
+//            Sheet.Protected = false;
             
-            //forzo aggiornamento label iniziale
-            Utility.Workbook.AggiornaLabelStatoDB();
+//            //forzo aggiornamento label iniziale
+//            Utility.Workbook.AggiornaLabelStatoDB();
             
-            //se non sono in debug toglie le intestazioni
-#if !DEBUG
-            foreach(Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
-            {
-                ws.Activate();
-                Globals.ThisWorkbook.ThisApplication.ActiveWindow.DisplayHeadings = false;
-            }
-            Globals.Main.Activate();
-#endif
-            //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
-            bool isUpdated = true;
-            if (Workbook.CategorySheets.Count == 0 || Workbook.Repository.DaAggiornare)
-            {
-                Aggiorna aggiorna = new Aggiorna();
-                isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
-            }
+//            //se non sono in debug toglie le intestazioni
+//#if !DEBUG
+//            foreach(Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
+//            {
+//                ws.Activate();
+//                Globals.ThisWorkbook.ThisApplication.ActiveWindow.DisplayHeadings = false;
+//            }
+//            Globals.Main.Activate();
+//#endif
+//            //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
+//            bool isUpdated = true;
+//            if (Workbook.CategorySheets.Count == 0 || Workbook.Repository.DaAggiornare)
+//            {
+//                Aggiorna aggiorna = new Aggiorna();
+//                isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
+//            }
 
-            if (isUpdated)
-            {
-                btnCalendar.Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
+//            if (isUpdated)
+//            {
+//                btnCalendar.Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
 
-                //seleziono l'ambiente attivo
-                ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
+//                //seleziono l'ambiente attivo
+//                ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
 
-                RefreshChecks();
+//                RefreshChecks();
 
-                //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
-                btnModifica.Checked = false;
-                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
-                btnModifica.Label = "Modifica NO";
-                try
-                {
-                    Sheet.AbilitaModifica(false);
-                }
-                catch { }
+//                //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
+//                btnModifica.Checked = false;
+//                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
+//                btnModifica.Label = "Modifica NO";
+//                try
+//                {
+//                    Sheet.AbilitaModifica(false);
+//                }
+//                catch { }
 
-                //seleziono il tasto dell'applicativo aperto
-                CheckTastoApplicativo();
+//                //seleziono il tasto dell'applicativo aperto
+//                CheckTastoApplicativo();
 
-                //aggiungo errorPane
-                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
-                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
-                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
-                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+//                //aggiungo errorPane
+//                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
+//                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+//                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
+//                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
 
-                //aggiungo un altro handler per cell click
-                Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
-                Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
+//                //aggiungo un altro handler per cell click
+//                Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
+//                Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
 
-                //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
-                DataBase.DB.PropertyChanged += StatoDB_Changed;
-                StatoDB_Changed(null, null);
-            }
+//                //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
+//                DataBase.DB.PropertyChanged += StatoDB_Changed;
+//                StatoDB_Changed(null, null);
+//            }
 
-            Sheet.Protected = true;
-            Workbook.ScreenUpdating = true;
-            SplashScreen.Close();
+//            Sheet.Protected = true;
+//            Workbook.ScreenUpdating = true;
+//            SplashScreen.Close();
         }
 
         private void StatoDB_Changed(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (DataBase.OpenConnection())
             {
-                if (Controls["btnEsportaXML"].Enabled)
+                //Disabilito tasti di importazione ed esportazione che funzionano solo in emergenza
+                if (Controls.Contains("btnEsportaXML"))
                     Controls["btnEsportaXML"].Enabled = false;
-                if (Controls["btnImportaXML"].Enabled)
+                if (Controls.Contains("btnImportaXML"))
                     Controls["btnImportaXML"].Enabled = false;
 
-                if (_enabledControls.Contains("btnProduzione"))
+                //Se da default i controlli sono abilitati, li abilito
+                if (Controls.IsDefaultEnabled("btnProduzione"))
                     Controls["btnProduzione"].Enabled = true;
-                if (_enabledControls.Contains("btnTest"))
+                if (Controls.IsDefaultEnabled("btnTest"))
                     Controls["btnTest"].Enabled = true;
-                if (_enabledControls.Contains("btnDev"))
+                if (Controls.IsDefaultEnabled("btnDev"))
                     Controls["btnDev"].Enabled = true;
-                if (_enabledControls.Contains("btnAggiornaDati"))
+                if (Controls.IsDefaultEnabled("btnAggiornaDati"))
                     Controls["btnAggiornaDati"].Enabled = true;
-                if (_enabledControls.Contains("btnAggiornaStruttura"))
+                if (Controls.IsDefaultEnabled("btnAggiornaStruttura"))
                     Controls["btnAggiornaStruttura"].Enabled = true;
-                if (_enabledControls.Contains("btnConfiguraParametri"))
+                if (Controls.IsDefaultEnabled("btnConfiguraParametri"))
                     Controls["btnConfiguraParametri"].Enabled = true;
-                
+
                 DataBase.CloseConnection();
             }
             else
             {
-                if (_enabledControls.Contains("btnEsportaXML"))
+                //Se da default i controlli sono abilitati, li abilito
+                if (Controls.IsDefaultEnabled("btnEsportaXML"))
                     Controls["btnEsportaXML"].Enabled = true;
-                if (_enabledControls.Contains("btnImportaXML"))
+                if (Controls.IsDefaultEnabled("btnImportaXML"))
                     Controls["btnImportaXML"].Enabled = true;
 
-                if (Controls["btnProduzione"].Enabled)
+                //disabilito i controlli che non funzionano in emergenza
+                if (Controls.Contains("btnProduzione"))
                     Controls["btnProduzione"].Enabled = false;
-                if (Controls["btnTest"].Enabled)
+                if (Controls.Contains("btnTest"))
                     Controls["btnTest"].Enabled = false;
-                if (Controls["btnDev"].Enabled)
+                if (Controls.Contains("btnDev"))
                     Controls["btnDev"].Enabled = false;
-                if (Controls["btnAggiornaDati"].Enabled)
+                if (Controls.Contains("btnAggiornaDati"))
                     Controls["btnAggiornaDati"].Enabled = false;
-                if (Controls["btnAggiornaStruttura"].Enabled)
+                if (Controls.Contains("btnAggiornaStruttura"))
                     Controls["btnAggiornaStruttura"].Enabled = false;
-                if (Controls["btnConfiguraParametri"].Enabled)
+                if (Controls.Contains("btnConfiguraParametri"))
                     Controls["btnConfiguraParametri"].Enabled = false;
             }
         }
@@ -314,7 +495,7 @@ namespace Iren.ToolsExcel
         private void btnCalendar_Click(object sender, RibbonControlEventArgs e)
         {
             //apro il form calendario
-            Forms.FormCalendar cal = new FormCalendar();
+            Iren.ToolsExcel.Forms.FormCalendar cal = new FormCalendar();
 
             cal.Top = System.Windows.Forms.Cursor.Position.Y - 20;
             cal.Left = System.Windows.Forms.Cursor.Position.X - 20;
@@ -323,23 +504,24 @@ namespace Iren.ToolsExcel
             cal.Dispose();
             Workbook.Application.Windows[1].Activate();
             //verifico che la data sia stata cambiata
-            if (calDate != DataBase.DataAttiva)
+            if (calDate != Workbook.DataAttiva)
             {
                 //Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
                 SplashScreen.Show();
-                
-                Workbook.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
+
+                Globals.ThisWorkbook.dataAttiva = calDate;
                 ((RibbonButton)sender).Label = calDate.ToString("dddd dd MMM yyyy");
 
                 Aggiorna aggiorna = new Aggiorna();
                 if (DataBase.OpenConnection())
                 {
-                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + ((RibbonButton)sender).Label);
+                    Workbook.InsertLog(Iren.ToolsExcel.Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + ((RibbonButton)sender).Label);
+                    
                     DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
-                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
+                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
 
                     if (stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1))
                         aggiorna.Struttura(avoidRepositoryUpdate: false);
@@ -384,8 +566,8 @@ namespace Iren.ToolsExcel
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
                 
                 //controllo se l'entità ha la possibilità di selezionare le rampe
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Simboli.AppID;
+                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
                 {
@@ -471,7 +653,7 @@ namespace Iren.ToolsExcel
 
             Simboli.ModificaDati = ((RibbonToggleButton)sender).Checked;
 
-            if (((RibbonToggleButton)sender).Checked) 
+            if (((RibbonToggleButton)sender).Checked)
             {
                 AbilitaTasti(false);
                 ((RibbonToggleButton)sender).Enabled = true;
@@ -479,7 +661,7 @@ namespace Iren.ToolsExcel
                 ((RibbonToggleButton)sender).Label = "Modifica SI";
                 Workbook.WB.SheetChange += Handler.StoreEdit;
                 //Aggiungo handler per azioni custom nel caso servisse
-                Workbook.WB.SheetChange += _modificaCustom.Range; 
+                Workbook.WB.SheetChange += _modificaCustom.Range;
             }
             else
             {
@@ -492,12 +674,11 @@ namespace Iren.ToolsExcel
                 Workbook.WB.SheetChange -= Handler.StoreEdit;
                 //Rimuovo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange -= _modificaCustom.Range;
-                
+
                 //aggiorno i label dello stato nel caso sia necessario!
                 Workbook.AggiornaLabelStatoDB();
 
                 AbilitaTasti(true);
-                //disabilito i tasti legati alla connessione se necessario
                 StatoDB_Changed(null, null);
             }
             Sheet.AbilitaModifica(((RibbonToggleButton)sender).Checked);
@@ -530,14 +711,14 @@ namespace Iren.ToolsExcel
                 string nome = definedNames.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                 
                 if(categoriaEntita.Count > 0)
                     siglaEntita = categoriaEntita[0]["Gerarchia"] is DBNull ? siglaEntita : categoriaEntita[0]["Gerarchia"].ToString();
 
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Simboli.AppID;
+                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
                 {
@@ -638,7 +819,7 @@ namespace Iren.ToolsExcel
             if (!Directory.Exists(pathStr))
                 Directory.CreateDirectory(pathStr);
 
-            string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm"; 
+            string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
             Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
             Globals.ThisWorkbook.ThisApplication.Quit();
@@ -671,7 +852,7 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Simboli.AppID = Simboli.GetAppIDByMercato(cmbMSD.Text);
+            Globals.ThisWorkbook.IdApplicazione = Simboli.GetAppIDByMercato(((RibbonComboBox)sender).Text);
             Aggiorna aggiorna = new Aggiorna();
             aggiorna.Struttura(avoidRepositoryUpdate: true);
 
@@ -688,7 +869,7 @@ namespace Iren.ToolsExcel
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Simboli.Stagione = cmbStagione.Text;
+            Simboli.Stagione = ((RibbonComboBox)sender).Text;
             
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
@@ -838,40 +1019,40 @@ namespace Iren.ToolsExcel
         /// </summary>
         private void CheckTastoApplicativo()
         {
-            switch (Workbook.AppSettings("AppID"))
+            switch (ConfigurationManager.AppSettings["AppID"])
             {
                 case "1":
-                    btnOfferteMGP.Checked = true;
+                    ((RibbonToggleButton)Controls["btnOfferteMGP"]).Checked = true;
                     break;
                 case "2":
                 case "3":
                 case "4":
                 case "13":
-                    btnInvioProgrammi.Checked = true;
+                    ((RibbonToggleButton)Controls["btnInvioProgrammi"]).Checked = true;
                     break;
                 case "5":
-                    btnProgrammazioneImpianti.Checked = true;
+                    ((RibbonToggleButton)Controls["btnProgrammazioneImpianti"]).Checked = true;
                     break;
                 case "6":
-                    btnUnitCommitment.Checked = true;
+                    ((RibbonToggleButton)Controls["btnUnitCommitment"]).Checked = true;
                     break;
                 case "7":
-                    btnPrezziMSD.Checked = true;
+                    ((RibbonToggleButton)Controls["btnPrezziMSD"]).Checked = true;
                     break;
                 case "8":
-                    btnSistemaComandi.Checked = true;
+                    ((RibbonToggleButton)Controls["btnSistemaComandi"]).Checked = true;
                     break;
                 case "9":
-                    btnOfferteMSD.Checked = true;
+                    ((RibbonToggleButton)Controls["btnOfferteMSD"]).Checked = true;
                     break;
                 case "10":
-                    btnOfferteMB.Checked = true;
+                    ((RibbonToggleButton)Controls["btnOfferteMB"]).Checked = true;
                     break;
                 case "11":
-                    btnValidazioneTL.Checked = true;
+                    ((RibbonToggleButton)Controls["btnValidazioneTL"]).Checked = true;
                     break;
                 case "12":
-                    btnPrevisioneCT.Checked = true;
+                    ((RibbonToggleButton)Controls["btnPrevisioneCT"]).Checked = true;
                     break;
             }
 
@@ -883,8 +1064,8 @@ namespace Iren.ToolsExcel
         /// </summary>
         private void AbilitaTasti(bool enable)
         {
-            foreach (string control in _enabledControls)
-                Controls[control].Enabled = enable;
+            foreach (RibbonControl control in Controls.GetDefaultEnabled())
+                control.Enabled = enable;
 
             _allDisabled = enable;
         }
@@ -905,6 +1086,7 @@ namespace Iren.ToolsExcel
 
         private ToolsExcelRibbon _ribbon;
         private Dictionary<string, RibbonControl> _controls = new Dictionary<string, RibbonControl>();
+        private Dictionary<string, bool> _defaultEnabled = new Dictionary<string, bool>();
 
         #endregion
 
@@ -927,16 +1109,42 @@ namespace Iren.ToolsExcel
 
         #endregion
 
-        #region Metodi
+        #region Costruttori
 
         internal ControlCollection(ToolsExcelRibbon ribbon)
         {
             _ribbon = ribbon;
-            List<RibbonGroup> groups = ribbon.FrontOffice.Groups.ToList();
+        }
 
-            foreach (RibbonGroup group in groups)
-                foreach (RibbonControl control in group.Items)
-                    _controls.Add(control.Name, control);
+        #endregion
+
+        #region Metodi
+
+        public void Add(RibbonControl control)
+        {
+            _controls.Add(control.Name, control);
+            _defaultEnabled.Add(control.Name, control.Enabled);
+        }
+
+        public bool Contains(string name)
+        {
+            return _controls.ContainsKey(name);
+        }
+
+        public bool IsDefaultEnabled(string name)
+        {
+            if (_defaultEnabled.ContainsKey(name))
+                return _defaultEnabled[name];
+
+            return false;
+        }
+
+        public IEnumerable<RibbonControl> GetDefaultEnabled()
+        {
+            return
+                from kv in _controls
+                where _defaultEnabled[kv.Key]
+                select kv.Value;
         }
 
         public IEnumerator GetEnumerator()
@@ -976,6 +1184,108 @@ namespace Iren.ToolsExcel
         public object Current
         {
             get { return _ribbon.Controls[_pos]; }
+        }
+        public bool MoveNext()
+        {
+            _pos++;
+            return _pos < _max;
+        }
+        public void Reset()
+        {
+            _pos = -1;
+        }
+
+        #endregion
+    }
+
+    #endregion
+
+    #region Groups Collection
+
+    /// <summary>
+    /// Classi che permettono di indicizzare per nome tutti i gruppi contenuti nei gruppi della Tab Front Office
+    /// </summary>
+    public class GroupsCollection : IEnumerable
+    {
+        #region Variabili
+
+        private ToolsExcelRibbon _ribbon;
+        private Dictionary<string, RibbonGroup> _groups = new Dictionary<string, RibbonGroup>();
+
+        #endregion
+
+        #region Proprietà
+
+        public int Count
+        {
+            get { return _groups.Count; }
+        }
+
+        public RibbonGroup this[int i]
+        {
+            get { return _groups.ElementAt(i).Value; }
+        }
+
+        public RibbonGroup this[string name]
+        {
+            get { return _groups[name]; }
+        }
+
+        #endregion
+
+        #region Costruttori
+
+        internal GroupsCollection(ToolsExcelRibbon ribbon)
+        {
+            _ribbon = ribbon;
+        }
+
+        #endregion
+
+        #region Metodi
+
+        public void Add(RibbonGroup group)
+        {
+            _groups.Add(group.Name, group);
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return new GroupEnumerator(_ribbon);
+        }
+
+        public IEnumerable<KeyValuePair<string, RibbonGroup>> AsEnumerable()
+        {
+            return _groups.AsEnumerable();
+        }
+
+        #endregion
+    }
+    public class GroupEnumerator : IEnumerator
+    {
+        #region Variabili
+
+        private ToolsExcelRibbon _ribbon;
+        private int _pos = -1;
+        private int _max = -1;
+
+        #endregion
+
+        #region Costruttori
+
+        public GroupEnumerator(ToolsExcelRibbon ribbon)
+        {
+            _ribbon = ribbon;
+            _max = ribbon.Groups.Count;
+        }
+
+        #endregion
+
+        #region Metodi
+
+        public object Current
+        {
+            get { return _ribbon.Groups[_pos]; }
         }
         public bool MoveNext()
         {

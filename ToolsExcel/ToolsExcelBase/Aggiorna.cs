@@ -86,28 +86,28 @@ namespace Iren.ToolsExcel.Base
         protected void CaricaDatiDalDB()
         {
             CancellaTabelle();
-            DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA];
-            DateTime dataFine = DataBase.DataAttiva.AddDays(Math.Max(
+            DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA];
+            DateTime dataFine = Workbook.DataAttiva.AddDays(Math.Max(
                     (from r in entitaProprieta.AsEnumerable()
-                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                     where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
                      select int.Parse(r["Valore"].ToString())).DefaultIfEmpty().Max(), Struct.intervalloGiorni));
 
             SplashScreen.UpdateStatus("Carico informazioni dal DB");
-            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
+            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
 
-            datiApplicazioneH.TableName = DataBase.Tab.DATI_APPLICAZIONE_H;
+            datiApplicazioneH.TableName = DataBase.TAB.DATI_APPLICAZIONE_H;
             DataBase.LocalDB.Tables.Add(datiApplicazioneH);
 
             SplashScreen.UpdateStatus("Carico commenti dal DB");
-            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1") ?? new DataTable();
+            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1") ?? new DataTable();
 
-            insertManuali.TableName = DataBase.Tab.DATI_APPLICAZIONE_COMMENTO;
+            insertManuali.TableName = DataBase.TAB.DATI_APPLICAZIONE_COMMENTO;
             DataBase.LocalDB.Tables.Add(insertManuali);
 
             SplashScreen.UpdateStatus("Carico informazioni giornaliere dal DB");
-            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
+            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
 
-            datiApplicazioneD.TableName = DataBase.Tab.DATI_APPLICAZIONE_D;
+            datiApplicazioneD.TableName = DataBase.TAB.DATI_APPLICAZIONE_D;
             DataBase.LocalDB.Tables.Add(datiApplicazioneD);
         }
         /// <summary>
@@ -116,12 +116,12 @@ namespace Iren.ToolsExcel.Base
         protected void CancellaTabelle()
         {
             //elimino le tabelle con le informazioni ormai scritte nel foglio
-            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.DATI_APPLICAZIONE_H))
-                DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_H);
-            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.DATI_APPLICAZIONE_D))
-                DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_D);
-            if (DataBase.LocalDB.Tables.Contains(DataBase.Tab.DATI_APPLICAZIONE_COMMENTO))
-                DataBase.LocalDB.Tables.Remove(DataBase.Tab.DATI_APPLICAZIONE_COMMENTO);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.TAB.DATI_APPLICAZIONE_H))
+                DataBase.LocalDB.Tables.Remove(DataBase.TAB.DATI_APPLICAZIONE_H);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.TAB.DATI_APPLICAZIONE_D))
+                DataBase.LocalDB.Tables.Remove(DataBase.TAB.DATI_APPLICAZIONE_D);
+            if (DataBase.LocalDB.Tables.Contains(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO))
+                DataBase.LocalDB.Tables.Remove(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO);
         }
 
         /// <summary>
@@ -165,8 +165,8 @@ namespace Iren.ToolsExcel.Base
                 
                 SplashScreen.UpdateStatus("Controllo se tutti i fogli sono presenti");
 
-                DataView categorie = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA].DefaultView;
-                categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
+                DataView categorie = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA].DefaultView;
+                categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 foreach (DataRowView categoria in categorie)
                 {

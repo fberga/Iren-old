@@ -31,7 +31,7 @@ namespace Iren.ToolsExcel.Base
             int val;
             if (definedNames.HasSelections() && definedNames.TryGetSelectionByPeer(rng, out sel, out val))
             {
-                Target.Worksheet.Unprotect(Simboli.pwd);
+                Target.Worksheet.Unprotect(Workbook.Password);
                 if (sel != null)
                 {
                     Workbook.ScreenUpdating = false;
@@ -43,7 +43,7 @@ namespace Iren.ToolsExcel.Base
                     DataBase.SalvaModificheDB();
                     Workbook.ScreenUpdating = true;
                 }
-                Target.Worksheet.Protect(Simboli.pwd);
+                Target.Worksheet.Protect(Workbook.Password);
             }
         }
         /// <summary>
@@ -103,7 +103,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="annotaModifica">Se la modifica va segnalata all'utente attraverso il commento sulla cella oppure no.</param>
         /// <param name="fromCalcolo">Flag per eseguire azioni particolari nel caso la provenienza del salvataggio sia da un calcolo.</param>
         /// <param name="tableName">La tabella in cui inserire le modifiche. Di default Tab.Modifica. Utile specificarme una diversa nel caso di esportazione XML.</param>
-        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false, string tableName = DataBase.Tab.MODIFICA)
+        public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false, string tableName = DataBase.TAB.MODIFICA)
         {
             if (DataBase.DB.IdUtenteAttivo != 0)        //non salva sulla tabella delle modifiche se l'utente non è configurato
             {
@@ -111,7 +111,7 @@ namespace Iren.ToolsExcel.Base
                 bool wasProtected = ws.ProtectContents;
                 bool screenUpdating = ws.Application.ScreenUpdating;
                 if (wasProtected)
-                    ws.Unprotect(Simboli.pwd);
+                    ws.Unprotect(Workbook.Password);
 
                 if (screenUpdating)
                     Workbook.ScreenUpdating = false;
@@ -178,7 +178,7 @@ namespace Iren.ToolsExcel.Base
                 }
 
                 if (wasProtected)
-                    ws.Protect(Simboli.pwd);
+                    ws.Protect(Workbook.Password);
 
                 if (screenUpdating)
                     ws.Application.ScreenUpdating = true;
@@ -280,7 +280,7 @@ namespace Iren.ToolsExcel.Base
 
             var locked = Workbook.Main.ProtectContents;
             if (locked)
-                Workbook.Main.Unprotect(Simboli.pwd);
+                Workbook.Main.Unprotect(Workbook.Password);
             Workbook.Main.Shapes.Item(labelName).TextFrame.Characters().Text = labelText + (online ? "OPERATIVO" : "FUORI SERVIZIO");
             if (online)
             {
@@ -299,7 +299,7 @@ namespace Iren.ToolsExcel.Base
             }
 
             if (locked)
-                Workbook.Main.Protect(Simboli.pwd);
+                Workbook.Main.Protect(Workbook.Password);
         }
         /// <summary>
         /// Handler per la modifica del label che indica il mercato attivo.

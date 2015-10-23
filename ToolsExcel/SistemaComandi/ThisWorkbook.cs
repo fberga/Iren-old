@@ -50,6 +50,7 @@ namespace Iren.ToolsExcel
         public string NomeUtente { get { return nomeUtente; } set { nomeUtente = value; } }
         public DateTime DataAttiva { get { return dataAttiva; } set { dataAttiva = value; } }
         public string Ambiente { get { return ambiente; } set { ambiente = value; } }
+        public string Password { get { return password; } }
 
         public DataSet RepositoryDataSet { get { return repositoryDataSet; } }
         public DataSet LogDataSet { get { return logDataSet; } }
@@ -75,6 +76,8 @@ namespace Iren.ToolsExcel
         public DataSet logDataSet = new DataSet();
         [CachedAttribute()]
         public DataSet ribbonDataSet = new DataSet();
+        [CachedAttribute()]
+        public string password = "8176";
 
         #endregion
 
@@ -98,12 +101,12 @@ namespace Iren.ToolsExcel
 #if DEBUG
             ambiente = Simboli.DEV;
 #endif
-
-            Utility.Workbook.StartUp(this);      
+            //Utility.Workbook.StartUp(this);      
         }
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
             Utility.Workbook.Close();
+            Save();
         }
     }
 }

@@ -66,15 +66,15 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             }
             treeViewControlli.ExpandAll();
 
-            DataTable ribbons = DataBase.Select(SP.GRUPPO_CONTROLLO);
+            DataTable ribbons = DataBase.Select(SP.GRUPPO_CONTROLLO, "@IdApplicazione=-1;@IdUtente=-1");
             DataView functions = DataBase.Select(SP.CONTROLLO_FUNZIONE).DefaultView;
 
             functions.RowFilter = "IdFunzione=-1";
             listBoxFunzioni.DisplayMember = "NomeFunzione";
             listBoxFunzioni.ValueMember = "IdFunzione";
 
-            DataView gruppi = new DataView(ribbons);
-            DataView applicazioni = new DataView(ribbons);
+            DataView gruppi = new DataView(ribbons.DefaultView.ToTable(true, "LabelGruppo", "IdGruppo", "IdControllo"));
+            DataView applicazioni = new DataView(ribbons.DefaultView.ToTable(true, "IdGruppo", "DesApplicazione", "IdGruppoControllo"));
 
             gruppi.RowFilter = "IdControllo = -1";
             listBoxGruppi.DisplayMember = "LabelGruppo";
@@ -141,7 +141,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             if (listBoxGruppi.SelectedValue != null)
             {
                 dvF.RowFilter = "IdFunzione=-1";
-                dvA.RowFilter = dvG.RowFilter + " AND IdGruppo = " + listBoxGruppi.SelectedValue;
+                dvA.RowFilter = /*dvG.RowFilter + " AND*/"IdGruppo = " + listBoxGruppi.SelectedValue;
 
                 if (listBoxApplicazioni.Items.Count > 0)
                     SelectedApplicationChanged(listBoxApplicazioni, null);

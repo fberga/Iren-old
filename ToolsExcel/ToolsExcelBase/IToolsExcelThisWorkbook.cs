@@ -21,6 +21,7 @@ namespace Iren.ToolsExcel.Base
         string Name { get; }
         string Path { get; }
         string FullName { get; }
+        string Password { get; }
 
         int IdApplicazione { get; set; }
         int IdUtente { get; set; }
@@ -31,5 +32,7 @@ namespace Iren.ToolsExcel.Base
         DataSet RepositoryDataSet { get; }
         DataSet LogDataSet { get; }
         DataSet RibbonDataSet { get; }
+
+        void Save();
     }
 }

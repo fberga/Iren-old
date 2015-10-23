@@ -30,7 +30,7 @@ namespace Iren.ToolsExcel.Forms
 
             this.Text = Simboli.nomeApplicazione + " - Modifica Parametri";
 
-            _entita = new DataView(Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA]);
+            _entita = new DataView(Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.CATEGORIA_ENTITA]);
             if(Utility.DataBase.OpenConnection())
             {
                 _parametri = Utility.DataBase.Select(Utility.DataBase.SP.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.DataBase.DB.IdApplicazione) ?? new DataTable();

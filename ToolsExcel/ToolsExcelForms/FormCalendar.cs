@@ -10,7 +10,7 @@ namespace Iren.ToolsExcel.Forms
         {
             InitializeComponent();
             //Application.EnableVisualStyles();
-            calObj.SetDate(Utility.DataBase.DataAttiva);
+            calObj.SetDate(Utility.Workbook.DataAttiva);
             this.Text = Simboli.nomeApplicazione + " - Calendar";
         }
 
@@ -21,7 +21,7 @@ namespace Iren.ToolsExcel.Forms
 
         private void btnANNULLA_Click(object sender, EventArgs e)
         {
-            calObj.SetDate(Utility.DataBase.DataAttiva);
+            calObj.SetDate(Utility.Workbook.DataAttiva);
             this.Close();
         }
 

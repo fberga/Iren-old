@@ -163,7 +163,7 @@ namespace Iren.ToolsExcel.Base
                     //aggiungere qui tutti i formati data da considerare nella forma
                     //case "formato data":
                     case "yyyymmdd":
-                        o = Utility.DataBase.DataAttiva.ToString(opt);
+                        o = Utility.Workbook.DataAttiva.ToString(opt);
                         break;
                 }
 

@@ -37,44 +37,44 @@ namespace Iren.ToolsExcel.Forms
             
             if (Struct.intervalloGiorni > 0)
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Simboli.AppID;
-                entitaProprieta.RowFilter = "IdApplicazione = " + Simboli.AppID;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Workbook.IdApplicazione;
+                entitaProprieta.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
 
-                _extraDateFrom = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1);
+                _extraDateFrom = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni + 1);
 
                 SortedList<DateTime, string> giorniExtra = new SortedList<DateTime, string>();
                 int maxIntervallo = Struct.intervalloGiorni;
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
+                    entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
                     if (entitaProprieta.Count > 0)
                     {
                         int value = int.Parse(entitaProprieta[0]["Valore"].ToString());
                         maxIntervallo = Math.Max(maxIntervallo, value);
                         if (value > Struct.intervalloGiorni)
-                            if (giorniExtra.ContainsKey(DataBase.DataAttiva.AddDays(value)))
-                                giorniExtra[DataBase.DataAttiva.AddDays(value)] += ", " + entita["SiglaEntita"].ToString().Replace("UP_", "");
+                            if (giorniExtra.ContainsKey(Workbook.DataAttiva.AddDays(value)))
+                                giorniExtra[Workbook.DataAttiva.AddDays(value)] += ", " + entita["SiglaEntita"].ToString().Replace("UP_", "");
                             else
-                                giorniExtra.Add(DataBase.DataAttiva.AddDays(value), entita["SiglaEntita"].ToString().Replace("UP_", ""));
+                                giorniExtra.Add(Workbook.DataAttiva.AddDays(value), entita["SiglaEntita"].ToString().Replace("UP_", ""));
                     }
                 }
 
                 if (Struct.intervalloGiorni > 0)
                 {
-                    _clusters.Add(Tuple.Create(DataBase.DataAttiva, giorniExtra.Count > 0 ? giorniExtra.Last().Key : DataBase.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
+                    _clusters.Add(Tuple.Create(Workbook.DataAttiva, giorniExtra.Count > 0 ? giorniExtra.Last().Key : Workbook.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
                     checkClusterDate.Items.Add("Tutti");
                 }
                 if (giorniExtra.Count > 0)
                 {
-                    _clusters.Add(Tuple.Create(DataBase.DataAttiva, DataBase.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
-                    checkClusterDate.Items.Add("Da " + DataBase.DataAttiva.ToString("ddd dd MMM") + " a " + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd dd MMM"));
+                    _clusters.Add(Tuple.Create(Workbook.DataAttiva, Workbook.DataAttiva.AddDays(Struct.intervalloGiorni)), false);
+                    checkClusterDate.Items.Add("Da " + Workbook.DataAttiva.ToString("ddd dd MMM") + " a " + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd dd MMM"));
 
                     foreach (var kv in giorniExtra)
                     {
-                        _clusters.Add(Tuple.Create(DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1), kv.Key), false);
-                        checkClusterDate.Items.Add("Da " + DataBase.DataAttiva.AddDays(Struct.intervalloGiorni + 1).ToString("ddd dd MMM") + " a " + kv.Key.ToString("ddd dd MMM") + " (" + kv.Value + ")");
+                        _clusters.Add(Tuple.Create(Workbook.DataAttiva.AddDays(Struct.intervalloGiorni + 1), kv.Key), false);
+                        checkClusterDate.Items.Add("Da " + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni + 1).ToString("ddd dd MMM") + " a " + kv.Key.ToString("ddd dd MMM") + " (" + kv.Value + ")");
                     }
                 }
 

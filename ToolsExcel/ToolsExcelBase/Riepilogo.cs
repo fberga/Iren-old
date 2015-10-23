@@ -23,22 +23,22 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Struct _struttura;
-        protected DataView _azioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.AZIONE]);
-        protected DataView _categorie = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA]);
-        protected DataView _entita = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA]);
-        protected DataView _entitaAzioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE]);
+        protected DataView _azioni = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.AZIONE]);
+        protected DataView _categorie = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA]);
+        protected DataView _entita = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA]);
+        protected DataView _entitaAzioni = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_AZIONE]);
 
         #endregion
 
         #region Metodi
         /// <summary>
-        /// In un ciclo che avanza di giorno in giorno a partire da DataBase.DataAttiva per il numero di giorni definito per l'entità, esegui il delegato callback che definisce una routine specifica.
+        /// In un ciclo che avanza di giorno in giorno a partire da Workbook.DataAttiva per il numero di giorni definito per l'entità, esegui il delegato callback che definisce una routine specifica.
         /// </summary>
         /// <param name="callback">Delegato eseguito come corpo del ciclo.</param>
         protected void CicloGiorni(Action<int, string, DateTime> callback)
         {
-            DateTime dataInizio = DataBase.DataAttiva;
-            DateTime dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+            DateTime dataInizio = Utility.Workbook.DataAttiva;
+            DateTime dataFine = Utility.Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
             CicloGiorni(dataInizio, dataFine, callback);
         }
         /// <summary>
@@ -78,7 +78,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="presente">Se l'azione ha portato a risultati oppure no.</param>
         public void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente)
         {
-            AggiornaRiepilogo(siglaEntita, siglaAzione, presente, DataBase.DataAttiva);
+            AggiornaRiepilogo(siglaEntita, siglaAzione, presente, Utility.Workbook.DataAttiva);
         }
         /// <summary>
         /// Launcher per la compilazione del riepilogo in seguito allo svolgimento di un'azione.
@@ -148,9 +148,9 @@ namespace Iren.ToolsExcel.Base
 
             if (Struct.visualizzaRiepilogo)
             {
-                _categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
-                _entita.RowFilter = "IdApplicazione = " + Simboli.AppID;
+                _categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
+                _entita.RowFilter = "IdApplicazione = " + Utility.Workbook.IdApplicazione;
 
                 CreaNomiCelle();
                 InitBarraTitolo();
@@ -175,10 +175,10 @@ namespace Iren.ToolsExcel.Base
         public override void InitLabels()
         {   
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = Utility.Workbook.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = Utility.Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utility.Workbook.WorkbookVersion.ToString() + " Base v." + Utility.Workbook.BaseVersion.ToString() + " Core v." + Utility.Workbook.CoreVersion.ToString();
-            _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"];
+            _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.TAB.UTENTE].Rows[0]["Nome"];
 
             _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
             _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
@@ -251,7 +251,7 @@ namespace Iren.ToolsExcel.Base
             foreach (DataRowView categoria in _categorie)
             {
                 _definedNames.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
-                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Simboli.AppID;
+                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
                 foreach (DataRowView e in _entita)
                 {
                     _definedNames.AddName(_rigaAttiva, e["SiglaEntita"]);
@@ -276,8 +276,8 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected void UpdateDayColor()
         {
-            DataView azioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.AZIONE]);
-            azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
+            DataView azioni = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.AZIONE]);
+            azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
 
             Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 3, azioni.Count);
 
@@ -380,7 +380,7 @@ namespace Iren.ToolsExcel.Base
                 Range rng = new Range(_definedNames.GetRowByName(categoria["SiglaCategoria"]), _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
                 Style.RangeStyle(_ws.Range[rng.ToString()], style: "Lista categorie riepilogo", borders: "[left:medium,top:medium,right:medium]", merge: true);
                 _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
-                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Simboli.AppID;
+                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
                 foreach (DataRowView entita in _entita)
                 {
                     rng.StartRow++;
@@ -464,7 +464,7 @@ namespace Iren.ToolsExcel.Base
         public override void AggiornaRiepilogo(object siglaEntita, object siglaAzione, bool presente, DateTime dataRif)
         {
 
-            if (dataRif - DataBase.DataAttiva <= new TimeSpan(Struct.intervalloGiorni, 0, 0, 0))
+            if (dataRif - Utility.Workbook.DataAttiva <= new TimeSpan(Struct.intervalloGiorni, 0, 0, 0))
             {
                 if (Struct.visualizzaRiepilogo && !Simboli.EmergenzaForzata)
                 {
@@ -472,7 +472,7 @@ namespace Iren.ToolsExcel.Base
                     Excel.Range rng = _ws.Range[cell.ToString()];
                     if (presente)
                     {
-                        string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.Tab.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                        string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.TAB.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
                         rng.ClearComments();
                         rng.AddComment(commento).Visible = false;
                         rng.Value = "OK";
@@ -507,14 +507,14 @@ namespace Iren.ToolsExcel.Base
             
             if (Struct.visualizzaRiepilogo)
             {
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND Gerarchia IS NOT NULL AND IdApplicazione = " + Simboli.AppID;
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND Gerarchia IS NOT NULL AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
             
                 CicloGiorni((oreGiorno, suffissoData, giorno) =>
                 {
                     Range cell = new Range(_definedNames.GetRowByName("DATA"), _definedNames.GetColFromName(_azioni[0]["SiglaAzione"], suffissoData));
                     _ws.Range[cell.ToString()].Value = giorno;
                 });
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Simboli.AppID;
+                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
 
                 UpdateDayColor();
             }

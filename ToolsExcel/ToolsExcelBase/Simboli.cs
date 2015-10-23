@@ -28,13 +28,13 @@ namespace Iren.ToolsExcel.Base
                 {
                     emergenzaForzata = value;
 
-                    bool screenUpdating = Utility.Workbook.Application.ScreenUpdating;
+                    bool screenUpdating = Utility.Workbook.ScreenUpdating;
                     if (screenUpdating)
-                        Utility.Workbook.Application.ScreenUpdating = false;
+                        Utility.Workbook.ScreenUpdating = false;
 
                     bool isProtected = Utility.Workbook.Main.ProtectContents;
                     if (isProtected)
-                        Utility.Workbook.Main.Unprotect(pwd);
+                        Utility.Workbook.Main.Unprotect(Utility.Workbook.Password);
 
                     //Riepilogo main = new Riepilogo(Utility.Workbook.Main);
                     //if (value)
@@ -46,17 +46,17 @@ namespace Iren.ToolsExcel.Base
                     Utility.Workbook.AggiornaLabelStatoDB();
 
                     if (isProtected)
-                        Utility.Workbook.Main.Protect(pwd);
+                        Utility.Workbook.Main.Protect(Utility.Workbook.Password);
 
                     if (screenUpdating)
-                        Utility.Workbook.Application.ScreenUpdating = true;
+                        Utility.Workbook.ScreenUpdating = true;
                 }
             }
         }
 
         public static bool Aborted { get; set; }
 
-        public static string pwd = "";
+        //public static string pwd = "";
 
         private static bool modificaDati = false;
         public static bool ModificaDati 
@@ -133,16 +133,16 @@ namespace Iren.ToolsExcel.Base
             }
         }
 
-        public static string AppID
-        {
-            get { return Utility.DataBase.DB.IdApplicazione.ToString(); }
-            set 
-            {
-                Utility.DataBase.ChangeAppID(value);
-                mercato = GetMercatoByAppID(value);
-                Handler.ChangeMercatoAttivo(mercato);
-            }
-        }
+        //public static string AppID
+        //{
+        //    get { return Utility.DataBase.DB.IdApplicazione.ToString(); }
+        //    set 
+        //    {
+        //        Utility.DataBase.ChangeAppID(value);
+        //        mercato = GetMercatoByAppID(value);
+        //        Handler.ChangeMercatoAttivo(mercato);
+        //    }
+        //}
 
         private static string mercato;
         public static string Mercato
@@ -157,12 +157,17 @@ namespace Iren.ToolsExcel.Base
 
             return mercati[appIDs.IndexOf(id)];
         }
-        public static string GetAppIDByMercato(string mercato)
+        public static int GetAppIDByMercato(string mercato)
         {
             List<string> mercati = new List<string>(Utility.Workbook.AppSettings("Mercati").Split('|'));
             List<string> appIDs = new List<string>(Utility.Workbook.AppSettings("AppIDMSD").Split('|'));
 
-            return appIDs[mercati.IndexOf(mercato)];
+            List<int> ids = new List<int>();
+
+            foreach (string id in appIDs)
+                ids.Add(int.Parse(id));
+
+            return ids[mercati.IndexOf(mercato)];
         }
         public static string GetMercatoPrec()
         {
@@ -186,7 +191,7 @@ namespace Iren.ToolsExcel.Base
                 string idStagione = GetIdStagione(value);
                 Utility.Workbook.ChangeAppSettings("Stagione", idStagione);
                 DefinedNames definedNames = new DefinedNames("Previsione");
-                DateTime dataFine = Utility.DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+                DateTime dataFine = Utility.Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
                 Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Utility.Date.SuffissoDATA1, Utility.Date.GetSuffissoOra(1)).Extend(colOffset: Utility.Date.GetOreIntervallo(dataFine));
                 Utility.Workbook.Sheets["Previsione"].Range[rng.ToString()].Value = idStagione;
             }

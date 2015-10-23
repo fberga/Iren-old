@@ -388,20 +388,27 @@ namespace Iren.ToolsExcel.Core
                 if (_chechDBCount == 4)
                 {
                     _chechDBCount = 0;
-                    DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 5, false);
+                    if (OpenConnection(_internalsqlConn))
+                    {
+                        DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 5, false);
 
-                    if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
-                        _statoDB[NomiDB.IMP] = ConnectionState.Open;
-                    else
-                        _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+                        if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
+                            _statoDB[NomiDB.IMP] = ConnectionState.Open;
+                        else
+                            _statoDB[NomiDB.IMP] = ConnectionState.Closed;
+                        CloseConnection(_internalsqlConn);
+                    }
 
-                    OpenConnection(_internalsqlConn);
-                    DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 5, false);
+                    if (OpenConnection(_internalsqlConn))
+                    {
+                        DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 5, false);
 
-                    if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
-                        _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
-                    else
-                        _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+                        if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
+                            _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
+                        else
+                            _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;
+                        CloseConnection(_internalsqlConn);
+                    }
                 }
                 _chechDBCount++;
             }

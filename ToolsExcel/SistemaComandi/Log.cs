@@ -46,11 +46,16 @@ namespace Iren.ToolsExcel
 
 
 
-            ListObject logObj = Controls.AddListObject(this.Range["A1"], "LogList");
-            logObj.TableStyle = "TableStyleLight16";
+            //ListObject logObj = Controls.AddListObject(this.Range["A1"], "LogList");
+            //logObj.TableStyle = "TableStyleLight16";
 
-            logObj.AutoSetDataBoundColumnHeaders = true;
-            logObj.DataSource = Globals.ThisWorkbook.logDataSet;
+            //logObj.AutoSetDataBoundColumnHeaders = true;
+            //logObj.DataSource = Globals.ThisWorkbook.logDataSet;
+
+
+
+
+
             //logObj.DataMember = DataBase.Tab.LOG;
 
             //if (!Simboli.Aborted)

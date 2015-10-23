@@ -249,7 +249,7 @@ namespace ProvaRibbon
 
             if (isUpdated)
             {
-                ((RibbonButton)Controls["btnCalendario"]).Label = DataBase.DataAttiva.ToString("dddd dd MMM yyyy");
+                ((RibbonButton)Controls["btnCalendario"]).Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
 
                 //seleziono l'ambiente attivo
                 ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
@@ -480,7 +480,7 @@ namespace ProvaRibbon
             cal.Dispose();
             Workbook.Application.Windows[1].Activate();
             //verifico che la data sia stata cambiata
-            if (calDate != DataBase.DataAttiva)
+            if (calDate != Workbook.DataAttiva)
             {
                 //Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
@@ -496,7 +496,7 @@ namespace ProvaRibbon
                     DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
-                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + DataBase.DataAttiva.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
+                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
 
                     if (stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1))
                         aggiorna.Struttura(avoidRepositoryUpdate: false);
@@ -541,8 +541,8 @@ namespace ProvaRibbon
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
                 //controllo se l'entità ha la possibilità di selezionare le rampe
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Simboli.AppID;
+                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
                 {
@@ -686,14 +686,14 @@ namespace ProvaRibbon
                 string nome = definedNames.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (categoriaEntita.Count > 0)
                     siglaEntita = categoriaEntita[0]["Gerarchia"] is DBNull ? siglaEntita : categoriaEntita[0]["Gerarchia"].ToString();
 
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Simboli.AppID;
+                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
                 {
@@ -827,7 +827,7 @@ namespace ProvaRibbon
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            //Simboli.AppID = Simboli.GetAppIDByMercato(cmbMSD.Text);
+            
             Aggiorna aggiorna = new Aggiorna();
             aggiorna.Struttura(avoidRepositoryUpdate: true);
 

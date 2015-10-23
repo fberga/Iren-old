@@ -33,8 +33,8 @@ namespace Iren.ToolsExcel.Base
 
         public Optimizer() 
         {            
-            _entitaInformazioni = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.ENTITA_INFORMAZIONE].DefaultView;
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
+            _entitaInformazioni = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
         }
 
         #endregion
@@ -54,11 +54,11 @@ namespace Iren.ToolsExcel.Base
             if (!info["SiglaEntita"].Equals(siglaEntita))
             {
                 siglaEntita = info["SiglaEntita"].ToString();
-                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
+                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (_entitaProprieta.Count > 0)
-                    dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+                    dataFine = Workbook.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
                 else
-                    dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+                    dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
 
                 nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
 
@@ -76,7 +76,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected virtual void OmitConstraints() 
         {
-            _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO' AND IdApplicazione = " + Simboli.AppID;
+            _entitaInformazioni.RowFilter = "SiglaTipologiaInformazione = 'VINCOLO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             string siglaEntita = "";
             string nomeFoglio = "";
@@ -98,14 +98,14 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddAdjust(object siglaEntita) 
         {
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0' AND IdApplicazione = " + Simboli.AppID;
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0' AND IdApplicazione = " + Workbook.IdApplicazione;
             foreach (DataRowView info in _entitaInformazioni)
             {
                 object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                 Range rng = _definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
                 Workbook.Application.Run("wbAdjust", "'" + _sheet + "'!" + rng.ToString());
 
-                for (DateTime giorno = DataBase.DataAttiva; giorno <= _dataFine; giorno = giorno.AddDays(1))
+                for (DateTime giorno = Workbook.DataAttiva; giorno <= _dataFine; giorno = giorno.AddDays(1))
                 {
                     Range rng1 = new Range(rng.StartRow, _definedNames.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
                     Workbook.Sheets[_sheet].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
@@ -123,7 +123,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddConstraints(object siglaEntita) 
         {
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO' AND IdApplicazione = " + Simboli.AppID;
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'VINCOLO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             foreach (DataRowView info in _entitaInformazioni)
             {
@@ -137,7 +137,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         protected virtual void AddOpt(object siglaEntita) 
         {
-            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO' AND IdApplicazione = " + Simboli.AppID;
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaTipologiaInformazione = 'OTTIMO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             if (_entitaInformazioni.Count > 0)
             {
@@ -220,7 +220,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected virtual void DeleteExistingAdjust()
         {
-            _entitaInformazioni.RowFilter = "WB <> '0' AND IdApplicazione = " + Simboli.AppID;
+            _entitaInformazioni.RowFilter = "WB <> '0' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             string siglaEntita = "";
             string nomeFoglio = "";
@@ -237,7 +237,7 @@ namespace Iren.ToolsExcel.Base
                 Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
                 Workbook.Sheets[nomeFoglio].Range[rng.ToString()].Style = "Area dati";
 
-                for (DateTime giorno = DataBase.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
+                for (DateTime giorno = Workbook.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                 {
                     Range rng1 = new Range(rng.StartRow, definedNames.GetColFromDate(Date.GetSuffissoData(giorno), Date.GetSuffissoOra(Date.GetOreGiorno(giorno))));
                     Workbook.Sheets[nomeFoglio].Range[rng1.ToString()].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
@@ -265,15 +265,15 @@ namespace Iren.ToolsExcel.Base
             _definedNames = new DefinedNames(_sheet);
 
             string desEntita =
-                (from r in DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].AsEnumerable()
-                 where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
+                (from r in DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
+                 where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita)
                  select r["DesEntita"].ToString()).First();
 
-            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Simboli.AppID;
+            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
             if (_entitaProprieta.Count > 0)
-                _dataFine = DataBase.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+                _dataFine = Workbook.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
             else
-                _dataFine = DataBase.DataAttiva.AddDays(Struct.intervalloGiorni);
+                _dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
 
             OmitConstraints();
             AddAdjust(siglaEntita);
