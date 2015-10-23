@@ -74,12 +74,12 @@ namespace Iren.ToolsExcel.PostDeployment
                         //rimuovo tutti i file dell'installazione
                         System.IO.File.Delete(destFile);
 
-                        if (System.IO.File.Exists(desktopLink))
-                            System.IO.File.Delete(desktopLink);
+                        //if (System.IO.File.Exists(desktopLink))
+                        //    System.IO.File.Delete(desktopLink);
 
-                        string update = Path.Combine(desktopPath, "UPDATE");
-                        if (Directory.Exists(update) && !Directory.EnumerateFileSystemEntries(update).Any())
-                            Directory.Delete(update);
+                        //string update = Path.Combine(desktopPath, "UPDATE");
+                        //if (Directory.Exists(update) && !Directory.EnumerateFileSystemEntries(update).Any())
+                        //    Directory.Delete(update);
 
                         if (!Directory.EnumerateFileSystemEntries(destPath).Any())
                             Directory.Delete(destPath);

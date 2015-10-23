@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="ApplicationNotFoundException.cs" />
     <Compile Include="EsportaXML.cs" />
+    <Compile Include="IToolsExcelThisWorkbook.cs" />
     <Compile Include="Modifica.cs" />
     <Compile Include="Carica.cs" />
     <Compile Include="Check.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Simboli.cs" />
     <Compile Include="Struct.cs" />
     <Compile Include="Style.cs" />
+    <Compile Include="Workbook.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ToolsExcelCore\ToolsExcelCore.csproj">

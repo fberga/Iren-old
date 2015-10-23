@@ -52,7 +52,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             //inizializzazione connessione
             _ambienti = Workbook.AppSettings("Ambienti").Split('|');
-            DataBase.InitNewDB(_ambienti[0]);
+            DataBase.Initialize(_ambienti[0]);
             //DataBase.DB.SetParameters(idUtente: 62);
 
             //carico la lista di applicazioni configurabili

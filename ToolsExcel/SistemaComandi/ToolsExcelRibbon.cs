@@ -98,7 +98,7 @@ namespace Iren.ToolsExcel
 #endif
             //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
             bool isUpdated = true;
-            if (Workbook.CategorySheets.Count == 0 || Repository.DaAggiornare)
+            if (Workbook.CategorySheets.Count == 0 || Workbook.Repository.DaAggiornare)
             {
                 Aggiorna aggiorna = new Aggiorna();
                 isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
@@ -736,102 +736,102 @@ namespace Iren.ToolsExcel
         /// </summary>
         private void Initialize()
         {
-            _controls = new ControlCollection(this);
-            DataView controlli = new DataView();
+//            _controls = new ControlCollection(this);
+//            DataView controlli = new DataView();
             
-            if (DataBase.OpenConnection())
-            {
-                Repository.CaricaApplicazioneRibbon();
-                controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-                DataBase.CloseConnection();
-            }
-            else
-            {
-                try
-                {
-                    controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-                }
-                catch
-                {
-                    controlli = new DataView();
-                }
-            }
+//            if (DataBase.OpenConnection())
+//            {
+//                Workbook.Repository.CaricaApplicazioneRibbon();
+//                controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+//                DataBase.CloseConnection();
+//            }
+//            else
+//            {
+//                try
+//                {
+//                    controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+//                }
+//                catch
+//                {
+//                    controlli = new DataView();
+//                }
+//            }
 
-            if (controlli.Count > 0)
-            {
-                foreach (DataRowView controllo in controlli)
-                {
-                    Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
-                    Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
-                    if (controllo["Abilitato"].Equals("1"))
-                        _enabledControls.Add(controllo["NomeControllo"].ToString());
+//            if (controlli.Count > 0)
+//            {
+//                foreach (DataRowView controllo in controlli)
+//                {
+//                    Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
+//                    Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
+//                    if (controllo["Abilitato"].Equals("1"))
+//                        _enabledControls.Add(controllo["NomeControllo"].ToString());
 
-                    if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
-                    {
-                        ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
-                    }
-                }
+//                    if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
+//                    {
+//                        ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
+//                    }
+//                }
 
-                List<RibbonGroup> groups = FrontOffice.Groups.ToList();
-                foreach (RibbonGroup group in groups)
-                    group.Visible = group.Items.Any(c => c.Visible);
-            }
-            else
-            {
-                foreach (RibbonControl control in Controls)
-                {
-#if !DEBUG
-                    control.Visible = true;
-                    control.Enabled = false;
-#else
-                    control.Visible = true;
-                    control.Enabled = true;
-#endif
+//                List<RibbonGroup> groups = FrontOffice.Groups.ToList();
+//                foreach (RibbonGroup group in groups)
+//                    group.Visible = group.Items.Any(c => c.Visible);
+//            }
+//            else
+//            {
+//                foreach (RibbonControl control in Controls)
+//                {
+//#if !DEBUG
+//                    control.Visible = true;
+//                    control.Enabled = false;
+//#else
+//                    control.Visible = true;
+//                    control.Enabled = true;
+//#endif
 
-                    if (control.GetType().ToString().Contains("ToggleButton"))
-                        ((RibbonToggleButton)control).Checked = false;
-                }
-            }
+//                    if (control.GetType().ToString().Contains("ToggleButton"))
+//                        ((RibbonToggleButton)control).Checked = false;
+//                }
+//            }
 
-            //ComboBox mercati
-            if (groupMSD.Visible)
-            {
-                if (Workbook.AppSettings("Mercati") != null)
-                {
-                    string[] mercati = Workbook.AppSettings("Mercati").Split('|');
-                    cmbMSD.Items.Clear();
-                    foreach (string mercato in mercati)
-                    {
-                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-                        i.Label = mercato;
-                        cmbMSD.Items.Add(i);
-                    }
+//            //ComboBox mercati
+//            if (groupMSD.Visible)
+//            {
+//                if (Workbook.AppSettings("Mercati") != null)
+//                {
+//                    string[] mercati = Workbook.AppSettings("Mercati").Split('|');
+//                    cmbMSD.Items.Clear();
+//                    foreach (string mercato in mercati)
+//                    {
+//                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+//                        i.Label = mercato;
+//                        cmbMSD.Items.Add(i);
+//                    }
 
-                    cmbMSD.TextChanged -= cmbMSD_TextChanged;
-                    cmbMSD.Text = Simboli.Mercato;
-                    cmbMSD.TextChanged += cmbMSD_TextChanged;
-                }
-            }
+//                    cmbMSD.TextChanged -= cmbMSD_TextChanged;
+//                    cmbMSD.Text = Simboli.Mercato;
+//                    cmbMSD.TextChanged += cmbMSD_TextChanged;
+//                }
+//            }
 
-            //ComboBox stagioni
-            if (groupStagione.Visible)
-            {
-                if (Workbook.AppSettings("Stagioni") != null)
-                {
-                    string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
-                    cmbStagione.Items.Clear();
-                    foreach (string stagione in stagioni)
-                    {
-                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-                        i.Label = stagione;
-                        cmbStagione.Items.Add(i);
-                    }
+//            //ComboBox stagioni
+//            if (groupStagione.Visible)
+//            {
+//                if (Workbook.AppSettings("Stagioni") != null)
+//                {
+//                    string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
+//                    cmbStagione.Items.Clear();
+//                    foreach (string stagione in stagioni)
+//                    {
+//                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+//                        i.Label = stagione;
+//                        cmbStagione.Items.Add(i);
+//                    }
 
-                    cmbStagione.TextChanged -= cmbStagione_TextChanged;
-                    cmbStagione.Text = Simboli.Stagione;
-                    cmbStagione.TextChanged += cmbStagione_TextChanged;
-                }
-            }
+//                    cmbStagione.TextChanged -= cmbStagione_TextChanged;
+//                    cmbStagione.Text = Simboli.Stagione;
+//                    cmbStagione.TextChanged += cmbStagione_TextChanged;
+//                }
+//            }
         }
         /// <summary>
         /// Metodo che seleziona il tasto corretto tra quelli degli applicativi presenti nella Tab Front Office. La selezione avviene in base all'ID applicazione scritto sul file di configurazione.

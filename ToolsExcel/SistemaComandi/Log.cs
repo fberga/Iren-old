@@ -42,33 +42,44 @@ namespace Iren.ToolsExcel
 
         private void Log_Startup(object sender, EventArgs e)
         {
-            if (!Simboli.Aborted)
-            {
-                Unprotect(Simboli.pwd);
-                try
-                {
-                    _logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
-                }
-                catch (Exception)
-                {
-                    _logObj = Controls.AddListObject(Range["A1"], "LogList");
-                }
-                _logObj.AutoSetDataBoundColumnHeaders = true;
+            //Globals.ThisWorkbook.LogDataSet.Tables[DataBase.Tab.LOG];
 
-                if (DataBase.OpenConnection())
-                {
-                    _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
-                    _logObj.Range.EntireColumn.AutoFit();
-                    _logObj.TableStyle = "TableStyleLight16";
 
-                    Excel.Range rng = Columns[2];
-                    rng.NumberFormat = "dd/MM/yyyy";
-                    rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
 
-                    DataBase.CloseConnection();
-                }
-                Protect(Simboli.pwd);
-            }
+            ListObject logObj = Controls.AddListObject(this.Range["A1"], "LogList");
+            logObj.TableStyle = "TableStyleLight16";
+
+            logObj.AutoSetDataBoundColumnHeaders = true;
+            logObj.DataSource = Globals.ThisWorkbook.logDataSet;
+            //logObj.DataMember = DataBase.Tab.LOG;
+
+            //if (!Simboli.Aborted)
+            //{
+            //    Unprotect(Simboli.pwd);
+            //    try
+            //    {
+            //        _logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
+            //    }
+            //    catch (Exception)
+            //    {
+            //        _logObj = Controls.AddListObject(Range["A1"], "LogList");
+            //    }
+            //    _logObj.AutoSetDataBoundColumnHeaders = true;
+
+            //    if (DataBase.OpenConnection())
+            //    {
+            //        _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
+            //        _logObj.Range.EntireColumn.AutoFit();
+            //        _logObj.TableStyle = "TableStyleLight16";
+
+            //        Excel.Range rng = Columns[2];
+            //        rng.NumberFormat = "dd/MM/yyyy";
+            //        rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+
+            //        DataBase.CloseConnection();
+            //    }
+            //    Protect(Simboli.pwd);
+            //}
         }
 
         #endregion

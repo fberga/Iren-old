@@ -8,6 +8,10 @@ namespace Iren.ToolsExcel.Base
 {
     public class Simboli
     {
+        public const string DEV = "Dev";
+        public const string TEST = "Test";
+        public const string PROD = "Prod";
+
         public const string UNION = ".";
 
         public static string nomeApplicazione = "";

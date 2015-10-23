@@ -11,9 +11,15 @@ using System.Reflection;
 using Iren.ToolsExcel.Forms;
 using System.Collections;
 using Excel = Microsoft.Office.Interop.Excel;
+using Office = Microsoft.Office.Core;
 using System.IO;
 using Microsoft.Office.Tools;
 using System.Configuration;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Packaging;
+using System.IO.Packaging;
+using Microsoft.VisualStudio.Tools.Applications;
 
 namespace ProvaRibbon
 {
@@ -22,13 +28,9 @@ namespace ProvaRibbon
         #region Variabili
 
         /// <summary>
-        /// Lista dei controlli (solo button e togglebutton).
-        /// </summary>
-        private ControlCollection _controls;
-        /// <summary>
         /// lista degli id dei tasti abilitati.
         /// </summary>
-        private List<string> _enabledControls = new List<string>();
+        //private List<string> _enabledControls = new List<string>();
         /// <summary>
         /// Indica se tutti i tasti (a parte Aggiorna Struttura) sono disabilitati.
         /// </summary>
@@ -46,6 +48,13 @@ namespace ProvaRibbon
         /// </summary>
         public Modifica _modificaCustom = new Modifica();
 
+
+        DataTable _dtControllo;
+        DataTable _dtControlloApplicazione;
+        DataTable _funzioni;
+        bool _updated = false;
+
+
         #endregion
 
         #region Proprietà
@@ -55,112 +64,142 @@ namespace ProvaRibbon
         /// La necessità di questa proprietà deriva dalla necessità di abilitare/disabilitare/nascondere i tasti leggendo i parametri del DB.
         /// </summary>
         public ControlCollection Controls { get; private set; }
-        public List<RibbonGroup> Groups { get; private set; }
+        public GroupsCollection Groups { get; private set; }
 
         #endregion
 
         public void InitializeComponent2()
         {
-            //EventInfo ei = btnCalendar.GetType().GetEvent("Click");
-            //MethodInfo hi = GetType().GetMethod("btnCalendar_Click", BindingFlags.Instance | BindingFlags.NonPublic);
-            //Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
-            //ei.AddEventHandler(btnCalendar, d);
+            File.Copy(@"D:\Repository\Iren\ToolsExcel\ProvaRibbon\bin\Debug\ProvaRibbon.xlsm", @"D:\Repository\Iren\ToolsExcel\ProvaRibbon\bin\Debug\ProvaRibbon1.xlsm", true);
 
+            DataSet dsRibbonLayout = null;
 
-            //this.groupChiudi = this.Factory.CreateRibbonGroup();
-            //this.btnEsportaXML = this.Factory.CreateRibbonButton();
-            //this.btnValidazioneTL = this.Factory.CreateRibbonToggleButton();
-            //this.labelMSD = this.Factory.CreateRibbonLabel();
-            //this.cmbMSD = this.Factory.CreateRibbonComboBox();
-
-            //this.btnChiudi.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            //this.btnChiudi.Image = ToolsExcel.Base.Properties.Resources.chiudi;
-            //this.btnChiudi.Label = "Chiudi";
-            //this.btnChiudi.Name = "btnChiudi";
-            //this.btnChiudi.ShowImage = true;
-
-            DataBase.InitNewDB("Dev");
-
-            if (DataBase.OpenConnection())
+            using (ServerDocument xls = new ServerDocument(@"D:\Repository\Iren\ToolsExcel\ProvaRibbon\bin\Debug\ProvaRibbon1.xlsm"))
             {
-                //TODO salvare anche questo negli XML
-                DataTable dt = DataBase.Select("RIBBON.spGruppoControllo", "@IdApplicazione=" + ConfigurationManager.AppSettings["AppID"] + ";@IdUtente=62");
+                CachedDataHostItem dataHostItem1 =
+                    xls.CachedData.HostItems["ProvaRibbon.ThisWorkbook"];
+                CachedDataItem dataItem1 = dataHostItem1.CachedData["dsRibbonLayout"];
 
-                Microsoft.Office.Tools.Ribbon.RibbonGroup grp = this.Factory.CreateRibbonGroup();
-                Groups = new List<RibbonGroup>();
-                
-                int idGruppo = -1;
-
-                foreach (DataRow r in dt.Rows)
+                if (dataItem1.Schema != null && dataItem1.Xml != null)
                 {
-                    if (!r["IdGruppo"].Equals(idGruppo))
-                    {
-                        idGruppo = (int)r["IdGruppo"];
-                        grp = this.Factory.CreateRibbonGroup();
-                        grp.Name = r["NomeGruppo"].ToString();
-                        grp.Label = r["LabelGruppo"].ToString();
+                    System.IO.StringReader schemaReader = new System.IO.StringReader(dataItem1.Schema);
+                    System.IO.StringReader xmlReader = new System.IO.StringReader(dataItem1.Xml);
+                    dsRibbonLayout = new DataSet();
+                    dsRibbonLayout.ReadXmlSchema(schemaReader);
+                    dsRibbonLayout.ReadXml(xmlReader);
+                }
+            }
 
-                        this.FrontOffice.Groups.Add(grp);
-                        Groups.Add(grp);
-                    }
+            File.Delete(@"D:\Repository\Iren\ToolsExcel\ProvaRibbon\bin\Debug\ProvaRibbon1.xlsm");
 
-                    RibbonControl ctrl = null;
+            if (dsRibbonLayout == null)
+            {
+                DataBase.Initialize("Dev");
+                if (DataBase.OpenConnection())
+                {
+                    _updated = true;
+                    _dtControllo = DataBase.Select("RIBBON.spGruppoControllo", "@IdApplicazione=" + ConfigurationManager.AppSettings["AppID"] + ";@IdUtente=62");
+                    _dtControllo.TableName = "Controllo";
+                    _dtControlloApplicazione = DataBase.Select("RIBBON.spControlloApplicazione");
+                    _dtControlloApplicazione.TableName = "ControlloApplicazione";
+                    _funzioni = DataBase.Select("RIBBON.spControlloFunzione");
+                    _funzioni.TableName = "Funzioni";
+                }
+            }
+            else
+            {
+                _dtControllo = dsRibbonLayout.Tables["Controllo"];
+                _dtControlloApplicazione = dsRibbonLayout.Tables["ControlloApplicazione"];
+                _funzioni = dsRibbonLayout.Tables["Funzioni"];
+            }
+            
+            Microsoft.Office.Tools.Ribbon.RibbonGroup grp = this.Factory.CreateRibbonGroup();
+                
+            Groups = new GroupsCollection(this);
+            Controls = new ControlCollection(this);
 
-                    if(typeof(RibbonButton).FullName.Equals(r["SiglaTipologiaControllo"])) 
-                    {
-                        RibbonButton newBtn = this.Factory.CreateRibbonButton();
+            int idGruppo = -1;
 
-                        newBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
-                        newBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
-                        newBtn.Label = r["Label"].ToString();
-                        newBtn.Name = r["Nome"].ToString();
-                        newBtn.Description = r["Descrizione"].ToString();
-                        newBtn.ScreenTip = r["ScreenTip"].ToString();
-                        newBtn.ShowImage = true;
-                        grp.Items.Add(newBtn);
-                        ctrl = newBtn;
-                    }
-                    else if (typeof(RibbonToggleButton).FullName.Equals(r["SiglaTipologiaControllo"])) 
-                    {
-                        RibbonToggleButton newTglBtn = this.Factory.CreateRibbonToggleButton();
+            foreach (DataRow r in _dtControllo.Rows)
+            {
+                if (!r["IdGruppo"].Equals(idGruppo))
+                {
+                    idGruppo = (int)r["IdGruppo"];
+                    grp = this.Factory.CreateRibbonGroup();
+                    grp.Name = r["NomeGruppo"].ToString();
+                    grp.Label = r["LabelGruppo"].ToString();
 
-                        newTglBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
-                        newTglBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
-                        newTglBtn.Label = r["Label"].ToString();
-                        newTglBtn.Name = r["Nome"].ToString();
-                        newTglBtn.Description = r["Descrizione"].ToString();
-                        newTglBtn.ScreenTip = r["ScreenTip"].ToString();
-                        newTglBtn.ShowImage = true;
+                    this.FrontOffice.Groups.Add(grp);
+                    Groups.Add(grp);
+                }
 
-                        grp.Items.Add(newTglBtn);
-                        ctrl = newTglBtn;
-                    }
-                    else if (typeof(RibbonComboBox).FullName.Equals(r["SiglaTipologiaControllo"])) 
-                    {
-                        RibbonLabel lb = this.Factory.CreateRibbonLabel();
-                        lb.Label = r["Label"].ToString();
-                        RibbonComboBox cmb = this.Factory.CreateRibbonComboBox();
-                        cmb.ShowLabel = false;
-                        cmb.Text = null;
-                        cmb.Name = r["Nome"].ToString();
+                RibbonControl ctrl = null;
 
-                        grp.Items.Add(lb);
-                        grp.Items.Add(cmb);
-                        ctrl = cmb;
-                    }
-                    ctrl.Enabled = r["Abilitato"].Equals("1");
-                    //aggiungo l'evento al controllo appena creato
-                    DataTable funzioni = DataBase.Select("RIBBON.spControlloFunzione", "@IdGruppoControllo=" + r["IdGruppoControllo"]);
-                    foreach (DataRow f in funzioni.Rows)
+                if(typeof(RibbonButton).FullName.Equals(r["SiglaTipologiaControllo"])) 
+                {
+                    RibbonButton newBtn = this.Factory.CreateRibbonButton();
+
+                    newBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
+                    newBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
+                    newBtn.Label = r["Label"].ToString();
+                    newBtn.Name = r["Nome"].ToString();
+                    newBtn.Description = r["Descrizione"].ToString();
+                    newBtn.ScreenTip = r["ScreenTip"].ToString();
+                    newBtn.ShowImage = true;
+                    grp.Items.Add(newBtn);
+                    ctrl = newBtn;
+                }
+                else if (typeof(RibbonToggleButton).FullName.Equals(r["SiglaTipologiaControllo"])) 
+                {
+                    RibbonToggleButton newTglBtn = this.Factory.CreateRibbonToggleButton();
+
+                    newTglBtn.ControlSize = (Microsoft.Office.Core.RibbonControlSize)r["ControlSize"];
+                    newTglBtn.Image = (System.Drawing.Image)Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(r["Immagine"].ToString());
+                    newTglBtn.Label = r["Label"].ToString();
+                    newTglBtn.Name = r["Nome"].ToString();
+                    newTglBtn.Description = r["Descrizione"].ToString();
+                    newTglBtn.ScreenTip = r["ScreenTip"].ToString();
+                    newTglBtn.ShowImage = true;
+
+                    grp.Items.Add(newTglBtn);
+                    ctrl = newTglBtn;
+                }
+                else if (typeof(RibbonComboBox).FullName.Equals(r["SiglaTipologiaControllo"])) 
+                {
+                    RibbonLabel lb = this.Factory.CreateRibbonLabel();
+                    lb.Label = r["Label"].ToString();
+                    RibbonComboBox cmb = this.Factory.CreateRibbonComboBox();
+                    cmb.ShowLabel = false;
+                    cmb.Text = null;
+                    cmb.Name = r["Nome"].ToString();
+
+                    grp.Items.Add(lb);
+                    grp.Items.Add(cmb);
+                    ctrl = cmb;
+                }
+                ctrl.Enabled = r["Abilitato"].Equals("1");
+                
+                //aggiungo l'evento al controllo appena creato
+                var funzioni =
+                    from funz in _funzioni.AsEnumerable()
+                    where funz["IdGruppoControllo"].Equals(r["IdGruppoControllo"])
+                    select funz;
+
+                foreach (DataRow f in funzioni)
+                {
+                    try
                     {
                         EventInfo ei = ctrl.GetType().GetEvent(f["Evento"].ToString());
                         MethodInfo hi = GetType().GetMethod(f["NomeFunzione"].ToString(), BindingFlags.Instance | BindingFlags.NonPublic);
-                        Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, null, hi);
+                        Delegate d = Delegate.CreateDelegate(ei.EventHandlerType, this, hi);
                         ei.AddEventHandler(ctrl, d);
-                    }                    
+                    }
+                    catch (System.ArgumentException e)
+                    {
+                        System.Windows.Forms.MessageBox.Show("Una delle funzioni collegate ai tasti non è definita!", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                    }
                 }
-
-                Controls = new ControlCollection(this);
+                Controls.Add(ctrl);
             }
         }
 
@@ -171,6 +210,19 @@ namespace ProvaRibbon
         /// </summary>       
         private void AutoRibbon_Load(object sender, RibbonUIEventArgs e)
         {
+            if(_updated) 
+            {
+                if (Globals.ThisWorkbook.dsRibbonLayout.Tables.Contains(_dtControllo.TableName))
+                    Globals.ThisWorkbook.dsRibbonLayout.Tables.Remove(_dtControllo.TableName);
+                if (Globals.ThisWorkbook.dsRibbonLayout.Tables.Contains(_dtControlloApplicazione.TableName))
+                    Globals.ThisWorkbook.dsRibbonLayout.Tables.Remove(_dtControlloApplicazione.TableName);
+                if (Globals.ThisWorkbook.dsRibbonLayout.Tables.Contains(_funzioni.TableName))
+                    Globals.ThisWorkbook.dsRibbonLayout.Tables.Remove(_funzioni.TableName);
+                Globals.ThisWorkbook.dsRibbonLayout.Tables.Add(_dtControllo);
+                Globals.ThisWorkbook.dsRibbonLayout.Tables.Add(_dtControlloApplicazione);
+                Globals.ThisWorkbook.dsRibbonLayout.Tables.Add(_funzioni);
+            }
+
             //Initialize();
             //Workbook.ScreenUpdating = false;
             //Sheet.Protected = false;
@@ -205,23 +257,30 @@ namespace ProvaRibbon
                 //RefreshChecks();
 
                 //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
-                ((RibbonToggleButton)Controls["btnModifica"]).Checked = false;
-                ((RibbonToggleButton)Controls["btnModifica"]).Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
-                ((RibbonToggleButton)Controls["btnModifica"]).Label = "Modifica NO";
-                try
+                if (Controls.Contains("btnModifica"))
                 {
-                    Sheet.AbilitaModifica(false);
+                    ((RibbonToggleButton)Controls["btnModifica"]).Checked = false;
+                    ((RibbonToggleButton)Controls["btnModifica"]).Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
+                    ((RibbonToggleButton)Controls["btnModifica"]).Label = "Modifica NO";
+
+                    try
+                    {
+                        Sheet.AbilitaModifica(false);
+                    }
+                    catch { }
                 }
-                catch { }
 
                 //seleziono il tasto dell'applicativo aperto
-                CheckTastoApplicativo();
+                //CheckTastoApplicativo();
 
                 //aggiungo errorPane
-                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
-                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
-                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
-                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+                if (Controls.Contains("btnMostraErrorPane"))
+                {
+                    Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
+                    Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+                    Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
+                    Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+                }
 
                 //aggiungo un altro handler per cell click
                 Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
@@ -241,44 +300,48 @@ namespace ProvaRibbon
         {
             if (DataBase.OpenConnection())
             {
-                if (Controls["btnEsportaXML"].Enabled)
+                //Disabilito tasti di importazione ed esportazione che funzionano solo in emergenza
+                if (Controls.Contains("btnEsportaXML"))
                     Controls["btnEsportaXML"].Enabled = false;
-                if (Controls["btnImportaXML"].Enabled)
+                if (Controls.Contains("btnImportaXML"))
                     Controls["btnImportaXML"].Enabled = false;
 
-                if (_enabledControls.Contains("btnProduzione"))
+                //Se da default i controlli sono abilitati, li abilito
+                if (Controls.IsDefaultEnabled("btnProduzione"))
                     Controls["btnProduzione"].Enabled = true;
-                if (_enabledControls.Contains("btnTest"))
+                if (Controls.IsDefaultEnabled("btnTest"))
                     Controls["btnTest"].Enabled = true;
-                if (_enabledControls.Contains("btnDev"))
+                if (Controls.IsDefaultEnabled("btnDev"))
                     Controls["btnDev"].Enabled = true;
-                if (_enabledControls.Contains("btnAggiornaDati"))
+                if (Controls.IsDefaultEnabled("btnAggiornaDati"))
                     Controls["btnAggiornaDati"].Enabled = true;
-                if (_enabledControls.Contains("btnAggiornaStruttura"))
+                if (Controls.IsDefaultEnabled("btnAggiornaStruttura"))
                     Controls["btnAggiornaStruttura"].Enabled = true;
-                if (_enabledControls.Contains("btnConfiguraParametri"))
+                if (Controls.IsDefaultEnabled("btnConfiguraParametri"))
                     Controls["btnConfiguraParametri"].Enabled = true;
 
                 DataBase.CloseConnection();
             }
             else
             {
-                if (_enabledControls.Contains("btnEsportaXML"))
+                //Se da default i controlli sono abilitati, li abilito
+                if (Controls.IsDefaultEnabled("btnEsportaXML"))
                     Controls["btnEsportaXML"].Enabled = true;
-                if (_enabledControls.Contains("btnImportaXML"))
+                if (Controls.IsDefaultEnabled("btnImportaXML"))
                     Controls["btnImportaXML"].Enabled = true;
 
-                if (Controls["btnProduzione"].Enabled)
+                //disabilito i controlli che non funzionano in emergenza
+                if (Controls.Contains("btnProduzione"))
                     Controls["btnProduzione"].Enabled = false;
-                if (Controls["btnTest"].Enabled)
+                if (Controls.Contains("btnTest"))
                     Controls["btnTest"].Enabled = false;
-                if (Controls["btnDev"].Enabled)
+                if (Controls.Contains("btnDev"))
                     Controls["btnDev"].Enabled = false;
-                if (Controls["btnAggiornaDati"].Enabled)
+                if (Controls.Contains("btnAggiornaDati"))
                     Controls["btnAggiornaDati"].Enabled = false;
-                if (Controls["btnAggiornaStruttura"].Enabled)
+                if (Controls.Contains("btnAggiornaStruttura"))
                     Controls["btnAggiornaStruttura"].Enabled = false;
-                if (Controls["btnConfiguraParametri"].Enabled)
+                if (Controls.Contains("btnConfiguraParametri"))
                     Controls["btnConfiguraParametri"].Enabled = false;
             }
         }
@@ -393,7 +456,10 @@ namespace ProvaRibbon
                 Workbook.ScreenUpdating = true;
 
                 if (_allDisabled)
+                {
                     AbilitaTasti(true);
+                    StatoDB_Changed(null, null);
+                }
             }
         }
         /// <summary>
@@ -587,8 +653,7 @@ namespace ProvaRibbon
                 //aggiorno i label dello stato nel caso sia necessario!
                 Workbook.AggiornaLabelStatoDB();
 
-                AbilitaTasti(true);
-                //disabilito i tasti legati alla connessione se necessario
+                AbilitaTasti(true);                
                 StatoDB_Changed(null, null);
             }
             Sheet.AbilitaModifica(((RibbonToggleButton)sender).Checked);
@@ -827,102 +892,45 @@ namespace ProvaRibbon
         /// </summary>
         private void Initialize()
         {
-            
-            //DataView controlli = new DataView();
-
-            //if (DataBase.OpenConnection())
-            //{
-            //    //Repository.CaricaApplicazioneRibbon();
-            //    //controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-            //    DataBase.CloseConnection();
-            //}
-            //else
-            //{
-            //    try
-            //    {
-            //        controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
-            //    }
-            //    catch
-            //    {
-            //        controlli = new DataView();
-            //    }
-            //}
-
-//            if (controlli.Count > 0)
-//            {
-//                foreach (DataRowView controllo in controlli)
-//                {
-//                    Controls[controllo["NomeControllo"].ToString()].Visible = controllo["Visibile"].Equals("1");
-//                    Controls[controllo["NomeControllo"].ToString()].Enabled = controllo["Abilitato"].Equals("1");
-//                    if (controllo["Abilitato"].Equals("1"))
-//                        _enabledControls.Add(controllo["NomeControllo"].ToString());
-
-//                    if (Controls[controllo["NomeControllo"].ToString()].GetType().ToString().Contains("ToggleButton"))
-//                    {
-//                        ((RibbonToggleButton)Controls[controllo["NomeControllo"].ToString()]).Checked = controllo["Stato"].Equals("1");
-//                    }
-//                }
-
-//                List<RibbonGroup> groups = FrontOffice.Groups.ToList();
-//                foreach (RibbonGroup group in groups)
-//                    group.Visible = group.Items.Any(c => c.Visible);
-//            }
-//            else
-//            {
-//                foreach (RibbonControl control in Controls)
-//                {
-//#if !DEBUG
-//                    control.Visible = true;
-//                    control.Enabled = false;
-//#else
-//                    control.Visible = true;
-//                    control.Enabled = true;
-//#endif
-
-//                    if (control.GetType().ToString().Contains("ToggleButton"))
-//                        ((RibbonToggleButton)control).Checked = false;
-//                }
-//            }
-
             //ComboBox mercati
-            //if (groupMSD.Visible)
-            //{
-            //    if (Workbook.AppSettings("Mercati") != null)
-            //    {
-            //        string[] mercati = Workbook.AppSettings("Mercati").Split('|');
-            //        cmbMSD.Items.Clear();
-            //        foreach (string mercato in mercati)
-            //        {
-            //            RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-            //            i.Label = mercato;
-            //            cmbMSD.Items.Add(i);
-            //        }
+            if (Controls.Contains("cmbMSD"))
+            {
+                if (Workbook.AppSettings("Mercati") != null)
+                {
+                    string[] mercati = Workbook.AppSettings("Mercati").Split('|');
+                    ((RibbonComboBox)Controls["cmbMSD"]).Items.Clear();
+                    foreach (string mercato in mercati)
+                    {
+                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                        i.Label = mercato;
+                        ((RibbonComboBox)Controls["cmbMSD"]).Items.Add(i);
+                    }
 
-            //        cmbMSD.TextChanged -= cmbMSD_TextChanged;
-            //        cmbMSD.Text = Simboli.Mercato;
-            //        cmbMSD.TextChanged += cmbMSD_TextChanged;
-            //    }
-            //}
+                    ((RibbonComboBox)Controls["cmbMSD"]).TextChanged -= cmbMSD_TextChanged;
+                    ((RibbonComboBox)Controls["cmbMSD"]).Text = Simboli.Mercato;
+                    ((RibbonComboBox)Controls["cmbMSD"]).TextChanged += cmbMSD_TextChanged;
+                }
+            }
 
             //ComboBox stagioni
-            //if (groupStagione.Visible)
-            //{
-            //    if (Workbook.AppSettings("Stagioni") != null)
-            //    {
-            //        string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
-            //        cmbStagione.Items.Clear();
-            //        foreach (string stagione in stagioni)
-            //        {
-            //            RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-            //            i.Label = stagione;
-            //            cmbStagione.Items.Add(i);
-            //        }
+            if (Controls.Contains("cmbStagione"))
+            {
+                if (Workbook.AppSettings("Stagioni") != null)
+                {
+                    string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
+                    ((RibbonComboBox)Controls["cmbStagione"]).Items.Clear();
+                    foreach (string stagione in stagioni)
+                    {
+                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                        i.Label = stagione;
+                        ((RibbonComboBox)Controls["cmbStagione"]).Items.Add(i);
+                    }
 
-            //        cmbStagione.TextChanged -= cmbStagione_TextChanged;
-            //        cmbStagione.Text = Simboli.Stagione;
-            //        cmbStagione.TextChanged += cmbStagione_TextChanged;
-            //    }
-            //}
+                    ((RibbonComboBox)Controls["cmbStagione"]).TextChanged -= cmbStagione_TextChanged;
+                    ((RibbonComboBox)Controls["cmbStagione"]).Text = Simboli.Stagione;
+                    ((RibbonComboBox)Controls["cmbStagione"]).TextChanged += cmbStagione_TextChanged;
+                }
+            }
         }
         /// <summary>
         /// Metodo che seleziona il tasto corretto tra quelli degli applicativi presenti nella Tab Front Office. La selezione avviene in base all'ID applicazione scritto sul file di configurazione.
@@ -970,12 +978,12 @@ namespace ProvaRibbon
 
         }
         /// <summary>
-        /// Abilito tutti i tasti nel caso in cui, ad esempio in seguito a un rilascio, questi vengano disabilitati da DisabilitaTasti.
+        /// Abilito tutti i tasti nel caso in cui, ad esempio in seguito a un rilascio, questi vengano disabilitati.
         /// </summary>
         private void AbilitaTasti(bool enable)
         {
-            foreach (string control in _enabledControls)
-                Controls[control].Enabled = enable;
+            foreach (RibbonControl control in Controls.GetDefaultEnabled())
+                control.Enabled = enable;
 
             _allDisabled = enable;
         }
@@ -994,6 +1002,7 @@ namespace ProvaRibbon
 
         private AutoRibbon _ribbon;
         private Dictionary<string, RibbonControl> _controls = new Dictionary<string, RibbonControl>();
+        private Dictionary<string, bool> _defaultEnabled = new Dictionary<string, bool>();
 
         #endregion
 
@@ -1020,9 +1029,34 @@ namespace ProvaRibbon
 
         internal ControlCollection(AutoRibbon ribbon)
         {
-            foreach (RibbonGroup group in ribbon.Groups)
-                foreach (RibbonControl control in group.Items)
-                    _controls.Add(control.Name, control);
+            _ribbon = ribbon;
+        }
+
+        public void Add(RibbonControl control)
+        {
+            _controls.Add(control.Name, control);
+            _defaultEnabled.Add(control.Name, control.Enabled);
+        }
+
+        public bool Contains(string name)
+        {
+            return _controls.ContainsKey(name);
+        }
+
+        public bool IsDefaultEnabled(string name)
+        {
+            if(_defaultEnabled.ContainsKey(name))
+                return _defaultEnabled[name];
+
+            return false;
+        }
+
+        public IEnumerable<RibbonControl> GetDefaultEnabled()
+        {
+            return 
+                from kv in _controls
+                where _defaultEnabled[kv.Key]
+                select kv.Value;
         }
 
         public IEnumerator GetEnumerator()
@@ -1062,6 +1096,104 @@ namespace ProvaRibbon
         public object Current
         {
             get { return _ribbon.Controls[_pos]; }
+        }
+        public bool MoveNext()
+        {
+            _pos++;
+            return _pos < _max;
+        }
+        public void Reset()
+        {
+            _pos = -1;
+        }
+
+        #endregion
+    }
+
+    #endregion
+
+    #region Groups Collection
+
+    /// <summary>
+    /// Classi che permettono di indicizzare per nome tutti i gruppi contenuti nei gruppi della Tab Front Office
+    /// </summary>
+    public class GroupsCollection : IEnumerable
+    {
+        #region Variabili
+
+        private AutoRibbon _ribbon;
+        private Dictionary<string, RibbonGroup> _groups = new Dictionary<string, RibbonGroup>();
+
+        #endregion
+
+        #region Proprietà
+
+        public int Count
+        {
+            get { return _groups.Count; }
+        }
+
+        public RibbonGroup this[int i]
+        {
+            get { return _groups.ElementAt(i).Value; }
+        }
+
+        public RibbonGroup this[string name]
+        {
+            get { return _groups[name]; }
+        }
+
+        #endregion
+
+        #region Metodi
+
+        internal GroupsCollection(AutoRibbon ribbon)
+        {
+            _ribbon = ribbon;            
+        }
+
+        public void Add(RibbonGroup group)
+        {
+            _groups.Add(group.Name, group);
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return new GroupEnumerator(_ribbon);
+        }
+
+        public IEnumerable<KeyValuePair<string, RibbonGroup>> AsEnumerable()
+        {
+            return _groups.AsEnumerable();
+        }
+
+        #endregion
+    }
+    public class GroupEnumerator : IEnumerator
+    {
+        #region Variabili
+
+        private AutoRibbon _ribbon;
+        private int _pos = -1;
+        private int _max = -1;
+
+        #endregion
+
+        #region Costruttori
+
+        public GroupEnumerator(AutoRibbon ribbon)
+        {
+            _ribbon = ribbon;
+            _max = ribbon.Groups.Count;
+        }
+
+        #endregion
+
+        #region Metodi
+
+        public object Current
+        {
+            get { return _ribbon.Groups[_pos]; }
         }
         public bool MoveNext()
         {

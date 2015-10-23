@@ -22,9 +22,9 @@ using Iren.ToolsExcel.Base;
 
 namespace Iren.ToolsExcel
 {
-    public partial class ThisWorkbook
+    public partial class ThisWorkbook : IToolsExcelThisWorkbook
     {
-        #region Variabili
+        #region Proprietà
 
         public System.Version Version 
         { 
@@ -40,6 +40,41 @@ namespace Iren.ToolsExcel
                 }
             }
         }
+
+        public Worksheet Main { get { return Globals.Main.Base; } }
+        public Worksheet Log { get { return Globals.Log.Base; } }
+        public new Worksheet ActiveSheet { get { return (Worksheet)base.ActiveSheet; } }
+
+        public int IdApplicazione { get { return idApplicazione; } set { idApplicazione = value; } }
+        public int IdUtente { get { return idUtente; } set { idUtente = value; } }
+        public string NomeUtente { get { return nomeUtente; } set { nomeUtente = value; } }
+        public DateTime DataAttiva { get { return dataAttiva; } set { dataAttiva = value; } }
+        public string Ambiente { get { return ambiente; } set { ambiente = value; } }
+
+        public DataSet RepositoryDataSet { get { return repositoryDataSet; } }
+        public DataSet LogDataSet { get { return logDataSet; } }
+        public DataSet RibbonDataSet { get { return ribbonDataSet; } }
+
+        #endregion
+
+        #region Cached Attribute
+
+        [CachedAttribute()]
+        public int idApplicazione = 8;
+        [CachedAttribute()]
+        public int idUtente = -1;
+        [CachedAttribute()]
+        public string nomeUtente = string.Empty;
+        [CachedAttribute()]
+        public DateTime dataAttiva = DateTime.Now;
+        [CachedAttribute()]
+        public string ambiente = Simboli.PROD;
+        [CachedAttribute()]
+        public DataSet repositoryDataSet = new DataSet();
+        [CachedAttribute()]
+        public DataSet logDataSet = new DataSet();
+        [CachedAttribute()]
+        public DataSet ribbonDataSet = new DataSet();
 
         #endregion
 
@@ -60,7 +95,11 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
-            Utility.Workbook.StartUp(Base, Version);
+#if DEBUG
+            ambiente = Simboli.DEV;
+#endif
+
+            Utility.Workbook.StartUp(this);      
         }
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {

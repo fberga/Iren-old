@@ -150,17 +150,17 @@ namespace Iren.ToolsExcel.Base
                     if (ConfigurationManager.AppSettings["AppIDMSD"] != null)
                     {
                         string[] appIDs = ConfigurationManager.AppSettings["AppIDMSD"].Split('|');
-                        Repository.Aggiorna(appIDs);
+                        Workbook.Repository.Aggiorna(appIDs);
                     }
                     else
                     {
-                        Repository.Aggiorna(null);
+                        Workbook.Repository.Aggiorna(null);
                     }
                 }
                 else
                 {
                     //resetto la struttura nomi che verrà ricreata nelle prossime righe
-                    Repository.InitStrutturaNomi();
+                    Workbook.Repository.InitStrutturaNomi();
                 }
                 
                 SplashScreen.UpdateStatus("Controllo se tutti i fogli sono presenti");

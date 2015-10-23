@@ -340,7 +340,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected void AggiornaParametriSheet()
         {
-            DataView paramApplicazione = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE].DefaultView;
+            DataRow paramApplicazione = Workbook.Repository.Applicazione;
 
             _struttura = new Struct();
 
@@ -360,15 +360,15 @@ namespace Iren.ToolsExcel.Base
                 }
             }
 
-            _struttura.rigaBlock = (int)paramApplicazione[0]["RowBlocco"];
-            _struttura.rigaGoto = (int)paramApplicazione[0]["RowGoto"];
-            _struttura.visData0H24 = paramApplicazione[0]["VisData0H24"].ToString() == "1";
-            _struttura.visParametro = paramApplicazione[0]["VisParametro"].ToString() == "1";
+            _struttura.rigaBlock = (int)paramApplicazione["RowBlocco"];
+            _struttura.rigaGoto = (int)paramApplicazione["RowGoto"];
+            _struttura.visData0H24 = paramApplicazione["VisData0H24"].ToString() == "1";
+            _struttura.visParametro = paramApplicazione["VisParametro"].ToString() == "1";
             _struttura.visSelezione = visSelezione;
-            _struttura.colBlock = (int)paramApplicazione[0]["ColBlocco"] + (_struttura.visParametro ? 1 : 0) + (visSelezione ? 1 : 0);
-            Struct.tipoVisualizzazione = paramApplicazione[0]["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione[0]["TipoVisualizzazione"].ToString();
-            Struct.intervalloGiorni = paramApplicazione[0]["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione[0]["IntervalloGiorniEntita"];
-            Struct.visualizzaRiepilogo = paramApplicazione[0]["VisRiepilogo"] is DBNull ? true : paramApplicazione[0]["VisRiepilogo"].Equals("1");
+            _struttura.colBlock = (int)paramApplicazione["ColBlocco"] + (_struttura.visParametro ? 1 : 0) + (visSelezione ? 1 : 0);
+            Struct.tipoVisualizzazione = paramApplicazione["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione["TipoVisualizzazione"].ToString();
+            Struct.intervalloGiorni = paramApplicazione["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione["IntervalloGiorniEntita"];
+            Struct.visualizzaRiepilogo = paramApplicazione["VisRiepilogo"] is DBNull ? true : paramApplicazione["VisRiepilogo"].Equals("1");
 
             _visParametro = _struttura.visParametro ? 3 : 2 + (visSelezione ? 1 : 0);
 

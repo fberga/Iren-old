@@ -36,7 +36,7 @@ namespace PSOLauncher
 
             _listaImmaginiApplicazioni.ImageSize = new System.Drawing.Size(32, 32);
 
-            DataBase.InitNewDB(ConfigurationManager.AppSettings["DB"]);
+            DataBase.Initialize(ConfigurationManager.AppSettings["DB"]);
 
             if (!InitUsr())
             {

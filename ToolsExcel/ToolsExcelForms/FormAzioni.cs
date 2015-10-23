@@ -445,17 +445,16 @@ namespace Iren.ToolsExcel.Forms
                                                 string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
 
                                                 DefinedNames definedNames = new DefinedNames("Main");
-                                                Excel.Worksheet ws = Workbook.Main;
                                                 
                                                 foreach (string relazione in azioneRelazione)
                                                 {
                                                     _azioni.RowFilter = "SiglaAzione = '" + relazione + "' AND IdApplicazione = " + Simboli.AppID;
 
                                                     Range rng = new Range(definedNames.GetRowByName(nodoEntita.Name), definedNames.GetColFromName(relazione, suffissoData));
-                                                    if (ws.Range[rng.ToString()].Interior.ColorIndex != 2)
+                                                    if (Workbook.Main.Range[rng.ToString()].Interior.ColorIndex != 2)
                                                     {
-                                                        ws.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
-                                                        Style.RangeStyle(ws.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
+                                                        Workbook.Main.Range[rng.ToString()].Value = "RI" + _azioni[0]["Gerarchia"];
+                                                        Style.RangeStyle(Workbook.Main.Range[rng.ToString()], fontSize: 8, bold: true, foreColor: 3, backColor: 6, align: Excel.XlHAlign.xlHAlignCenter);
                                                     }
                                                 }
                                                 _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Simboli.AppID;

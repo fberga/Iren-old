@@ -278,29 +278,28 @@ namespace Iren.ToolsExcel.Base
                     break;
             }
 
-            Excel.Worksheet ws = Workbook.Main;
-            var locked = ws.ProtectContents;
+            var locked = Workbook.Main.ProtectContents;
             if (locked)
-                ws.Unprotect(Simboli.pwd);
-            ws.Shapes.Item(labelName).TextFrame.Characters().Text = labelText + (online ? "OPERATIVO" : "FUORI SERVIZIO");
+                Workbook.Main.Unprotect(Simboli.pwd);
+            Workbook.Main.Shapes.Item(labelName).TextFrame.Characters().Text = labelText + (online ? "OPERATIVO" : "FUORI SERVIZIO");
             if (online)
             {
                 //bianco normale
-                ws.Shapes.Item(labelName).Line.Weight = 0.75f;
-                ws.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
-                ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
-                ws.Shapes.Item(labelName).Line.ForeColor.Brightness = +0.75f;
+                Workbook.Main.Shapes.Item(labelName).Line.Weight = 0.75f;
+                Workbook.Main.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 255));
+                Workbook.Main.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(0, 0, 0));
+                Workbook.Main.Shapes.Item(labelName).Line.ForeColor.Brightness = +0.75f;
             }
             else
             {
                 //rosso
-                ws.Shapes.Item(labelName).Line.Weight = 2f;
-                ws.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
-                ws.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
+                Workbook.Main.Shapes.Item(labelName).Line.Weight = 2f;
+                Workbook.Main.Shapes.Item(labelName).Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
+                Workbook.Main.Shapes.Item(labelName).Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
             }
 
             if (locked)
-                ws.Protect(Simboli.pwd);
+                Workbook.Main.Protect(Simboli.pwd);
         }
         /// <summary>
         /// Handler per la modifica del label che indica il mercato attivo.
