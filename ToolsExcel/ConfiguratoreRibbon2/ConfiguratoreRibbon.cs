@@ -52,7 +52,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             //inizializzazione connessione
             _ambienti = Workbook.AppSettings("Ambienti").Split('|');
-            DataBase.Initialize(_ambienti[0]);
+            DataBase.CreateNew(_ambienti[0]);
             //DataBase.DB.SetParameters(idUtente: 62);
 
             //carico la lista di applicazioni configurabili
@@ -313,10 +313,10 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                                 {"@Id", ctrl.IdControllo},
                                 {"@IdTipologiaControllo", ctrl.IdTipologia},
                                 {"@Nome", ctrl.Name},
-                                {"@Descrizione", ctrl.Description},
+                                {"@Descrizione", ctrl.Description ?? ""},
                                 {"@Immagine", ctrl.ImageKey},
                                 {"@Label", ctrl.Text},
-                                {"@ScreenTip", ctrl.ScreenTip},
+                                {"@ScreenTip", ctrl.ScreenTip ?? ""},
                                 {"@ControlSize", ctrl.Dimension}
                             }, out outP))
                             ctrlId = (int)outP["@Id"];
@@ -357,7 +357,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private void CambioApplicazione(object sender, EventArgs e)
         {
             if (cmbApplicazioni.SelectedValue != null)
-                DataBase.DB.SetParameters(idApplicazione: (int)cmbApplicazioni.SelectedValue);
+                DataBase.IdApplicazione = (int)cmbApplicazioni.SelectedValue;
 
             RicaricaRibbon_Click(null, null);
         }
@@ -365,7 +365,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private void CambioUtente(object sender, EventArgs e)
         {
             if(cmbUtenti.SelectedValue != null)
-                DataBase.DB.SetParameters(idUtente: (int)cmbUtenti.SelectedValue);
+                DataBase.IdUtente = (int)cmbUtenti.SelectedValue;
 
             RicaricaRibbon_Click(null, null);
         }

@@ -14,6 +14,7 @@ using System.Collections;
 using System.IO;
 using Microsoft.VisualStudio.Tools.Applications;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 // ***************************************************** SISTEMA COMANDI ***************************************************** //
 
@@ -53,9 +54,9 @@ namespace Iren.ToolsExcel
         public Modifica _modificaCustom = new Modifica();
 
 
-        private int _idApplicazione = -1;
-        private int _idUtente = -1;
-        private string _nomeUtente = "";
+        //private int _idApplicazione = -1;
+        //private int _idUtente = -1;
+        //private string _nomeUtente = "";
         private bool _updated = false;
 
         private DataTable _dtControllo = null;
@@ -84,66 +85,96 @@ namespace Iren.ToolsExcel
 
             File.Copy(path, tmpCopy, true);
 
-            DataBase.Initialize(Simboli.DEV);
-
             DataSet dsRibbonLayout = null;
-
+            int idApplicazione = -1;
+            int idUtente = -1;
+#if DEBUG
+            string ambiente = Simboli.DEV;
+#else
+            string ambiente = Simboli.PROD;
+#endif
+            
             using (ServerDocument xls = new ServerDocument(tmpCopy))
             {
                 CachedDataHostItem dataHostItem1 =
                     xls.CachedData.HostItems["Iren.ToolsExcel.ThisWorkbook"];
 
-                CachedDataItem idApplicazione = dataHostItem1.CachedData["idApplicazione"];
-                if (idApplicazione.Xml == null)
+                CachedDataItem cachedAmbiente = dataHostItem1.CachedData["ambiente"];
+                if (cachedAmbiente.Xml != null)
                 {
-                    _idApplicazione = int.Parse(Workbook.AppSettings("AppID"));
+                    using (System.IO.StringReader stringReader = new System.IO.StringReader(cachedAmbiente.Xml))
+                    {
+                        System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(string));
+                        ambiente = (string)serializer.Deserialize(stringReader);
+                    }
+                }
+                //inizializzo connessione con parametri temporanei
+                DataBase.CreateNew(ambiente);
+
+                CachedDataItem cachedIdApplicazione = dataHostItem1.CachedData["idApplicazione"];
+                if (cachedIdApplicazione.Xml == null)
+                {
+                    idApplicazione = int.Parse(Workbook.AppSettings("AppID"));
                 }
                 else
                 {
-                    _idApplicazione = int.Parse(idApplicazione.Xml);
+                    using (System.IO.StringReader stringReader = new System.IO.StringReader(cachedIdApplicazione.Xml))
+                    {
+                        System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(int));
+                        idApplicazione = (int)serializer.Deserialize(stringReader);
+                    }
                 }
 
-                CachedDataItem idUtente = dataHostItem1.CachedData["idUtente"];
-                if (idUtente.Xml == null)
+                CachedDataItem cachedIdUtente = dataHostItem1.CachedData["idUtente"];
+                string nomeUtente = "";
+                if (cachedIdUtente.Xml == null)
                 {
-                    Workbook.GetUtente(out _idUtente, out _nomeUtente);
+                    Workbook.GetUtente(out idUtente, out nomeUtente);
                 }
                 else
                 {
-                    _idUtente = int.Parse(idUtente.Xml);
+                    using (System.IO.StringReader stringReader = new System.IO.StringReader(cachedIdUtente.Xml))
+                    {
+                        System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(int));
+                        idUtente = (int)serializer.Deserialize(stringReader);
+                    }
                 }
 
                 CachedDataItem ribbonLayout = dataHostItem1.CachedData["ribbonDataSet"];
                 if (ribbonLayout.Schema != null && ribbonLayout.Xml != null)
                 {
-                    System.IO.StringReader schemaReader = new System.IO.StringReader(ribbonLayout.Schema);
-                    System.IO.StringReader xmlReader = new System.IO.StringReader(ribbonLayout.Xml);
-                    dsRibbonLayout = new DataSet();
-                    dsRibbonLayout.ReadXmlSchema(schemaReader);
-                    dsRibbonLayout.ReadXml(xmlReader);
+                    using (System.IO.StringReader schemaReader = new System.IO.StringReader(ribbonLayout.Schema))
+                    {
+                        using (System.IO.StringReader xmlReader = new System.IO.StringReader(ribbonLayout.Xml))
+                        {
+                            dsRibbonLayout = new DataSet();
+                            dsRibbonLayout.ReadXmlSchema(schemaReader);
+                            dsRibbonLayout.ReadXml(xmlReader);
+                        }
+                    }
                 }
-            }
+            }            
 
             File.Delete(tmpCopy);
 
-            if (dsRibbonLayout == null)
-            {
-                if (DataBase.OpenConnection())
-                {
-                    _updated = true;
-                    _dtControllo = DataBase.Select(DataBase.SP.RIBBON.GRUPPO_CONTROLLO, "@IdApplicazione=" + _idApplicazione + ";@IdUtente=" + _idUtente);
-                    _dtControllo.TableName = DataBase.TAB.RIBBON.GRUPPO_CONTROLLO;
-                    _dtControlloApplicazione = DataBase.Select(DataBase.SP.RIBBON.CONTROLLO_APPLICAZIONE);
-                    _dtControlloApplicazione.TableName = DataBase.TAB.RIBBON.CONTROLLO_APPLICAZIONE;
-                    _dtFunzioni = DataBase.Select(DataBase.SP.RIBBON.CONTROLLO_FUNZIONE);
-                    _dtFunzioni.TableName = DataBase.TAB.RIBBON.CONTROLLO_FUNZIONE;
-                }
-            }
-            else
+            if (dsRibbonLayout != null)
             {
                 _dtControllo = dsRibbonLayout.Tables[DataBase.TAB.RIBBON.GRUPPO_CONTROLLO];
                 _dtControlloApplicazione = dsRibbonLayout.Tables[DataBase.TAB.RIBBON.CONTROLLO_APPLICAZIONE];
                 _dtFunzioni = dsRibbonLayout.Tables[DataBase.TAB.RIBBON.CONTROLLO_FUNZIONE];
+            }
+            
+            if(DataBase.OpenConnection())
+            {
+                _updated = true;
+                _dtControllo = DataBase.Select(DataBase.SP.RIBBON.GRUPPO_CONTROLLO, "@IdApplicazione=" + idApplicazione + ";@IdUtente=" + idUtente);
+                _dtControllo.TableName = DataBase.TAB.RIBBON.GRUPPO_CONTROLLO;
+
+                _dtControlloApplicazione = DataBase.Select(DataBase.SP.RIBBON.CONTROLLO_APPLICAZIONE);
+                _dtControlloApplicazione.TableName = DataBase.TAB.RIBBON.CONTROLLO_APPLICAZIONE;
+
+                _dtFunzioni = DataBase.Select(DataBase.SP.RIBBON.CONTROLLO_FUNZIONE);
+                _dtFunzioni.TableName = DataBase.TAB.RIBBON.CONTROLLO_FUNZIONE;
             }
 
             Microsoft.Office.Tools.Ribbon.RibbonGroup grp = this.Factory.CreateRibbonGroup();
@@ -162,7 +193,7 @@ namespace Iren.ToolsExcel
                     grp.Name = r["NomeGruppo"].ToString();
                     grp.Label = r["LabelGruppo"].ToString();
 
-                    this.FrontOffice.Groups.Add(grp);
+                    FrontOffice.Groups.Add(grp);
                     Groups.Add(grp);
                 }
 
@@ -194,16 +225,23 @@ namespace Iren.ToolsExcel
                     newTglBtn.ScreenTip = r["ScreenTip"].ToString();
                     newTglBtn.ShowImage = true;
 
+                    var ctrlIdApplicazione = _dtControlloApplicazione.AsEnumerable()
+                        .Where(ctrlApp => ctrlApp["IdControllo"].Equals(r["IdControllo"]))
+                        .Select(ctrlApp => (int)ctrlApp["IdApplicazione"])
+                        .FirstOrDefault();
+
+                    newTglBtn.Checked = ctrlIdApplicazione == idApplicazione;
+
                     grp.Items.Add(newTglBtn);
                     ctrl = newTglBtn;
                 }
-                else if (typeof(RibbonComboBox).FullName.Equals(r["SiglaTipologiaControllo"]))
+                else if (typeof(RibbonDropDown).FullName.Equals(r["SiglaTipologiaControllo"]))
                 {
                     RibbonLabel lb = this.Factory.CreateRibbonLabel();
                     lb.Label = r["Label"].ToString();
-                    RibbonComboBox cmb = this.Factory.CreateRibbonComboBox();
+                    RibbonDropDown cmb = this.Factory.CreateRibbonDropDown();
                     cmb.ShowLabel = false;
-                    cmb.Text = null;
+                    //cmb.Text = null;
                     cmb.Name = r["Nome"].ToString();
 
                     grp.Items.Add(lb);
@@ -234,9 +272,65 @@ namespace Iren.ToolsExcel
                 }
                 Controls.Add(ctrl);
             }
+
+#if !DEBUG
+            this.TabHome.Visible = false;
+            this.TabInsert.Visible = false;
+            this.TabPageLayoutExcel.Visible = false;
+            this.TabFormulas.Visible = false;
+            this.TabData.Visible = false;
+            this.TabReview.Visible = false;
+            this.TabView.Visible = false;
+            this.TabDeveloper.Visible = false;
+            this.TabAddIns.Visible = false;
+            this.TabPrintPreview.Visible = false;
+            this.TabBackgroundRemoval.Visible = false;
+            this.TabSmartArtToolsDesign.Visible = false;
+#endif
+        
         }
 
         #endregion
+
+
+
+        private void FillcmbMSD()
+        {
+            RibbonDropDownItem selItem = null;
+            foreach (DataRow mercato in Workbook.Repository[DataBase.TAB.MERCATI].Rows)
+            {
+                RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                i.Label = mercato["DesMercato"].ToString();
+                i.Tag = mercato["IdApplicazioneMercato"];
+                ((RibbonDropDown)Controls["cmbMSD"]).Items.Add(i);
+                if(mercato["DesMercato"].Equals(Workbook.Mercato))
+                    selItem = i;
+            }
+
+            ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged -= cmbMSD_SelectionChanged;
+            ((RibbonDropDown)Controls["cmbMSD"]).SelectedItem = selItem;
+            ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged += cmbMSD_SelectionChanged;
+        }
+
+        private void FillcmbStagioni()
+        {
+            RibbonDropDownItem selItem = null;
+            foreach (DataRow stagione in Workbook.Repository[DataBase.TAB.STAGIONE].Rows)
+            {
+                RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
+                i.Label = stagione["DesTipologiaStagione"].ToString();
+                i.Tag = stagione["IdTipologiaStagione"];
+                ((RibbonDropDown)Controls["cmbStagione"]).Items.Add(i);
+                if (stagione["DesTipologiaStagione"].Equals(Workbook.Stagione))
+                    selItem = i;
+            }
+
+            ((RibbonDropDown)Controls["cmbStagione"]).SelectionChanged -= cmbStagione_SelectionChanged;
+            ((RibbonDropDown)Controls["cmbStagione"]).SelectedItem = selItem;
+            ((RibbonDropDown)Controls["cmbStagione"]).SelectionChanged += cmbStagione_SelectionChanged;
+        }
+
+
 
         #region Eventi
 
@@ -244,83 +338,8 @@ namespace Iren.ToolsExcel
         /// Al caricamento del Ribbon imposta i tasti e la tab da visualizzare
         /// </summary>       
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
-        {
-            if (_updated)
-            {
-                Globals.ThisWorkbook.idApplicazione = _idApplicazione;
-                Globals.ThisWorkbook.idUtente = _idUtente;
-                Globals.ThisWorkbook.nomeUtente = _nomeUtente;
-                
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Clear();
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControllo);
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControlloApplicazione);
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtFunzioni);
-            }
-
-//            Initialize();
-//            Workbook.ScreenUpdating = false;
-//            Sheet.Protected = false;
+        {            
             
-//            //forzo aggiornamento label iniziale
-//            Utility.Workbook.AggiornaLabelStatoDB();
-            
-//            //se non sono in debug toglie le intestazioni
-//#if !DEBUG
-//            foreach(Excel.Worksheet ws in Globals.ThisWorkbook.Sheets)
-//            {
-//                ws.Activate();
-//                Globals.ThisWorkbook.ThisApplication.ActiveWindow.DisplayHeadings = false;
-//            }
-//            Globals.Main.Activate();
-//#endif
-//            //se sono al primo avvio dopo il rilascio di un aggiornamento o il cambio di giorno/mercato aggiorno la struttura
-//            bool isUpdated = true;
-//            if (Workbook.CategorySheets.Count == 0 || Workbook.Repository.DaAggiornare)
-//            {
-//                Aggiorna aggiorna = new Aggiorna();
-//                isUpdated = aggiorna.Struttura(avoidRepositoryUpdate: false);
-//            }
-
-//            if (isUpdated)
-//            {
-//                btnCalendar.Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
-
-//                //seleziono l'ambiente attivo
-//                ((RibbonToggleButton)Controls["btn" + DataBase.DB.Ambiente]).Checked = true;
-
-//                RefreshChecks();
-
-//                //se esce con qualche errore il tasto mantiene lo stato a cui era impostato
-//                btnModifica.Checked = false;
-//                btnModifica.Image = Iren.ToolsExcel.Base.Properties.Resources.modificaNO;
-//                btnModifica.Label = "Modifica NO";
-//                try
-//                {
-//                    Sheet.AbilitaModifica(false);
-//                }
-//                catch { }
-
-//                //seleziono il tasto dell'applicativo aperto
-//                CheckTastoApplicativo();
-
-//                //aggiungo errorPane
-//                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
-//                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
-//                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
-//                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
-
-//                //aggiungo un altro handler per cell click
-//                Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
-//                Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
-
-//                //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
-//                DataBase.DB.PropertyChanged += StatoDB_Changed;
-//                StatoDB_Changed(null, null);
-//            }
-
-//            Sheet.Protected = true;
-//            Workbook.ScreenUpdating = true;
-//            SplashScreen.Close();
         }
 
         private void StatoDB_Changed(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -506,24 +525,23 @@ namespace Iren.ToolsExcel
             //verifico che la data sia stata cambiata
             if (calDate != Workbook.DataAttiva)
             {
-                //Workbook.ScreenUpdating = false;
+                Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
                 SplashScreen.Show();
 
-                Globals.ThisWorkbook.dataAttiva = calDate;
                 ((RibbonButton)sender).Label = calDate.ToString("dddd dd MMM yyyy");
 
                 Aggiorna aggiorna = new Aggiorna();
                 if (DataBase.OpenConnection())
                 {
                     Workbook.InsertLog(Iren.ToolsExcel.Core.DataBase.TipologiaLOG.LogModifica, "Cambio Data a " + ((RibbonButton)sender).Label);
-                    
-                    DataBase.ChangeDate(calDate);
                     DataBase.ExecuteSPApplicazioneInit();
 
-                    DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DataNew=" + calDate.ToString("yyyyMMdd"));
+                    bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, calDate);
+                    
+                    Workbook.DataAttiva = calDate;
 
-                    if (stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1))
+                    if (aggiornaStruttura)
                         aggiorna.Struttura(avoidRepositoryUpdate: false);
                     else
                         aggiorna.Dati();
@@ -532,12 +550,13 @@ namespace Iren.ToolsExcel
                 }
                 else  //emergenza
                 {
-                    DataBase.ChangeDate(calDate);
+                    Workbook.DataAttiva = calDate;
                     aggiorna.Emergenza();
                 }
 
                 RefreshChecks();
 
+                SplashScreen.Close();
                 Sheet.Protected = true;
                 Workbook.ScreenUpdating = true;
             }
@@ -566,7 +585,7 @@ namespace Iren.ToolsExcel
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
                 
                 //controllo se l'entità ha la possibilità di selezionare le rampe
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
@@ -711,13 +730,13 @@ namespace Iren.ToolsExcel
                 string nome = definedNames.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                 
                 if(categoriaEntita.Count > 0)
                     siglaEntita = categoriaEntita[0]["Gerarchia"] is DBNull ? siglaEntita : categoriaEntita[0]["Gerarchia"].ToString();
 
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
@@ -847,12 +866,13 @@ namespace Iren.ToolsExcel
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void cmbMSD_TextChanged(object sender, RibbonControlEventArgs e)
+        private void cmbMSD_SelectionChanged(object sender, RibbonControlEventArgs e)
         {
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
-            Globals.ThisWorkbook.IdApplicazione = Simboli.GetAppIDByMercato(((RibbonComboBox)sender).Text);
+            Workbook.IdApplicazione = ((RibbonDropDown)sender).SelectedItem.Tag;
+            
             Aggiorna aggiorna = new Aggiorna();
             aggiorna.Struttura(avoidRepositoryUpdate: true);
 
@@ -864,12 +884,12 @@ namespace Iren.ToolsExcel
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void cmbStagione_TextChanged(object sender, RibbonControlEventArgs e)
+        private void cmbStagione_SelectionChanged(object sender, RibbonControlEventArgs e)
         {
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
-
-            Simboli.Stagione = ((RibbonComboBox)sender).Text;
+            
+            Workbook.IdStagione = ((RibbonDropDown)sender).SelectedItem.Tag;
             
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
@@ -923,14 +943,14 @@ namespace Iren.ToolsExcel
 //            if (DataBase.OpenConnection())
 //            {
 //                Workbook.Repository.CaricaApplicazioneRibbon();
-//                controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+//                controlli = Workbook.Repository[DataBase.TAB.APPLICAZIONE_RIBBON].DefaultView;
 //                DataBase.CloseConnection();
 //            }
 //            else
 //            {
 //                try
 //                {
-//                    controlli = DataBase.LocalDB.Tables[DataBase.Tab.APPLICAZIONE_RIBBON].DefaultView;
+//                    controlli = Workbook.Repository[DataBase.TAB.APPLICAZIONE_RIBBON].DefaultView;
 //                }
 //                catch
 //                {
@@ -974,45 +994,8 @@ namespace Iren.ToolsExcel
 //                }
 //            }
 
-//            //ComboBox mercati
-//            if (groupMSD.Visible)
-//            {
-//                if (Workbook.AppSettings("Mercati") != null)
-//                {
-//                    string[] mercati = Workbook.AppSettings("Mercati").Split('|');
-//                    cmbMSD.Items.Clear();
-//                    foreach (string mercato in mercati)
-//                    {
-//                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-//                        i.Label = mercato;
-//                        cmbMSD.Items.Add(i);
-//                    }
-
-//                    cmbMSD.TextChanged -= cmbMSD_TextChanged;
-//                    cmbMSD.Text = Simboli.Mercato;
-//                    cmbMSD.TextChanged += cmbMSD_TextChanged;
-//                }
-//            }
-
-//            //ComboBox stagioni
-//            if (groupStagione.Visible)
-//            {
-//                if (Workbook.AppSettings("Stagioni") != null)
-//                {
-//                    string[] stagioni = Workbook.AppSettings("Stagioni").Split('|');
-//                    cmbStagione.Items.Clear();
-//                    foreach (string stagione in stagioni)
-//                    {
-//                        RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
-//                        i.Label = stagione;
-//                        cmbStagione.Items.Add(i);
-//                    }
-
-//                    cmbStagione.TextChanged -= cmbStagione_TextChanged;
-//                    cmbStagione.Text = Simboli.Stagione;
-//                    cmbStagione.TextChanged += cmbStagione_TextChanged;
-//                }
-//            }
+            //ComboBox mercati
+            
         }
         /// <summary>
         /// Metodo che seleziona il tasto corretto tra quelli degli applicativi presenti nella Tab Front Office. La selezione avviene in base all'ID applicazione scritto sul file di configurazione.
@@ -1069,10 +1052,159 @@ namespace Iren.ToolsExcel
 
             _allDisabled = enable;
         }
+        /// <summary>
+        /// Imposta il mercato attivo in base all'orario. Se necessario cambia anche la data attiva e imposta il foglio come da aggiornare.
+        /// </summary>
+        /// <param name="appID">L'ID applicazione che identifica anche in quale mercato il foglio è impostato.</param>
+        /// <param name="dataAttiva">La data attiva da modificare all'occorrenza.</param>
+        /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
+        private void SetMercato(out DateTime newDate, out int newAppId)
+        {
+            //configuro la data attiva
+            int ora = DateTime.Now.Hour;
+            if (ora > 17)
+                newDate = DateTime.Today.AddDays(1);
+            else
+                newDate = DateTime.Today;
 
-        #endregion        
+            ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged -= cmbMSD_SelectionChanged;
+            ((RibbonDropDown)Controls["cmbMSD"]).SelectedItem = ((RibbonDropDown)Controls["cmbMSD"]).Items.Where(i => i.Label == Simboli.OreMSD[ora]).First();
+            ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged += cmbMSD_SelectionChanged;
 
-        
+            newAppId = ((RibbonDropDown)Controls["cmbMSD"]).SelectedItem.Tag;
+        }
+        /// <summary>
+        /// Aggiorna la data per le applicazione Validazione TL e Previsione CT.
+        /// </summary>
+        /// <param name="appID">L'ID applicazione</param>
+        /// <param name="dataAttiva">La data attiva da cambiare se necessario</param>
+        /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
+        private void AggiornaData(out DateTime newDate)
+        {
+            if (Workbook.IdApplicazione == 12)
+            {
+                //configuro la data attiva
+                int ora = DateTime.Now.Hour;
+                if (ora <= 15)
+                    newDate = DateTime.Today.AddDays(1);
+                else
+                    newDate = DateTime.Today.AddDays(2);
+            }
+            else
+                newDate = DateTime.Today.AddDays(-1);
+        }
+
+
+        private bool CheckCambioStruttura(DateTime vecchia, DateTime nuova)
+        {
+            DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + vecchia.ToString("yyyyMMdd") + ";@DataNew=" + nuova.ToString("yyyyMMdd"));
+            return stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1);
+        }
+
+
+        public void InitRibbon()
+        {
+            Sheet.Protected = false;
+            Workbook.ScreenUpdating = false;
+            SplashScreen.Show();
+
+            //salvo gli eventuali valori aggiornati negli oggetti cached
+            if (_updated)
+            {
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Clear();
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControllo);
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControlloApplicazione);
+                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtFunzioni);
+            }
+
+            //Seleziono l'ambiente in funzione dei tasti attivi nel menu
+            switch (Workbook.Ambiente)
+            {
+                case Simboli.PROD:
+                    if (!Controls["btnProd"].Enabled && !Controls["btnTest"].Enabled)
+                        Workbook.Ambiente = Simboli.DEV;
+                    else if (!Controls["btnProd"].Enabled)
+                        Workbook.Ambiente = Simboli.TEST;
+                    break;
+                case Simboli.TEST:
+                    if (!Controls["btnTest"].Enabled)
+                        Workbook.Ambiente = Simboli.DEV;
+                    break;
+            }
+
+            ((RibbonToggleButton)Controls["btn" + Workbook.Ambiente]).Checked = true;
+            DataBase.SwitchEnvironment(Workbook.Ambiente);
+
+            if (Controls.Contains("cmbMSD")) FillcmbMSD();
+            if (Controls.Contains("cmbStagione")) FillcmbStagioni();
+
+            //per Invio Programmi
+            DateTime newDate = Workbook.DataAttiva;
+            int newIdApplicazione = Workbook.IdApplicazione;
+
+            if (Controls.Contains("cmbMSD"))
+                SetMercato(out newDate, out newIdApplicazione);
+            //per Previsione Carico Termico & Validazione Teleriscaldamento
+            else if (Workbook.IdApplicazione == 11 || Workbook.IdApplicazione == 12)
+                AggiornaData(out newDate);
+
+            Riepilogo r = new Riepilogo(Workbook.Main);
+
+            if (DataBase.OpenConnection())
+            {
+                Aggiorna aggiorna = new Aggiorna();
+
+                bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione;
+
+                Workbook.DataAttiva = newDate;
+                Workbook.IdApplicazione = newIdApplicazione;
+
+                if (aggiornaStruttura)
+                    aggiorna.Struttura(avoidRepositoryUpdate: true);
+                //TODO verificare se necessario
+                //else
+                //    aggiorna.Dati();
+
+            }
+            else
+            {
+                r.RiepilogoInEmergenza();
+            }
+
+            r.InitLabels();
+            ((RibbonButton)Controls["btnCalendario"]).Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
+
+            try
+            {
+                Sheet.AbilitaModifica(false);
+            }
+            catch { }
+
+            //aggiungo errorPane
+            if (Controls.Contains("btnMostraErrorPane"))
+            {
+                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
+                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
+                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+
+                RefreshChecks();
+            }
+
+            //aggiungo un altro handler per cell click
+            Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
+            Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
+
+            //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
+            StatoDB_Changed(null, null);
+
+            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+
+            Sheet.Protected = true;
+            SplashScreen.Close();
+        }
+
+        #endregion
     }
 
     #region Controls Collection

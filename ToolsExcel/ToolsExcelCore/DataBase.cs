@@ -46,9 +46,9 @@ namespace Iren.ToolsExcel.Core
         private SqlConnection _internalsqlConn;
         private string _connStr = "";
 
-        private string _dataAttiva = DateTime.Now.ToString("yyyyMMdd");
-        private int _idUtenteAttivo = -1;
-        private int _idApplicazione = -1;
+        //private string _dataAttiva = DateTime.Now.ToString("yyyyMMdd");
+        //private int _idUtenteAttivo = -1;
+        //private int _idApplicazione = -1;
         private Dictionary<NomiDB, ConnectionState> _statoDB = new Dictionary<NomiDB, ConnectionState>() { 
             {NomiDB.SQLSERVER, ConnectionState.Closed},
             {NomiDB.IMP, ConnectionState.Closed},
@@ -64,9 +64,9 @@ namespace Iren.ToolsExcel.Core
 
         #region Proprietà
 
-        public DateTime DataAttiva { get { return DateTime.ParseExact(_dataAttiva, "yyyyMMdd", CultureInfo.InvariantCulture); } }
-        public int IdUtenteAttivo { get { return _idUtenteAttivo; } }
-        public int IdApplicazione { get { return _idApplicazione; } }
+        public DateTime DataAttiva { get; set; }
+        public int IdUtente { get; set; }
+        public int IdApplicazione { get; set; }
         public string Ambiente { get { return _ambiente; } }
 
         public Dictionary<NomiDB, ConnectionState> StatoDB { get { return _statoDB; } }
@@ -95,6 +95,11 @@ namespace Iren.ToolsExcel.Core
             {
                 System.Windows.Forms.MessageBox.Show(e.Message, "Core.DataBase - ERROR!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
+
+            IdApplicazione = -1;
+            IdUtente = -1;
+            DataAttiva = DateTime.MinValue;
+
         }
 
         #endregion
@@ -123,31 +128,28 @@ namespace Iren.ToolsExcel.Core
         /// <param name="dataAttiva">La data di riferimento.</param>
         /// <param name="idUtente">Id dell'utente che ha eseguito il login.</param>
         /// <param name="idApplicazione">Id dell'applicazione aperta.</param>
-        public void SetParameters(string dataAttiva = null, int idUtente = int.MinValue, int idApplicazione = int.MinValue)
+        public void SetParameters(DateTime dataAttiva, int idUtente, int idApplicazione)
         {
-            if (dataAttiva != null)
-                _dataAttiva = dataAttiva;
-            if (idUtente != int.MinValue)
-                _idUtenteAttivo = idUtente;
-            if (idApplicazione != int.MinValue)
-                _idApplicazione = idApplicazione;
+            DataAttiva = dataAttiva;
+            IdUtente = idUtente;
+            IdApplicazione = idApplicazione;
         }
         /// <summary>
         /// Cambia la data di riferimento.
         /// </summary>
         /// <param name="dataAttiva">Nuova data di riferimento.</param>
-        public void ChangeDate(string dataAttiva)
-        {
-            _dataAttiva = dataAttiva;
-        }
+        //public void ChangeDate(string dataAttiva)
+        //{
+        //    _dataAttiva = dataAttiva;
+        //}
         /// <summary>
         /// Cambia l'id applicazione (utilizzato solo in invio programmi quando viene cambiato il programma).
         /// </summary>
         /// <param name="appID">Nuovo id applicazione.</param>
-        public void ChangeAppID(int appID)
-        {
-            _idApplicazione = appID;
-        }
+        //public void ChangeAppID(int appID)
+        //{
+        //    _idApplicazione = appID;
+        //}
 
         /// <summary>
         /// Funzione per l'esecuzione di una stored procedure che inserisce o modifica valori sul db senza restituire nessun risultato.
@@ -157,12 +159,12 @@ namespace Iren.ToolsExcel.Core
         /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
         public bool Insert(string storedProcedure, QryParams parameters, int timeout = 300)
         {
-            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
-                parameters.Add("@IdApplicazione", _idApplicazione);
-            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
-                parameters.Add("@IdUtente", _idUtenteAttivo);
-            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
-                parameters.Add("@Data", _dataAttiva);
+            if (!parameters.ContainsKey("@IdApplicazione") && IdApplicazione != -1)
+                parameters.Add("@IdApplicazione", IdApplicazione);
+            if (!parameters.ContainsKey("@IdUtente") && IdUtente != -1)
+                parameters.Add("@IdUtente", IdUtente);
+            if (!parameters.ContainsKey("@Data") && DataAttiva != DateTime.MinValue)
+                parameters.Add("@Data", DataAttiva);
 
             try
             {
@@ -181,12 +183,12 @@ namespace Iren.ToolsExcel.Core
         }
         public bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams, int timeout = 300)
         {
-            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
-                parameters.Add("@IdApplicazione", _idApplicazione);
-            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
-                parameters.Add("@IdUtente", _idUtenteAttivo);
-            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
-                parameters.Add("@Data", _dataAttiva);
+            if (!parameters.ContainsKey("@IdApplicazione") && IdApplicazione != -1)
+                parameters.Add("@IdApplicazione", IdApplicazione);
+            if (!parameters.ContainsKey("@IdUtente") && IdUtente != -1)
+                parameters.Add("@IdUtente", IdUtente);
+            if (!parameters.ContainsKey("@Data") && DataAttiva != DateTime.MinValue)
+                parameters.Add("@Data", DataAttiva);
 
             try
             {
@@ -254,6 +256,11 @@ namespace Iren.ToolsExcel.Core
         public System.Version GetCurrentV()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
+        }
+
+        public Delegate[] GetPropertyChangedInvocationList()
+        {
+            return PropertyChanged.GetInvocationList();
         }
 
         #endregion
@@ -330,12 +337,13 @@ namespace Iren.ToolsExcel.Core
         /// <returns>Tabella contenente i valori restituiti dalla stored procedure.</returns>
         private DataTable Select(Command cmd, string storedProcedure, QryParams parameters, int timeout = 300, bool logEnabled = true)
         {
-            if (!parameters.ContainsKey("@IdApplicazione") && _idApplicazione != -1)
-                parameters.Add("@IdApplicazione", _idApplicazione);
-            if (!parameters.ContainsKey("@IdUtente") && _idUtenteAttivo != -1)
-                parameters.Add("@IdUtente", _idUtenteAttivo);
-            if (!parameters.ContainsKey("@Data") && _dataAttiva != "")
-                parameters.Add("@Data", _dataAttiva);
+            if (!parameters.ContainsKey("@IdApplicazione") && IdApplicazione != -1)
+                parameters.Add("@IdApplicazione", IdApplicazione);
+            if (!parameters.ContainsKey("@IdUtente") && IdUtente != -1)
+                parameters.Add("@IdUtente", IdUtente);
+            if (!parameters.ContainsKey("@Data") && DataAttiva != DateTime.MinValue)
+                parameters.Add("@Data", DataAttiva);
+
             try
             {
                 DataTable dt = new DataTable();

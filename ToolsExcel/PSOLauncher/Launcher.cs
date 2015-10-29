@@ -36,14 +36,14 @@ namespace PSOLauncher
 
             _listaImmaginiApplicazioni.ImageSize = new System.Drawing.Size(32, 32);
 
-            DataBase.Initialize(ConfigurationManager.AppSettings["DB"]);
+            DataBase.CreateNew(ConfigurationManager.AppSettings["DB"]);
 
             if (!InitUsr())
             {
                 Close();
             }
 
-            DataBase.DB.SetParameters(idUtente: IdUtente);
+            DataBase.IdUtente = IdUtente;            
             
             if (!InitApplicazioni())
             {

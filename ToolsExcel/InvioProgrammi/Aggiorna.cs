@@ -23,20 +23,17 @@ namespace Iren.ToolsExcel
         /// <returns>True se il processo va a buon fine.</returns>
         public override bool Struttura(bool avoidRepositoryUpdate)
         {
-            //Aggiungo i fogli dei mercati leggendo da App.Config
-            string[] mercati = Workbook.AppSettings("Mercati").Split('|');
-
-            foreach (string msd in mercati)
+            foreach (DataRow r in Workbook.Repository[DataBase.TAB.MERCATI].Rows)
             {
                 Excel.Worksheet ws;
                 try
                 {
-                    ws = Workbook.Sheets[msd];
+                    ws = Workbook.Sheets[r["DesMercato"].ToString()];
                 }
                 catch
                 {
                     ws = (Excel.Worksheet)Workbook.Sheets.Add(Workbook.Log);
-                    ws.Name = msd;
+                    ws.Name = r["DesMercato"].ToString();
                     ws.Select();
                     ws.Visible = Excel.XlSheetVisibility.xlSheetHidden;
                     Workbook.Application.Windows[1].DisplayGridlines = false;

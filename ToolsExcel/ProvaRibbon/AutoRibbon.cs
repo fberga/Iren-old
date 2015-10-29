@@ -486,7 +486,6 @@ namespace ProvaRibbon
                 Sheet.Protected = false;
                 SplashScreen.Show();
 
-                Workbook.ChangeAppSettings("DataAttiva", calDate.ToString("yyyyMMdd"));
                 ((RibbonButton)sender).Label = calDate.ToString("dddd dd MMM yyyy");
 
                 Aggiorna aggiorna = new Aggiorna();
@@ -541,7 +540,7 @@ namespace ProvaRibbon
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
                 //controllo se l'entità ha la possibilità di selezionare le rampe
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'PQNR_PROFILO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)
@@ -686,13 +685,13 @@ namespace ProvaRibbon
                 string nome = definedNames.GetNameByAddress(rng.Row, rng.Column);
                 string siglaEntita = nome.Split(Simboli.UNION[0])[0];
 
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (categoriaEntita.Count > 0)
                     siglaEntita = categoriaEntita[0]["Gerarchia"] is DBNull ? siglaEntita : categoriaEntita[0]["Gerarchia"].ToString();
 
-                DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
                 entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaInformazione = 'OTTIMO' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaInformazioni.Count == 0)

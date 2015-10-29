@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Office.Tools.Excel;
+//using Microsoft.Office.Tools.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
 using System.Text.RegularExpressions;
@@ -23,10 +23,10 @@ namespace Iren.ToolsExcel.Base
         #region Variabili
 
         protected Struct _struttura;
-        protected DataView _azioni = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.AZIONE]);
-        protected DataView _categorie = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA]);
-        protected DataView _entita = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA]);
-        protected DataView _entitaAzioni = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_AZIONE]);
+        protected DataView _azioni = new DataView(Workbook.Repository[DataBase.TAB.AZIONE]);
+        protected DataView _categorie = new DataView(Workbook.Repository[DataBase.TAB.CATEGORIA]);
+        protected DataView _entita = new DataView(Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA]);
+        protected DataView _entitaAzioni = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_AZIONE]);
 
         #endregion
 
@@ -102,7 +102,7 @@ namespace Iren.ToolsExcel.Base
     {
         #region Variabili
 
-        protected Microsoft.Office.Tools.Excel.Worksheet _ws;
+        protected Excel.Worksheet _ws;
         protected DefinedNames _definedNames;
         protected int _rigaAttiva;
         protected int _colonnaInizio;
@@ -115,7 +115,7 @@ namespace Iren.ToolsExcel.Base
 
         public Riepilogo() : this(Utility.Workbook.Main)  { }
 
-        public Riepilogo(Microsoft.Office.Tools.Excel.Worksheet ws)
+        public Riepilogo(Excel.Worksheet ws)
         {
             _ws = ws;
 
@@ -173,12 +173,12 @@ namespace Iren.ToolsExcel.Base
         /// Inizializza i label con dimensioni e colori caricati dal DB.
         /// </summary>
         public override void InitLabels()
-        {   
+        {
             _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = Utility.Workbook.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = Utility.Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Utility.Workbook.WorkbookVersion.ToString() + " Base v." + Utility.Workbook.BaseVersion.ToString() + " Core v." + Utility.Workbook.CoreVersion.ToString();
-            _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + DataBase.LocalDB.Tables[DataBase.TAB.UTENTE].Rows[0]["Nome"];
+            _ws.Shapes.Item("lbUtente").TextFrame.Characters().Text = "Utente: " + Workbook.NomeUtente;
 
             _ws.Shapes.Item("lbTitolo").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbLinee[0], Simboli.rgbLinee[1], Simboli.rgbLinee[2]));
             _ws.Shapes.Item("lbTitolo").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(Simboli.rgbTitolo[0], Simboli.rgbTitolo[1], Simboli.rgbTitolo[2]));
@@ -192,7 +192,7 @@ namespace Iren.ToolsExcel.Base
             Simboli.ModificaDati = false;
 
             //aggiorna la scritta e il colore del label che mostra l'ambiente
-            Simboli.Ambiente = Utility.Workbook.AppSettings("DB");
+            Handler.ChangeAmbiente(Workbook.Ambiente);
 
             if (Struct.intervalloGiorni > 0)
             {
@@ -208,7 +208,7 @@ namespace Iren.ToolsExcel.Base
                 _ws.Shapes.Item("lbDataFine").Visible = Office.MsoTriState.msoFalse;
                 _ws.Shapes.Item("lbDataInizio").LockAspectRatio = Office.MsoTriState.msoTrue;
             }
-            //Utility.Workbook.ScreenUpdating = false;
+            Workbook.ScreenUpdating = false;
         }
         /// <summary>
         /// Metodo per eliminare la struttura esistente dal foglio e prepararlo alla nuova che verrà caricata.
@@ -276,7 +276,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected void UpdateDayColor()
         {
-            DataView azioni = new DataView(DataBase.LocalDB.Tables[DataBase.TAB.AZIONE]);
+            DataView azioni = new DataView(Workbook.Repository[DataBase.TAB.AZIONE]);
             azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
 
             Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 3, azioni.Count);
@@ -472,7 +472,7 @@ namespace Iren.ToolsExcel.Base
                     Excel.Range rng = _ws.Range[cell.ToString()];
                     if (presente)
                     {
-                        string commento = "Utente: " + DataBase.LocalDB.Tables[DataBase.TAB.UTENTE].Rows[0]["Nome"] + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
+                        string commento = "Utente: " + Workbook.NomeUtente + "\nData: " + DateTime.Now.ToString("dd MMM yyyy") + "\nOra: " + DateTime.Now.ToString("HH:mm");
                         rng.ClearComments();
                         rng.AddComment(commento).Visible = false;
                         rng.Value = "OK";
@@ -502,8 +502,8 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         protected void AggiornaDate()
         {
-            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = DataBase.DB.DataAttiva.ToString("ddd d MMM yyyy");
-            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = DataBase.DB.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = Workbook.DataAttiva.ToString("ddd d MMM yyyy");
+            _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
             
             if (Struct.visualizzaRiepilogo)
             {

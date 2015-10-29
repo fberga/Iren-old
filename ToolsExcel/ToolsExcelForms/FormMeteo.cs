@@ -21,8 +21,8 @@ namespace Iren.ToolsExcel.Forms
             InitializeComponent();
 
             _carica = carica;
-            _entita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+            _entita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            _entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
             _dataRif = (DateTime)dataRif;
             _riepilogo = riepilogo;
 

@@ -18,9 +18,9 @@ namespace Iren.ToolsExcel.Base
 
         public void RunExport()
         {
-            DataTable categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA];
-            DataView categorie = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA].DefaultView;
-            DataView entitaInformazione = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+            DataTable categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA];
+            DataView categorie = Workbook.Repository[DataBase.TAB.CATEGORIA].DefaultView;
+            DataView entitaInformazione = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
 
             foreach (DataRow entita in categoriaEntita.Rows)
             {
@@ -36,7 +36,7 @@ namespace Iren.ToolsExcel.Base
 
                     entitaInformazione.RowFilter = "(SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "') AND Editabile = '1' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                    DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA];
+                    DataTable entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA];
                     int intervalloGiorni =
                         (from r in entitaProprieta.AsEnumerable()
                          where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
@@ -79,7 +79,7 @@ namespace Iren.ToolsExcel.Base
             if (!Directory.Exists(cartellaExport))
                 Directory.CreateDirectory(cartellaExport);
 
-            DataTable export = DataBase.LocalDB.Tables[DataBase.TAB.EXPORT_XML];
+            DataTable export = Workbook.Repository[DataBase.TAB.EXPORT_XML];
             export.WriteXml(fileName);
 
             //svuoto la tabella alla fine dell'utilizzo

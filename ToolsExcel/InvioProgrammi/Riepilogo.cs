@@ -33,6 +33,7 @@ namespace Iren.ToolsExcel
             _ws.Shapes.Item("lbMercato").Visible = Office.MsoTriState.msoTrue;
             _ws.Shapes.Item("lbMercato").Top = _ws.Shapes.Item("lbDataInizio").Top + _ws.Shapes.Item("lbDataInizio").Height + (float)(_ws.Rows[5].Height / 2);
 
+            Handler.ChangeMercatoAttivo(Workbook.Mercato);
             //sposto i due label sotto
 
             _ws.Shapes.Item("lbUtente").Top = _ws.Shapes.Item("lbMercato").Top + _ws.Shapes.Item("lbMercato").Height + (float)_ws.Rows[5].Height;

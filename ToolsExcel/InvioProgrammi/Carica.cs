@@ -18,13 +18,13 @@ namespace Iren.ToolsExcel
     /// </summary>
     public class Carica : Base.Carica
     {
-        DefinedNames _definedNamesSheetMercato = new DefinedNames(Simboli.Mercato);
+        DefinedNames _definedNamesSheetMercato = new DefinedNames(Workbook.Mercato);
         Excel.Worksheet _wsMercato;
 
         public Carica() 
             : base() 
         {
-            _wsMercato = Workbook.Sheets[Simboli.Mercato];
+            _wsMercato = Workbook.Sheets[Workbook.Mercato];
         }
 
         public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null)
@@ -72,8 +72,8 @@ namespace Iren.ToolsExcel
                 return null;
             }
 
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             string codiceRUP = categoriaEntita[0]["CodiceRUP"].ToString();
 
 
@@ -139,7 +139,7 @@ namespace Iren.ToolsExcel
                             {
                                 DataRow r = oDT.NewRow();
                                 r["SiglaEntita"] = siglaEntita;
-                                r["SiglaInformazione"] = "PROGRAMMA_" + Simboli.Mercato;
+                                r["SiglaInformazione"] = "PROGRAMMA_" + Workbook.Mercato;
                                 r["Data"] = date + int.Parse(ele.Attribute("Hour").Value).ToString("00");
                                 r["Valore"] = double.Parse(ele.Value, CultureInfo.InstalledUICulture);
                                 oDT.Rows.Add(r);
@@ -185,7 +185,7 @@ namespace Iren.ToolsExcel
                         {
                             DataRow r = oDT.NewRow();
                             r["SiglaEntita"] = siglaEntita;
-                            r["SiglaInformazione"] = "PROGRAMMAQ" + i + "_" + Simboli.Mercato;
+                            r["SiglaInformazione"] = "PROGRAMMAQ" + i + "_" + Workbook.Mercato;
                             r["Data"] = date + int.Parse(ele.Element(ns + "Hour").Value).ToString("00");
                             r["Valore"] = double.Parse(ele.Elements(ns + "Quantity").Where(e => e.Attribute("QuarterInterval").Value == i.ToString()).First().Value, CultureInfo.InstalledUICulture);
                             oDT.Rows.Add(r);
@@ -201,8 +201,8 @@ namespace Iren.ToolsExcel
             base.ScriviCella(ws, definedNames, siglaEntita, info, suffissoData, suffissoOra, risultato, saveToDB, fromCarica);
             
             //se l'informazione è visibile la devo scrivere anche nei fogli dei mercati
-            DataView informazioni = new DataView(DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_INFORMAZIONE]);
-            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "' AND IdApplicazione = " + Simboli.AppID;
+            DataView informazioni = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE]);
+            informazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' OR SiglaEntitaRif = '" + siglaEntita + "' AND SiglaInformazione = '" + info["SiglaInformazione"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             bool visible = false;
             foreach (DataRowView r in informazioni)
                 if (r["Visibile"].Equals("1"))
@@ -210,11 +210,11 @@ namespace Iren.ToolsExcel
 
             if (visible)
             {
-                DataTable entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
+                DataTable entita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA];
 
                 var rif =
                     (from r in entita.AsEnumerable()
-                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
+                     where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita)
                      select new { SiglaEntita = r["Gerarchia"] is DBNull ? r["SiglaEntita"] : r["Gerarchia"], Riferimento = r["Riferimento"] }).First();
 
                 string quarter = Regex.Match(info["SiglaInformazione"].ToString(), @"Q\d").Value;

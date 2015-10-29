@@ -32,7 +32,7 @@ namespace Iren.ToolsExcel.Forms
             tmp.ReadXml(openFileXMLImport.FileName);
             _tabellaImportXML = tmp.Tables[DataBase.TAB.EXPORT_XML];
 
-            foreach(DataColumn c in DataBase.LocalDB.Tables[DataBase.TAB.EXPORT_XML].Columns) 
+            foreach(DataColumn c in Workbook.Repository[DataBase.TAB.EXPORT_XML].Columns) 
             {
                 if(!_tabellaImportXML.Columns.Contains(c.ColumnName)) 
                 {
@@ -62,7 +62,7 @@ namespace Iren.ToolsExcel.Forms
             }
 
             var nomeApplicazione =
-                (from r in DataBase.LocalDB.Tables[DataBase.TAB.LISTA_APPLICAZIONI].AsEnumerable()
+                (from r in Workbook.Repository[DataBase.TAB.LISTA_APPLICAZIONI].AsEnumerable()
                  where r["IdApplicazione"].Equals(int.Parse(_tabellaImportXML.Rows[0]["IdApplicazione"].ToString()))
                  select r["DesApplicazione"]).First();
 
@@ -87,14 +87,14 @@ namespace Iren.ToolsExcel.Forms
             foreach (var ele in dtImport)
             {
                 var info =
-                    (from r in DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].AsEnumerable()
+                    (from r in Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].AsEnumerable()
                      where r["SiglaEntita"].Equals(ele.SiglaEntita) && r["SiglaInformazione"].Equals(ele.SiglaInformazione)
                      select r).FirstOrDefault();
 
                 if (info != null)
                 {
                     var desEntita =
-                        (from r in DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
+                        (from r in Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
                          where r["SiglaEntita"].Equals(info["SiglaEntita"])
                          select r["DesEntita"]).First();
 

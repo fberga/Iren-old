@@ -69,14 +69,18 @@ namespace Iren.ToolsExcel.Utility
                 INSERT_APPLICAZIONE_RIEPILOGO = "spInsertApplicazioneRiepilogo",
                 INSERT_LOG = "spInsertLog",
                 INSERT_PROGRAMMAZIONE_PARAMETRO = "spInsertProgrammazione_Parametro",
+                STAGIONE = "spTipologiaStagione",
                 TIPOLOGIA_CHECK = "spTipologiaCheck",
-                UTENTE = "spUtente",
+                UTENTE = "spUtente";
 
-                DELETE_PARAMETRO = "PAR.spDeleteParametro",
+            public struct PAR 
+            {
+                public const string DELETE_PARAMETRO = "PAR.spDeleteParametro",
                 ELENCO_PARAMETRI = "PAR.spElencoParametri",
                 INSERT_PARAMETRO = "PAR.spInsertParametro",
                 VALORI_PARAMETRI = "PAR.spValoriParametri",
                 UPDATE_PARAMETRO = "PAR.spUpdateParametro";
+            }
 
             public struct RIBBON 
             {
@@ -91,7 +95,6 @@ namespace Iren.ToolsExcel.Utility
             public const string ADDRESS_FROM = "AddressFrom",
                 ADDRESS_TO = "AddressTo",
                 ANNOTA = "AnnotaModifica",
-                //APPLICAZIONE = "Applicazione",
                 APPLICAZIONE_RIBBON = "ApplicazioneRibbon",
                 AZIONE = "Azione",
                 AZIONE_CATEGORIA = "AzioneCategoria",
@@ -122,12 +125,13 @@ namespace Iren.ToolsExcel.Utility
                 EXPORT_XML = "ExportXML",
                 LISTA_APPLICAZIONI = "ListaApplicazioni",
                 LOG = "Log",
+                MERCATI = "Mercati",
                 MODIFICA = "Modifica",
                 NOMI_DEFINITI = "DefinedNames",
                 SALVADB = "SaveDB",
                 SELECTION = "Selection",
-                TIPOLOGIA_CHECK = "TipologiaCheck",
-                UTENTE = "Utente";
+                STAGIONE = "Stagione",
+                TIPOLOGIA_CHECK = "TipologiaCheck";
 
             public struct RIBBON
             {
@@ -141,16 +145,13 @@ namespace Iren.ToolsExcel.Utility
 
         #region Variabili
 
-        protected static DataSet _localDB = null;
+        //protected static DataSet _localDB = null;
         protected static Core.DataBase _db = null;
 
         #endregion
 
-        #region Proprietà
+        #region Proprietà statiche
 
-        public static DataSet LocalDB { get { return _localDB; } }
-        public static Core.DataBase DB { get { return _db; } }
-        //public static DateTime DataAttiva { get { return _db.DataAttiva; } }
         public static Dictionary<Core.DataBase.NomiDB, ConnectionState> StatoDB
         {
             get
@@ -165,84 +166,74 @@ namespace Iren.ToolsExcel.Utility
                     };
                 }
 
-                return DB.StatoDB;
+                return _db.StatoDB;
             }
         }
+        public static System.Version Versione { get { return _db.GetCurrentV(); } }
+
+        public static bool IsInitialized { get; private set; }
+
+
+        public static int IdUtente { get { return _db.IdUtente; } set { _db.IdUtente = value; } }
+        public static int IdApplicazione { get { return _db.IdApplicazione; } set { _db.IdApplicazione = value; } }
+        public static DateTime DataAttiva { get { return _db.DataAttiva; } set { _db.DataAttiva = value; } }
 
         #endregion
 
         #region Metodi Statici
 
+        //StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        //{
+        //    AggiornaLabelStatoDB();
+        //}        
+
+        public static void AddPropertyChanged(System.ComponentModel.PropertyChangedEventHandler d)
+        {
+            _db.PropertyChanged += d;
+        }
+
         /// <summary>
         /// Inizializza il nuovo Core.DataBase collegato al dbName che rappresenta l'ambiente Prod|Test|Dev.
         /// </summary>
         /// <param name="dbName">Nome (corrisponde all'ambiente) del Database.</param>
-        public static void Initialize(string dbName) 
+        public static void CreateNew(string ambiente) 
         {
-            _db = new Core.DataBase(dbName);
-        }
-        /// <summary>
-        /// Inizializza il nuovo dataset Locale.
-        /// </summary>
-        //public static void InitNewLocalDB()
-        //{
+            if(_db == null || _db.Ambiente != ambiente)
+                _db = new Core.DataBase(ambiente);
 
-
-        //    _localDB = new DataSet(NAME);
-        //}
-        /// <summary>
-        /// Se il dataset contiente la tabella identificata da name, la cancella. Va cancellata perché se nelle varie modifiche al DB viene cambiata la struttura, fare il merge comporterebbe il verificarsi di un errore di mancata corrispondenza delle strutture.
-        /// </summary>
-        /// <param name="name"></param>
-        public static void ResetTable(string name) 
-        {
-            if (_localDB.Tables.Contains(name))
-            {
-                _localDB.Tables.Remove(name);
-            }
-        }
-        /// <summary>
-        /// Cambio l'ID applicazione su cui Core.DataBase basa le sue ricerche.
-        /// </summary>
-        /// <param name="appID">Nuovo ID applicazione.</param>
-        public static void ChangeAppID(string appID)
-        {
-            Workbook.ChangeAppSettings("AppID", appID);
-            _db.ChangeAppID(int.Parse(appID));
-        }
-        /// <summary>
-        /// Cambio la Data Attiva su cui Core.DataBase basa le sue ricerche.
-        /// </summary>
-        /// <param name="dataAttiva">Nuova DataAttiva.</param>
-        public static void ChangeDate(DateTime dataAttiva) 
-        {
-            _db.ChangeDate(dataAttiva.ToString("yyyyMMdd"));
+            IsInitialized = true;
         }
         /// <summary>
         /// Cambio ambiente tra Prod|Test|Prod.
         /// </summary>
         /// <param name="ambiente">Nuovo ambiente.</param>
         public static void SwitchEnvironment(string ambiente) 
-        {            
-            Workbook.ChangeAppSettings("DB", ambiente);
+        {
+            if (_db.Ambiente != ambiente)
+            {
+                Workbook.Ambiente = ambiente;
 
-            int idA = _db.IdApplicazione;
-            int idU = _db.IdUtenteAttivo;
-            string data = _db.DataAttiva.ToString("yyyyMMdd");
+                Delegate[] list = _db.GetPropertyChangedInvocationList();
 
-            _db = new Core.DataBase(ambiente);
-            _db.SetParameters(data, idU, idA);
+                _db = new Core.DataBase(ambiente);
+                _db.SetParameters(Workbook.DataAttiva, Workbook.IdUtente, Workbook.IdApplicazione);
+                foreach (Delegate d in list)
+                {
+                    EventInfo ei = _db.GetType().GetEvent("PropertyChanged");
+                    ei.AddEventHandler(_db, d);
+                }
+            }
         }
         /// <summary>
         /// Salva le modifiche effettuate ai fogli sul DataBase. Il processo consiste nella creazione di un file XML contenente tutte le righe della tabella di Modifica e successivo svuotamento della tabella stessa. Il processo richiede una connessione aperta. Diversamente le modifiche vengono salvate nella cartella di Emergenza dove, al momento della successiva chiamata al metodo, vengono reinviati al server in ordine cronologico.
         /// </summary>
         public static void SalvaModificheDB() 
         {
-            if (LocalDB != null)
+            if (Workbook.Repository != null)
             {
                 //prendo la tabella di modifica e controllo se è nulla
-                DataTable modifiche = LocalDB.Tables[TAB.MODIFICA];
-                if (modifiche != null && DataBase.DB.IdUtenteAttivo != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
+                DataTable modifiche = Workbook.Repository[TAB.MODIFICA];
+                if (modifiche != null && Workbook.IdUtente != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
                 {
                     //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
                     DataTable dt = modifiche.Copy();
@@ -276,7 +267,7 @@ namespace Iren.ToolsExcel.Utility
                                 {
                                     File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
 
-                                    executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
+                                    executed = DataBase.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", file.Split('\\').Last() } });
                                     if (executed)
                                     {
                                         if (!Directory.Exists(cartellaArchivio))
@@ -306,7 +297,7 @@ namespace Iren.ToolsExcel.Utility
                         dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
 
                         //se la query indica che il processo è andato a buon fine, sposto in archivio
-                        executed = DataBase.DB.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
+                        executed = DataBase.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new QryParams() { { "@NomeFile", fileName.Split('\\').Last() } });
                         if (executed)
                         {
                             if (!Directory.Exists(cartellaArchivio))
@@ -390,7 +381,7 @@ namespace Iren.ToolsExcel.Utility
         /// Funzione per l'apertura della connessione che considera anche la presenza del flag di Emergenza Forzata.
         /// </summary>
         /// <returns>True se la connessione viene aperta, false altrimenti.</returns>
-        public static bool OpenConnection()
+        public static bool OpenConnection() 
         {
             if (!Simboli.EmergenzaForzata)
                 return _db.OpenConnection();
@@ -401,7 +392,7 @@ namespace Iren.ToolsExcel.Utility
         /// Funzione per chiudere la connessione che considera anche la presenza del flag di Emergenza Forzata.
         /// </summary>
         /// <returns>True se la connessione viene chiusa, false altrimenti.</returns>
-        public static bool CloseConnection()
+        public static bool CloseConnection() 
         {
             if (!Simboli.EmergenzaForzata)
                 return _db.CloseConnection();
@@ -415,7 +406,7 @@ namespace Iren.ToolsExcel.Utility
         /// <param name="parameters">Parametri della stored procedure.</param>
         /// <param name="timeout">Timeout del comando.</param>
         /// <returns>DataTable contenente il risultato della storedProcedure.</returns>
-        public static DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300)
+        public static DataTable Select(string storedProcedure, QryParams parameters, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -434,7 +425,7 @@ namespace Iren.ToolsExcel.Utility
         /// <param name="parameters">Parametri della stored procedure.</param>
         /// <param name="timeout">Timeout del comando.</param>
         /// <returns>DataTable contenente il risultato della storedProcedure.</returns>
-        public static DataTable Select(string storedProcedure, String parameters, int timeout = 300)
+        public static DataTable Select(string storedProcedure, String parameters, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -452,7 +443,7 @@ namespace Iren.ToolsExcel.Utility
         /// <param name="storedProcedure">Stored procedure.</param>
         /// <param name="timeout">Timeout del comando.</param>
         /// <returns>DataTable contenente il risultato della storedProcedure.</returns>
-        public static DataTable Select(string storedProcedure, int timeout = 300)
+        public static DataTable Select(string storedProcedure, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -470,7 +461,7 @@ namespace Iren.ToolsExcel.Utility
         /// <param name="storedProcedure">Stored procedure.</param>
         /// <param name="parameters">Parametri della stored procedure.</param>
         /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
-        public static bool Insert(string storedProcedure, QryParams parameters, int timeout = 300)
+        public static bool Insert(string storedProcedure, QryParams parameters, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -480,7 +471,7 @@ namespace Iren.ToolsExcel.Utility
             }
             return false;
         }
-        public static bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams, int timeout = 300)
+        public static bool Insert(string storedProcedure, QryParams parameters, out Dictionary<string, object> outParams, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -492,7 +483,7 @@ namespace Iren.ToolsExcel.Utility
             return false;
         }
 
-        public static bool Delete(string storedProcedure, QryParams parameters, int timeout = 300)
+        public static bool Delete(string storedProcedure, QryParams parameters, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -502,7 +493,7 @@ namespace Iren.ToolsExcel.Utility
             }
             return false;
         }
-        public static bool Delete(string storedProcedure, string parameters, int timeout = 300)
+        public static bool Delete(string storedProcedure, string parameters, int timeout = 300) 
         {
             if (OpenConnection())
             {
@@ -530,7 +521,6 @@ namespace Iren.ToolsExcel.Utility
                 Insert(SP.INSERT_LOG, new QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });
             }
 #endif
-
             RefreshLog();
         }
         /// <summary>
@@ -538,30 +528,19 @@ namespace Iren.ToolsExcel.Utility
         /// </summary>
         public void RefreshLog()
         {
-            //non posso cancellare la tabella altrimenti perdo il dataBinding con l'oggetto nel foglio di Log. Quindi svuoto la tabella e la riempio con i nuovi valori.
             if (OpenConnection())
             {
                 DataTable dt = Select(SP.APPLICAZIONE_LOG);
                 if (dt != null)
                 {
-                    dt.TableName = TAB.LOG;
-
-                    bool sameSchema = dt.Columns.Count == _localDB.Tables[TAB.LOG].Columns.Count;
-
-                    for (int i = 0; i < dt.Columns.Count && sameSchema; i++)
-                        if (_localDB.Tables[TAB.LOG].Columns[i].ColumnName != dt.Columns[i].ColumnName)
-                            sameSchema = false;
-
-                    //svuoto la tabella allo stato attuale
-                    _localDB.Tables[TAB.LOG].Clear();
-                    //la riempio con tutte le rige comprese le nuove
-                    _localDB.Tables[TAB.LOG].Merge(dt);
+                    Workbook.LogDataTable.Clear();
+                    Workbook.LogDataTable.Merge(dt);
 
                     if (Workbook.Log.ListObjects.Count > 0)
                         Workbook.Log.ListObjects[1].Range.EntireColumn.AutoFit();
                 }
             }
-        }
+        }        
 
         #endregion
     }
@@ -708,7 +687,7 @@ namespace Iren.ToolsExcel.Utility
         public static DateTime GetDataFromSuffisso(string data)
         {
             int giorno = int.Parse(Regex.Match(data.ToString(), @"\d+").Value);
-            return DataBase.DB.DataAttiva.AddDays(giorno - 1);
+            return Workbook.DataAttiva.AddDays(giorno - 1);
         }
         /// <summary>
         /// Restituisce l'ora a partire dalla stringa in formato ISO yyyyMMddHH
@@ -735,1118 +714,6 @@ namespace Iren.ToolsExcel.Utility
         }
         
         #endregion
-    }
-
-    //public class Repository : DataBase
-    //{
-    //    #region Variabili
-
-    //    private static bool _daAggiornare = false;
-    //    private static bool _isMultiApplication = false;
-    //    private static string[] _appIDs = null;
-
-    //    #endregion
-
-    //    #region Proprietà
-
-    //    public static bool DaAggiornare { get { return _daAggiornare; } set { _daAggiornare = value; } }
-    //    public static bool IsMultiApplicaion { get { return _isMultiApplication; } }
-
-    //    #endregion
-
-    //    #region Metodi
-
-    //    public static void InitStrutturaNomi()
-    //    {
-    //        CreaTabellaNomi();
-    //        CreaTabellaDate();
-    //        CreaTabellaAddressFrom();
-    //        CreaTabellaAddressTo();
-    //        CreaTabellaModifica();
-    //        CreaTabellaExportXML();
-    //        CreaTabellaEditabili();
-    //        CreaTabellaSalvaDB();
-    //        CreaTabellaAnnotaModifica();
-    //        CreaTabellaCheck();
-    //        CreaTabellaSelection();
-    //        _localDB.AcceptChanges();
-    //    }
-
-    //    /// <summary>
-    //    /// Launcher per tutte le funzioni che aggiornano il repository in seguito alla richiesta di aggiornare la struttura.
-    //    /// </summary>
-    //    public static void Aggiorna(string[] appIDs)
-    //    {
-    //        _isMultiApplication = appIDs != null;
-    //        _appIDs = appIDs;
-
-    //        InitStrutturaNomi();
-    //        CaricaApplicazioni();
-    //        CaricaAzioni();
-    //        CaricaCategorie();
-    //        CaricaApplicazioneRibbon();
-    //        CaricaAzioneCategoria();
-    //        CaricaCategoriaEntita();
-    //        CaricaEntitaAzione();
-    //        CaricaEntitaAzioneCalcolo();
-    //        CaricaEntitaInformazione();
-    //        CaricaEntitaAzioneInformazione();
-    //        CaricaCalcolo();
-    //        CaricaCalcoloInformazione();
-    //        CaricaEntitaCalcolo();
-    //        CaricaEntitaGrafico();
-    //        CaricaEntitaGraficoInformazione();
-    //        CaricaEntitaCommitment();
-    //        CaricaEntitaRampa();
-    //        CaricaEntitaAssetto();
-    //        CaricaEntitaProprieta();
-    //        CaricaEntitaInformazioneFormattazione();
-    //        CaricaEntitaParametroD();
-    //        CaricaEntitaParametroH();
-            
-    //        _localDB.AcceptChanges();
-    //    }
-    //    #region Aggiorna Struttura Dati
-
-    //    #region Init Struttura Nomi
-    //    private static bool CreaTabellaNomi()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.NOMI_DEFINITI;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultNameTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaDate()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.DATE_DEFINITE;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultDateTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaAddressFrom()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.ADDRESS_FROM;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultAddressFromTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaAddressTo()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.ADDRESS_TO;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultAddressToTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaEditabili()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.EDITABILI;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultEditableTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaSalvaDB()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.SALVADB;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultSaveTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaAnnotaModifica()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.ANNOTA;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultToNoteTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaModifica()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.MODIFICA;
-    //            ResetTable(name);
-    //            DataTable dt = new DataTable(name)
-    //            {
-    //                Columns =
-    //                {
-    //                    {"SiglaEntita", typeof(string)},
-    //                    {"SiglaInformazione", typeof(string)},
-    //                    {"Data", typeof(string)},
-    //                    {"Valore", typeof(string)},
-    //                    {"AnnotaModifica", typeof(string)},
-    //                    {"IdApplicazione", typeof(string)},
-    //                    {"IdUtente", typeof(string)}
-    //                }
-    //            };
-
-    //            dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaExportXML()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.EXPORT_XML;
-    //            ResetTable(name);
-    //            DataTable dt = new DataTable(name)
-    //            {
-    //                Columns =
-    //                {
-    //                    {"SiglaEntita", typeof(string)},
-    //                    {"SiglaInformazione", typeof(string)},
-    //                    {"Data", typeof(string)},
-    //                    {"Valore", typeof(string)},
-    //                    {"AnnotaModifica", typeof(string)},
-    //                    {"IdApplicazione", typeof(string)},
-    //                    {"IdUtente", typeof(string)}
-    //                }
-    //            };
-
-    //            dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaCheck()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.CHECK;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultCheckTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    private static bool CreaTabellaSelection()
-    //    {
-    //        try
-    //        {
-    //            string name = Tab.SELECTION;
-    //            ResetTable(name);
-    //            DataTable dt = DefinedNames.GetDefaultSelectionTable(name);
-    //            _localDB.Tables.Add(dt);
-    //            return true;
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return false;
-    //        }
-    //    }
-    //    #endregion
-
-    //    /// <summary>
-    //    /// Metodo richiamato da tutte le routine sottostanti che effettua la chiamata alla stored procedure sul server e aggiunge la tabella al DataSet locale. Restituisce true se l'operazione è andata a buon fine, lancia un'eccezione RepositoryUpdateException se fallisce.
-    //    /// </summary>
-    //    /// <param name="tableName">Nome della tabella da aggiornare.</param>
-    //    /// <param name="spName">Nome della stored procedure da eseguire.</param>
-    //    /// <param name="parameters">Parametri della stored procedure.</param>
-    //    /// <returns>True se l'operazione è andata a buon fine.</returns>
-    //    public static void CaricaDati(string tableName, string spName, QryParams parameters)
-    //    {
-    //        DataTable dt = new DataTable();
-    //        if (_isMultiApplication)
-    //        {
-    //            foreach (string id in _appIDs)
-    //            {
-    //                parameters["@IdApplicazione"] = id;
-    //                dt.Merge(Select(spName, parameters) ?? new DataTable());
-    //            }
-    //            if (dt.Columns.Count == 0)
-    //                dt = null;
-    //        }
-    //        else
-    //        {
-    //            dt = Select(spName, parameters);
-    //        }
-    //        if (dt != null)
-    //        {
-    //            ResetTable(tableName);
-    //            dt.TableName = tableName;
-    //            _localDB.Tables.Add(dt);
-    //        }
-    //    }
-    //    /// <summary>
-    //    /// Carica la lista di tutte le applicazioni disponibili.
-    //    /// </summary>
-    //    public static void CaricaApplicazioni()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@IdApplicazione", 0}
-    //            };
-
-    //        CaricaDati(Tab.LISTA_APPLICAZIONI, SP.APPLICAZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica i dati necessari alla creazione del menu ribbon.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    public static void CaricaApplicazioneRibbon()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@IdApplicazione", DB.IdApplicazione},
-    //                {"@IdUtente", DB.IdUtenteAttivo}
-    //            };
-
-    //        CaricaDati(Tab.APPLICAZIONE_RIBBON, SP.APPLICAZIONE_RIBBON, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica le azioni.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaAzioni()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaAzione", Core.DataBase.ALL},
-    //                {"@Operativa", Core.DataBase.ALL},
-    //                {"@Visibile", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.AZIONE, SP.AZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica le categorie.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaCategorie()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaCategoria", Core.DataBase.ALL},
-    //                {"@Operativa", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.CATEGORIA, SP.CATEGORIA, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione azione categoria.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaAzioneCategoria()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaAzione", Core.DataBase.ALL},
-    //                {"@SiglaCategoria", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.AZIONE_CATEGORIA, SP.AZIONE_CATEGORIA, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione categoria entita.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaCategoriaEntita()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaCategoria", Core.DataBase.ALL},
-    //                {"@SiglaEntita", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.CATEGORIA_ENTITA, SP.CATEGORIA_ENTITA, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità azione.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaAzione()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaAzione", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_AZIONE, SP.ENTITA_AZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità azione calcolo.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaAzioneCalcolo()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaAzione", Core.DataBase.ALL},
-    //                {"@SiglaCalcolo", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_AZIONE_CALCOLO, SP.ENTITA_AZIONE_CALCOLO, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità informazione.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaInformazione()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaInformazione", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_INFORMAZIONE, SP.ENTITA_INFORMAZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità azione informazione.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaAzioneInformazione()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaAzione", Core.DataBase.ALL},
-    //                {"@SiglaInformazione", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_AZIONE_INFORMAZIONE, SP.ENTITA_AZIONE_INFORMAZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica i calcoli.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaCalcolo()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaCalcolo", Core.DataBase.ALL},
-    //                {"@IdTipologiaCalcolo", 0}
-    //            };
-
-    //        CaricaDati(Tab.CALCOLO, SP.CALCOLO, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione calcolo informazione.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaCalcoloInformazione()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaCalcolo", Core.DataBase.ALL},
-    //                {"@SiglaInformazione", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.CALCOLO_INFORMAZIONE, SP.CALCOLO_INFORMAZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità calcolo.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaCalcolo()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaCalcolo", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_CALCOLO, SP.ENTITA_CALCOLO, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità grafico.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaGrafico()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaGrafico", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_GRAFICO, SP.ENTITA_GRAFICO, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità grafico informazione.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaGraficoInformazione()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaGrafico", Core.DataBase.ALL},
-    //                {"@SiglaInformazione", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_GRAFICO_INFORMAZIONE, SP.ENTITA_GRAFICO_INFORMAZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità commitment.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaCommitment()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_COMMITMENT, SP.ENTITA_COMMITMENT, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità rampa.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaRampa()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_RAMPA, SP.ENTITA_RAMPA, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità assetto.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaAssetto()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_ASSETTO, SP.ENTITA_ASSETTO, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità proprietà.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaProprieta()
-    //    {
-    //        CaricaDati(Tab.ENTITA_PROPRIETA, SP.ENTITA_PROPRIETA, new QryParams());
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità informazione formattazione.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaInformazioneFormattazione()
-    //    {
-    //        QryParams parameters = new QryParams() 
-    //            {
-    //                {"@SiglaEntita", Core.DataBase.ALL},
-    //                {"@SiglaInformazione", Core.DataBase.ALL}
-    //            };
-
-    //        CaricaDati(Tab.ENTITA_INFORMAZIONE_FORMATTAZIONE, SP.ENTITA_INFORMAZIONE_FORMATTAZIONE, parameters);
-    //    }
-    //    /// <summary>
-    //    /// Carica la tipologia check.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaTipologiaCheck()
-    //    {
-    //        CaricaDati(Tab.TIPOLOGIA_CHECK, SP.TIPOLOGIA_CHECK, new QryParams());
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità parametro giornaliero.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaParametroD()
-    //    {
-    //        CaricaDati(Tab.ENTITA_PARAMETRO_D, SP.ENTITA_PARAMETRO_D, new QryParams());
-    //    }
-    //    /// <summary>
-    //    /// Carica la relazione entità parametro orario.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    private static void CaricaEntitaParametroH()
-    //    {
-    //        CaricaDati(Tab.ENTITA_PARAMETRO_H, SP.ENTITA_PARAMETRO_H, new QryParams());
-    //    }
-
-    //    #endregion
-
-    //    /// <summary>
-    //    /// Carica solo i parametri dell'applicazione contenuti nella tabella APPLICAZIONE.
-    //    /// </summary>
-    //    /// <param name="appID">L'ID dell'applicazione di cui ricaricare i parametri.</param>
-    //    /// <returns>La tabella contenente tutti i dati trovati sull'applicazione.</returns>
-    //    public static DataTable CaricaApplicazione(object appID)
-    //    {
-    //        string name = DataBase.Tab.APPLICAZIONE;
-    //        DataBase.ResetTable(name);
-    //        DataTable dt = DataBase.Select(DataBase.SP.APPLICAZIONE) ?? new DataTable();
-            
-    //        dt.TableName = name;
-    //        return dt;
-    //    }
-
-    //    #endregion
-    //}
-
-    public class Repository : IEnumerable
-    {
-        #region Variabili
-
-        private IToolsExcelThisWorkbook _wb;
-        private static bool _isMultiApplication = false;
-        private static string[] _appIDs = null;
-
-        #endregion
-
-        #region Proprietà
-
-        public DataTable this[string tableName] 
-        { 
-            get 
-            {
-                if (_wb.RepositoryDataSet.Tables.Contains(tableName))
-                    return _wb.RepositoryDataSet.Tables[tableName];
-
-                return null;
-            }
-            private set
-            {
-                if (_wb.RepositoryDataSet.Tables.Contains(tableName))
-                    _wb.RepositoryDataSet.Tables.Remove(tableName);
-                if (value.TableName != tableName)
-                    value.TableName = tableName;
-                _wb.RepositoryDataSet.Tables.Add(value);
-            }
-        }
-        public DataTable this[int index]
-        {
-            get
-            {
-                if (_wb.RepositoryDataSet.Tables.Count > index)
-                    return _wb.RepositoryDataSet.Tables[index];
-
-                return null;
-            }
-        }
-
-        public DataRow Applicazione { get; private set; }
-
-        public int TablesCount { get { return _wb.RepositoryDataSet.Tables.Count; } }
-
-        public bool DaAggiornare { get; set; }
-
-        #endregion
-
-
-        public Repository(IToolsExcelThisWorkbook wb)
-        {
-            _wb = wb;
-            DaAggiornare = false;
-            Applicazione = null;
-        }
-
-        #region Metodi
-
-        public void Aggiorna(string[] appIDs)
-        {
-            //_isMultiApplication = appIDs != null;
-            //_appIDs = appIDs;
-
-            InitStrutturaNomi();
-            CaricaApplicazioni();
-            CaricaAzioni();
-            CaricaCategorie();
-            CaricaApplicazioneRibbon();
-            CaricaAzioneCategoria();
-            CaricaCategoriaEntita();
-            CaricaEntitaAzione();
-            CaricaEntitaAzioneCalcolo();
-            CaricaEntitaInformazione();
-            CaricaEntitaAzioneInformazione();
-            CaricaCalcolo();
-            CaricaCalcoloInformazione();
-            CaricaEntitaCalcolo();
-            CaricaEntitaGrafico();
-            CaricaEntitaGraficoInformazione();
-            CaricaEntitaCommitment();
-            CaricaEntitaRampa();
-            CaricaEntitaAssetto();
-            CaricaEntitaProprieta();
-            CaricaEntitaInformazioneFormattazione();
-            CaricaEntitaParametroD();
-            CaricaEntitaParametroH();
-
-            //_wb.RepositoryDataSet.AcceptChanges();
-        }
-        #region Aggiorna Struttura Dati
-
-        #region Init Struttura Nomi
-        
-        public void InitStrutturaNomi()
-        {
-
-            this[DataBase.TAB.NOMI_DEFINITI] = DefinedNames.GetDefaultNameTable(DataBase.TAB.NOMI_DEFINITI);
-            this[DataBase.TAB.DATE_DEFINITE] = DefinedNames.GetDefaultDateTable(DataBase.TAB.DATE_DEFINITE);
-            this[DataBase.TAB.ADDRESS_FROM] = DefinedNames.GetDefaultAddressFromTable(DataBase.TAB.ADDRESS_FROM);
-            this[DataBase.TAB.ADDRESS_TO] = DefinedNames.GetDefaultAddressToTable(DataBase.TAB.ADDRESS_TO);
-            this[DataBase.TAB.EDITABILI] = DefinedNames.GetDefaultEditableTable(DataBase.TAB.EDITABILI);
-            this[DataBase.TAB.SALVADB] = DefinedNames.GetDefaultSaveTable(DataBase.TAB.SALVADB);
-            this[DataBase.TAB.ANNOTA] = DefinedNames.GetDefaultToNoteTable(DataBase.TAB.ANNOTA);
-            this[DataBase.TAB.CHECK] = DefinedNames.GetDefaultCheckTable(DataBase.TAB.CHECK);
-            this[DataBase.TAB.SELECTION] = DefinedNames.GetDefaultSelectionTable(DataBase.TAB.SELECTION);
-            this[DataBase.TAB.MODIFICA] = CreaTabellaModifica(DataBase.TAB.MODIFICA);
-            this[DataBase.TAB.EXPORT_XML] = CreaTabellaExportXML(DataBase.TAB.EXPORT_XML);
-        }
-        private DataTable CreaTabellaModifica(string name)
-        {
-            DataTable dt = new DataTable(name)
-            {
-                Columns =
-                {
-                    {"SiglaEntita", typeof(string)},
-                    {"SiglaInformazione", typeof(string)},
-                    {"Data", typeof(string)},
-                    {"Valore", typeof(string)},
-                    {"AnnotaModifica", typeof(string)},
-                    {"IdApplicazione", typeof(string)},
-                    {"IdUtente", typeof(string)}
-                }
-            };
-
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
-            return dt;
-        }
-        private DataTable CreaTabellaExportXML(string name)
-        {
-            DataTable dt = new DataTable(name)
-            {
-                Columns =
-                {
-                    {"SiglaEntita", typeof(string)},
-                    {"SiglaInformazione", typeof(string)},
-                    {"Data", typeof(string)},
-                    {"Valore", typeof(string)},
-                    {"AnnotaModifica", typeof(string)},
-                    {"IdApplicazione", typeof(string)},
-                    {"IdUtente", typeof(string)}
-                }
-            };
-
-            dt.PrimaryKey = new DataColumn[] { dt.Columns["SiglaEntita"], dt.Columns["SiglaInformazione"], dt.Columns["Data"] };
-            return dt;        
-        }
-        
-        #endregion
-
-        /// <summary>
-        /// Metodo richiamato da tutte le routine sottostanti che effettua la chiamata alla stored procedure sul server e aggiunge la tabella al DataSet locale. Restituisce true se l'operazione è andata a buon fine, lancia un'eccezione RepositoryUpdateException se fallisce.
-        /// </summary>
-        /// <param name="tableName">Nome della tabella da aggiornare.</param>
-        /// <param name="spName">Nome della stored procedure da eseguire.</param>
-        /// <param name="parameters">Parametri della stored procedure.</param>
-        /// <returns>True se l'operazione è andata a buon fine.</returns>
-        private void CaricaDati(string tableName, string spName, QryParams parameters)
-        {
-            DataTable dt = new DataTable();
-            if (_isMultiApplication)
-            {
-                foreach (string id in _appIDs)
-                {
-                    parameters["@IdApplicazione"] = id;
-                    dt.Merge(DataBase.Select(spName, parameters) ?? new DataTable());
-                }
-                if (dt.Columns.Count == 0)
-                    dt = null;
-            }
-            else
-            {
-                dt = DataBase.Select(spName, parameters);
-            }
-            
-            if (dt != null)
-                this[tableName] = dt;
-        }
-        /// <summary>
-        /// Carica la lista di tutte le applicazioni disponibili.
-        /// </summary>
-        private void CaricaApplicazioni()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@IdApplicazione", 0}
-                };
-
-            CaricaDati(DataBase.TAB.LISTA_APPLICAZIONI, DataBase.SP.APPLICAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica i dati necessari alla creazione del menu ribbon.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaApplicazioneRibbon()
-        {
-            CaricaDati(DataBase.TAB.APPLICAZIONE_RIBBON, DataBase.SP.APPLICAZIONE_RIBBON, new QryParams());
-        }
-        /// <summary>
-        /// Carica le azioni.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaAzioni()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaAzione", Core.DataBase.ALL},
-                    {"@Operativa", Core.DataBase.ALL},
-                    {"@Visibile", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.AZIONE, DataBase.SP.AZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica le categorie.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaCategorie()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaCategoria", Core.DataBase.ALL},
-                    {"@Operativa", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.CATEGORIA, DataBase.SP.CATEGORIA, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione azione categoria.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaAzioneCategoria()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaAzione", Core.DataBase.ALL},
-                    {"@SiglaCategoria", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.AZIONE_CATEGORIA, DataBase.SP.AZIONE_CATEGORIA, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione categoria entita.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaCategoriaEntita()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaCategoria", Core.DataBase.ALL},
-                    {"@SiglaEntita", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.CATEGORIA_ENTITA, DataBase.SP.CATEGORIA_ENTITA, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità azione.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaAzione()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaAzione", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_AZIONE, DataBase.SP.ENTITA_AZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità azione calcolo.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaAzioneCalcolo()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaAzione", Core.DataBase.ALL},
-                    {"@SiglaCalcolo", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_AZIONE_CALCOLO, DataBase.SP.ENTITA_AZIONE_CALCOLO, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità informazione.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaInformazione()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaInformazione", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_INFORMAZIONE, DataBase.SP.ENTITA_INFORMAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità azione informazione.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaAzioneInformazione()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaAzione", Core.DataBase.ALL},
-                    {"@SiglaInformazione", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_AZIONE_INFORMAZIONE, DataBase.SP.ENTITA_AZIONE_INFORMAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica i calcoli.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaCalcolo()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaCalcolo", Core.DataBase.ALL},
-                    {"@IdTipologiaCalcolo", 0}
-                };
-
-            CaricaDati(DataBase.TAB.CALCOLO, DataBase.SP.CALCOLO, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione calcolo informazione.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaCalcoloInformazione()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaCalcolo", Core.DataBase.ALL},
-                    {"@SiglaInformazione", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.CALCOLO_INFORMAZIONE, DataBase.SP.CALCOLO_INFORMAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità calcolo.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaCalcolo()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaCalcolo", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_CALCOLO, DataBase.SP.ENTITA_CALCOLO, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità grafico.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaGrafico()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaGrafico", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_GRAFICO, DataBase.SP.ENTITA_GRAFICO, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità grafico informazione.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaGraficoInformazione()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaGrafico", Core.DataBase.ALL},
-                    {"@SiglaInformazione", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_GRAFICO_INFORMAZIONE, DataBase.SP.ENTITA_GRAFICO_INFORMAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità commitment.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaCommitment()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_COMMITMENT, DataBase.SP.ENTITA_COMMITMENT, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità rampa.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaRampa()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_RAMPA, DataBase.SP.ENTITA_RAMPA, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità assetto.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaAssetto()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_ASSETTO, DataBase.SP.ENTITA_ASSETTO, parameters);
-        }
-        /// <summary>
-        /// Carica la relazione entità proprietà.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaProprieta()
-        {
-            CaricaDati(DataBase.TAB.ENTITA_PROPRIETA, DataBase.SP.ENTITA_PROPRIETA, new QryParams());
-        }
-        /// <summary>
-        /// Carica la relazione entità informazione formattazione.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaInformazioneFormattazione()
-        {
-            QryParams parameters = new QryParams() 
-                {
-                    {"@SiglaEntita", Core.DataBase.ALL},
-                    {"@SiglaInformazione", Core.DataBase.ALL}
-                };
-
-            CaricaDati(DataBase.TAB.ENTITA_INFORMAZIONE_FORMATTAZIONE, DataBase.SP.ENTITA_INFORMAZIONE_FORMATTAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica la tipologia check.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaTipologiaCheck()
-        {
-            CaricaDati(DataBase.TAB.TIPOLOGIA_CHECK, DataBase.SP.TIPOLOGIA_CHECK, new QryParams());
-        }
-        /// <summary>
-        /// Carica la relazione entità parametro giornaliero.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaParametroD()
-        {
-            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_D, DataBase.SP.ENTITA_PARAMETRO_D, new QryParams());
-        }
-        /// <summary>
-        /// Carica la relazione entità parametro orario.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaEntitaParametroH()
-        {
-            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_H, DataBase.SP.ENTITA_PARAMETRO_H, new QryParams());
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Carica solo i parametri dell'applicazione contenuti nella tabella APPLICAZIONE.
-        /// </summary>
-        /// <param name="appID">L'ID dell'applicazione di cui ricaricare i parametri.</param>
-        /// <returns>La tabella contenente tutti i dati trovati sull'applicazione.</returns>
-        public DataRow CaricaApplicazione(object IdApplicazione)
-        {
-            CaricaApplicazioni();
-
-            Applicazione = this[DataBase.TAB.LISTA_APPLICAZIONI].AsEnumerable()
-                .Where(r => r["IdApplicazione"].Equals(IdApplicazione))
-                .FirstOrDefault();
-
-            return Applicazione;
-        }
-
-        #endregion
-
-        public IEnumerator GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
     }
 
     class Win32Window : IWin32Window

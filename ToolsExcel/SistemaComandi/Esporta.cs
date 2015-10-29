@@ -22,7 +22,7 @@ namespace Iren.ToolsExcel
     {
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_AZIONE].DefaultView;
+            DataView entitaAzione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             if (entitaAzione.Count == 0)
                 return false;
@@ -30,7 +30,7 @@ namespace Iren.ToolsExcel
             switch (siglaAzione.ToString())
             {
                 case "E_VDT":
-                    DataView entitaAssetto = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_ASSETTO].DefaultView;
+                    DataView entitaAssetto = Workbook.Repository[DataBase.TAB.ENTITA_ASSETTO].DefaultView;
                     entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
 
                     Dictionary<string,int> assettoFasce = new Dictionary<string,int>();
@@ -72,7 +72,7 @@ namespace Iren.ToolsExcel
                     export.Add(new Range(Globals.ThisWorkbook.Application.ActiveWindow.SplitRow, definedNames.GetFirstCol() - 2).Extend(colOffset: 2 + Date.GetOreGiorno(Workbook.DataAttiva)));
 
 
-                    DataView entitaAzioneInformazione = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                    DataView entitaAzioneInformazione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
                     entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                     foreach (DataRowView info in entitaAzioneInformazione)
                     {
@@ -104,7 +104,7 @@ namespace Iren.ToolsExcel
                 string suffissoData = Date.GetSuffissoData(giorno);
                 int oreGiorno = Date.GetOreGiorno(Workbook.DataAttiva);
 
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
@@ -239,7 +239,7 @@ namespace Iren.ToolsExcel
             {
                 Excel.Worksheet ws = Globals.ThisWorkbook.Sheets[nomeFoglio];
 
-                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (entitaProprieta.Count > 0)
                 {
@@ -261,7 +261,7 @@ namespace Iren.ToolsExcel
                     string mailTo = config.Value;
                     string mailCC = "";
 
-                    if (Simboli.Ambiente == "Produzione")
+                    if (Workbook.Ambiente == "Produzione")
                     {
                         entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_TO' AND IdApplicazione = " + Workbook.IdApplicazione;
                         mailTo = entitaProprieta[0]["Valore"].ToString();

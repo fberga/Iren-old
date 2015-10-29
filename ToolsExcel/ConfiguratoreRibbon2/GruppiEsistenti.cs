@@ -95,6 +95,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 var applications = _allGroups.AsEnumerable()
                     .Where(r => r["IdGruppo"].Equals(listBoxGruppi.SelectedValue) && r["IdUtente"].Equals(listBoxUtenti.SelectedValue))
                     .Select(r => new { IdApplicazione = r["IdApplicazione"], DesApplicazione = r["DesApplicazione"] })
+                    .OrderBy(r => r.IdApplicazione)
                     .Distinct()
                     .ToList();
 

@@ -153,8 +153,8 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         private void InitNaming()
         {
-            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.NOMI_DEFINITI];
-            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.DATE_DEFINITE];
+            DataTable definedNames = Utility.Workbook.Repository[Utility.DataBase.TAB.NOMI_DEFINITI];
+            DataTable definedDates = Utility.Workbook.Repository[Utility.DataBase.TAB.DATE_DEFINITE];
 
             IEnumerable<DataRow> names =
                 from DataRow r in definedNames.AsEnumerable()
@@ -185,8 +185,8 @@ namespace Iren.ToolsExcel.Base
         /// <param name="thisSheet">Se true limita l'azione alla sola sheet corrente.</param>
         private void InitGOTOs(bool thisSheet = false)
         {
-            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ADDRESS_FROM];
-            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ADDRESS_TO];
+            DataTable addressFromTable = Utility.Workbook.Repository[Utility.DataBase.TAB.ADDRESS_FROM];
+            DataTable addressToTable = Utility.Workbook.Repository[Utility.DataBase.TAB.ADDRESS_TO];
 
             _addressFrom =
                (from DataRow r in addressFromTable.AsEnumerable()
@@ -209,7 +209,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         private void InitEditable()
         {
-            DataTable editabili = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.EDITABILI];
+            DataTable editabili = Utility.Workbook.Repository[Utility.DataBase.TAB.EDITABILI];
 
             _editable =
                 (from r in editabili.AsEnumerable()
@@ -221,7 +221,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         private void InitSaveDB()
         {
-            DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.SALVADB];
+            DataTable saveDB = Utility.Workbook.Repository[Utility.DataBase.TAB.SALVADB];
 
             _saveDB =
                 (from r in saveDB.AsEnumerable()
@@ -233,7 +233,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         private void InitToNote()
         {
-            DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ANNOTA];
+            DataTable toNote = Utility.Workbook.Repository[Utility.DataBase.TAB.ANNOTA];
 
             _toNote =
                 (from r in toNote.AsEnumerable()
@@ -245,7 +245,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         private void InitCheck()
         {
-            DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.CHECK];
+            DataTable check = Utility.Workbook.Repository[Utility.DataBase.TAB.CHECK];
 
             _check =
                 (from r in check.AsEnumerable()
@@ -257,7 +257,7 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         private void InitSelection()
         {
-            DataTable selection = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.SELECTION];
+            DataTable selection = Utility.Workbook.Repository[Utility.DataBase.TAB.SELECTION];
 
             var groupings =
                 (from r in selection.AsEnumerable()
@@ -958,15 +958,15 @@ namespace Iren.ToolsExcel.Base
         /// </summary>
         public void DumpToDataSet()
         {
-            DataTable definedNames = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.NOMI_DEFINITI];
-            DataTable definedDates = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.DATE_DEFINITE];
-            DataTable addressFromTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ADDRESS_FROM];
-            DataTable addressToTable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ADDRESS_TO];
-            DataTable editable = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.EDITABILI];
-            DataTable saveDB = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.SALVADB];
-            DataTable toNote = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ANNOTA];
-            DataTable check = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.CHECK];
-            DataTable selection = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.SELECTION];
+            DataTable definedNames = Utility.Workbook.Repository[Utility.DataBase.TAB.NOMI_DEFINITI];
+            DataTable definedDates = Utility.Workbook.Repository[Utility.DataBase.TAB.DATE_DEFINITE];
+            DataTable addressFromTable = Utility.Workbook.Repository[Utility.DataBase.TAB.ADDRESS_FROM];
+            DataTable addressToTable = Utility.Workbook.Repository[Utility.DataBase.TAB.ADDRESS_TO];
+            DataTable editable = Utility.Workbook.Repository[Utility.DataBase.TAB.EDITABILI];
+            DataTable saveDB = Utility.Workbook.Repository[Utility.DataBase.TAB.SALVADB];
+            DataTable toNote = Utility.Workbook.Repository[Utility.DataBase.TAB.ANNOTA];
+            DataTable check = Utility.Workbook.Repository[Utility.DataBase.TAB.CHECK];
+            DataTable selection = Utility.Workbook.Repository[Utility.DataBase.TAB.SELECTION];
 
             ///////// nomi
             foreach (var ele in _defNamesIndexByName)
@@ -1330,7 +1330,7 @@ namespace Iren.ToolsExcel.Base
         /// <returns>Nome del foglio che contiene l'entità in ingresso.</returns>
         public static string GetSheetName(object siglaEntita)
         {
-            DataTable dt = DataBase.LocalDB.Tables[DataBase.TAB.NOMI_DEFINITI];
+            DataTable dt = Workbook.Repository[DataBase.TAB.NOMI_DEFINITI];
 
             List<Microsoft.Office.Interop.Excel.Worksheet> msdSheets = new List<Microsoft.Office.Interop.Excel.Worksheet>();
 

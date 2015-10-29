@@ -36,8 +36,8 @@ namespace Iren.ToolsExcel
         {
             Range rngCheck = new Range(_check.Range);
 
-            DataView categoriaEntita = Utility.DataBase.LocalDB.Tables[Utility.DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+            DataView categoriaEntita = Utility.Workbook.Repository[Utility.DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Utility.Workbook.IdApplicazione;
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;

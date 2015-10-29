@@ -41,17 +41,17 @@ namespace Iren.ToolsExcel.Forms
             _r = riepilogo;
             _carica = carica;
 
-            _categorie = DataBase.LocalDB.Tables[Tabella.CATEGORIA].DefaultView;
+            _categorie = Workbook.Repository[Tabella.CATEGORIA].DefaultView;
             _categorie.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
-            _categoriaEntita = DataBase.LocalDB.Tables[Tabella.CATEGORIA_ENTITA].DefaultView;
+            _categoriaEntita = Workbook.Repository[Tabella.CATEGORIA_ENTITA].DefaultView;
             _categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Workbook.IdApplicazione;
-            _azioni = DataBase.LocalDB.Tables[Tabella.AZIONE].DefaultView;
+            _azioni = Workbook.Repository[Tabella.AZIONE].DefaultView;
             _azioni.RowFilter = "Visibile = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
-            _azioniCategorie = DataBase.LocalDB.Tables[Tabella.AZIONE_CATEGORIA].DefaultView;
+            _azioniCategorie = Workbook.Repository[Tabella.AZIONE_CATEGORIA].DefaultView;
             _azioniCategorie.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
-            _entitaAzioni = DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE].DefaultView;
+            _entitaAzioni = Workbook.Repository[Tabella.ENTITA_AZIONE].DefaultView;
             _entitaAzioni.RowFilter =  "IdApplicazione = " + Workbook.IdApplicazione;
-            DataView entitaProprieta = DataBase.LocalDB.Tables[Tabella.ENTITA_PROPRIETA].DefaultView;
+            DataView entitaProprieta = Workbook.Repository[Tabella.ENTITA_PROPRIETA].DefaultView;
             entitaProprieta.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
 
             ConfigStructure();
@@ -203,6 +203,7 @@ namespace Iren.ToolsExcel.Forms
                             }
                         });
                     }
+                    _categoriaEntita.Sort = "";
                 }
             });
         }
@@ -389,7 +390,7 @@ namespace Iren.ToolsExcel.Forms
 
                 foreach (DateTime date in _toProcessDates)
                 {
-                    DataView entitaProprieta = DataBase.LocalDB.Tables[Tabella.ENTITA_PROPRIETA].DefaultView;
+                    DataView entitaProprieta = Workbook.Repository[Tabella.ENTITA_PROPRIETA].DefaultView;
                     
                     string suffissoData = Date.GetSuffissoData(date);
 
@@ -414,7 +415,7 @@ namespace Iren.ToolsExcel.Forms
                                         string nomeFoglio = DefinedNames.GetSheetName(nodoEntita.Name);
                                         bool presente;
 
-                                        DataView entitaAzione = new DataView(DataBase.LocalDB.Tables[Tabella.ENTITA_AZIONE]);
+                                        DataView entitaAzione = new DataView(Workbook.Repository[Tabella.ENTITA_AZIONE]);
                                         entitaAzione.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                                         if (entitaAzione.Count > 0 && (entitaAzione[0]["Giorno"] is DBNull || entitaAzione[0]["Giorno"].ToString().Contains(Date.GetSuffissoData(date))))

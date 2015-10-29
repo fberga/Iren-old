@@ -33,8 +33,8 @@ namespace Iren.ToolsExcel.Base
 
         public Optimizer() 
         {            
-            _entitaInformazioni = Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
-            _entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+            _entitaInformazioni = Utility.Workbook.Repository[Utility.DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+            _entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
         }
 
         #endregion
@@ -265,7 +265,7 @@ namespace Iren.ToolsExcel.Base
             _definedNames = new DefinedNames(_sheet);
 
             string desEntita =
-                (from r in DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
+                (from r in Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
                  where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita)
                  select r["DesEntita"].ToString()).First();
 

@@ -22,12 +22,12 @@ namespace Iren.ToolsExcel
     /// </summary>
     class Esporta : AEsporta
     {
-        DefinedNames _defNamesMercato = new DefinedNames(Simboli.Mercato);
+        DefinedNames _defNamesMercato = new DefinedNames(Workbook.Mercato);
 
         protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
         {
-            DataView entitaAzione = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_AZIONE].DefaultView;
-            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Simboli.AppID;
+            DataView entitaAzione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE].DefaultView;
+            entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             if (entitaAzione.Count == 0)
                 return false;
 
@@ -59,11 +59,11 @@ namespace Iren.ToolsExcel
                     Globals.ThisWorkbook.Application.ScreenUpdating = false;
 
                     var oldActiveWindow = Globals.ThisWorkbook.Application.ActiveWindow;
-                    Globals.ThisWorkbook.Worksheets[Simboli.Mercato].Activate();
+                    Globals.ThisWorkbook.Worksheets[Workbook.Mercato].Activate();
 
-                    Range rng = new Range(_defNamesMercato.GetRowByName(siglaEntita, "DATA"), 1, Date.GetOreGiorno(DataBase.DataAttiva) + 5, _defNamesMercato.GetLastCol());
+                    Range rng = new Range(_defNamesMercato.GetRowByName(siglaEntita, "DATA"), 1, Date.GetOreGiorno(Workbook.DataAttiva) + 5, _defNamesMercato.GetLastCol());
 
-                    bool result = InviaMail(Simboli.Mercato, siglaEntita, rng);
+                    bool result = InviaMail(Workbook.Mercato, siglaEntita, rng);
                  
                     oldActiveWindow.Activate();
 
@@ -126,28 +126,28 @@ namespace Iren.ToolsExcel
                 Outlook.Application outlook = GetOutlookInstance();
                 Outlook.MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
 
-                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.Tab.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_EXCEL' AND IdApplicazione = " + Simboli.AppID;
+                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_EXCEL' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (entitaProprieta.Count > 0)
                 {
                     //creo file Excel da allegare
                     string pathExport = PreparePath(Workbook.GetUsrConfigElement("exportXML"));
-                    attachments.Add(Path.Combine(pathExport, DataBase.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Simboli.Mercato + ".xls"));
+                    attachments.Add(Path.Combine(pathExport, Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls"));
 
                     hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
 
-                    DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA].DefaultView;
-                    categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+                    DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                    categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                     if(categoriaEntita.Count == 0)
-                        categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Simboli.AppID;
+                        categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                     bool interrupt = false;
 
                     foreach (DataRowView entita in categoriaEntita)
                     {
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Simboli.AppID;
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
@@ -168,7 +168,7 @@ namespace Iren.ToolsExcel
                                 attachments.Add(file);
                         }
 
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Simboli.AppID;
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
@@ -204,7 +204,7 @@ namespace Iren.ToolsExcel
                                     attachments.Add(file);
                             }
                         }
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS' AND IdApplicazione = " + Simboli.AppID;
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
                         {
                             string nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileRS_TERNA").Value) + ".xml";
@@ -232,19 +232,19 @@ namespace Iren.ToolsExcel
                         string mailTo = config.Value;
                         string mailCC = "";
 
-                        if (Simboli.Ambiente == "Produzione")
+                        if (Workbook.Ambiente == Simboli.PROD)
                         {
-                            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_TO' AND IdApplicazione = " + Simboli.AppID;
+                            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_TO' AND IdApplicazione = " + Workbook.IdApplicazione;
                             mailTo = entitaProprieta[0]["Valore"].ToString();
-                            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_CC' AND IdApplicazione = " + Simboli.AppID;
+                            entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_MAIL_CC' AND IdApplicazione = " + Workbook.IdApplicazione;
                             mailCC = entitaProprieta[0]["Valore"].ToString();
                         }
 
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_CODICE_MAIL' AND IdApplicazione = " + Simboli.AppID;
+                        entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_CODICE_MAIL' AND IdApplicazione = " + Workbook.IdApplicazione;
                         string codUP = entitaProprieta[0]["Valore"].ToString();
 
                         config = Workbook.GetUsrConfigElement("oggettoMail");
-                        string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", DataBase.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Simboli.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
+                        string oggetto = config.Value.Replace("%COD%", codUP).Replace("%DATA%", Workbook.DataAttiva.ToString("dd-MM-yyyy")).Replace("%MSD%", Workbook.Mercato) + (hasVariations ? " - CON VARIAZIONI" : "");
                         config = Workbook.GetUsrConfigElement("messaggioMail");
                         string messaggio = config.Value;
 

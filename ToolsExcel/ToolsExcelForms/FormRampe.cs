@@ -46,19 +46,19 @@ namespace Iren.ToolsExcel.Forms
             _oreGiorno = Date.GetOreGiorno(_suffissoData);
 
             _pRif =
-                (from r in DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].AsEnumerable()
+                (from r in Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].AsEnumerable()
                     where r["IdApplicazione"].Equals(Workbook.IdApplicazione) 
                     && r["SiglaEntita"].Equals(_siglaEntita)
                     && r["SiglaProprieta"].Equals("SISTEMA_COMANDI_PRIF")
                     select Double.Parse(r["Valore"].ToString())).FirstOrDefault();
 
-            _entitaRampa = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_RAMPA].DefaultView;
+            _entitaRampa = Workbook.Repository[DataBase.TAB.ENTITA_RAMPA].DefaultView;
             _entitaRampa.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             _sigleRampa = 
                 (from DataRowView r in _entitaRampa
                     select r["SiglaRampa"]).ToList();
 
-            int assetti = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(_siglaEntita));
+            int assetti = Workbook.Repository[DataBase.TAB.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(_siglaEntita));
 
             Range profilo = _definedNames.Get(_siglaEntita, "PQNR_PROFILO", _suffissoData).Extend(colOffset: _oreGiorno);
 
@@ -92,7 +92,7 @@ namespace Iren.ToolsExcel.Forms
 
         public void frmRAMPE_Load(object sender, EventArgs e)
         {
-            DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaEntita = '" + _siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             lbDesEntita.Text = categoriaEntita[0]["DesEntita"].ToString() + "   -   Potenza rif = " + _pRif + "MW   -   Ore fermata = " + (_oreFermata == -1 ? "NA" : _oreFermata.ToString());

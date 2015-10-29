@@ -30,10 +30,10 @@ namespace Iren.ToolsExcel.Forms
 
             this.Text = Simboli.nomeApplicazione + " - Modifica Parametri";
 
-            _entita = new DataView(Utility.DataBase.LocalDB.Tables[Utility.DataBase.TAB.CATEGORIA_ENTITA]);
+            _entita = new DataView(Utility.Workbook.Repository[Utility.DataBase.TAB.CATEGORIA_ENTITA]);
             if(Utility.DataBase.OpenConnection())
             {
-                _parametri = Utility.DataBase.Select(Utility.DataBase.SP.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.DataBase.DB.IdApplicazione) ?? new DataTable();
+                _parametri = Utility.DataBase.Select(Utility.DataBase.SP.PAR.ELENCO_PARAMETRI, "@IdApplicazione=" + Utility.Workbook.IdApplicazione) ?? new DataTable();
 
                 _parametriD = new DataView(_parametri);
                 _parametriH = new DataView(_parametri);
@@ -86,9 +86,9 @@ namespace Iren.ToolsExcel.Forms
             {
                 DataRowView r = cmbParametriH.SelectedValue as DataRowView;
 
-                DataTable valori = Utility.DataBase.Select(Utility.DataBase.SP.VALORI_PARAMETRI, new Core.QryParams() 
+                DataTable valori = Utility.DataBase.Select(Utility.DataBase.SP.PAR.VALORI_PARAMETRI, new Core.QryParams() 
                 {
-                    {"@IdApplicazione", Utility.DataBase.DB.IdApplicazione},
+                    {"@IdApplicazione", Utility.Workbook.IdApplicazione},
                     {"@IdEntita", r["IdEntita"]},
                     {"@IdTipologiaParametro", r["IdParametro"]},
                     {"@Dettaglio", "H"},
@@ -224,9 +224,9 @@ namespace Iren.ToolsExcel.Forms
             {
                 DataRowView r = cmbParametriD.SelectedValue as DataRowView;
 
-                DataTable valori = Utility.DataBase.Select(Utility.DataBase.SP.VALORI_PARAMETRI, new Core.QryParams() 
+                DataTable valori = Utility.DataBase.Select(Utility.DataBase.SP.PAR.VALORI_PARAMETRI, new Core.QryParams() 
                 {
-                    {"@IdApplicazione", Utility.DataBase.DB.IdApplicazione},
+                    {"@IdApplicazione", Utility.Workbook.IdApplicazione},
                     {"@IdEntita", r["IdEntita"]},
                     {"@IdTipologiaParametro", r["IdParametro"]},
                     {"@Dettaglio", "D"},
@@ -457,7 +457,7 @@ namespace Iren.ToolsExcel.Forms
                 //insert or update
                 if (_isUpdate)
                 {
-                    Utility.DataBase.Insert(Utility.DataBase.SP.UPDATE_PARAMETRO, new Core.QryParams()
+                    Utility.DataBase.Insert(Utility.DataBase.SP.PAR.UPDATE_PARAMETRO, new Core.QryParams()
                     {
                         {"@IdEntita", parRow["IdEntita"]},
                         {"@IdTipologiaParametro", parRow["IdParametro"]},
@@ -472,7 +472,7 @@ namespace Iren.ToolsExcel.Forms
                 }
                 else
                 {
-                    Utility.DataBase.Insert(Utility.DataBase.SP.INSERT_PARAMETRO, new Core.QryParams()
+                    Utility.DataBase.Insert(Utility.DataBase.SP.PAR.INSERT_PARAMETRO, new Core.QryParams()
                     {
                         {"@IdEntita", parRow["IdEntita"]},
                         {"@IdTipologiaParametro", parRow["IdParametro"]},
@@ -569,7 +569,7 @@ namespace Iren.ToolsExcel.Forms
                 DateTime dataFV = dataGridParametriD["Fine Validità", dataGridParametriD.CurrentRow.Index].Value is DBNull ? DateTime.MaxValue : (DateTime)dataGridParametriD["Fine Validità", dataGridParametriD.CurrentRow.Index].Value;
 
 
-                Utility.DataBase.Insert(Utility.DataBase.SP.DELETE_PARAMETRO, new Core.QryParams()
+                Utility.DataBase.Insert(Utility.DataBase.SP.PAR.DELETE_PARAMETRO, new Core.QryParams()
                 {
                     {"@IdEntita", parRow["IdEntita"]},
                     {"@IdTipologiaParametro", parRow["IdParametro"]},

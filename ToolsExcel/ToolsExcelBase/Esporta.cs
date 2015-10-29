@@ -155,7 +155,7 @@ namespace Iren.ToolsExcel.Base
                 switch (opt.ToLowerInvariant())
                 {
                     case "msd":
-                        o = Simboli.Mercato;
+                        o = Workbook.Mercato;
                         break;
                     case "codrup":
                         o = codRup;
@@ -172,26 +172,6 @@ namespace Iren.ToolsExcel.Base
 
             return name;
         }
-
-        //public static string PreparePathNoEmergency(string path)
-        //{
-        //    Regex options = new Regex(@"\[\w+\]");
-        //    path = options.Replace(path, match =>
-        //    {
-        //        string opt = match.Value.Replace("[", "").Replace("]", "");
-        //        string o = "";
-        //        switch (opt.ToLowerInvariant())
-        //        {
-        //            case "appname":
-        //                o = Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant();
-        //                break;
-        //        }
-
-        //        return o;
-        //    });
-
-        //    return path;
-        //}
 
         #endregion
     }

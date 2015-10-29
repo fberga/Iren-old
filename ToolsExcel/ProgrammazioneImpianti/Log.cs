@@ -18,12 +18,6 @@ namespace Iren.ToolsExcel
 {
     public partial class Log
     {
-        #region Variabili
-
-        public ListObject _logObj;
-
-        #endregion
-
         #region Codice generato dalla finestra di progettazione di VSTO
 
         /// <summary>
@@ -33,12 +27,7 @@ namespace Iren.ToolsExcel
         private void InternalStartup()
         {
             this.Startup += new System.EventHandler(this.Log_Startup);
-
         }
-
-        #endregion
-
-        #region Metodi
 
         #endregion
 
@@ -46,33 +35,18 @@ namespace Iren.ToolsExcel
 
         private void Log_Startup(object sender, EventArgs e)
         {
-            if (!Simboli.Aborted)
-            {
-                Unprotect(Simboli.pwd);
-                try
-                {
-                    _logObj = Globals.Factory.GetVstoObject(ListObjects["LogList"]);
-                }
-                catch (Exception)
-                {
-                    _logObj = Controls.AddListObject(Range["A1"], "LogList");
-                }
-                _logObj.AutoSetDataBoundColumnHeaders = true;
+            Unprotect(Globals.ThisWorkbook.Pwd);
 
-                if (DataBase.OpenConnection())
-                {
-                    _logObj.DataSource = DataBase.LocalDB.Tables[DataBase.Tab.LOG].DefaultView;
-                    _logObj.Range.EntireColumn.AutoFit();
-                    _logObj.TableStyle = "TableStyleLight16";
+            this.logList.DataSource = Globals.ThisWorkbook.logDataTable;
 
-                    Excel.Range rng = Columns[2];
-                    rng.NumberFormat = "dd/MM/yyyy";
-                    rng.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+            this.logList.AutoSetDataBoundColumnHeaders = true;
+            this.logList.Range.EntireColumn.AutoFit();
+            this.logList.TableStyle = "TableStyleLight16";
 
-                    DataBase.DB.CloseConnection();
-                }
-                Protect(Simboli.pwd);
-            }
+            ((Excel.Range)Columns[2]).NumberFormat = "dd/MM/yyyy";
+            ((Excel.Range)Columns[2]).HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+
+            Protect(Utility.Workbook.Password, allowSorting: true, allowFiltering: true);
         }
 
         #endregion

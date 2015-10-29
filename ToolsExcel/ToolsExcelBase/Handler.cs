@@ -105,7 +105,7 @@ namespace Iren.ToolsExcel.Base
         /// <param name="tableName">La tabella in cui inserire le modifiche. Di default Tab.Modifica. Utile specificarme una diversa nel caso di esportazione XML.</param>
         public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false, string tableName = DataBase.TAB.MODIFICA)
         {
-            if (DataBase.DB.IdUtenteAttivo != 0)        //non salva sulla tabella delle modifiche se l'utente non è configurato
+            if (Workbook.IdUtente != 0)        //non salva sulla tabella delle modifiche se l'utente non è configurato
             {
                 Excel.Worksheet ws = Target.Worksheet;
                 bool wasProtected = ws.ProtectContents;
@@ -117,7 +117,7 @@ namespace Iren.ToolsExcel.Base
                     Workbook.ScreenUpdating = false;
 
                 DefinedNames definedNames = new DefinedNames(Target.Worksheet.Name, DefinedNames.InitType.SaveDB);
-                DataTable dt = DataBase.LocalDB.Tables[tableName];
+                DataTable dt = Workbook.Repository[tableName];
 
                 if (ws.ChartObjects().Count > 0 && !fromCalcolo)
                 {
@@ -160,8 +160,8 @@ namespace Iren.ToolsExcel.Base
                                         newRow["Data"] = data;
                                         newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
                                         newRow["AnnotaModifica"] = annota ? "1" : "0";
-                                        newRow["IdApplicazione"] = DataBase.DB.IdApplicazione;
-                                        newRow["IdUtente"] = DataBase.DB.IdUtenteAttivo;
+                                        newRow["IdApplicazione"] = Workbook.IdApplicazione;
+                                        newRow["IdUtente"] = Workbook.IdUtente;
 
                                         dt.Rows.Add(newRow);
                                     }

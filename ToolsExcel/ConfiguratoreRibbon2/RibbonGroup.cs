@@ -62,12 +62,12 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 }
             }
 
-            BackColor = ControlPaint.LightLight(ribbon.BackColor);
+            //BackColor = ControlPaint.LightLight(ribbon.BackColor);
 
-            this.Top = ribbon.Padding.Top;
+            //this.Top = ribbon.Padding.Top;
             this.Width = (int)(Utility.MeasureTextSize(this.Label).Width + 20);
-            this.Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom;
-            this.Label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
+            //this.Height = ribbon.Height - ribbon.Padding.Top - ribbon.Padding.Bottom - 20;
+            //this.Label.BackColor = ControlPaint.LightLight(ribbon.BackColor);
         }
         
 

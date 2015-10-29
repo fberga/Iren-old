@@ -371,11 +371,7 @@ namespace Iren.ToolsExcel.Utility
             {
                 InitUtente();
 
-                //forzo aggiornamento dei parametri del DB che altrimenti sono sicronizzati con quelli del workbook
-                DataBase.IdApplicazione = Workbook.IdApplicazione;
-                DataBase.DataAttiva = Workbook.DataAttiva;
-                DataBase.IdUtente = Workbook.IdUtente;
-                
+                DataBase.SetParameters(_wb.DataAttiva, _wb.IdUtente, _wb.IdApplicazione);
                 //Se non ci sono tabelle, inizializzo il repository allo stato attuale
                 if (Workbook.Repository.TablesCount == 0)
                 {
@@ -405,8 +401,8 @@ namespace Iren.ToolsExcel.Utility
                     _wb.Base.Close();
                     return false;
                 }
-                
-                DataBase.DataAttiva = Workbook.DataAttiva;
+
+                DataBase.DB.SetParameters(dataAttiva: _wb.DataAttiva);
                 Simboli.nomeApplicazione = Workbook.Repository.Applicazione["DesApplicazione"].ToString();
                 Struct.intervalloGiorni = Workbook.Repository.Applicazione["IntervalloGiorniEntita"] is DBNull ? 0 : (int)Workbook.Repository.Applicazione["IntervalloGiorniEntita"];
                 Struct.visualizzaRiepilogo = Workbook.Repository.Applicazione["VisRiepilogo"] is DBNull ? true : Workbook.Repository.Applicazione["VisRiepilogo"].Equals("1");
@@ -470,10 +466,8 @@ namespace Iren.ToolsExcel.Utility
         {
             _wb = wb;
             Repository = new Utility.Repository(wb);
-            //dopo inizializzazione temporanea in 
-            DataBase.CreateNew(Ambiente);
-            DataBase.AddPropertyChanged(Workbook.StatoDBChanged);
 
+            DataBase.CreateNew(Ambiente);
             if (!Update())
             {
                 Application.Iteration = true;

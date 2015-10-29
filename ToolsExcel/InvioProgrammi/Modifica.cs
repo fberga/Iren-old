@@ -23,19 +23,19 @@ namespace Iren.ToolsExcel
 
 
             Excel.Worksheet ws = Target.Worksheet;
-            Excel.Worksheet wsMercato = Workbook.Sheets[Simboli.Mercato];
+            Excel.Worksheet wsMercato = Workbook.Sheets[Workbook.Mercato];
 
             bool wasProtected = wsMercato.ProtectContents;
             if (wasProtected)
             {
-                wsMercato.Unprotect(Simboli.pwd);
-                ws.Unprotect(Simboli.pwd);
+                wsMercato.Unprotect(Workbook.Password);
+                ws.Unprotect(Workbook.Password);
             }
 
             DefinedNames definedNames = new DefinedNames(ws.Name);
-            DefinedNames definedNamesMercato = new DefinedNames(Simboli.Mercato);
+            DefinedNames definedNamesMercato = new DefinedNames(Workbook.Mercato);
 
-            DataTable entita = DataBase.LocalDB.Tables[DataBase.Tab.CATEGORIA_ENTITA];
+            DataTable entita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA];
 
             string[] ranges = Target.Address.Split(',');
 
@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel
 
                     var rif =
                     (from r in entita.AsEnumerable()
-                     where r["IdApplicazione"].Equals(int.Parse(Simboli.AppID)) && r["SiglaEntita"].Equals(siglaEntita)
+                     where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita)
                      select new { SiglaEntita = r["Gerarchia"] is DBNull ? r["SiglaEntita"] : r["Gerarchia"], Riferimento = r["Riferimento"] }).First();
 
                     string quarter = Regex.Match(siglaInformazione, @"Q\d").Value;
@@ -70,8 +70,8 @@ namespace Iren.ToolsExcel
 
             if (wasProtected)
             {
-                wsMercato.Protect(Simboli.pwd);
-                ws.Protect(Simboli.pwd);
+                wsMercato.Protect(Workbook.Password);
+                ws.Protect(Workbook.Password);
             }
 
             //Se la funzione scrive in altre celle, ricordarsi di riabilitare gli handler per la modifica delle celle

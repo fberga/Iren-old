@@ -37,8 +37,8 @@ namespace Iren.ToolsExcel.Forms
             
             if (Struct.intervalloGiorni > 0)
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
                 categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + Workbook.IdApplicazione;
                 entitaProprieta.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
 
@@ -80,8 +80,8 @@ namespace Iren.ToolsExcel.Forms
 
                 for (int i = 0; i <= maxIntervallo; i++)
                 {
-                    _workList.Add(DataBase.DB.DataAttiva.AddDays(i), false);
-                    checkDate.Items.Add(DataBase.DB.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy"));
+                    _workList.Add(Workbook.DataAttiva.AddDays(i), false);
+                    checkDate.Items.Add(Workbook.DataAttiva.AddDays(i).ToString("dddd d MMMM yyyy"));
                 }                
 
                 panelTop.FixedPanel = FixedPanel.None;

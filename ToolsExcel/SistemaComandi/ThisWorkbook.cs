@@ -50,10 +50,11 @@ namespace Iren.ToolsExcel
         public string NomeUtente { get { return nomeUtente; } set { nomeUtente = value; } }
         public DateTime DataAttiva { get { return dataAttiva; } set { dataAttiva = value; } }
         public string Ambiente { get { return ambiente; } set { ambiente = value; } }
-        public string Password { get { return password; } }
+        public string Pwd { get { return password; } }
+        public int IdStagione { get { return idStagione; } set { idStagione = value; } }
 
         public DataSet RepositoryDataSet { get { return repositoryDataSet; } }
-        public DataSet LogDataSet { get { return logDataSet; } }
+        public DataTable LogDataTable { get { return logDataTable; } set { logDataTable = value; } }
         public DataSet RibbonDataSet { get { return ribbonDataSet; } }
 
         #endregion
@@ -67,17 +68,19 @@ namespace Iren.ToolsExcel
         [CachedAttribute()]
         public string nomeUtente = string.Empty;
         [CachedAttribute()]
-        public DateTime dataAttiva = DateTime.Now;
+        public DateTime dataAttiva = DateTime.Today;
         [CachedAttribute()]
         public string ambiente = Simboli.PROD;
         [CachedAttribute()]
         public DataSet repositoryDataSet = new DataSet();
         [CachedAttribute()]
-        public DataSet logDataSet = new DataSet();
+        public DataTable logDataTable = new DataTable();
         [CachedAttribute()]
         public DataSet ribbonDataSet = new DataSet();
         [CachedAttribute()]
         public string password = "8176";
+        [CachedAttribute()]
+        public int idStagione = -1;
 
         #endregion
 
@@ -98,15 +101,17 @@ namespace Iren.ToolsExcel
 
         private void ThisWorkbook_Startup(object sender, System.EventArgs e)
         {
+            Application.ScreenUpdating = false;
 #if DEBUG
             ambiente = Simboli.DEV;
 #endif
-            //Utility.Workbook.StartUp(this);      
+            Utility.Workbook.StartUp(this);
+            Globals.Ribbons.GetRibbon<ToolsExcelRibbon>().InitRibbon();
+            Application.ScreenUpdating = true;
         }
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
             Utility.Workbook.Close();
-            Save();
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Iren.ToolsExcel.Forms
             _siglaInformazione = siglaInformazione;
             this.Text = Simboli.nomeApplicazione + " - Selezione UP";
 
-            DataView entitaInformazioni = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+            DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
             entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
             string rowFilter = "SiglaEntita IN (";
@@ -48,7 +48,7 @@ namespace Iren.ToolsExcel.Forms
             }
             rowFilter = rowFilter.Substring(0, rowFilter.Length - 1) + ")";
 
-            DataView categorieEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            DataView categorieEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
             categorieEntita.RowFilter = rowFilter + " AND IdApplicazione = " + Workbook.IdApplicazione;
 
             _upList =

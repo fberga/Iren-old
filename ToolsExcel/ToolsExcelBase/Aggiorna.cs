@@ -86,7 +86,7 @@ namespace Iren.ToolsExcel.Base
         protected void CaricaDatiDalDB()
         {
             CancellaTabelle();
-            DataTable entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA];
+            DataTable entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA];
             DateTime dataFine = Workbook.DataAttiva.AddDays(Math.Max(
                     (from r in entitaProprieta.AsEnumerable()
                      where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
@@ -96,19 +96,19 @@ namespace Iren.ToolsExcel.Base
             DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
 
             datiApplicazioneH.TableName = DataBase.TAB.DATI_APPLICAZIONE_H;
-            DataBase.LocalDB.Tables.Add(datiApplicazioneH);
+            Workbook.Repository.Add(datiApplicazioneH);
 
             SplashScreen.UpdateStatus("Carico commenti dal DB");
             DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1") ?? new DataTable();
 
             insertManuali.TableName = DataBase.TAB.DATI_APPLICAZIONE_COMMENTO;
-            DataBase.LocalDB.Tables.Add(insertManuali);
+            Workbook.Repository.Add(insertManuali);
 
             SplashScreen.UpdateStatus("Carico informazioni giornaliere dal DB");
             DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
 
             datiApplicazioneD.TableName = DataBase.TAB.DATI_APPLICAZIONE_D;
-            DataBase.LocalDB.Tables.Add(datiApplicazioneD);
+            Workbook.Repository.Add(datiApplicazioneD);
         }
         /// <summary>
         /// Cancella le tabelle create in modo da non avere duplicati nel dataset.
@@ -116,12 +116,12 @@ namespace Iren.ToolsExcel.Base
         protected void CancellaTabelle()
         {
             //elimino le tabelle con le informazioni ormai scritte nel foglio
-            if (DataBase.LocalDB.Tables.Contains(DataBase.TAB.DATI_APPLICAZIONE_H))
-                DataBase.LocalDB.Tables.Remove(DataBase.TAB.DATI_APPLICAZIONE_H);
-            if (DataBase.LocalDB.Tables.Contains(DataBase.TAB.DATI_APPLICAZIONE_D))
-                DataBase.LocalDB.Tables.Remove(DataBase.TAB.DATI_APPLICAZIONE_D);
-            if (DataBase.LocalDB.Tables.Contains(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO))
-                DataBase.LocalDB.Tables.Remove(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO);
+            if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_H))
+                Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_H);
+            if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_D))
+                Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_D);
+            if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO))
+                Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO);
         }
 
         /// <summary>
@@ -147,15 +147,7 @@ namespace Iren.ToolsExcel.Base
                 if (!avoidRepositoryUpdate)
                 {
                     SplashScreen.UpdateStatus("Carico struttura dal DB");
-                    if (ConfigurationManager.AppSettings["AppIDMSD"] != null)
-                    {
-                        string[] appIDs = ConfigurationManager.AppSettings["AppIDMSD"].Split('|');
-                        Workbook.Repository.Aggiorna(appIDs);
-                    }
-                    else
-                    {
-                        Workbook.Repository.Aggiorna(null);
-                    }
+                    Workbook.Repository.Aggiorna();
                 }
                 else
                 {
@@ -165,7 +157,7 @@ namespace Iren.ToolsExcel.Base
                 
                 SplashScreen.UpdateStatus("Controllo se tutti i fogli sono presenti");
 
-                DataView categorie = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA].DefaultView;
+                DataView categorie = Workbook.Repository[DataBase.TAB.CATEGORIA].DefaultView;
                 categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 foreach (DataRowView categoria in categorie)
@@ -206,7 +198,7 @@ namespace Iren.ToolsExcel.Base
                     StrutturaFogli();
 
                     SplashScreen.UpdateStatus("Salvo struttura in locale");
-                    Workbook.DumpDataSet();
+                    //Workbook.DumpDataSet();
 
                     SplashScreen.UpdateStatus("Invio modifiche al server");
                     Workbook.ScreenUpdating = false;
@@ -233,14 +225,11 @@ namespace Iren.ToolsExcel.Base
 
                     SplashScreen.Close();
                     CancellaTabelle();
-                    Workbook.ScreenUpdating = true;
                     return true;
                 }
                 catch
                 {
                     SplashScreen.Close();
-
-                    Workbook.ScreenUpdating = true;
                     CancellaTabelle();
                     return false;
                 }

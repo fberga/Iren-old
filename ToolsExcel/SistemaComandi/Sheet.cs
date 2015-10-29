@@ -27,9 +27,9 @@ namespace Iren.ToolsExcel
             //profili PQNR
             if (_ws.Name == "Iren Termo")
             {
-                DataView categoriaEntita = DataBase.LocalDB.Tables[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-                DataView entitaProprieta = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
-                DataView entitaRampa = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_RAMPA].DefaultView;
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                DataView entitaRampa = Workbook.Repository[DataBase.TAB.ENTITA_RAMPA].DefaultView;
                 categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 foreach (DataRowView entita in categoriaEntita)
@@ -43,7 +43,7 @@ namespace Iren.ToolsExcel
                         dataFine = _dataInizio.AddDays(Struct.intervalloGiorni);
 
                     double pRif =
-                        (from r in DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_PROPRIETA].AsEnumerable()
+                        (from r in Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].AsEnumerable()
                          where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(entita["SiglaEntita"])
                             && r["SiglaProprieta"].Equals("SISTEMA_COMANDI_PRIF")
                          select Double.Parse(r["Valore"].ToString())).FirstOrDefault();
@@ -54,7 +54,7 @@ namespace Iren.ToolsExcel
 
                     if (_ws.Range[rngPQNR.Columns[0].ToString()].Value != null)
                     {
-                        int assetti = DataBase.LocalDB.Tables[DataBase.TAB.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(entita["SiglaEntita"]));
+                        int assetti = Workbook.Repository[DataBase.TAB.ENTITA_ASSETTO].AsEnumerable().Count(r => r["SiglaEntita"].Equals(entita["SiglaEntita"]));
 
                         double[] pMin = new double[oreIntervallo];
                         for (int i = 0; i < pMin.Length; i++) pMin[i] = double.MaxValue;
