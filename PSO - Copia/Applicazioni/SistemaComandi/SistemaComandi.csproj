@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <ProjectTypeGuids>{BAA0C2D2-18E2-41B9-852F-F413020CAA33};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <RootNamespace>Iren.ToolsExcel</RootNamespace>
+    <AssemblyName>SistemaComandi</AssemblyName>
+    <VSTO_HostDocumentName>SistemaComandi.xlsm</VSTO_HostDocumentName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <DefineConstants>VSTO40</DefineConstants>
+    <OfficeApplication>Excel</OfficeApplication>
+    <ProjectGuid>{DACE9F55-E32F-4937-B8D9-4415E4579CD0}</ProjectGuid>
+    <SolutionID>4818c659-0c03-4f91-8f0c-5e0e9375d22f</SolutionID>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <VSTO_TrustAssembliesLocation>
+    </VSTO_TrustAssembliesLocation>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <PublishUrl>\\pc1009235\Applicazioni\PSO\SistemaComandi\</PublishUrl>
+    <InstallUrl>\\pc1009235\Applicazioni\PSO\SistemaComandi\</InstallUrl>
+    <TargetCulture>it</TargetCulture>
+    <ApplicationVersion>1.0.0.9</ApplicationVersion>
+    <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateInterval>0</UpdateInterval>
+    <UpdateIntervalUnits>days</UpdateIntervalUnits>
+    <ProductName>SistemaComandi</ProductName>
+    <PublisherName />
+    <SupportUrl />
+    <FriendlyName>Sistema Comandi</FriendlyName>
+    <OfficeApplicationDescription>Registra le variazioni dei dati tecnici da comunicare a Terna.</OfficeApplicationDescription>
+  </PropertyGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 e x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft Visual Studio 2010 Tools per Office Runtime %28x86 e x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 4.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <PropertyGroup>
+    <VSTO_EmbedTypeLibraryInAssembly>false</VSTO_EmbedTypeLibraryInAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Outlook, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Office.Tools, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Office.Tools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Tools.Applications.Runtime, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Tools.Applications.ServerDocument, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Office.Tools.Excel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Office.Tools.Common.v4.0.Utilities, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Office.Tools.Excel.v4.0.Utilities, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Aggiorna.cs" />
+    <Compile Include="Esporta.cs" />
+    <Compile Include="Main.cs">
+      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
+      <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
+    </Compile>
+    <Compile Include="Main.Designer.cs">
+      <DependentUpon>Main.Designer.xml</DependentUpon>
+    </Compile>
+    <Compile Include="Log.cs">
+      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
+      <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
+    </Compile>
+    <Compile Include="Log.Designer.cs">
+      <DependentUpon>Log.Designer.xml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sheet.cs" />
+    <Compile Include="ToolsExcelRibbon.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolsExcelRibbon.designer.cs">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ThisWorkbook.cs">
+      <DependentUpon>SistemaComandi.xlsm</DependentUpon>
+      <CustomToolNamespace>Iren.ToolsExcel</CustomToolNamespace>
+    </Compile>
+    <Compile Include="ThisWorkbook.Designer.cs">
+      <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Log.resx">
+      <DependentUpon>Log.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolsExcelRibbon.resx">
+      <DependentUpon>ToolsExcelRibbon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ThisWorkbook.resx">
+      <DependentUpon>ThisWorkbook.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="Data\SistemaComandi.xlsm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="SistemaComandi.xlsm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileCopyPDA\FileCopyPDA.csproj">
+      <Project>{d56b88d5-d5d9-4804-85c3-71bd2a4e7159}</Project>
+      <Name>FileCopyPDA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelBase\ToolsExcelBase.csproj">
+      <Project>{0e9c5431-0389-4409-8ad7-68ec5b8ca061}</Project>
+      <Name>ToolsExcelBase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelCore\ToolsExcelCore.csproj">
+      <Project>{40a0918e-793b-41f0-8235-5a9e601b2e2b}</Project>
+      <Name>ToolsExcelCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelForms\ToolsExcelForms.csproj">
+      <Project>{f4c66fe5-1dc0-447b-b341-ff1960b78045}</Project>
+      <Name>ToolsExcelForms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ToolsExcelUserConfig\ToolsExcelUserConfig.csproj">
+      <Project>{3e119690-1387-4fe3-89c1-756220fedeee}</Project>
+      <Name>ToolsExcelUserConfig</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ThisWorkbook.Designer.xml">
+      <DependentUpon>ThisWorkbook.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Log.Designer.xml">
+      <DependentUpon>Log.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Main.Designer.xml">
+      <DependentUpon>Main.cs</DependentUpon>
+    </None>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
+  </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
+        <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
+        <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.ToolsExcel" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="390277CA5A9DCD4B1DF4C46AC612F51472B00ED6" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="315C31F5F2419A43AE9CB6A7E9CDD2F86A399FB6" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="3D9822E37E630B1CE55CF967CA73164D419CC7E2" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+        </Host>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!--
+    To modify your build process, add your task inside one of the targets below and uncomment it.
+    Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
