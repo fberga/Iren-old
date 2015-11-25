@@ -71,7 +71,7 @@ namespace Iren.PSO.Applicazioni
 #if DEBUG
             string path = @"D:\Repository\Iren\PSO\Applicazioni\" + System.AppDomain.CurrentDomain.FriendlyName.Split('.')[0] + @"\bin\Debug\" + System.AppDomain.CurrentDomain.FriendlyName;
 #else
-            string path = Environment.ExpandEnvironmentVariables(Path.Combine(Simboli.localBasePath, System.AppDomain.CurrentDomain.FriendlyName));
+            string path = Environment.ExpandEnvironmentVariables(Path.Combine(Simboli.LocalBasePath, System.AppDomain.CurrentDomain.FriendlyName));
 #endif
             string tmpCopy = Environment.ExpandEnvironmentVariables(@"%TEMP%\tmpRibbonLayout_" + DateTime.Now.Ticks + ".xlsm");
 
@@ -261,7 +261,7 @@ namespace Iren.PSO.Applicazioni
                     }
                     catch (System.ArgumentException)
                     {
-                        System.Windows.Forms.MessageBox.Show("Una delle funzioni collegate ai tasti non è definita!", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        System.Windows.Forms.MessageBox.Show("Una delle funzioni collegate ai tasti non è definita!", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     }
                 }
                 Controls.Add(ctrl);
@@ -465,7 +465,7 @@ namespace Iren.PSO.Applicazioni
             {
                 ambienteScelto.Checked = false;
 
-                System.Windows.Forms.MessageBox.Show("Non è possibile effettuare un cambio di ambiente quando il sistema è in emergenza...", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
+                System.Windows.Forms.MessageBox.Show("Non è possibile effettuare un cambio di ambiente quando il sistema è in emergenza...", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
             }
         }
         /// <summary>
@@ -479,7 +479,7 @@ namespace Iren.PSO.Applicazioni
             var response = System.Windows.Forms.DialogResult.Yes;
             
             if(sender != null && e != null)
-                response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
+                response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento della struttura?", Simboli.NomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
 
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
@@ -585,7 +585,7 @@ namespace Iren.PSO.Applicazioni
                 if (entitaInformazioni.Count == 0)
                 {
                     //avviso l'utente che l'entità selezionata non ha l'opzione
-                    if (System.Windows.Forms.MessageBox.Show("L'operazione selezionata non è disponibile per l'UP selezionata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
+                    if (System.Windows.Forms.MessageBox.Show("L'operazione selezionata non è disponibile per l'UP selezionata, selezionarne un'altra dall'elenco?", Simboli.NomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                         && selUP.ShowDialog().ToString() != "")
                     {
                         Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
@@ -601,7 +601,7 @@ namespace Iren.PSO.Applicazioni
                 }
             }
             //sono in un foglio diverso da Iren Termo o su una cella senza definizione di nomi
-            else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
+            else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.NomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes
                 && selUP.ShowDialog().ToString() != "")
             {
                 Forms.FormRampe rampe = new FormRampe(Workbook.Application.Selection);
@@ -619,7 +619,7 @@ namespace Iren.PSO.Applicazioni
         /// <param name="e"></param>
         private void btnAggiornaDati_Click(object sender, RibbonControlEventArgs e)
         { 
-            var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento dei dati?", Simboli.nomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
+            var response = System.Windows.Forms.MessageBox.Show("Eseguire l'aggiornamento dei dati?", Simboli.NomeApplicazione + " - ATTENZIONE!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
                 Workbook.ScreenUpdating = false;
@@ -716,7 +716,7 @@ namespace Iren.PSO.Applicazioni
             DefinedNames definedNames = new DefinedNames(Workbook.ActiveSheet.Name, DefinedNames.InitType.Naming);
 
             //inizializzo ottimizzatore e il form di selezione entità per l'ottimo.
-            Optimizer opt = new Optimizer();
+            Ottimizzatore opt = new Ottimizzatore();
             FormSelezioneUP selUP = new FormSelezioneUP("OTTIMO");
 
             if (definedNames.IsDefined(rng.Row))
@@ -735,7 +735,7 @@ namespace Iren.PSO.Applicazioni
 
                 if (entitaInformazioni.Count == 0)
                 {
-                    if(System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                    if(System.Windows.Forms.MessageBox.Show("L'UP selezionata non può essere ottimizzata, selezionarne un'altra dall'elenco?", Simboli.NomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
                     {
                         siglaEntita = selUP.ShowDialog().ToString();
                         if (siglaEntita != null)
@@ -761,7 +761,7 @@ namespace Iren.PSO.Applicazioni
                     SplashScreen.Close();
                 }
             }
-            else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.nomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+            else if (System.Windows.Forms.MessageBox.Show("Nessuna UP selezionata, selezionarne una dall'elenco?", Simboli.NomeApplicazione, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
             {
                 object siglaEntita = selUP.ShowDialog();
                 if (siglaEntita != null)
@@ -808,6 +808,7 @@ namespace Iren.PSO.Applicazioni
                 btn.Checked = false;
                 //TODO Controllare e cambiare il path
                 //Handler.SwitchWorksheet(btn.Name.Substring(3));
+
                 Workbook.AvviaApplicazione(Workbook.Application, (int)btn.Tag);
             }
         }
@@ -828,14 +829,15 @@ namespace Iren.PSO.Applicazioni
         /// <param name="e"></param>
         private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
         {
-            TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
-            string pathStr = Workbook.GetUsrConfigElement("backup").Value;
-            if (!Directory.Exists(pathStr))
-                Directory.CreateDirectory(pathStr);
+            //TODO check se backup serve
+            //TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
+            //string pathStr = Workbook.GetUsrConfigElement("backup").Value;
+            //if (!Directory.Exists(pathStr))
+            //    Directory.CreateDirectory(pathStr);
 
-            string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
+            //string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
-            Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
+            //Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
             Globals.ThisWorkbook.ThisApplication.Quit();
         }
         /// <summary>
@@ -1099,105 +1101,110 @@ namespace Iren.PSO.Applicazioni
 
         public void InitRibbon()
         {
-            Sheet.Protected = false;
-            Workbook.ScreenUpdating = false;
-            SplashScreen.Show();
-
-            //salvo gli eventuali valori aggiornati negli oggetti cached
-            if (_updated)
+            if (!Workbook.AbortedLoading)
             {
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Clear();
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControllo);
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControlloApplicazione);
-                Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtFunzioni);
+                Sheet.Protected = false;
+                Workbook.ScreenUpdating = false;
+                SplashScreen.Show();
+
+                //salvo gli eventuali valori aggiornati negli oggetti cached
+                if (_updated)
+                {
+                    Globals.ThisWorkbook.ribbonDataSet.Tables.Clear();
+                    Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControllo);
+                    Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtControlloApplicazione);
+                    Globals.ThisWorkbook.ribbonDataSet.Tables.Add(_dtFunzioni);
+                }
+
+                //Seleziono l'ambiente in funzione dei tasti attivi nel menu
+                switch (Workbook.Ambiente)
+                {
+                    case Simboli.PROD:
+                        if (!Controls["btnProd"].Enabled && !Controls["btnTest"].Enabled)
+                            Workbook.Ambiente = Simboli.DEV;
+                        else if (!Controls["btnProd"].Enabled)
+                            Workbook.Ambiente = Simboli.TEST;
+                        break;
+                    case Simboli.TEST:
+                        if (!Controls["btnTest"].Enabled)
+                            Workbook.Ambiente = Simboli.DEV;
+                        break;
+                }
+
+                ((RibbonToggleButton)Controls["btn" + Workbook.Ambiente]).Checked = true;
+                DataBase.SwitchEnvironment(Workbook.Ambiente);
+
+                Workbook.StatoDBChanged(null, null);
+
+                if (Controls.Contains("cmbMSD")) FillcmbMSD();
+                if (Controls.Contains("cmbStagione")) FillcmbStagioni();
+
+                //per Invio Programmi
+                DateTime newDate = Workbook.DataAttiva;
+                int newIdApplicazione = Workbook.IdApplicazione;
+
+                if (Controls.Contains("cmbMSD"))
+                    SetMercato(out newDate, out newIdApplicazione);
+                //per Previsione Carico Termico & Validazione Teleriscaldamento
+                else if (Workbook.IdApplicazione == 11 || Workbook.IdApplicazione == 12)
+                    AggiornaData(out newDate);
+
+                Riepilogo r = new Riepilogo(Workbook.Main);
+
+                Aggiorna aggiorna = new Aggiorna();
+                bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione;
+
+                if (DataBase.OpenConnection())
+                {
+                    if (Workbook.DataAttiva != newDate)
+                        DataBase.ExecuteSPApplicazioneInit(newDate);
+
+                    Workbook.DataAttiva = newDate;
+                    Workbook.IdApplicazione = newIdApplicazione;
+
+                    if (aggiornaStruttura || Workbook.DaAggiornare)
+                        aggiorna.Struttura(avoidRepositoryUpdate: true);
+                }
+                else
+                {
+                    r.RiepilogoInEmergenza();
+                }
+
+                if (!aggiornaStruttura)
+                    aggiorna.ColoriData();
+
+                r.InitLabels();
+                ((RibbonButton)Controls["btnCalendario"]).Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
+
+                try
+                {
+                    Sheet.AbilitaModifica(false);
+                }
+                catch { }
+
+                //aggiungo errorPane
+                if (Controls.Contains("btnMostraErrorPane"))
+                {
+                    Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
+                    Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
+                    Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
+                    Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
+
+                    RefreshChecks();
+                }
+
+                //aggiungo un altro handler per cell click
+                Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
+                Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
+
+                //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
+                StatoDB_Changed(null, null);
+
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
+
+                Sheet.Protected = true;
+                SplashScreen.Close();
             }
-
-            //Seleziono l'ambiente in funzione dei tasti attivi nel menu
-            switch (Workbook.Ambiente)
-            {
-                case Simboli.PROD:
-                    if (!Controls["btnProd"].Enabled && !Controls["btnTest"].Enabled)
-                        Workbook.Ambiente = Simboli.DEV;
-                    else if (!Controls["btnProd"].Enabled)
-                        Workbook.Ambiente = Simboli.TEST;
-                    break;
-                case Simboli.TEST:
-                    if (!Controls["btnTest"].Enabled)
-                        Workbook.Ambiente = Simboli.DEV;
-                    break;
-            }
-
-            ((RibbonToggleButton)Controls["btn" + Workbook.Ambiente]).Checked = true;
-            DataBase.SwitchEnvironment(Workbook.Ambiente);
-
-            if (Controls.Contains("cmbMSD")) FillcmbMSD();
-            if (Controls.Contains("cmbStagione")) FillcmbStagioni();
-
-            //per Invio Programmi
-            DateTime newDate = Workbook.DataAttiva;
-            int newIdApplicazione = Workbook.IdApplicazione;
-
-            if (Controls.Contains("cmbMSD"))
-                SetMercato(out newDate, out newIdApplicazione);
-            //per Previsione Carico Termico & Validazione Teleriscaldamento
-            else if (Workbook.IdApplicazione == 11 || Workbook.IdApplicazione == 12)
-                AggiornaData(out newDate);
-
-            Riepilogo r = new Riepilogo(Workbook.Main);
-            
-            Aggiorna aggiorna = new Aggiorna();
-            bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione;
-            
-            if (DataBase.OpenConnection())
-            {
-                if(Workbook.DataAttiva != newDate)
-                    DataBase.ExecuteSPApplicazioneInit(newDate);
-
-                Workbook.DataAttiva = newDate;
-                Workbook.IdApplicazione = newIdApplicazione;
-
-                if (aggiornaStruttura || Workbook.DaAggiornare)
-                    aggiorna.Struttura(avoidRepositoryUpdate: true);
-            }
-            else
-            {
-                r.RiepilogoInEmergenza();
-            }
-            
-            if (!aggiornaStruttura)
-                aggiorna.ColoriData();
-
-            r.InitLabels();
-            ((RibbonButton)Controls["btnCalendario"]).Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
-
-            try
-            {
-                Sheet.AbilitaModifica(false);
-            }
-            catch { }
-
-            //aggiungo errorPane
-            if (Controls.Contains("btnMostraErrorPane"))
-            {
-                Globals.ThisWorkbook.ActionsPane.Controls.Add(_errorPane);
-                Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
-                Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
-                Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
-
-                RefreshChecks();
-            }
-
-            //aggiungo un altro handler per cell click
-            Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;
-            Globals.ThisWorkbook.SheetSelectionChange += Handler.SelectionClick;
-
-            //aggiungo un handler per modificare lo stato dei tasti di export a seconda dello stato del DB
-            StatoDB_Changed(null, null);
-
-            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogAccesso, "Log on - " + Environment.UserName + " - " + Environment.MachineName);
-
-            Sheet.Protected = true;
-            SplashScreen.Close();
         }
 
         #endregion

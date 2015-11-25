@@ -25,9 +25,9 @@
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <PublishUrl>\\PC1009235\Applicazioni\RiMoST\FrontOffice\</PublishUrl>
-    <InstallUrl />
+    <InstallUrl>\\PC1009235\Applicazioni\RiMoST\FrontOffice\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.1.0.4</ApplicationVersion>
+    <ApplicationVersion>1.1.0.6</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

@@ -20,7 +20,7 @@ namespace Iren.PSO.Base
         #region Costanti
 
         public const string NAME = "LocalDB";
-        public struct SP
+        public struct SP 
         {
             public const string APPLICAZIONE = "spApplicazioneProprieta",
                 APPLICAZIONE_INFORMAZIONE_D = "spApplicazioneInformazioneD",
@@ -94,7 +94,7 @@ namespace Iren.PSO.Base
             }
 
         }
-        public struct TAB
+        public struct TAB 
         {
             public const string ADDRESS_FROM = "AddressFrom",
                 ADDRESS_TO = "AddressTo",
@@ -148,15 +148,16 @@ namespace Iren.PSO.Base
         #endregion
 
         #region Variabili
-
-        //protected static DataSet _localDB = null;
+        
         protected static Core.DataBase _db = null;
 
         #endregion
 
         #region Proprietà statiche
-
-        public static Dictionary<Core.DataBase.NomiDB, ConnectionState> StatoDB
+        /// <summary>
+        /// Restituisce lo stato dei database utilizzati dall'applicazione.
+        /// </summary>
+        public static Dictionary<Core.DataBase.NomiDB, ConnectionState> StatoDB 
         {
             get
             {
@@ -173,39 +174,62 @@ namespace Iren.PSO.Base
                 return _db.StatoDB;
             }
         }
-        public static System.Version Versione { get { return _db.GetCurrentV(); } }
-
-        public static bool IsInitialized { get; private set; }
-
-
-        public static int IdUtente { get { return _db.IdUtente; } set { _db.IdUtente = value; } }
-        public static int IdApplicazione { get { return _db.IdApplicazione; } set { _db.IdApplicazione = value; } }
-        public static DateTime DataAttiva { get { return _db.DataAttiva; } set { _db.DataAttiva = value; } }
+        /// <summary>
+        /// Restituisce la versione della classe Iren.PSO.Core.DataBase.
+        /// </summary>
+        public static System.Version Versione 
+        { get { return _db.GetCurrentV(); } }
+        /// <summary>
+        /// True se il database è stato inizializzato.
+        /// </summary>
+        public static bool IsInitialized 
+        { get; private set; }
+        /// <summary>
+        /// Id dell'utente configurato.
+        /// </summary>
+        public static int IdUtente 
+        { get { return _db.IdUtente; } set { _db.IdUtente = value; } }
+        /// <summary>
+        /// Id dell'applicazione utilizzata.
+        /// </summary>
+        public static int IdApplicazione 
+        { get { return _db.IdApplicazione; } set { _db.IdApplicazione = value; } }
+        /// <summary>
+        /// Data attiva.
+        /// </summary>
+        public static DateTime DataAttiva 
+        { get { return _db.DataAttiva; } set { _db.DataAttiva = value; } }
 
         #endregion
 
         #region Metodi Statici
-
-        //StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        //{
-        //    AggiornaLabelStatoDB();
-        //}        
-
-        public static void AddPropertyChanged(System.ComponentModel.PropertyChangedEventHandler d)
+        
+        /// <summary>
+        /// Metodo che aggiunge un handler all'evento PropertyChanged del DataBase.
+        /// </summary>
+        /// <param name="handler">Handler per l'evento PropertyChanged.</param>
+        public static void AddPropertyChanged(System.ComponentModel.PropertyChangedEventHandler handler)
         {
-            _db.PropertyChanged += d;
+            _db.PropertyChanged += handler;
         }
-
         /// <summary>
         /// Inizializza il nuovo Core.DataBase collegato al dbName che rappresenta l'ambiente Prod|Test|Dev.
         /// </summary>
         /// <param name="dbName">Nome (corrisponde all'ambiente) del Database.</param>
-        public static void CreateNew(string ambiente)
+        public static void CreateNew(string ambiente, bool checkDB = true)
         {
             if (_db == null || _db.Ambiente != ambiente)
-                _db = new Core.DataBase(ambiente);
+                _db = new Core.DataBase(ambiente, checkDB);
 
             IsInitialized = true;
+        }
+        /// <summary>
+        /// Disattiva l'oggetto DataBase.
+        /// </summary>
+        public static void Close()
+        {
+            IsInitialized = false;
+            _db.Dispose();
         }
         /// <summary>
         /// Cambio ambiente tra Prod|Test|Prod.
@@ -263,7 +287,7 @@ namespace Iren.PSO.Base
                         bool executed = false;
                         if (fileEmergenza.Length > 0)
                         {
-                            if (System.Windows.Forms.MessageBox.Show("Sono presenti delle modifiche non ancora salvate sul DB. Procedere con il salvataggio? \n\nPremere Sì per inviare i dati al server, No per cancellare definitivamente le modifiche.", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                            if (System.Windows.Forms.MessageBox.Show("Sono presenti delle modifiche non ancora salvate sul DB. Procedere con il salvataggio? \n\nPremere Sì per inviare i dati al server, No per cancellare definitivamente le modifiche.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                             {
                                 //il nome file contiene la data, quindi li metto in ordine cronologico
                                 Array.Sort<string>(fileEmergenza);
@@ -281,7 +305,7 @@ namespace Iren.PSO.Base
                                     }
                                     else
                                     {
-                                        System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                                        System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                                     }
                                 }
                             }
@@ -297,7 +321,7 @@ namespace Iren.PSO.Base
                             return;
 
                         //salvo le modifiche appena effettuate
-                        fileName = Path.Combine(cartellaRemota, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                        fileName = Path.Combine(cartellaRemota, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                         dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
 
                         //se la query indica che il processo è andato a buon fine, sposto in archivio
@@ -311,12 +335,15 @@ namespace Iren.PSO.Base
                         }
                         else
                         {
-                            fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                            if (!Directory.Exists(cartellaEmergenza))
+                                Directory.CreateDirectory(cartellaEmergenza);
+
+                            fileName = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                             dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
 
                             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. Il file è si trova in " + Environment.MachineName);
 
-                            System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                            System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                         }
                     }
                     else
@@ -324,19 +351,15 @@ namespace Iren.PSO.Base
                         if (dt.Rows.Count == 0)
                             return;
 
-                        //metto le modifiche nella cartella emergenza
-                        fileName = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
-                        try
-                        {
-                            dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
-                        }
-                        catch (DirectoryNotFoundException)
-                        {
+                        if (!Directory.Exists(cartellaEmergenza))
                             Directory.CreateDirectory(cartellaEmergenza);
-                            dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
-                        }
 
-                        System.Windows.Forms.MessageBox.Show("A causa di problemi di rete le modifiche sono state salvate in locale", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                        //metto le modifiche nella cartella emergenza
+                        fileName = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                        
+                        dt.WriteXml(fileName, XmlWriteMode.WriteSchema);
+
+                        System.Windows.Forms.MessageBox.Show("A causa di problemi di rete le modifiche sono state salvate in locale", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
                     }
 
                     //svuoto la tabella di modifiche
@@ -370,7 +393,7 @@ namespace Iren.PSO.Base
             {
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo [" + giorno + ", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
 
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
         /// <summary>
@@ -464,6 +487,7 @@ namespace Iren.PSO.Base
         /// </summary>
         /// <param name="storedProcedure">Stored procedure.</param>
         /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout per la query.</param>
         /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
         public static bool Insert(string storedProcedure, Core.QryParams parameters, int timeout = 300)
         {
@@ -475,6 +499,14 @@ namespace Iren.PSO.Base
             }
             return false;
         }
+        /// <summary>
+        /// Funzione per eseguire una stored procedure. Fa un "override" della funzione fornita da Core.DataBase che considera la presenza del flag di Emergenza Forzata. Restituisce i parametri di output che vengono valorizzati dalla stored procedure.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="outParams">Lista dei parametri in uscita indicizzati per nome.</param>
+        /// <param name="timeout">Timeout per la query.</param>
+        /// <returns>True se il comando è andato a buon fine, false altrimenti.</returns>
         public static bool Insert(string storedProcedure, Core.QryParams parameters, out Dictionary<string, object> outParams, int timeout = 300)
         {
             if (OpenConnection())
@@ -486,7 +518,13 @@ namespace Iren.PSO.Base
             outParams = null;
             return false;
         }
-
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di cancellazione (principalmente una questione mnemonica). Restituisce true se il comando è andato a buon fine, false altrimenti.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout per la query.</param>
+        /// <returns>Restituisce true se il comando è andato a buon fine, false altrimenti.</returns>
         public static bool Delete(string storedProcedure, Core.QryParams parameters, int timeout = 300)
         {
             if (OpenConnection())
@@ -497,6 +535,13 @@ namespace Iren.PSO.Base
             }
             return false;
         }
+        /// <summary>
+        /// Funzione per l'esecuzione di una stored procedure di cancellazione (principalmente una questione mnemonica). Restituisce true se il comando è andato a buon fine, false altrimenti.
+        /// </summary>
+        /// <param name="storedProcedure">Stored procedure.</param>
+        /// <param name="parameters">Parametri della stored procedure.</param>
+        /// <param name="timeout">Timeout per la query.</param>
+        /// <returns>Restituisce true se il comando è andato a buon fine, false altrimenti.</returns>
         public static bool Delete(string storedProcedure, string parameters, int timeout = 300)
         {
             if (OpenConnection())

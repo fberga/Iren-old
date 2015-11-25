@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -19,7 +20,7 @@ namespace Iren.PSO.Forms
 
         public FormImportXML()
         {
-            this.Text = Simboli.nomeApplicazione + " - Import XML (Emergenza)";
+            this.Text = Simboli.NomeApplicazione + " - Import XML (Emergenza)";
 
             InitializeComponent();
             btnApri_Click(null, null);
@@ -35,7 +36,7 @@ namespace Iren.PSO.Forms
             {
                 if(!_tabellaImportXML.Columns.Contains(c.ColumnName)) 
                 {
-                    System.Windows.Forms.MessageBox.Show("Il file selezionato non deriva da un export. Non è possibile importare informazioni da questo file!", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    System.Windows.Forms.MessageBox.Show("Il file selezionato non deriva da un export. Non è possibile importare informazioni da questo file!", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     e.Cancel = true;
                     return;
                 }
@@ -55,7 +56,7 @@ namespace Iren.PSO.Forms
 
             if(Workbook.DataAttiva < dataMin.Date || Workbook.DataAttiva > dataMax.Date)
             {
-                System.Windows.Forms.MessageBox.Show("Il file non contiene elementi con date compatibili a quelle del foglio aperto. Non è possibile importare informazioni da questo file!", Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                System.Windows.Forms.MessageBox.Show("Il file non contiene elementi con date compatibili a quelle del foglio aperto. Non è possibile importare informazioni da questo file!", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 e.Cancel = true;
                 return;
             }
@@ -129,8 +130,9 @@ namespace Iren.PSO.Forms
         {
             var path = Workbook.GetUsrConfigElement("exportXML");
             string cartellaExport = path.Value;
+            if (Directory.Exists(cartellaExport))
+                openFileXMLImport.InitialDirectory = cartellaExport;
 
-            openFileXMLImport.InitialDirectory = cartellaExport;
             openFileXMLImport.Filter = "XML Files (*.xml)|*.xml";
             openFileXMLImport.ShowDialog();
         }

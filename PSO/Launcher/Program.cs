@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using System.Diagnostics;
+using System.Deployment.Application;
+using System.Text.RegularExpressions;
+using System.IO;
 
 namespace Iren.PSO.Launcher
 {
@@ -13,9 +17,24 @@ namespace Iren.PSO.Launcher
         [STAThread]
         static void Main()
         {
+            //controllo se ci sono altre istanze del processo attive e le spengo
+            var processes = Process.GetProcesses()
+                .Where(p => p.ProcessName == Process.GetCurrentProcess().ProcessName && p.Id != Process.GetCurrentProcess().Id);
+
+            foreach(Process p in processes)
+            {
+                p.Close();
+            }            
+
+            //imposto gli handler per l'update
+            //ApplicationDeployment.CurrentDeployment.CheckForUpdateCompleted += Launcher.CurrentDeployment_CheckForUpdateCompleted;
+            //ApplicationDeployment.CurrentDeployment.UpdateCompleted += Launcher.CurrentDeployment_UpdateCompleted;
+
+            //Launcher.CheckForUpdates();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Launcher());
+            Application.Run(new LDaemon());
         }
 
 

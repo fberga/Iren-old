@@ -9,8 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Iren.ToolsExcel.Utility;
-using Iren.ToolsExcel.Base;
+using Iren.PSO.Base;
 using System.Globalization;
 using System.Collections;
 using System.Configuration;
@@ -36,7 +35,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             InitializeComponent();            
 
             //trovo tutte le risorse disponibili in Iren.ToolsExcel.Base
-            var resourceSet = Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetResourceSet(CultureInfo.InstalledUICulture, true, true);
+            var resourceSet = Iren.PSO.Base.Properties.Resources.ResourceManager.GetResourceSet(CultureInfo.InstalledUICulture, true, true);
             
             //Considero solo quelle che sono di tipo Image
             var imgs =
@@ -291,7 +290,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
                 Dictionary<string, object> outP = new Dictionary<string,object>();
                 int groupId = -1;
-                if (DataBase.Insert(DataBase.SP.RIBBON.INSERT_GRUPPO, new Core.QryParams()
+                if (DataBase.Insert(DataBase.SP.RIBBON.INSERT_GRUPPO, new Iren.PSO.Core.QryParams()
                     {
                         {"@Id", group.IdGruppo},
                         {"@Nome", group.Name},
@@ -309,7 +308,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                     {
                         outP = new Dictionary<string, object>();
                         int ctrlId = -1;
-                        if (DataBase.Insert(DataBase.SP.RIBBON.INSERT_CONTROLLO, new Core.QryParams()
+                        if (DataBase.Insert(DataBase.SP.RIBBON.INSERT_CONTROLLO, new Iren.PSO.Core.QryParams()
                             {
                                 {"@Id", ctrl.IdControllo},
                                 {"@IdTipologiaControllo", ctrl.IdTipologia},
@@ -322,7 +321,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                             }, out outP))
                             ctrlId = (int)outP["@Id"];
 
-                        if (DataBase.Insert(DataBase.SP.RIBBON.INSERT_GRUPPO_CONTROLLO, new Core.QryParams() { 
+                        if (DataBase.Insert(DataBase.SP.RIBBON.INSERT_GRUPPO_CONTROLLO, new Iren.PSO.Core.QryParams() { 
                             {"@Id", 0},
                             //{"@IdApplicazione", },
 	                        //{"@IdUtente", 62},
@@ -337,7 +336,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                             int ordineFunzioni = 1;
                             foreach(int idFunzione in ctrl.Functions)
                             {
-                                DataBase.Insert(DataBase.SP.RIBBON.INSERT_CONTROLLO_FUNZIONE, new Core.QryParams()
+                                DataBase.Insert(DataBase.SP.RIBBON.INSERT_CONTROLLO_FUNZIONE, new Iren.PSO.Core.QryParams()
                                 {
                                     {"@IdGruppoControllo", outP["@Id"]},
                                     {"@IdFunzione", idFunzione},
@@ -362,17 +361,21 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         private void CambioApplicazione(object sender, EventArgs e)
         {
             if (drpApplicazioni.SelectedValue != null)
+            {
                 DataBase.IdApplicazione = (int)drpApplicazioni.SelectedValue;
-
-            RicaricaRibbon_Click(null, null);
+                if (drpUtenti.SelectedValue != null)
+                    RicaricaRibbon_Click(null, null);
+            }
         }
 
         private void CambioUtente(object sender, EventArgs e)
         {
-            if(drpUtenti.SelectedValue != null)
+            if (drpUtenti.SelectedValue != null)
+            {
                 DataBase.IdUtente = (int)drpUtenti.SelectedValue;
-
-            RicaricaRibbon_Click(null, null);
+                if (drpApplicazioni.SelectedValue != null)
+                    RicaricaRibbon_Click(null, null);
+            }
         }
 
         private void CopiaConfigurazione_Click(object sender, EventArgs e)

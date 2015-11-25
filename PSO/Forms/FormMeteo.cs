@@ -27,7 +27,7 @@ namespace Iren.PSO.Forms
             _riepilogo = riepilogo;
 
             labelData.Text = "Data Riferimento:   " + _dataRif.ToString("dddd dd MMMM yyyy");
-            this.Text = Simboli.nomeApplicazione + " - Meteo";
+            this.Text = Simboli.NomeApplicazione + " - Meteo";
         }
 
         private void frmMETEO_Load(object sender, EventArgs e)

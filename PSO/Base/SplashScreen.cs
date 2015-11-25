@@ -82,7 +82,7 @@ namespace Iren.PSO.Base
         static SplashScreen sf = null;
         static Thread _splashthread;
 
-        public static void Show()
+        public new static void Show()
         {
             if (sf == null)
             {
@@ -93,7 +93,7 @@ namespace Iren.PSO.Base
                 _splashthread.Start();
             }
         }
-        public static void Close()
+        public new static void Close()
         {
             if (sf != null)
             {

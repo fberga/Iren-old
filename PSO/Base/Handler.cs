@@ -61,7 +61,7 @@ namespace Iren.PSO.Base
                     {
                         if (r.EntireRow.Hidden)
                         {
-                            System.Windows.Forms.MessageBox.Show("Nella selezione sono incluse righe nascoste. Non si può procedere con la modifica...", Simboli.nomeApplicazione + " - ATTENZIONE", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
+                            System.Windows.Forms.MessageBox.Show("Nella selezione sono incluse righe nascoste. Non si può procedere con la modifica...", Simboli.NomeApplicazione + " - ATTENZIONE", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
 
                             Target.Cells[1, 1].Select();
 
@@ -90,7 +90,7 @@ namespace Iren.PSO.Base
             if (address != "")
             {
                 Excel.Range rng = (Excel.Range)Workbook.Application.Range[address];
-                rng.Worksheet.Activate();
+                ((Excel._Worksheet)rng.Worksheet).Activate();
                 rng.Select();
                 Workbook.Application.ActiveWindow.SmallScroll(rng.Row - Workbook.Application.ActiveWindow.VisibleRange.Cells[1, 1].Row - 1);
             }

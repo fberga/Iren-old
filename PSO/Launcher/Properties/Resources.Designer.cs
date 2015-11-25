@@ -59,5 +59,15 @@ namespace Iren.PSO.Launcher.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Icon simile a (Icona).
+        /// </summary>
+        internal static System.Drawing.Icon PSO {
+            get {
+                object obj = ResourceManager.GetObject("PSO", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

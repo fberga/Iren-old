@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -115,6 +116,8 @@ namespace Iren.PSO.Base
                                 ws.Protect(Workbook.Password);
                         else
                             ws.Unprotect(Workbook.Password);
+
+                        Marshal.ReleaseComObject(ws);
                     }
                 }
             }
@@ -496,7 +499,7 @@ namespace Iren.PSO.Base
                 //_ws.Application.ActiveWindow.ScrollColumn = 1;
                 //_ws.Application.ActiveWindow.ScrollRow = 1;
                 _ws.Application.ActiveWindow.FreezePanes = true;
-                Workbook.Main.Activate();
+                ((Excel._Worksheet)Workbook.Main).Activate();
                 //Workbook.ScreenUpdating = false;
             }
             
@@ -534,13 +537,13 @@ namespace Iren.PSO.Base
             {
                 Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
                 grfx.PageUnit = GraphicsUnit.Point;
-                SizeF sizeMax = grfx.MeasureString(Simboli.nomeApplicazione.ToUpper(), new Font("Verdana", fontSize, FontStyle.Bold));
+                SizeF sizeMax = grfx.MeasureString(Simboli.NomeApplicazione.ToUpper(), new Font("Verdana", fontSize, FontStyle.Bold));
                 if (rangeSize > sizeMax.Width)
                     break;
             }
 
             Style.RangeStyle(_ws.Range[title.ToString()], merge: true, bold: true, fontSize: fontSize, align: Excel.XlHAlign.xlHAlignCenter);
-            _ws.Range[title.ToString()].Value = Simboli.nomeApplicazione.ToUpper();
+            _ws.Range[title.ToString()].Value = Simboli.NomeApplicazione.ToUpper();
 
             //calcolo numero elementi per riga
             double numEleRiga = _struttura.numEleMenu / Convert.ToDouble(_struttura.numRigheMenu);
@@ -1213,7 +1216,7 @@ namespace Iren.PSO.Base
         {
             if (_ws.ChartObjects().Count > 0)
             {
-                _ws.Calculate();
+                ((Excel._Worksheet)_ws).Calculate();
                 Excel.ChartObjects charts = _ws.ChartObjects();
                 foreach (Excel.ChartObject chart in charts)
                 {
@@ -1341,7 +1344,7 @@ namespace Iren.PSO.Base
             catch (Exception e)
             {
                 Workbook.InsertLog(PSO.Core.DataBase.TipologiaLOG.LogErrore, "CaricaInformazioni [all = 1]: " + e.Message);
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
         /// <summary>

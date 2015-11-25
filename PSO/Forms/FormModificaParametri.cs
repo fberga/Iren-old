@@ -29,7 +29,7 @@ namespace Iren.PSO.Forms
         {
             InitializeComponent();
 
-            this.Text = Simboli.nomeApplicazione + " - Modifica Parametri";
+            this.Text = Simboli.NomeApplicazione + " - Modifica Parametri";
 
             _entita = new DataView(Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA]);
             if(DataBase.OpenConnection())
@@ -54,7 +54,7 @@ namespace Iren.PSO.Forms
             }
             else
             {
-                MessageBox.Show("Non è possibile modificare i valori dei parametri in assenza di connessione...", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Non è possibile modificare i valori dei parametri in assenza di connessione...", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();
             }
         }
@@ -342,7 +342,7 @@ namespace Iren.PSO.Forms
 
                             if (date < DateTime.Today)
                             {
-                                MessageBox.Show("La data di inizio vaidità non può essere antecedente a oggi!", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("La data di inizio vaidità non può essere antecedente a oggi!", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 e.Cancel = true;
                             }
                         }
@@ -355,7 +355,7 @@ namespace Iren.PSO.Forms
                         decimal number;
                         if (value == "")
                         {
-                            MessageBox.Show("Non è possibile lasciare il campo Valore vuoto!", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Non è possibile lasciare il campo Valore vuoto!", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                             e.Cancel = true;
                         } 
@@ -366,7 +366,7 @@ namespace Iren.PSO.Forms
                         }
                         else
                         {
-                            MessageBox.Show("Il valore inserito non è un numero valido!", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Il valore inserito non è un numero valido!", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             e.Cancel = true;
                         }
                         break;
@@ -408,7 +408,7 @@ namespace Iren.PSO.Forms
 
                 if (currentIV >= subsequentIV)
                 {
-                    MessageBox.Show("La data di inizio validità della riga corrente va in conflitto con quella della successiva.", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("La data di inizio validità della riga corrente va in conflitto con quella della successiva.", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     e.Cancel = true;
                     return;
                 }
@@ -428,7 +428,7 @@ namespace Iren.PSO.Forms
 
                 if (currentIV - precedingIV < new TimeSpan(1, 0, 0, 0))
                 {
-                    MessageBox.Show("La data di inizio validità della riga corrente va in conflitto con quella della precedente.", Simboli.nomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("La data di inizio validità della riga corrente va in conflitto con quella della precedente.", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     e.Cancel = true;
 
                     return;
@@ -562,7 +562,7 @@ namespace Iren.PSO.Forms
 
         private void cancellaParametroContextMenu_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Eliminare la riga?", Simboli.nomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+            if (MessageBox.Show("Eliminare la riga?", Simboli.NomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
             {
                 DataRowView parRow = (DataRowView)cmbParametriD.SelectedValue;
 

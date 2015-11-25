@@ -93,7 +93,7 @@ namespace Iren.PSO.Applicazioni
             }
             else
             {
-                System.Windows.Forms.MessageBox.Show("Nessun file " + tipoFile + " trovato per l'UP " + codiceRUP, Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                System.Windows.Forms.MessageBox.Show("Nessun file " + tipoFile + " trovato per l'UP " + codiceRUP, Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
             }
 
             return null;

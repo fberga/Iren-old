@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Iren.PSO.Core
 {
-    public class DataBase : INotifyPropertyChanged
+    public class DataBase : INotifyPropertyChanged, IDisposable
     {
         #region Nomi di Sistema
 
@@ -40,7 +40,7 @@ namespace Iren.PSO.Core
         private Command _cmd;
         private Command _internalCmd;
 
-        private System.Threading.Timer checkDBTrhead;
+        private System.Threading.Timer _checkDBTrhead;
 
         private SqlConnection _sqlConn;
         private SqlConnection _internalsqlConn;
@@ -75,7 +75,7 @@ namespace Iren.PSO.Core
 
         #region Costruttori
 
-        public DataBase(string dbName, bool checkDB = true)
+        public DataBase(string dbName, bool checkDB = true) 
         {
             _ambiente = dbName;
             try
@@ -88,7 +88,7 @@ namespace Iren.PSO.Core
                 if (checkDB)
                 {
                     _internalCmd = new Command(_internalsqlConn);
-                    checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 250 * 60);
+                    _checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 250 * 60);
                 }
             }
             catch (Exception e)
@@ -261,6 +261,26 @@ namespace Iren.PSO.Core
         public Delegate[] GetPropertyChangedInvocationList()
         {
             return PropertyChanged.GetInvocationList();
+        }
+
+        public void Dispose() 
+        {
+            if (_sqlConn.State == ConnectionState.Open)
+                _sqlConn.Close();
+            if (_internalsqlConn != null && _internalsqlConn.State == ConnectionState.Open)
+                _internalsqlConn.Close();
+
+            PropertyChanged = null;
+
+            _cmd.Dispose();
+            _sqlConn.Dispose();
+
+            if(_internalCmd != null)
+                _internalCmd.Dispose();
+            if(_internalsqlConn != null)
+                _internalsqlConn.Dispose();
+            if(_checkDBTrhead != null)
+                _checkDBTrhead.Dispose();
         }
 
         #endregion
@@ -448,6 +468,6 @@ namespace Iren.PSO.Core
             }
         }
 
-        #endregion
+        #endregion        
     }
 }

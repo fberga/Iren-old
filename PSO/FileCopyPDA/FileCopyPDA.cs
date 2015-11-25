@@ -19,7 +19,7 @@ namespace Iren.PSO.PostDeployment
 
             //statici
             string sourcePath = args.AddInPath;
-            string destPath = Environment.ExpandEnvironmentVariables(Base.Simboli.localBasePath);
+            string destPath = Environment.ExpandEnvironmentVariables(Base.Simboli.LocalBasePath);
             Uri deploymentManifestUri = args.ManifestLocation;
             string sourceFile = Path.Combine(sourcePath, dataDirectory, file);
             string destFile = Path.Combine(destPath, file);

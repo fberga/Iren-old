@@ -34,7 +34,7 @@ namespace Iren.PSO.Forms
         public FormRampe(Excel.Range rng)
         {
             InitializeComponent();
-            this.Text = Simboli.nomeApplicazione + " - Rampe";
+            this.Text = Simboli.NomeApplicazione + " - Rampe";
 
             _ws = (Excel.Worksheet)Workbook.ActiveSheet;
             _definedNames = new DefinedNames(_ws.Name, DefinedNames.InitType.Naming);

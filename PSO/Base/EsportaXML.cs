@@ -72,8 +72,8 @@ namespace Iren.PSO.Base
             var path = Workbook.GetUsrConfigElement("exportXML");
             //path della cartella di emergenza
             string cartellaEmergenza = path.Value;
-            string cartellaExport = Path.Combine(cartellaEmergenza, Simboli.nomeApplicazione.Replace(" ", ""));
-            string fileName = Path.Combine(cartellaExport, Simboli.nomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+            string cartellaExport = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", ""));
+            string fileName = Path.Combine(cartellaExport, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
 
             if (!Directory.Exists(cartellaExport))
                 Directory.CreateDirectory(cartellaExport);

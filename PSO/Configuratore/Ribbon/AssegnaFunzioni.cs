@@ -6,13 +6,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Iren.ToolsExcel.Utility;
+using Iren.PSO.Base;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     partial class AssegnaFunzioni : Form
     {
-        int _idGruppoControllo = -1;
         IRibbonControl _ctrl;
 
         public AssegnaFunzioni(IRibbonControl ctrl, RibbonGroup grp, int appID, int usrID)

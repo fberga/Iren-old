@@ -28,7 +28,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\SistemaComandi\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\SistemaComandi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.9</ApplicationVersion>
+    <ApplicationVersion>1.0.0.8</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -147,14 +147,12 @@
     <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.PSO.Applicazioni</CustomToolNamespace>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Log.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.PSO.Applicazioni</CustomToolNamespace>
     </Compile>
     <Compile Include="Log.Designer.cs">
       <DependentUpon>Log.Designer.xml</DependentUpon>
@@ -169,7 +167,6 @@
     </Compile>
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>
-      <CustomToolNamespace>Iren.PSO.Applicazioni</CustomToolNamespace>
     </Compile>
     <Compile Include="ThisWorkbook.Designer.cs">
       <DependentUpon>ThisWorkbook.Designer.xml</DependentUpon>
@@ -187,7 +184,8 @@
       <SubType>Designer</SubType>
     </None>
     <Content Include="Data\SistemaComandi.xlsm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CustomToolNamespace>Iren.PSO.Applicazioni</CustomToolNamespace>
     </Content>
     <None Include="SistemaComandi.xlsm" />
   </ItemGroup>
@@ -243,9 +241,9 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="SistemaComandi.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]SistemaComandi.xlsm&quot;" />
         <Host Name="Excel Document" Path=".\SistemaComandi.xlsm" GeneratedCodeNamespace="Iren.PSO.Applicazioni" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="390277CA5A9DCD4B1DF4C46AC612F51472B00ED6" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="315C31F5F2419A43AE9CB6A7E9CDD2F86A399FB6" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="3D9822E37E630B1CE55CF967CA73164D419CC7E2" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="92B76BDB4345932FD0509A420EF572B1DCBC1DB6" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="E389A3D161A69828E78D06A6A2099A84BB5CA30C" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="CB1B78F958D3EB43490B65A2BB0F368C6C897C4A" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

@@ -7,7 +7,7 @@ using System.Data;
 
 namespace Iren.PSO.Core
 {
-    class Command
+    class Command : IDisposable
     {
         #region Variabili
 
@@ -91,5 +91,10 @@ namespace Iren.PSO.Core
        
         #endregion
 
+
+        public void Dispose()
+        {
+            _sqlConn.Dispose();
+        }
     }
 }

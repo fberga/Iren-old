@@ -163,7 +163,7 @@ namespace Iren.PSO.Base
 
                 foreach (DataRowView categoria in categorie)
                 {
-                    Excel.Worksheet ws;
+                    Excel._Worksheet ws;
                     try
                     {
                         ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
@@ -207,7 +207,7 @@ namespace Iren.PSO.Base
                     DataBase.SalvaModificheDB();
 
                     SplashScreen.UpdateStatus("Azzero selezioni");
-                    foreach (Excel.Worksheet ws in Workbook.Sheets)
+                    foreach (Excel._Worksheet ws in Workbook.Sheets)
                     {
                         if (ws.Visible == Excel.XlSheetVisibility.xlSheetVisible)
                         {
@@ -237,7 +237,7 @@ namespace Iren.PSO.Base
             }
             else
             {
-                System.Windows.Forms.MessageBox.Show("Impossibile aggiornare la struttura: ci sono problemi di connessione o la funzione Forza Emergenza è attiva.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show("Impossibile aggiornare la struttura: ci sono problemi di connessione o la funzione Forza Emergenza è attiva.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                 return false;
             }
@@ -315,7 +315,7 @@ namespace Iren.PSO.Base
             }
             else
             {
-                System.Windows.Forms.MessageBox.Show("Impossibile aggiornare i dati: ci sono problemi di connessione o la funzione Forza Emergenza è attiva.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show("Impossibile aggiornare i dati: ci sono problemi di connessione o la funzione Forza Emergenza è attiva.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                 return false;
             }

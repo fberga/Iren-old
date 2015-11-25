@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Iren.ToolsExcel.Utility;
+using Iren.PSO.Base;
 
 namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
@@ -85,7 +85,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 {
                     foreach (KeyValuePair<int,string> applicazione in listBoxApplicazioni.SelectedItems)
                         foreach (DataRowView utenteTo in listBoxUtentiTo.SelectedItems)
-                            DataBase.Insert(DataBase.SP.RIBBON.COPIA_CONFIGURAZIONE, new Core.QryParams() 
+                            DataBase.Insert(DataBase.SP.RIBBON.COPIA_CONFIGURAZIONE, new Iren.PSO.Core.QryParams() 
                             {
                                 {"@IdApplicazione", applicazione.Key }, 
                                 {"@IdUtenteFrom", listBoxUtentiFrom.SelectedValue}, 
@@ -96,7 +96,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 {
                     foreach (KeyValuePair<int,string> applicazione in listBoxApplicazioni.Items)
                         foreach (DataRowView utenteTo in listBoxUtentiTo.SelectedItems)
-                            DataBase.Insert(DataBase.SP.RIBBON.COPIA_CONFIGURAZIONE, new Core.QryParams() 
+                            DataBase.Insert(DataBase.SP.RIBBON.COPIA_CONFIGURAZIONE, new Iren.PSO.Core.QryParams() 
                             {
                                 {"@IdApplicazione", applicazione.Key }, 
                                 {"@IdUtenteFrom", listBoxUtentiFrom.SelectedValue}, 

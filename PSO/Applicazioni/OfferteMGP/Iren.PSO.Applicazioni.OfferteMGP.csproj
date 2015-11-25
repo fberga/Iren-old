@@ -28,7 +28,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\OfferteMGP\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\OfferteMGP\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <ApplicationVersion>1.0.0.7</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -237,9 +237,9 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="OfferteMGP.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]OfferteMGP.xlsm&quot;" />
         <Host Name="Excel Document" Path=".\OfferteMGP.xlsm" GeneratedCodeNamespace="Iren.PSO.Applicazioni" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="D4985D1139A4B31268B0FA9BDFBA596952873C9F" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="315C31F5F2419A43AE9CB6A7E9CDD2F86A399FB6" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="C5096B86CBA8425A4F2721718EE6BFEDB6CEF51C" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" PublishedHash="92B76BDB4345932FD0509A420EF572B1DCBC1DB6" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" PublishedHash="E389A3D161A69828E78D06A6A2099A84BB5CA30C" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" PublishedHash="CB1B78F958D3EB43490B65A2BB0F368C6C897C4A" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

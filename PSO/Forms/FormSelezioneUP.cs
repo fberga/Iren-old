@@ -35,7 +35,7 @@ namespace Iren.PSO.Forms
         {
             InitializeComponent();
             _siglaInformazione = siglaInformazione;
-            this.Text = Simboli.nomeApplicazione + " - Selezione UP";
+            this.Text = Simboli.NomeApplicazione + " - Selezione UP";
 
             DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
             entitaInformazioni.RowFilter = "SiglaInformazione = '" + _siglaInformazione + "' AND IdApplicazione = " + Workbook.IdApplicazione;

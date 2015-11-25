@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -45,7 +46,7 @@ namespace Iren.PSO.Applicazioni
                     }
                     else
                     {
-                        System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                        System.Windows.Forms.MessageBox.Show("Il percorso '" + pathStr + "' non è raggiungibile.", Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                         return false;
                     }
@@ -194,7 +195,7 @@ namespace Iren.PSO.Applicazioni
                         if (ws.Range[rngProfiloPQNR.ToString()].Value == null)
                         {
                             SplashScreen.Close();
-                            System.Windows.Forms.MessageBox.Show("Non è stato definito alcun profilo PQNR per l'UP " + siglaEntita + ": l'esportazione verrà interrotta per questa UP. Compilare il suo profilo per poter esportare.", Simboli.nomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                            System.Windows.Forms.MessageBox.Show("Non è stato definito alcun profilo PQNR per l'UP " + siglaEntita + ": l'esportazione verrà interrotta per questa UP. Compilare il suo profilo per poter esportare.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                             SplashScreen.Show();
 
                             return false;
@@ -255,6 +256,7 @@ namespace Iren.PSO.Applicazioni
                     wb.Sheets[1].Range["A1"].Select();
                     wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel8);
                     wb.Close();
+                    Marshal.ReleaseComObject(wb);
 
                     var config = Workbook.GetUsrConfigElement("destMailTest");
                     string mailTo = config.Value;
@@ -278,7 +280,7 @@ namespace Iren.PSO.Applicazioni
                     messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 
                     Outlook.Application outlook = GetOutlookInstance();
-                    Outlook.MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
+                    Outlook._MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
                     
                     //TODO check se manda sempre con lo stesso account...
                     Outlook.Account senderAccount = outlook.Session.Accounts[1];
@@ -303,7 +305,7 @@ namespace Iren.PSO.Applicazioni
             {
                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "SisCom - Esporta.InvioMail: " + e.Message);
 
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
                 if(File.Exists(fileName))
                     File.Delete(fileName);

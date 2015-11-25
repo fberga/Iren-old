@@ -97,7 +97,7 @@
     </Compile>
     <Compile Include="Aggiorna.cs" />
     <Compile Include="Esporta.cs" />
-    <Compile Include="Optimizer.cs" />
+    <Compile Include="Ottimizzatore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Riepilogo.cs" />
     <Compile Include="Sheet.cs" />

@@ -148,7 +148,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         
         public static Image GetResurceImage(string name)
         {
-            return Iren.ToolsExcel.Base.Properties.Resources.ResourceManager.GetObject(name) as Image;
+            return Iren.PSO.Base.Properties.Resources.ResourceManager.GetObject(name) as Image;
         }
 
         public static Control CreateEmptyContainer(Control parent)

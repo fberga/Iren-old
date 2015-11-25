@@ -172,7 +172,7 @@ namespace Iren.PSO.Base
         /// </summary>
         public override void InitLabels()
         {
-            _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.nomeApplicazione;
+            _ws.Shapes.Item("lbTitolo").TextFrame.Characters().Text = Simboli.NomeApplicazione;
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = Workbook.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbVersione").TextFrame.Characters().Text = "Foglio v." + Workbook.WorkbookVersion.ToString() + " Base v." + Workbook.BaseVersion.ToString() + " Core v." + Workbook.CoreVersion.ToString();
@@ -228,7 +228,7 @@ namespace Iren.PSO.Base
             _ws.Range[Range.GetRange(1, 1, 1, _struttura.colRecap - 1)].EntireColumn.ColumnWidth = Struct.cell.width.empty;            
             _ws.Rows[1].RowHeight = Struct.cell.height.empty;
 
-            _ws.Activate();
+            ((Excel._Worksheet)_ws).Activate();
             _ws.Application.ActiveWindow.FreezePanes = false;
             _ws.Cells[_struttura.rigaBlock, _struttura.colBlock].Select();
             _ws.Application.ActiveWindow.ScrollColumn = 1;
@@ -449,7 +449,7 @@ namespace Iren.PSO.Base
             {
                 Workbook.InsertLog(PSO.Core.DataBase.TipologiaLOG.LogErrore, "CaricaDatiRiepilogo: " + e.Message);
 
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.nomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
         /// <summary>

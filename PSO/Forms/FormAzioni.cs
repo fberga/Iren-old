@@ -268,7 +268,7 @@ namespace Iren.PSO.Forms
 
         private void frmAZIONI_Load(object sender, EventArgs e)
         {
-            this.Text = Simboli.nomeApplicazione + " - Azioni";
+            this.Text = Simboli.NomeApplicazione + " - Azioni";
             CaricaAzioni();
             CaricaCategorie();
         }
@@ -358,14 +358,14 @@ namespace Iren.PSO.Forms
         {
             if (_toProcessDates.Count > 0)
             {
-                if ((_toProcessDates.Count > 1 && MessageBox.Show("Ci sono più date selezionate. Procedere con la prima?", Simboli.nomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes) || _toProcessDates.Count == 1)
+                if ((_toProcessDates.Count > 1 && MessageBox.Show("Ci sono più date selezionate. Procedere con la prima?", Simboli.NomeApplicazione, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes) || _toProcessDates.Count == 1)
                 {
                     FormMeteo meteo = new FormMeteo(_toProcessDates[0], _carica, _r);
                     meteo.ShowDialog();
                 }
             }
             else
-                MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.NomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
         private void btnApplica_Click(object sender, EventArgs e)
         {
@@ -374,9 +374,9 @@ namespace Iren.PSO.Forms
             btnMeteo.Enabled = false;
 
             if (_toProcessDates.Count == 0)
-                MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Non è stata selezionata alcuna data...", Simboli.NomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (treeViewUP.Nodes.OfType<TreeNode>().Where(n => n.Checked).ToArray().Length == 0)
-                MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.nomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Non è stata selezionata alcuna unità...", Simboli.NomeApplicazione, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
                 SplashScreen.Show();

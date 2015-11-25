@@ -110,13 +110,13 @@ namespace Iren.PSO.Forms
             if (e.Node.Name.StartsWith("'"))
             {
                 Excel.Range rng = (Excel.Range)Workbook.Application.Range[e.Node.Name];
-                rng.Worksheet.Activate();
+                ((Excel._Worksheet)rng.Worksheet).Activate();
                 rng.Select();
             }
             else if (e.Node.Parent != null && e.Node.Parent.Name.StartsWith("'"))
             {
                 Excel.Range rng = (Excel.Range)Workbook.Application.Range[e.Node.Parent.Name];
-                rng.Worksheet.Activate();
+                ((Excel._Worksheet)rng.Worksheet).Activate();
                 rng.Select();
             }
             Workbook.FromErrorPane = false;

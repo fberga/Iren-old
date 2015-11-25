@@ -8,12 +8,14 @@ using System.Linq;
 
 namespace Iren.PSO.Base
 {
-    public class Simboli
+    public static class Simboli
     {
-        public const string localBasePath = @"%APPDATA%\PSO\";
-        public const string remoteBasePath = @"\\pc1009235\Applicazioni\PSO";
+        public static string LocalBasePath 
+        { get { return @"%APPDATA%\PSO\"; } }
+        public static string RemoteBasePath
+        { get { return @"\\pc1009235\Applicazioni\PSO"; } }
 
-        public readonly static Dictionary<int, string> FileApplicazione = new Dictionary<int, string>()
+        private readonly static Dictionary<int, string> _fileApplicazione = new Dictionary<int, string>()
         {
             {1, "OfferteMGP"},
             {2, "InvioProgrammi"},
@@ -29,6 +31,9 @@ namespace Iren.PSO.Base
             {12, "PrevisioneCT"},
             {13, "InvioProgrammi"}
         };
+
+        public static Dictionary<int, string> FileApplicazione 
+        { get { return _fileApplicazione; } }
         
         public const string DEV = "Dev";
         public const string TEST = "Test";
@@ -36,19 +41,21 @@ namespace Iren.PSO.Base
 
         public const string UNION = ".";
 
-        public static string nomeApplicazione = "";
-        private static bool emergenzaForzata = false;
-        public static bool EmergenzaForzata
+        public static string NomeApplicazione 
+        { get; set; }
+        
+        private static bool _emergenzaForzata = false;
+        public static bool EmergenzaForzata 
         {
             get
             {
-                return emergenzaForzata;
+                return _emergenzaForzata;
             }
             set
             {
-                if (emergenzaForzata != value)
+                if (_emergenzaForzata != value)
                 {
-                    emergenzaForzata = value;
+                    _emergenzaForzata = value;
 
                     bool screenUpdating = Workbook.ScreenUpdating;
                     if (screenUpdating)
@@ -79,63 +86,63 @@ namespace Iren.PSO.Base
             }
         }
 
-        private static bool modificaDati = false;
+        private static bool _modificaDati = false;
         public static bool ModificaDati 
         { 
             get 
             { 
-                return modificaDati; 
+                return _modificaDati; 
             } 
             
             set 
             {
-                modificaDati = value;
-                Handler.ChangeModificaDati(modificaDati);
+                _modificaDati = value;
+                Handler.ChangeModificaDati(_modificaDati);
             }
         }
 
-        private static bool sqlServerOnline = true;
+        private static bool _sqlServerOnline = true;
         public static bool SQLServerOnline
         {
             get
             {
-                return sqlServerOnline;
+                return _sqlServerOnline;
             }
 
             set
             {
-                sqlServerOnline = value;
-                Handler.ChangeStatoDB(Core.DataBase.NomiDB.SQLSERVER, sqlServerOnline);
+                _sqlServerOnline = value;
+                Handler.ChangeStatoDB(Core.DataBase.NomiDB.SQLSERVER, _sqlServerOnline);
             }
         }
 
-        private static bool impiantiOnline = true;
+        private static bool _impiantiOnline = true;
         public static bool ImpiantiOnline
         {
             get
             {
-                return impiantiOnline;
+                return _impiantiOnline;
             }
 
             set
             {
-                impiantiOnline = value;
-                Handler.ChangeStatoDB(Core.DataBase.NomiDB.IMP, impiantiOnline);
+                _impiantiOnline = value;
+                Handler.ChangeStatoDB(Core.DataBase.NomiDB.IMP, _impiantiOnline);
             }
         }
 
-        private static bool elsagOnline = true;
+        private static bool _elsagOnline = true;
         public static bool ElsagOnline
         {
             get
             {
-                return elsagOnline;
+                return _elsagOnline;
             }
 
             set
             {
-                elsagOnline = value;
-                Handler.ChangeStatoDB(Core.DataBase.NomiDB.ELSAG, elsagOnline);
+                _elsagOnline = value;
+                Handler.ChangeStatoDB(Core.DataBase.NomiDB.ELSAG, _elsagOnline);
             }
         }
 
@@ -246,12 +253,7 @@ namespace Iren.PSO.Base
         };
 
         public static Dictionary<int, string> OreMSD
-        {
-            get
-            {
-                return oreMSD;
-            }
-        }
+        { get { return oreMSD; } }
 
         public static string GetMercatoPrec(string mercato)
         {

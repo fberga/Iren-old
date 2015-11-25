@@ -27,7 +27,7 @@ namespace Iren.PSO.Forms
 
             dataGridConfigurazioni.DataSource = _dt;
             
-            this.Text = Simboli.nomeApplicazione + " - Configura percorsi";
+            this.Text = Simboli.NomeApplicazione + " - Configura percorsi";
 
             int width = dataGridConfigurazioni.Width * 90 / 100;
 

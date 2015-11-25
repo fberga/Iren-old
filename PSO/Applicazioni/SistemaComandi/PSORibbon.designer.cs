@@ -64,6 +64,7 @@ namespace Iren.PSO.Applicazioni
             this.TabSmartArtToolsDesign.SuspendLayout();
 
             InitializeComponent2();
+            
             // 
             // FrontOffice
             // 
@@ -176,7 +177,6 @@ namespace Iren.PSO.Applicazioni
             this.Tabs.Add(this.TabPrintPreview);
             this.Tabs.Add(this.TabBackgroundRemoval);
             this.Tabs.Add(this.TabSmartArtToolsDesign);
-
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.ToolsExcelRibbon_Load);
             this.FrontOffice.ResumeLayout(false);
             this.FrontOffice.PerformLayout();

@@ -1,19 +1,26 @@
 ﻿using Iren.PSO;
-//using Iren.PSO.Core;
 using Iren.PSO.UserConfig;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Office = Microsoft.Office.Core;
+
+
+using System.IO.MemoryMappedFiles;
+
+
 
 namespace Iren.PSO.Base
 {
@@ -30,8 +37,6 @@ namespace Iren.PSO.Base
         /// </summary>
         public static bool FromErrorPane = false;
 
-        public static IWin32Window Window;
-
         #endregion
 
         #region Proprietà
@@ -39,56 +44,105 @@ namespace Iren.PSO.Base
         /// <summary>
         /// L'oggetto Excel del Workbook per accedere a tutti gli handler e proprietà. (Read only)
         /// </summary>
-        public static Microsoft.Office.Tools.Excel.Workbook WB { get { return _wb.Base; } }
+        public static Microsoft.Office.Tools.Excel.Workbook WB 
+        { 
+            get { return _wb.Base; } 
+        }
         /// <summary>
         /// Scorciatoia per accedere all'oggetto Excel del foglio Main (sempre presente in tutti i fogli).
         /// </summary>
-        public static Excel.Worksheet Main { get { return (Excel.Worksheet)_wb.Sheets["Main"]; } }
+        public static Excel.Worksheet Main 
+        { 
+            get { return (Excel.Worksheet)_wb.Sheets["Main"]; } 
+        }
         /// <summary>
         /// Scorciatoia per accedere all'oggetto Excel del foglio di Log (sempre presente in tutti i fogli).
         /// </summary>
-        public static Excel.Worksheet Log { get { return (Excel.Worksheet)_wb.Sheets["Log"]; } }
+        public static Excel.Worksheet Log 
+        { 
+            get { return (Excel.Worksheet)_wb.Sheets["Log"]; } 
+        }
         /// <summary>
         /// Scorciatoia per accedere al foglio attivo.
         /// </summary>
-        public static Excel.Worksheet ActiveSheet { get { return (Excel.Worksheet)_wb.ActiveSheet; } }
+        public static Excel.Worksheet ActiveSheet 
+        { 
+            get { return (Excel.Worksheet)_wb.ActiveSheet; } 
+        }
         /// <summary>
         /// Scorciatoia per accedere all'oggetto Application di Excel.
         /// </summary>
-        public static Excel.Application Application { get { return _wb.Application; } }
+        public static Excel.Application Application 
+        { 
+            get { return _wb.Application; } 
+        }
         /// <summary>
         /// Lista di tutti i fogli che rappresentano una Categoria sul DB (non fanno parte i fogli Log, Main, MSDx). I fogli non sono indicizzati per nome, solo per indice.
         /// </summary>
-        public static IList<Excel.Worksheet> CategorySheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name != "Log" && ws.Name != "Main" && !ws.Name.StartsWith("MSD")).ToList(); } }
+        public static IList<Excel.Worksheet> CategorySheets 
+        { 
+            get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name != "Log" && ws.Name != "Main" && !ws.Name.StartsWith("MSD")).ToList(); } 
+        }
         /// <summary>
         /// Lista di tutti fogli indicizzati per nome.
         /// </summary>
-        public static Excel.Sheets Sheets { get { return WB.Sheets; } }
+        public static Excel.Sheets Sheets 
+        { 
+            get { return WB.Sheets; } 
+        }
         /// <summary>
         /// Lista dei folgi MSDx utile solo in Invio Programmi.
         /// </summary>
-        public static IList<Excel.Worksheet> MSDSheets { get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name.StartsWith("MSD")).ToList(); } }
+        public static IList<Excel.Worksheet> MSDSheets 
+        { 
+            get { return _wb.Sheets.Cast<Excel.Worksheet>().Where(ws => ws.Name.StartsWith("MSD")).ToList(); } 
+        }
         /// <summary>
         /// La versione dell'applicazione.
         /// </summary>
-        public static System.Version WorkbookVersion { get { return _wb.Version; } }
+        public static System.Version WorkbookVersion 
+        { 
+            get { return _wb.Version; } 
+        }
         /// <summary>
         /// La versione della classe Core
         /// </summary>
-        public static System.Version CoreVersion { get { return Iren.PSO.Base.DataBase.Versione; } }
+        public static System.Version CoreVersion 
+        { 
+            get { return Iren.PSO.Base.DataBase.Versione; } 
+        }
         /// <summary>
         /// La versione della classe Base.
         /// </summary>
-        public static System.Version BaseVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+        public static System.Version BaseVersion 
+        { 
+            get { return Assembly.GetExecutingAssembly().GetName().Version; } 
+        }
         /// <summary>
         /// Flag per attivare/disattivare il refresh dello schermo.
         /// </summary>
-        public static bool ScreenUpdating { get { return Application.ScreenUpdating; } set { Application.ScreenUpdating = value; } }
-
-        public static bool DaAggiornare { get; set; }
-
-        public static string Password { get { return _wb.Pwd; } }
-        public static string NomeUtente { get { return _wb.NomeUtente; } }
+        public static bool ScreenUpdating 
+        { 
+            get { return Application.ScreenUpdating; } set { Application.ScreenUpdating = value; } 
+        }
+        /// <summary>
+        /// Serve a stabilire se il foglio sia o no inizializzato dopo un aggiornamento
+        /// </summary>
+        public static bool DaAggiornare 
+        { get; private set; }
+        /// <summary>
+        /// Cached password per bloccare i fogli.
+        /// </summary>
+        public static string Password 
+        { get { return _wb.Pwd; } }
+        /// <summary>
+        /// Cached nome utente.
+        /// </summary>
+        public static string NomeUtente 
+        { get { return _wb.NomeUtente; } }
+        /// <summary>
+        /// Cached ambiente. Simboli.[DEV|TEST|PROD]
+        /// </summary>
         public static string Ambiente 
         { 
             get { return _wb.Ambiente; } 
@@ -98,6 +152,9 @@ namespace Iren.PSO.Base
                 Handler.ChangeAmbiente(value); 
             } 
         }
+        /// <summary>
+        /// Sigla tipologia stagione.
+        /// </summary>
         public static string Stagione 
         {
             get
@@ -108,6 +165,9 @@ namespace Iren.PSO.Base
                     .FirstOrDefault();
             }
         }
+        /// <summary>
+        /// Sigla tipologia mercato.
+        /// </summary>
         public static string Mercato 
         {
             get
@@ -118,7 +178,9 @@ namespace Iren.PSO.Base
                     .FirstOrDefault();
             }
         }
-
+        /// <summary>
+        /// Cached IdApplicazione.
+        /// </summary>
         public static int IdApplicazione 
         { 
             get 
@@ -131,6 +193,9 @@ namespace Iren.PSO.Base
                 if (DataBase.IsInitialized) DataBase.IdApplicazione = value;
             } 
         }
+        /// <summary>
+        /// Cached IdUtente.
+        /// </summary>
         public static int IdUtente 
         { 
             get 
@@ -143,7 +208,10 @@ namespace Iren.PSO.Base
                 if (DataBase.IsInitialized) DataBase.IdUtente = value;
             }
         }
-        public static DateTime DataAttiva
+        /// <summary>
+        /// Cached data attiva.
+        /// </summary>
+        public static DateTime DataAttiva 
         {
             get
             {
@@ -155,7 +223,9 @@ namespace Iren.PSO.Base
                 if (DataBase.IsInitialized) DataBase.DataAttiva = value;
             }
         }
-        
+        /// <summary>
+        /// Cached id stagione.
+        /// </summary>
         public static int IdStagione { 
             get { return _wb.IdStagione; } 
             set 
@@ -165,9 +235,18 @@ namespace Iren.PSO.Base
                 Handler.ScriviStagione(value);
             }
         }
+        /// <summary>
+        /// Repository contentente i dati salvati localmente nel foglio. Si basa sul Cached Attribute DataSet repositoryDataSet.
+        /// </summary>
+        public static Repository Repository 
+        { get; private set; }
+        /// <summary>
+        /// Cached tabella con i dati di log.
+        /// </summary>
+        public static DataTable LogDataTable 
+        { get { return _wb.LogDataTable; } }
 
-        public static Repository Repository { get; private set; }
-        public static DataTable LogDataTable { get { return _wb.LogDataTable; } }
+        public static bool AbortedLoading { get; private set; }
 
         #endregion
 
@@ -176,13 +255,13 @@ namespace Iren.PSO.Base
         /// <summary>
         /// Carica dal DB i dati riguardanti le proprietà dell'applicazione che si trovano nella tabella APPLICAZIONE. Assegna alle variabili globali di applicazione i valori.
         /// </summary>
-        public static void AggiornaParametriApplicazione()
+        public static void AggiornaParametriApplicazione() 
         {
             DataRow r = Workbook.Repository.CaricaApplicazione(_wb.IdApplicazione);
             if (r == null)
                 throw new Core.ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
-            Simboli.nomeApplicazione = r["DesApplicazione"].ToString();
+            Simboli.NomeApplicazione = r["DesApplicazione"].ToString();
             Struct.intervalloGiorni = (r["IntervalloGiorniEntita"] is DBNull ? 0 : (int)r["IntervalloGiorniEntita"]);
             Struct.tipoVisualizzazione = r["TipoVisualizzazione"] is DBNull ? "O" : r["TipoVisualizzazione"].ToString();
             Struct.visualizzaRiepilogo = r["VisRiepilogo"] is DBNull ? true : r["VisRiepilogo"].Equals("1");
@@ -199,7 +278,7 @@ namespace Iren.PSO.Base
         /// <summary>
         /// Aggiorna i label indicanti lo stato dei Database in seguito ad un cambio di stato.
         /// </summary>
-        public static void AggiornaLabelStatoDB()
+        public static void AggiornaLabelStatoDB() 
         {
             //disabilito l'aggiornamento in caso di modifica dati... lo ripeto alla chiusura in caso
             if (!Simboli.ModificaDati)
@@ -251,89 +330,95 @@ namespace Iren.PSO.Base
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public static void StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public static void StatoDBChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) 
         {
             AggiornaLabelStatoDB();
         }        
+        /// <summary>
+        /// Restituisce la sezione "UserConfig" del file di configurazione.
+        /// </summary>
+        /// <returns>La sezione  "UserConfig" del file di configurazione.</returns>
+        public static UserConfiguration GetUsrConfiguration() 
+        {
+            return (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
+        }
         /// <summary>
         /// Restituisce lo UserConfigElement collegato alla chiave configKey nella sezione usrConfig (da non confondere con appSettings).
         /// </summary>
         /// <param name="configKey">Chiave.</param>
         /// <returns>Restituisce l'elemento ricercato.</returns>
-        public static UserConfiguration GetUsrConfiguration()
-        {
-            return (UserConfiguration)ConfigurationManager.GetSection("usrConfig");
-        }
-        public static UserConfigElement GetUsrConfigElement(string configKey)
+        public static UserConfigElement GetUsrConfigElement(string configKey) 
         {
             var settings = GetUsrConfiguration();
             return (UserConfigElement)settings.Items[configKey];
         }
-
         /// <summary>
         /// Restituisce un array con le tre componenti intere Red Green Blue a partire da una stringa suddivisa con un separatore sep. Non ha una gestione di errore, se il parser non riesce ad interpretare la stringa, va in errore.
         /// </summary>
         /// <param name="rgb">Stringa nel formato RRR[sep]GGG[sep]BBB.</param>
         /// <param name="sep">Separatore.</param>
         /// <returns>Restituisce le tre componenti trovate.</returns>
-        public static int[] GetRGBFromString(string rgb, char sep = ';')
+        public static int[] GetRGBFromString(string rgb, char sep = ';') 
         {
             string[] rgbComp = rgb.Split(sep);
 
             return new int[] { int.Parse(rgbComp[0]), int.Parse(rgbComp[1]), int.Parse(rgbComp[2]) };
         }
-
+        /// <summary>
+        /// Funzione che lancia l'applicazione o la sua installazione nel caso in cui non sia ancora installata.
+        /// </summary>
+        /// <param name="xlApp">Applicazione Excel su cui lanciare il programma.</param>
+        /// <param name="idApplicazione">Id dell'applicazione da avviare.</param>
+        /// 
         public static void AvviaApplicazione(Excel.Application xlApp, int idApplicazione)
         {
             string file = Simboli.FileApplicazione[idApplicazione];
+
+            //controllo se è già aperta
+            bool opened = false;
+
+
+            Excel._Workbook workbook = xlApp.Workbooks.OfType<Excel.Workbook>().Where(wb => wb.Name == file + ".xlsm").FirstOrDefault();
+
+            if (workbook != null)
+            {
+                xlApp.Visible = true;
+                xlApp.WindowState = Excel.XlWindowState.xlMaximized;
+                workbook.Activate();
+                opened = true;
+            }
+
+            if (!opened)
+            {
 #if DEBUG
-            string path = @"D:\Repository\Iren\PSO\Applicazioni\" + file + @"\bin\Debug\" + file + ".xlsm";
+                string path = @"D:\Repository\Iren\PSO\Applicazioni\" + file + @"\bin\Debug\" + file + ".xlsm";
 #else
-            string path = Path.Combine(Environment.ExpandEnvironmentVariables(Simboli.localBasePath), file + ".xlsm");
+                string path = Path.Combine(Environment.ExpandEnvironmentVariables(Simboli.LocalBasePath), file + ".xlsm");
 #endif
+                if (!File.Exists(path))
+                {                    
+                    //Installazione da remoto
+                    string installPath = Path.Combine(Simboli.RemoteBasePath, file, file + ".vsto");
 
-            if (!File.Exists(path))
-            {
-                //Installazione da remoto
-                string installPath = Path.Combine(Simboli.remoteBasePath, file, file + ".vsto");
-
-                var process = new System.Diagnostics.Process
-                {
-                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    var process = new System.Diagnostics.Process
                     {
-                        FileName = installPath
-                    },
-                    EnableRaisingEvents = true,
-                };
-                process.Start();
-            }
-
-            SplashScreen.Show();
-            SplashScreen.UpdateStatus("In attesa di avviare l'applicazione");
-            bool installed = false;
-            int count = 10;
-            while (!installed && count > 0)
-            {
-                installed = File.Exists(path);
-                if (!installed)
-                    System.Threading.Thread.Sleep(5000);
-                count--;
-            }
-            if (installed)
-            {
-                try
-                {
-                    //xlApp.Windows[0].Activate();
-                    xlApp.Workbooks[file + ".xlsm"].Activate();
-                    xlApp.Visible = true;
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = installPath
+                            //Arguments = "dfshim.dll,ShOpenVerbApplication " + installPath
+                        },
+                        EnableRaisingEvents = true,
+                    };
+                    process.Start();
                 }
-                catch
+                else
                 {
                     xlApp.Visible = true;
+                    xlApp.WindowState = Excel.XlWindowState.xlMaximized;
                     xlApp.Workbooks.Open(path);
                 }
             }
-            SplashScreen.Close();
+            
         }
 
         #region AppSettings
@@ -357,6 +442,10 @@ namespace Iren.PSO.Base
         #endregion
 
         #region Init
+        
+        /// <summary>
+        /// Recupera da DB i dati del log.
+        /// </summary>
         private static void InitLog()
         {
             DataTable dtLog = DataBase.Select(DataBase.SP.APPLICAZIONE_LOG);
@@ -372,7 +461,11 @@ namespace Iren.PSO.Base
 
             }
         }
-
+        /// <summary>
+        /// Recupera dal DB l'utente in base ad Environment.UserName.
+        /// </summary>
+        /// <param name="idUtente">Parametro di output contenente l'id dell'utente.</param>
+        /// <param name="nomeUtente">Parametro di output contenente il nome utente.</param>
         public static void GetUtente(out int idUtente, out string nomeUtente)
         {
             DataTable dtUtente = DataBase.Select(DataBase.SP.UTENTE, "@CodUtenteWindows=" + Environment.UserName);
@@ -387,6 +480,9 @@ namespace Iren.PSO.Base
                 nomeUtente = "NON CONFIGURATO";
             }
         }
+        /// <summary>
+        /// Utilizza GetUtente per settare i CachedAttribute del fogio.
+        /// </summary>
         private static void InitUtente()
         {
             int idUtente;
@@ -397,7 +493,10 @@ namespace Iren.PSO.Base
             _wb.IdUtente = idUtente;
             _wb.NomeUtente = nomeUtente;
         }
-
+        /// <summary>
+        /// Inizializza il foglio dopo l'apertura. Restituisce false se il foglio è in emergenza, true se la condizione è normale.
+        /// </summary>
+        /// <returns>Restituisce false se il foglio è in emergenza, true se la condizione è normale.</returns>
         private static bool Initialize()
         {
             if (DataBase.OpenConnection())
@@ -441,39 +540,54 @@ namespace Iren.PSO.Base
                 }
                 
                 DataBase.DataAttiva = Workbook.DataAttiva;
-                Simboli.nomeApplicazione = Workbook.Repository.Applicazione["DesApplicazione"].ToString();
+                Simboli.NomeApplicazione = Workbook.Repository.Applicazione["DesApplicazione"].ToString();
                 Struct.intervalloGiorni = Workbook.Repository.Applicazione["IntervalloGiorniEntita"] is DBNull ? 0 : (int)Workbook.Repository.Applicazione["IntervalloGiorniEntita"];
                 Struct.visualizzaRiepilogo = Workbook.Repository.Applicazione["VisRiepilogo"] is DBNull ? true : Workbook.Repository.Applicazione["VisRiepilogo"].Equals("1");
 
                 return true;
             }
         }
-
-
+        /// <summary>
+        /// Procedura per l'update del foglio che apre la nuova copia e cancella la vecchia.
+        /// </summary>
+        /// <returns></returns>
         public static bool Update()
         {
-            //UPDATE
-            string updatePath = Path.Combine(_wb.Path, "UPDATE");
-            if (Directory.Exists(updatePath) && Directory.GetFiles(updatePath, _wb.Name).Any())
+            try
             {
-                string name = _wb.Name;
-                string fullName = _wb.FullName;
-                _wb.Base.SaveAs(Path.Combine(_wb.Path, "old_" + _wb.Name));
-                File.Copy(Path.Combine(updatePath, name), fullName, true);
-                File.Delete(Path.Combine(updatePath, name));
-                Application.Workbooks.Open(fullName);
-                _wb.Base.Windows[1].Visible = false;
-                return true;
+                //UPDATE
+                string updatePath = Path.Combine(_wb.Path, "UPDATE");
+                if (Directory.Exists(updatePath) && Directory.GetFiles(updatePath, _wb.Name).Any())
+                {
+                    string name = _wb.Name;
+                    string fullName = _wb.FullName;
+                    Application.DisplayAlerts = false;
+                    _wb.Base.SaveAs(Filename: Path.Combine(_wb.Path, "old_" + _wb.Name), ConflictResolution: Excel.XlSaveConflictResolution.xlLocalSessionChanges );
+                    Application.DisplayAlerts = true;
+                    File.Copy(Path.Combine(updatePath, name), fullName, true);
+                    File.Delete(Path.Combine(updatePath, name));
+                    Application.Workbooks.Open(fullName);
+                    
+                    
+                    _wb.Base.Windows[1].Visible = false;
+                    return true;
+                }
+                else
+                {
+                    try { if (File.Exists(Path.Combine(_wb.Path, "old_" + _wb.Name))) File.Delete(Path.Combine(_wb.Path, "old_" + _wb.Name)); }
+                    catch { }
+                }
             }
-            else
+            catch
             {
-                Window = new Win32Window(new IntPtr(Workbook.Application.Hwnd));
-                try { if (File.Exists(Path.Combine(_wb.Path, "old_" + _wb.Name))) File.Delete(Path.Combine(_wb.Path, "old_" + _wb.Name)); }
-                catch { }
+                Application.DisplayAlerts = true;
             }
 
             return false;
         }
+        /// <summary>
+        /// Funzione per il controllo delle aree di rete utilizzate dall'applicativo: segnala all'utente l'impossibilità di raggiungerle.
+        /// </summary>
         public static void ControlloAreeDiRete()
         {
             //controllo le aree di rete (se presenti)
@@ -496,10 +610,13 @@ namespace Iren.PSO.Base
                 foreach (var kv in pathNonDisponibili)
                     paths += " - " + kv.Key + " : '" + kv.Value + "'\n";
 
-                System.Windows.Forms.MessageBox.Show("I path seguenti non sono raggiungibili o non presentano privilegi di scrittura:" + paths, Simboli.nomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                System.Windows.Forms.MessageBox.Show("I path seguenti non sono raggiungibili o non presentano privilegi di scrittura:" + paths, Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
             }
         }
-
+        /// <summary>
+        /// Funzione che prepara l'ambiente in seguito all'avvio dell'applicativo.
+        /// </summary>
+        /// <param name="wb">Il workbook attivo.</param>
         public static void StartUp(IPSOThisWorkbook wb)
         {
             _wb = wb;
@@ -513,7 +630,9 @@ namespace Iren.PSO.Base
 
             DataBase.AddPropertyChanged(Workbook.StatoDBChanged);
 
-            if (!Update())
+            AbortedLoading = Update();
+
+            if (!AbortedLoading)
             {
                 Application.Iteration = true;
                 Application.MaxIterations = 100;
@@ -523,7 +642,7 @@ namespace Iren.PSO.Base
 
                 ControlloAreeDiRete();
 
-                foreach (Excel.Worksheet ws in CategorySheets)
+                foreach (Excel._Worksheet ws in CategorySheets)
                 {
                     ws.Activate();
                     ws.Range["A1"].Select();
@@ -540,17 +659,22 @@ namespace Iren.PSO.Base
                 Application.EnableEvents = true;
             }
         }
+        
         #endregion
 
         #region Log
         public static void InsertLog(PSO.Core.DataBase.TipologiaLOG logType, string message)
         {
-            Excel.Worksheet log = _wb.Sheets["Log"];
-            bool prot = log.ProtectContents;
-            if (prot) log.Unprotect(Password);
-            DataBase db = new DataBase();
-            db.InsertLog(logType, message);
-            if (prot) log.Protect(Password);
+            //si verifica quando aggiorno il workbook alla nuova versione. In ogni caso impedisco che il log vada in errore
+            if (DataBase.IdUtente != -1)
+            {
+                Excel.Worksheet log = _wb.Sheets["Log"];
+                bool prot = log.ProtectContents;
+                if (prot) log.Unprotect(Password);
+                DataBase db = new DataBase();
+                db.InsertLog(logType, message);
+                if (prot) log.Protect(Password);
+            }
         }
         public static void RefreshLog()
         {
@@ -565,9 +689,9 @@ namespace Iren.PSO.Base
 
         #region Close
 
-        public static void Close()
+        public static void Close() 
         {
-            if (Workbook.Repository != null)
+            if (!AbortedLoading && Workbook.Repository != null)
             {
                 Simboli.EmergenzaForzata = false;
                 Application.ScreenUpdating = false;
@@ -585,14 +709,30 @@ namespace Iren.PSO.Base
                 }
                 DataBase.SalvaModificheDB();
                 InsertLog(PSO.Core.DataBase.TipologiaLOG.LogAccesso, "Log off - " + Environment.UserName + " - " + Environment.MachineName);
+                DataBase.Close();
 
                 Application.ScreenUpdating = true;
-
                 _wb.Base.Save();
+
+                try
+                {
+                    Application.Workbooks["old_" + _wb.Name].Close(SaveChanges: false);
+                }
+                catch { }
+                    
+                var visibleConut = Application.Workbooks.OfType<Excel.Workbook>().Count(wb => wb.Windows[1].Visible == true);
+                if (visibleConut <= 1)
+                {
+                    Application.Quit();
+                    Marshal.FinalReleaseComObject(Application);
+                }
+
+                GC.Collect();
                 //non metterlo mai, blocca l'applicazione ad un eventuale secondo avvio!!
                 //Application.DisplayAlerts = false;
             }
         }
+
         #endregion
 
         #endregion

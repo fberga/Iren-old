@@ -11,7 +11,7 @@ namespace Iren.PSO.Forms
             InitializeComponent();
             //Application.EnableVisualStyles();
             calObj.SetDate(Workbook.DataAttiva);
-            this.Text = Simboli.nomeApplicazione + " - Calendar";
+            this.Text = Simboli.NomeApplicazione + " - Calendar";
         }
 
         private void btnOK_Click(object sender, EventArgs e)
