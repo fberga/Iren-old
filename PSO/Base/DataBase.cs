@@ -25,7 +25,7 @@ namespace Iren.PSO.Base
             public const string APPLICAZIONE = "spApplicazioneProprieta",
                 APPLICAZIONE_INFORMAZIONE_D = "spApplicazioneInformazioneD",
                 APPLICAZIONE_INFORMAZIONE_H = "spApplicazioneInformazioneH",
-                APPLICAZIONE_INFORMAZIONE_H_EXPORT = "PAR.spApplicazioneInformazioneH_Export",
+                APPLICAZIONE_INFORMAZIONE_H_EXPORT = "spApplicazioneInformazioneH_Export",
                 APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
                 APPLICAZIONE_INIT = "spApplicazioneInit",
                 APPLICAZIONE_LOG = "spApplicazioneLog2",

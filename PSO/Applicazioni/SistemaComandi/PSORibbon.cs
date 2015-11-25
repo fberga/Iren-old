@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.Tools.Applications;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-// ***************************************************** SISTEMA COMANDI ***************************************************** //
+// ***************************************************** RIBBON ***************************************************** //
 
 namespace Iren.PSO.Applicazioni
 {
@@ -919,6 +919,7 @@ namespace Iren.PSO.Applicazioni
         /// </summary>
         private void RefreshChecks()
         {
+            SplashScreen.Show();
             Workbook.ScreenUpdating = false;
             //Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             try
@@ -926,6 +927,7 @@ namespace Iren.PSO.Applicazioni
                 _errorPane.RefreshCheck(_checkFunctions);
             }
             catch { }
+            SplashScreen.Close();
             //Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             //Workbook.ScreenUpdating = true;
         }
@@ -1152,7 +1154,7 @@ namespace Iren.PSO.Applicazioni
                 Riepilogo r = new Riepilogo(Workbook.Main);
 
                 Aggiorna aggiorna = new Aggiorna();
-                bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione;
+                bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione || Workbook.DaAggiornare;
 
                 if (DataBase.OpenConnection())
                 {
@@ -1162,7 +1164,7 @@ namespace Iren.PSO.Applicazioni
                     Workbook.DataAttiva = newDate;
                     Workbook.IdApplicazione = newIdApplicazione;
 
-                    if (aggiornaStruttura || Workbook.DaAggiornare)
+                    if (aggiornaStruttura)
                         aggiorna.Struttura(avoidRepositoryUpdate: true);
                 }
                 else
@@ -1176,12 +1178,6 @@ namespace Iren.PSO.Applicazioni
                 r.InitLabels();
                 ((RibbonButton)Controls["btnCalendario"]).Label = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
 
-                try
-                {
-                    Sheet.AbilitaModifica(false);
-                }
-                catch { }
-
                 //aggiungo errorPane
                 if (Controls.Contains("btnMostraErrorPane"))
                 {
@@ -1192,6 +1188,12 @@ namespace Iren.PSO.Applicazioni
 
                     RefreshChecks();
                 }
+
+                try
+                {
+                    Sheet.AbilitaModifica(false);
+                }
+                catch { }
 
                 //aggiungo un altro handler per cell click
                 Globals.ThisWorkbook.SheetSelectionChange += CheckSelection;

@@ -26,7 +26,19 @@ namespace Iren.PSO.Applicazioni
             {
                 case 1:
                     n = CheckFunc1();
-                    break;               
+                    break;
+                case 2:
+                    n = CheckFunc2();
+                    break;
+                case 3:
+                    n = CheckFunc3();
+                    break;
+                case 4:
+                    n = CheckFunc4();
+                    break;
+                case 5:
+                    n = CheckFunc5();
+                    break;
             }
 
             return n;
@@ -78,6 +90,25 @@ namespace Iren.PSO.Applicazioni
                 decimal dispCalorePMinMT2R = GetDecimal("UP_MT2R", "DISPONIBILITA_CALORE_PMIN", suffissoData, Date.GetSuffissoOra(ora));
                 decimal dispCalorePMinMT3 = GetDecimal("UP_MT3", "DISPONIBILITA_CALORE_PMIN", suffissoData, Date.GetSuffissoOra(ora));
                 decimal dispCalorePMinTN1 = GetDecimal("UP_TN1", "DISPONIBILITA_CALORE_PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                object rampaMT2R = GetObject("UP_MT2R", "RAMPA", suffissoData, Date.GetSuffissoOra(ora));
+                object rampaMT3 = GetObject("UP_MT3", "RAMPA", suffissoData, Date.GetSuffissoOra(ora));
+                object rampaTN1 = GetObject("UP_TN1", "RAMPA", suffissoData, Date.GetSuffissoOra(ora));
+                decimal costoMT2R = GetDecimal("UP_MT2R", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
+                decimal costoMT3 = GetDecimal("UP_MT3", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
+                decimal costoTN1 = GetDecimal("UP_TN1", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinMGPMT2R = GetDecimal("UP_MT2R", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxMGPMT2R = GetDecimal("UP_MT2R", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinTernaMT2R = GetDecimal("UP_MT2R", "PMIN_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxTernaMT2R = GetDecimal("UP_MT2R", "PMAX_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinMGPMT3 = GetDecimal("UP_MT3", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxMGPMT3 = GetDecimal("UP_MT3", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinTernaMT3 = GetDecimal("UP_MT3", "PMIN_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxTernaMT3 = GetDecimal("UP_MT3", "PMAX_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinMGPTN1 = GetDecimal("UP_TN1", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxMGPTN1 = GetDecimal("UP_TN1", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinTernaTN1 = GetDecimal("UP_TN1", "PMIN_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxTernaTN1 = GetDecimal("UP_TN1", "PMAX_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+
                 //fine caricameto dati
 
                 TreeNode nOra = new TreeNode("Ora " + ora);
@@ -121,7 +152,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("Pressione Moncalieri assente");
                     errore |= true;
                 }
-                if (pressioneMTX != null && (double)pressioneMTX < -850)
+                if (pressioneMTX != null && (double)pressioneMTX < 850)
                 {
                     nOra.Nodes.Add("Pressione Moncalieri < soglia minima");
                     errore |= true;
@@ -136,7 +167,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("Pressione Torino Nord assente");
                     errore |= true;
                 }
-                if (pressioneTTX != null && (double)pressioneTTX < -850)
+                if (pressioneTTX != null && (double)pressioneTTX < 850)
                 {
                     nOra.Nodes.Add("Pressione Torino Nord < soglia minima");
                     errore |= true;
@@ -183,7 +214,10 @@ namespace Iren.PSO.Applicazioni
                 }
                 if(portataCanale != null && (
                         ((double)portataCanale < 7 && (unitCommMT2R.Equals("off") || unitCommMT2R.Equals("m") || unitCommMT3.Equals("off") || unitCommMT3.Equals("m"))) 
-                     || ((double)portataCanale < 14 && ((unitCommMT2R.Equals("off") || unitCommMT2R.Equals("m")) && (unitCommMT3.Equals("off") || unitCommMT3.Equals("m"))))))
+                     || ((double)portataCanale < 14 && ((unitCommMT2R.Equals("off") || unitCommMT2R.Equals("m")) && (unitCommMT3.Equals("off") || unitCommMT3.Equals("m"))))
+                     || ((double)portataCanale < 36 && unitCommMT2R.Equals("rav") && unitCommMT3.Equals("rav"))
+                     || ((double)portataCanale < 25 && ((unitCommMT2R.Equals("rav") && unitCommMT3.Equals("m")) || (unitCommMT3.Equals("m") && unitCommMT3.Equals("rav"))))
+                     || ((double)portataCanale < 18 && ((unitCommMT2R.Equals("rav") && (unitCommMT3.Equals("off") || unitCommMT3.Equals("ind"))) || ((unitCommMT2R.Equals("off") || unitCommMT2R.Equals("ind")) && unitCommMT3.Equals("rav"))))))
                 {
                     nOra.Nodes.Add("Portata canale < soglia minima");
                     errore |= true;
@@ -210,32 +244,92 @@ namespace Iren.PSO.Applicazioni
                 }
                 if(dispCalorePMinMT2R > 0 && (unitCommMT2R == "ind" || unitCommMT2R == "off"))
                 {
-                    nOra.Nodes.Add("MT2R disponibilità minima calore > 0");
+                    nOra.Nodes.Add("MT2R : disponibilità minima calore > 0");
                     errore |= true;
                 }
                 if (dispCalorePMinMT3 > 0 && (unitCommMT3 == "ind" || unitCommMT3 == "off"))
                 {
-                    nOra.Nodes.Add("MT3 disponibilità minima calore > 0");
+                    nOra.Nodes.Add("MT3 : disponibilità minima calore > 0");
                     errore |= true;
                 }
                 if (dispCalorePMinTN1 > 0 && (unitCommTN1 == "ind" || unitCommTN1 == "off"))
                 {
-                    nOra.Nodes.Add("TN1 disponibilità minima calore > 0");
+                    nOra.Nodes.Add("TN1 : disponibilità minima calore > 0");
                     errore |= true;
                 }
                 if (dispCalorePMinMT2R > dispCalorePMaxMT2R)
                 {
-                    nOra.Nodes.Add("MT2R disponibilità minima calore > disponibilità massima calore");
+                    nOra.Nodes.Add("MT2R : disponibilità minima calore > disponibilità massima calore");
                     errore |= true;
                 }
                 if (dispCalorePMinMT3 > dispCalorePMaxMT3)
                 {
-                    nOra.Nodes.Add("MT3 disponibilità minima calore > disponibilità massima calore");
+                    nOra.Nodes.Add("MT3 : disponibilità minima calore > disponibilità massima calore");
                     errore |= true;
                 }
                 if (dispCalorePMinTN1 > dispCalorePMaxTN1)
                 {
-                    nOra.Nodes.Add("TN1 disponibilità minima calore > disponibilità massima calore");
+                    nOra.Nodes.Add("TN1 : disponibilità minima calore > disponibilità massima calore");
+                    errore |= true;
+                }
+                if (unitCommMT2R.Equals("rav") && rampaMT2R == null)
+                {
+                    nOra.Nodes.Add("MT2R : Con assetto rav è necessario inserire il valore di potenza di rampa");
+                    errore |= true;
+                }
+                if (unitCommMT3.Equals("rav") && rampaMT2R == null)
+                {
+                    nOra.Nodes.Add("MT3 : Con assetto rav è necessario inserire il valore di potenza di rampa");
+                    errore |= true;
+                }
+                if (unitCommTN1.Equals("rav") && rampaTN1 == null)
+                {
+                    nOra.Nodes.Add("TN1 : Con assetto rav è necessario inserire il valore di potenza di rampa");
+                    errore |= true;
+                }
+                if (costoMT2R == 0)
+                {
+                    nOra.Nodes.Add("MT2R : Costo marginale assente");
+                    attenzione |= true;
+                }
+                if (costoMT3 == 0)
+                {
+                    nOra.Nodes.Add("MT3 : Costo marginale assente");
+                    attenzione |= true;
+                }
+                if (costoTN1 == 0)
+                {
+                    nOra.Nodes.Add("TN1 : Costo marginale assente");
+                    attenzione |= true;
+                }
+                if (pMinTernaMT2R > pMinMGPMT2R)
+                {
+                    nOra.Nodes.Add("MT2R : PMin Terna > PMin MGP");
+                    errore |= true;
+                }
+                if (pMaxMGPMT2R > pMaxTernaMT2R)
+                {
+                    nOra.Nodes.Add("MT2R : PMax MGP > PMax Terna");
+                    errore |= true;
+                }
+                if (pMinTernaMT3 > pMinMGPMT3)
+                {
+                    nOra.Nodes.Add("MT3 : PMin Terna > PMin MGP");
+                    errore |= true;
+                }
+                if (pMaxMGPMT3 > pMaxTernaMT3)
+                {
+                    nOra.Nodes.Add("MT3 : PMax MGP > PMax Terna");
+                    errore |= true;
+                }
+                if (pMinTernaTN1 > pMinMGPTN1)
+                {
+                    nOra.Nodes.Add("TN1 : PMin MGP > Pmin Terna");
+                    errore |= true;
+                }
+                if (pMaxMGPTN1 > pMaxTernaTN1)
+                {
+                    nOra.Nodes.Add("TN1 : PMax MGP > PMax Terna");
                     errore |= true;
                 }
                 //fine controlli
@@ -261,6 +355,381 @@ namespace Iren.PSO.Applicazioni
                 _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
             }
             
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        private CheckOutput CheckFunc2()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
+                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
+
+                //caricamento dati
+                decimal dispPMax = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal dispPMin = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMax = GetDecimal(_check.SiglaEntita, "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMin = GetDecimal(_check.SiglaEntita, "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+
+                //fine caricameto dati
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                bool errore = false;
+                bool attenzione = false;
+
+                //controlli
+                if(pMax > dispPMax) 
+                {
+                    nOra.Nodes.Add("PMax > disponibilità PMax");
+                    errore |= true;
+                }
+                if(pMin > dispPMin) 
+                {
+                    nOra.Nodes.Add("PMin < disponibilità PMin");
+                    errore |= true;
+                }
+                //fine controlli
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        private CheckOutput CheckFunc3()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
+                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
+
+                //caricamento dati
+                decimal dispPMaxCC = GetDecimal("GE_GRE1", "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal dispPMinCC = GetDecimal("GE_GRE1", "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxCC = GetDecimal("GE_GRE1", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinCC = GetDecimal("GE_GRE1", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                decimal dispPMaxTV = GetDecimal("GE_GRE1", "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal dispPMinTV = GetDecimal("GE_GRE1", "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMaxTV = GetDecimal("GE_GRE1", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMinTV = GetDecimal("GE_GRE1", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                //fine caricameto dati
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                bool errore = false;
+                bool attenzione = false;
+
+                //controlli
+                if(pMaxCC + pMaxTV > dispPMaxCC + dispPMaxTV) 
+                {
+                    nOra.Nodes.Add("PMax > disponibilità PMax");
+                    errore |= true;
+                }
+                if(pMinCC + pMinTV > dispPMinCC + dispPMinTV) 
+                {
+                    nOra.Nodes.Add("PMin < disponibilità PMin");
+                    errore |= true;
+                }
+                //fine controlli
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        private CheckOutput CheckFunc4()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
+                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
+
+                //caricamento dati                
+                object temperatura = GetObject(_check.SiglaEntita, "TEMPERATURA", suffissoData, Date.GetSuffissoOra(ora));
+                object pressione = GetObject(_check.SiglaEntita, "PRESSIONE", suffissoData, Date.GetSuffissoOra(ora));
+                object umidita = GetObject(_check.SiglaEntita, "UMIDITA", suffissoData, Date.GetSuffissoOra(ora));
+                string unitComm = GetString(_check.SiglaEntita, "UNIT_COMM", suffissoData, Date.GetSuffissoOra(ora));
+                object rampa = GetObject(_check.SiglaEntita, "RAMPA", suffissoData, Date.GetSuffissoOra(ora));
+                //fine caricameto dati
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                bool errore = false;
+                bool attenzione = false;
+
+                //controlli
+                if (temperatura == null)
+                {
+                    nOra.Nodes.Add("Temperatura assente");
+                    errore |= true;
+                }
+                if ((double)temperatura < -20)
+                {
+                    nOra.Nodes.Add("Temperatura < soglia minima");
+                    errore |= true;
+                }
+                if ((double)temperatura > 45)
+                {
+                    nOra.Nodes.Add("Temperatura > soglia massima");
+                    errore |= true;
+                }
+                if (pressione == null)
+                {
+                    nOra.Nodes.Add("Pressione assente");
+                    errore |= true;
+                }
+                if ((double)pressione < 850)
+                {
+                    nOra.Nodes.Add("Pressione < soglia minima");
+                    errore |= true;
+                }
+                if ((double)pressione > 1100)
+                {
+                    nOra.Nodes.Add("Pressione > soglia massima");
+                    errore |= true;
+                }
+                if (umidita == null)
+                {
+                    nOra.Nodes.Add("umidita");
+                    errore |= true;
+                }
+                if ((double)umidita < 5)
+                {
+                    nOra.Nodes.Add("Umidità < soglia minima");
+                    errore |= true;
+                }
+                if ((double)umidita > 100)
+                {
+                    nOra.Nodes.Add("Umidità > soglia massima");
+                    errore |= true;
+                }
+                if (unitComm.Equals("rav") && rampa == null)
+                {
+                    nOra.Nodes.Add("Con assetto rav è necessario inserire il valore di potenza di rampa");
+                    errore |= true;
+                }
+                //fine controlli
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        private CheckOutput CheckFunc5()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+            TreeNode nData = new TreeNode();
+            string data = "";
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            {
+                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
+                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+                {
+                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(data);
+                }
+
+                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
+
+                //caricamento dati                
+                object costoOCX = GetObject("UP_OCX", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
+                object costoOEX = GetObject("UP_OEX", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
+                //fine caricameto dati
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                bool errore = false;
+                bool attenzione = false;
+
+                //controlli
+                if (costoOCX == null || costoOEX == null)
+                {
+                    nOra.Nodes.Add("Costo marginale assente");
+                    attenzione |= true;
+                }
+                //fine controlli
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+            }
+
             if (nData.Nodes.Count > 0)
             {
                 n.Nodes.Add(nData);

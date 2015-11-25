@@ -135,8 +135,11 @@ namespace Iren.PSO.Base
         {
             DataView categorie = Workbook.Repository[DataBase.TAB.CATEGORIA].DefaultView;
             categorie.RowFilter = "Operativa = '1' AND IdApplicazione = " + Workbook.IdApplicazione;
+            
+            bool prot = Protected;
+            if(prot)
+                Protected = false;
 
-            Protected = false;
             foreach (DataRowView categoria in categorie)
             {
                 Excel.Worksheet ws = Workbook.Sheets[categoria["DesCategoria"].ToString()];
@@ -158,7 +161,9 @@ namespace Iren.PSO.Base
                     }
                 }
             }
-            Protected = true;
+            
+            if(prot)
+                Protected = true;
         }
         /// <summary>
         /// Metodo che registra in DataBase.LocalDB le modifiche effettuate dall'utente durante il periodo in cui la modifica è attiva. Lavora con le sole entità modificate in modo da non sovraccaricare di modifiche il DB.
@@ -1452,7 +1457,7 @@ namespace Iren.PSO.Base
                     {
                         int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
                         DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                        categoriaEntita.RowFilter = "Riferimento = " + eRif + " AND IdApplicazione = " + Workbook.IdApplicazione;
                         siglaEntita = categoriaEntita[0]["SiglaEntita"];
                     }
                     else
