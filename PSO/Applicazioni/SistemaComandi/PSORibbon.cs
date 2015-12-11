@@ -838,7 +838,7 @@ namespace Iren.PSO.Applicazioni
             //string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
             //Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
-            Globals.ThisWorkbook.ThisApplication.Quit();
+            Globals.ThisWorkbook.Close();
         }
         /// <summary>
         /// Handler del click del tasto per visualizzare l'actionsPane del documento.
@@ -921,15 +921,20 @@ namespace Iren.PSO.Applicazioni
         {
             SplashScreen.Show();
             Workbook.ScreenUpdating = false;
-            //Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+
+            bool autoCalc = Workbook.Application.Calculation == Excel.XlCalculation.xlCalculationAutomatic;
+            
+            if(autoCalc)
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             try
             {
                 _errorPane.RefreshCheck(_checkFunctions);
             }
             catch { }
             SplashScreen.Close();
-            //Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-            //Workbook.ScreenUpdating = true;
+            
+            if(autoCalc)
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
         }
         /// <summary>
         /// Metodo di inizializzazione della Tab Front Office. Visualizza e abilita i tasti in base alle specifiche da DB. Da notare che se ci sono aggiornamenti, bisogna caricare la struttura e riavviare l'applicativo.

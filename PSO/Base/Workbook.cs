@@ -20,8 +20,6 @@ using Office = Microsoft.Office.Core;
 
 using System.IO.MemoryMappedFiles;
 
-
-
 namespace Iren.PSO.Base
 {
     public class Workbook
@@ -621,6 +619,10 @@ namespace Iren.PSO.Base
         {
             _wb = wb;
 
+            Application.DisplayAlerts = true;
+            Application.CellDragAndDrop = false;
+            Application.EnableAutoComplete = false;
+
             Repository = new Repository(wb);
             DaAggiornare = false;
 
@@ -712,22 +714,25 @@ namespace Iren.PSO.Base
                 DataBase.Close();
 
                 Application.ScreenUpdating = true;
+                Application.CellDragAndDrop = true;
+                Application.EnableAutoComplete = true;
                 _wb.Base.Save();
 
-                try
-                {
-                    Application.Workbooks["old_" + _wb.Name].Close(SaveChanges: false);
-                }
-                catch { }
+                //try
+                //{
+                //    Application.Workbooks["old_" + _wb.Name].Close(SaveChanges: false);
+                //    File.Delete(Path.Combine(_wb.Path, "old_" + _wb.Name));
+                //}
+                //catch { }
                     
-                var visibleConut = Application.Workbooks.OfType<Excel.Workbook>().Count(wb => wb.Windows[1].Visible == true);
-                if (visibleConut <= 1)
-                {
-                    Application.Quit();
-                    Marshal.FinalReleaseComObject(Application);
-                }
+                //var visibleConut = Application.Workbooks.OfType<Excel.Workbook>().Count(wb => wb.Windows[1].Visible == true);
+                //if (visibleConut <= 1)
+                //{
+                //    Application.Quit();
+                //    Marshal.FinalReleaseComObject(Application);
+                //}
 
-                GC.Collect();
+                //GC.Collect();
                 //non metterlo mai, blocca l'applicazione ad un eventuale secondo avvio!!
                 //Application.DisplayAlerts = false;
             }

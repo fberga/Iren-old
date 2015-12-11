@@ -27,8 +27,6 @@ namespace Iren.PSO.Launcher
             private set;
         }
 
-
-        private static int _wbCount = -1;
         private NotifyIcon trayIcon;
         private ContextMenuStrip trayIconContextMenu;
         private ImageList imageList;
@@ -72,6 +70,7 @@ namespace Iren.PSO.Launcher
             }
             catch { }
             GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         private void Initialize()
@@ -217,31 +216,39 @@ namespace Iren.PSO.Launcher
         {
             int idApplicazione = (int)GetTag(sender);
 
-            if(_wbCount == -1) 
+            Excel.Workbooks wbs = null;
+            try
+            {
+                wbs = _xlApp.Workbooks;
+            }
+            catch
             {
                 _xlApp = new Excel.Application();
-                _xlApp.WorkbookOpen += AggiungiWorkbook;
-                _xlApp.WorkbookBeforeClose += RimuoviWorkbook;
-                _wbCount = 0;
+                _xlApp.WorkbookBeforeClose += CheckIfLast;
+            }
+            finally
+            {
+                if (wbs != null) Marshal.ReleaseComObject(wbs);
+                wbs = null;
             }
 
             Workbook.AvviaApplicazione(_xlApp, idApplicazione);
         }
 
-        private static void RimuoviWorkbook(Excel.Workbook Wb, ref bool Cancel)
+        private static void CheckIfLast(Excel.Workbook Wb, ref bool Cancel)
         {
-            _wbCount--;
-            if (_wbCount <= 1)
-            {
-                _xlApp.Quit();
-                Marshal.ReleaseComObject(_xlApp);
-                _wbCount = -1;
-            }
-        }
+            //Excel.Workbooks wbs = _xlApp.Workbooks;
 
-        private static void AggiungiWorkbook(Excel.Workbook Wb)
-        {
-            _wbCount++;
+            //int count = wbs.OfType<Excel.Workbook>()
+            //    .Count(wb => !wb.Equals(Wb) && wb.Windows[1].Visible);
+
+            //if (count <= 1)
+            //{
+            //    _xlApp.Quit();
+            //    Marshal.ReleaseComObject(_xlApp);
+            //    _xlApp = null;
+            //}
+
         }
 
         private static object GetTag(object sender)

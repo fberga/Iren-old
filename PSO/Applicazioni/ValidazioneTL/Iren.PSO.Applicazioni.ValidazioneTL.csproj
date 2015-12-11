@@ -21,7 +21,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\ValidazioneTL\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\ValidazioneTL\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.12</ApplicationVersion>
+    <ApplicationVersion>1.0.0.14</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -243,6 +243,9 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetDir)$(TargetName).xlsm .\Data</PostBuildEvent>
+  </PropertyGroup>
   <!--
     To modify your build process, add your task inside one of the targets below and uncomment it.
     Other similar extension points exist, see Microsoft.Common.targets.

@@ -108,7 +108,6 @@ namespace Iren.PSO.Applicazioni
                 decimal pMaxMGPTN1 = GetDecimal("UP_TN1", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pMinTernaTN1 = GetDecimal("UP_TN1", "PMIN_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pMaxTernaTN1 = GetDecimal("UP_TN1", "PMAX_TERNA_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
-
                 //fine caricameto dati
 
                 TreeNode nOra = new TreeNode("Ora " + ora);
@@ -398,7 +397,6 @@ namespace Iren.PSO.Applicazioni
                 decimal dispPMin = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pMax = GetDecimal(_check.SiglaEntita, "PMAX", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pMin = GetDecimal(_check.SiglaEntita, "PMIN", suffissoData, Date.GetSuffissoOra(ora));
-
                 //fine caricameto dati
 
                 TreeNode nOra = new TreeNode("Ora " + ora);
@@ -412,7 +410,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("PMax > disponibilità PMax");
                     errore |= true;
                 }
-                if(pMin > dispPMin) 
+                if(pMin < dispPMin) 
                 {
                     nOra.Nodes.Add("PMin < disponibilità PMin");
                     errore |= true;
@@ -500,7 +498,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("PMax > disponibilità PMax");
                     errore |= true;
                 }
-                if(pMinCC + pMinTV > dispPMinCC + dispPMinTV) 
+                if(pMinCC + pMinTV < dispPMinCC + dispPMinTV) 
                 {
                     nOra.Nodes.Add("PMin < disponibilità PMin");
                     errore |= true;
@@ -585,12 +583,12 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("Temperatura assente");
                     errore |= true;
                 }
-                if ((double)temperatura < -20)
+                if (temperatura != null && (double)temperatura < -20)
                 {
                     nOra.Nodes.Add("Temperatura < soglia minima");
                     errore |= true;
                 }
-                if ((double)temperatura > 45)
+                if (temperatura != null && (double)temperatura > 45)
                 {
                     nOra.Nodes.Add("Temperatura > soglia massima");
                     errore |= true;
@@ -600,12 +598,12 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("Pressione assente");
                     errore |= true;
                 }
-                if ((double)pressione < 850)
+                if (pressione != null && (double)pressione < 850)
                 {
                     nOra.Nodes.Add("Pressione < soglia minima");
                     errore |= true;
                 }
-                if ((double)pressione > 1100)
+                if (pressione != null && (double)pressione > 1100)
                 {
                     nOra.Nodes.Add("Pressione > soglia massima");
                     errore |= true;
@@ -615,12 +613,12 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("umidita");
                     errore |= true;
                 }
-                if ((double)umidita < 5)
+                if (umidita != null && (double)umidita < 5)
                 {
                     nOra.Nodes.Add("Umidità < soglia minima");
                     errore |= true;
                 }
-                if ((double)umidita > 100)
+                if (umidita != null && (double)umidita > 100)
                 {
                     nOra.Nodes.Add("Umidità > soglia massima");
                     errore |= true;

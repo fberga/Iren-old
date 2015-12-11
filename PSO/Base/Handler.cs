@@ -34,11 +34,23 @@ namespace Iren.PSO.Base
                 if (sel != null)
                 {
                     Workbook.ScreenUpdating = false;
+
+                    //evito di annotare il cambiamento della cella di selezione: non ha senso e cmq va in errore perché il simbolo non viene riconosciuto
+                    if (Simboli.ModificaDati)
+                        Workbook.WB.SheetChange -= StoreEdit;
+
                     sel.ClearSelections(Target.Worksheet);
                     sel.Select(Target.Worksheet, rng.ToString());
 
                     //annoto modifiche e le salvo sul DB
+                    Workbook.WB.SheetChange += StoreEdit;
+
                     Target.Worksheet.Range[sel.RifAddress].Value = val;
+                    
+                    //se non ero in modifica tolgo l'handler alla modifica delle celle
+                    if (!Simboli.ModificaDati)
+                        Workbook.WB.SheetChange -= StoreEdit;
+
                     DataBase.SalvaModificheDB();
                     Workbook.ScreenUpdating = true;
                 }
@@ -143,7 +155,6 @@ namespace Iren.PSO.Base
                                     data = Date.GetDataFromSuffisso(parts[2], parts[3]);
                                 else
                                     data = Date.GetDataFromSuffisso(parts[2], "");
-
 
                                 if (!Workbook.Application.WorksheetFunction.IsErr(ws.Range[column.ToString()]))
                                 {

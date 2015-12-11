@@ -28,7 +28,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\ProgrammazioneImpianti\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\ProgrammazioneImpianti\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.9</ApplicationVersion>
+    <ApplicationVersion>1.0.0.39</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -177,7 +177,7 @@
     </Compile>
     <None Include="App.config" />
     <Content Include="Data\ProgrammazioneImpianti.xlsm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="ProgrammazioneImpianti.xlsm" />
   </ItemGroup>
@@ -218,6 +218,7 @@
       <Name>Iren.PSO.UserConfig</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -246,6 +247,9 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetDir)$(TargetName).xlsm .\Data</PostBuildEvent>
+  </PropertyGroup>
   <!--
     To modify your build process, add your task inside one of the targets below and uncomment it.
     Other similar extension points exist, see Microsoft.Common.targets.

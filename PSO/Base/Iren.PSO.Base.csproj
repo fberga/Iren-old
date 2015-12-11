@@ -70,7 +70,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationNotFoundException.cs" />
+    <Compile Include="WBNotRespondingException.cs" />
+    <Compile Include="LoadStructureException.cs" />
     <Compile Include="DataBase.cs" />
     <Compile Include="Date.cs" />
     <Compile Include="EsportaXML.cs" />

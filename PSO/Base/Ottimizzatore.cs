@@ -181,39 +181,47 @@ namespace Iren.PSO.Base
                 object siglaEntitaInfo = _entitaInformazioni[0]["SiglaEntitaRif"] is DBNull ? _entitaInformazioni[0]["SiglaEntita"] : _entitaInformazioni[0]["SiglaEntitaRif"];
                 Excel.Worksheet ws = Workbook.Sheets[_sheet];
 
-
-                if (siglaEntitaInfo.Equals("GRUPPO_TORINO"))
+                try
                 {
-                    Range rng = _definedNames.Get(siglaEntitaInfo, "TEMP_PROG15", Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+                    Workbook.Application.EnableEvents = false;
 
-                    int res = 0;
+                    if (siglaEntitaInfo.Equals("GRUPPO_TORINO"))
+                    {
+                        Range rng = _definedNames.Get(siglaEntitaInfo, "TEMP_PROG15", Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
 
-                    //eseguo con prezzi a 0
-                    ws.Range[rng.ToString()].Value = 1;
-                    res = Workbook.Application.Run("wbsolve", Arg3: "1");
+                        int res = 0;
 
-                    ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 0)");
+                        //eseguo con prezzi a 0
+                        ws.Range[rng.ToString()].Value = 1;
+                        res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
+                        
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 0)");
 
-                    //eseguo con prezzi a 500
-                    ws.Range[rng.ToString()].Value = 2;
-                    res = Workbook.Application.Run("wbsolve", Arg3: "1");
+                        //eseguo con prezzi a 500
+                        ws.Range[rng.ToString()].Value = 2;
+                        res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
 
-                    ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 500)");
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 500)");
 
-                    //eseguo con previsione prezzi
-                    ws.Range[rng.ToString()].Value = 3;
-                    res = Workbook.Application.Run("wbsolve", Arg3: "1");
+                        //eseguo con previsione prezzi
+                        ws.Range[rng.ToString()].Value = 3;
+                        res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
 
-                    ShowErrorMessageBox(res, "Calcolo dell'ottimo (previsione prezzi)");
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo (previsione prezzi)");
+                    }
+                    else
+                    {
+                        int res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
+
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo");
+                    }
                 }
-                else
+                finally
                 {
-                    int res = Workbook.Application.Run("wbsolve", Arg3: "1");
-
-                    ShowErrorMessageBox(res, "Calcolo dell'ottimo");
-                }                
+                    Workbook.Application.EnableEvents = true;
+                }
             }
-        }
+        }        
         /// <summary>
         /// Cancella tutti gli adjust esistenti. 
         /// </summary>
@@ -258,31 +266,57 @@ namespace Iren.PSO.Base
         /// <param name="siglaEntita">Entità da ottimizzare.</param>
         public virtual void EseguiOttimizzazione(object siglaEntita) 
         {
-            Workbook.Application.Run("wbSetGeneralOptions", Arg3: "120", Arg13: "1");
+            try
+            {                
+                Workbook.Application.Run("wbSetGeneralOptions", Arg3: "120", Arg13: "1");
 
-            _sheet = DefinedNames.GetSheetName(siglaEntita);
-            _definedNames = new DefinedNames(_sheet);
+                _sheet = DefinedNames.GetSheetName(siglaEntita);
+                _definedNames = new DefinedNames(_sheet, DefinedNames.InitType.CheckNaming);
 
-            string desEntita =
-                (from r in Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
-                 where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita)
-                 select r["DesEntita"].ToString()).First();
+                string desEntita =
+                    (from r in Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
+                     where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntita)
+                     select r["DesEntita"].ToString()).First();
 
-            _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
-            if (_entitaProprieta.Count > 0)
-                _dataFine = Workbook.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
-            else
-                _dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
+                _entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
+                if (_entitaProprieta.Count > 0)
+                    _dataFine = Workbook.DataAttiva.AddDays(int.Parse(_entitaProprieta[0]["Valore"].ToString()));
+                else
+                    _dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
 
-            OmitConstraints();
-            AddAdjust(siglaEntita);
-            AddConstraints(siglaEntita);
-            AddOpt(siglaEntita);
-            SplashScreen.Close();
-            Execute(siglaEntita);
-            DeleteExistingAdjust();
+                CheckObj chkObj = _definedNames.Checks.Where(chk => chk.SiglaEntita.Equals(siglaEntita)).FirstOrDefault();
+                if (chkObj != null)
+                {
+                    Excel.Range rng = Workbook.Sheets[_sheet].Range[chkObj.Range.ToString()];
 
-            Workbook.InsertLog(PSO.Core.DataBase.TipologiaLOG.LogGenera, "Eseguita ottimizzazione " + desEntita);
+                    foreach (Excel.Range cell in rng.Cells)
+                    {
+                        if (cell.Value.Equals("ERRORE"))
+                        {
+                            SplashScreen.Close();
+                            System.Windows.Forms.MessageBox.Show("Non è possibile ottimizzare l'UP selezionata perché sono presenti degli errori. Controllare i check!", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                            return;
+                        }
+                    }
+                }
+
+                OmitConstraints();
+                AddAdjust(siglaEntita);
+                AddConstraints(siglaEntita);
+                AddOpt(siglaEntita);
+                SplashScreen.Close();
+
+                Execute(siglaEntita);
+                DeleteExistingAdjust();
+
+                Workbook.InsertLog(PSO.Core.DataBase.TipologiaLOG.LogGenera, "Eseguita ottimizzazione " + desEntita);
+            }
+            catch (Exception e)
+            {
+                SplashScreen.Close();
+                Workbook.Application.ScreenUpdating = true;
+                System.Windows.Forms.MessageBox.Show("Si è verificato un errore nel processo di ottimizzazione. Il messaggio dice '" + e.Message + "'", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            }
         }
 
         #endregion

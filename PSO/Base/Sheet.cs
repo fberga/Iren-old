@@ -480,6 +480,7 @@ namespace Iren.PSO.Base
             _ws.Rows.ClearContents();
             _ws.Rows.ClearComments();
             _ws.Rows.FormatConditions.Delete();
+            _ws.Rows.Validation.Delete();
             _ws.Rows.EntireRow.Hidden = false;
             _ws.Rows.Style = "Normal";
             _ws.Rows.UnMerge();
@@ -625,20 +626,41 @@ namespace Iren.PSO.Base
             
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
 
-            CreaNomiCelle(entita["SiglaEntita"]);
-            InsertTitoloEntita(entita["SiglaEntita"], entita["DesEntita"]);
-            InsertOre(entita["SiglaEntita"]);
-            InsertTitoloVerticale(entita["DesEntitaBreve"]);
-            FormattaBloccoEntita();
-            InsertInformazioniEntita();
-            InsertPersonalizzazioni(entita["SiglaEntita"]);
-            InsertGrafici();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1) AND IdApplicazione = " + Workbook.IdApplicazione;
-            InsertFormuleValoriDefault();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL AND IdApplicazione = " + Workbook.IdApplicazione;
-            InsertParametri();
-            informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
-            FormattazioneCondizionale();
+            string funzione = "";
+            try
+            {
+                funzione = "CreaNomiCelle";
+                CreaNomiCelle(entita["SiglaEntita"]);
+                funzione = "InsertTitoloEntita";
+                InsertTitoloEntita(entita["SiglaEntita"], entita["DesEntita"]);
+                funzione = "InsertOre";
+                InsertOre(entita["SiglaEntita"]);
+                funzione = "InsertTitoloVerticale";
+                InsertTitoloVerticale(entita["DesEntitaBreve"]);
+                funzione = "FormattaBloccoEntita";
+                FormattaBloccoEntita();
+                funzione = "InsertInformazioniEntita";
+                InsertInformazioniEntita();
+                funzione = "InsertPersonalizzazioni";
+                InsertPersonalizzazioni(entita["SiglaEntita"]);
+                funzione = "InsertGrafici";
+                InsertGrafici();
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND (ValoreDefault IS NOT NULL OR FormulaInCella = 1) AND IdApplicazione = " + Workbook.IdApplicazione;
+                funzione = "InsertFormuleValoriDefault";
+                InsertFormuleValoriDefault();
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaParametro IS NOT NULL AND IdApplicazione = " + Workbook.IdApplicazione;
+                funzione = "InsertParametri";
+                InsertParametri();
+                informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                funzione = "FormattazioneCondizionale";
+                FormattazioneCondizionale();
+            }
+            catch
+            {
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, Simboli.NomeApplicazione + " Sheet.InitBloccoEntita." + funzione + "[" + entita["SiglaEntita"] + "]");
+                throw new LoadStructureException(Simboli.NomeApplicazione + " Sheet.InitBloccoEntita." + funzione + "[" + entita["SiglaEntita"] + "]");
+            }
+            
 
             //due righe vuote tra un'entità e la successiva
             _rigaAttiva += 2;
@@ -745,8 +767,15 @@ namespace Iren.PSO.Base
 
                 if (info["SiglaTipologiaInformazione"].Equals("CHECK") && info["Funzione"] != DBNull.Value)
                 {
+                    //cerco parametro n° giorni siglaEntitaRif
+                    DateTime dataFine = Workbook.DataAttiva.AddDays(Math.Max(
+                        (from r in Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].AsEnumerable()
+                         where r["IdApplicazione"].Equals(Workbook.IdApplicazione) && r["SiglaEntita"].Equals(siglaEntitaRif) && r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA")
+                         select int.Parse(r["Valore"].ToString())).FirstOrDefault(), Struct.intervalloGiorni));
+
+
                     int checkType = int.Parse(Regex.Match(info["Funzione"].ToString(), @"\d+").Value);
-                    Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, colOffsett - data0H24 - remove25hour);
+                    Range rng = new Range(_rigaAttiva, startCol + data0H24, 1, Date.GetOreIntervallo(dataFine) - remove25hour);
                     _definedNames.AddCheck(siglaEntitaRif.ToString(), rng.ToString(), checkType);
                 }
 
@@ -851,6 +880,7 @@ namespace Iren.PSO.Base
             if (_struttura.visParametro)
                 bloccoEntita.Columns[3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
+
             int col = _struttura.visData0H24 ? 1 : 0;
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
@@ -953,16 +983,9 @@ namespace Iren.PSO.Base
                             borders: "[Top:medium, Right:medium]");
 
                         _ws.Range[rng.Columns[col, col + oreGiorno - 1].ToString()].Value = info["DesInformazione"];
+
                         col += oreGiorno;
                     });
-
-                    //Style.RangeStyle(rngRow.Rows[i], 
-                    //    fontSize: info["FontSize"],
-                    //    foreColor: info["ForeColor"],
-                    //    backColor: info["BackColor"],
-                    //    merge: true,
-                    //    bold:true,
-                    //    borders: "[Top:medium, Right:medium]");
                 }
                 else 
                 {
@@ -986,6 +1009,49 @@ namespace Iren.PSO.Base
 
                     if (info["Data0H24"].Equals("0") && _struttura.visData0H24 && !info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                         rngData.Rows[i].Cells[1].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                    
+                    if (_struttura.visData0H24)
+                        rngData.Rows[i].Cells[1].Font.Size -= 1;
+
+                    //Validazione celle se UNIT_COMM
+                    if (info["SiglaInformazione"].Equals("UNIT_COMM"))
+                    {
+                        var unit_comm = Workbook.Repository[DataBase.TAB.ENTITA_COMMITMENT]
+                            .AsEnumerable()
+                            .Where(r => r["SiglaEntita"].Equals(info["SiglaEntitaRif"]) || r["SiglaEntita"].Equals(info["SiglaEntita"]))
+                            .ToList();
+
+                        if (unit_comm.Count > 0)
+                        {                            
+                            Range rng = new Range(rngData.Rows[i].Address);
+                            rng.StartColumn += _struttura.visData0H24 ? 1 : 0;                            
+
+                            string formula = "=OR(";
+                            string valoriAmmessi = "";
+                            foreach (DataRow r in unit_comm)
+                            {
+                                formula += rng.Cells[0, 0].ToString() + "=\"\"" + r["SiglaCommitment"] + "\"\",";
+                                valoriAmmessi += r["SiglaCommitment"].ToString() + ", ";
+                            }
+                            formula = formula.Substring(0, formula.Length - 1) + ")";
+                            valoriAmmessi = valoriAmmessi.Substring(0, valoriAmmessi.Length - 2);
+
+                            Excel.Validation v = _ws.Range[rng.ToString()].Validation;                            
+                            v.Add(Type: Excel.XlDVType.xlValidateCustom, 
+                                AlertStyle: Excel.XlDVAlertStyle.xlValidAlertStop, 
+                                Operator: Excel.XlFormatConditionOperator.xlBetween, 
+                                Formula1: formula);
+                            v.IgnoreBlank = false;
+                            v.InCellDropdown = true;
+                            v.InputTitle = "Unit Commitment";
+                            v.InputMessage = "Digitare un valore tra i seguenti: " + valoriAmmessi;
+                            v.ErrorTitle = "Valore non ammesso";
+                            v.ErrorMessage = "Il valore digitato non è tra quelli ammessi per lo Unit Commitment di questa UP. Sceglierne uno tra i seguenti: " + valoriAmmessi;
+                            v.ShowError = true;
+                            v.ShowInput = true;
+                        }
+                    }
+
                 }
                 i++;
             }
@@ -1457,7 +1523,9 @@ namespace Iren.PSO.Base
                     {
                         int eRif = int.Parse(Regex.Match(parametroEntita[1], @"\d+").Value);
                         DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-                        categoriaEntita.RowFilter = "Riferimento = " + eRif + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                        categoriaEntita.RowFilter = "Gerarchia = '" + info["SiglaEntita"] + "' AND Riferimento = " + eRif + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                        if (categoriaEntita.Count == 0)
+                            categoriaEntita.RowFilter = "Riferimento = " + eRif + " AND IdApplicazione = " + Workbook.IdApplicazione;
                         siglaEntita = categoriaEntita[0]["SiglaEntita"];
                     }
                     else
