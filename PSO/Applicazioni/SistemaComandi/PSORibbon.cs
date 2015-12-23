@@ -519,6 +519,10 @@ namespace Iren.PSO.Applicazioni
             //verifico che la data sia stata cambiata
             if (calDate != Workbook.DataAttiva)
             {
+                //per validazione TL
+                if (Workbook.IdApplicazione == 11 && calDate > DateTime.Today)
+                    System.Windows.Forms.MessageBox.Show("La data selezionata nel calendario è successiva al giorno corrente.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+
                 Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
                 SplashScreen.Show();
@@ -609,6 +613,7 @@ namespace Iren.PSO.Applicazioni
                 rampe.Dispose();
             }
             selUP.Dispose();
+            RefreshChecks();
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
@@ -1085,17 +1090,45 @@ namespace Iren.PSO.Applicazioni
         /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
         private void AggiornaData(out DateTime newDate)
         {
-            if (Workbook.IdApplicazione == 12)
+            newDate = Workbook.DataAttiva;
+
+            if (Workbook.IdApplicazione == 1)
             {
-                //configuro la data attiva
+                int ora = DateTime.Now.Hour;
+                if (ora < 14)
+                    newDate = DateTime.Today.AddDays(1);
+                else
+                    newDate = DateTime.Today.AddDays(2);
+            }
+            else if (Workbook.IdApplicazione == 5)
+            {
+                newDate = DateTime.Today;
+            }
+            else if (Workbook.IdApplicazione == 6)
+            {
+                newDate = DateTime.Today.AddDays(-5);
+            }
+            else if (Workbook.IdApplicazione == 7)
+            {
+                newDate = DateTime.Today.AddDays(-3);
+            }
+            else if (Workbook.IdApplicazione == 11) 
+            {
+                newDate = DateTime.Today.AddDays(-1);
+            }
+            else if (Workbook.IdApplicazione == 12)
+            {
                 int ora = DateTime.Now.Hour;
                 if (ora <= 15)
                     newDate = DateTime.Today.AddDays(1);
                 else
                     newDate = DateTime.Today.AddDays(2);
             }
-            else
-                newDate = DateTime.Today.AddDays(-1);
+
+            SplashScreen.Close();
+            if (newDate != Workbook.DataAttiva && System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata a " + newDate.ToString("ddd dd MMM yyyy") + ". Continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No)
+                newDate = Workbook.DataAttiva;
+            SplashScreen.Show();
         }
 
 
@@ -1152,17 +1185,21 @@ namespace Iren.PSO.Applicazioni
 
                 if (Controls.Contains("cmbMSD"))
                     SetMercato(out newDate, out newIdApplicazione);
-                //per Previsione Carico Termico & Validazione Teleriscaldamento
-                else if (Workbook.IdApplicazione == 11 || Workbook.IdApplicazione == 12)
+                
+                int[] ids = new int[] {1,5,6,7,11,12};
+                if(ids.Contains(Workbook.IdApplicazione))
                     AggiornaData(out newDate);
 
                 Riepilogo r = new Riepilogo(Workbook.Main);
 
                 Aggiorna aggiorna = new Aggiorna();
-                bool aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione || Workbook.DaAggiornare;
+                bool aggiornaStruttura = false;
+                bool aggiornaDati = Workbook.DataAttiva != newDate;
 
                 if (DataBase.OpenConnection())
                 {
+                    aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione || Workbook.DaAggiornare;
+
                     if (Workbook.DataAttiva != newDate)
                         DataBase.ExecuteSPApplicazioneInit(newDate);
 
@@ -1171,6 +1208,9 @@ namespace Iren.PSO.Applicazioni
 
                     if (aggiornaStruttura)
                         aggiorna.Struttura(avoidRepositoryUpdate: true);
+                    else if (aggiornaDati)
+                        aggiorna.Dati();
+
                 }
                 else
                 {

@@ -469,7 +469,7 @@ namespace Iren.PSO.Applicazioni
                 decimal pOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P3", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P4", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pmin = GetDecimal("GE_GDPP2", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
-                decimal pmax = GetDecimal("GE_GDPP2", "PMAX", suffissoData, Date.GetSuffissoOra(ora));                
+                decimal pmax = GetDecimal("GE_GDPT2", "PMAX", suffissoData, Date.GetSuffissoOra(ora));                
 
                 bool errore = false;
                 bool attenzione = false;
@@ -604,7 +604,7 @@ namespace Iren.PSO.Applicazioni
                 decimal pOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P2", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P3", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pOfferta4 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_P4", suffissoData, Date.GetSuffissoOra(ora));
-                decimal pmin = GetDecimal("GE_GOT1", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pmin = GetDecimal("GE_GOT2", "PMIN", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pmax = GetDecimal("GE_GOT1", "PMAX", suffissoData, Date.GetSuffissoOra(ora));
 
                 bool errore = false;

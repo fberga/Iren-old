@@ -106,7 +106,7 @@ namespace Iren.PSO.Applicazioni
             this.TabData.ControlId.OfficeId = "TabData";
             this.TabData.Label = "TabData";
             this.TabData.Name = "TabData";
-            this.TabData.Visible = true;
+            this.TabData.Visible = false;
             // 
             // TabReview
             // 

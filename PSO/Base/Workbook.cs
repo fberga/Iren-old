@@ -622,7 +622,7 @@ namespace Iren.PSO.Base
             Application.DisplayAlerts = true;
             Application.CellDragAndDrop = false;
             Application.EnableAutoComplete = false;
-
+            
             Repository = new Repository(wb);
             DaAggiornare = false;
 

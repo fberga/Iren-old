@@ -50,9 +50,18 @@ namespace Iren.PSO.Base
         /// <param name="suffissoData">Il suffisso data per l'indicizzazione.</param>
         /// <param name="suffissoOra">Il suffisso ora per l'indicizzazione.</param>
         /// <returns>Il valore della cella convertito in Decimal</returns>
-        protected decimal GetDecimal(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
+        protected virtual decimal GetDecimal(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
             return (decimal)(_ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? 0);
+        }
+        /// <summary>
+        /// Utilizzando un range restituisce il valore della cella convertito in Decimal.
+        /// </summary>
+        /// <param name="rng">Range di cui estrarre il valore.</param>
+        /// <returns>Il valore della cella convertito in Decimal.</returns>
+        protected virtual decimal GetDecimal(Range rng)
+        {
+            return (decimal)(_ws.Range[rng.ToString()].Value ?? 0);
         }
         /// <summary>
         /// Utilizzando l'indicizzazione restituisce il valore della cella.
@@ -62,9 +71,18 @@ namespace Iren.PSO.Base
         /// <param name="suffissoData">Il suffisso data per l'indicizzazione.</param>
         /// <param name="suffissoOra">Il suffisso ora per l'indicizzazione.</param>
         /// <returns>Il valore della cella.</returns>
-        protected object GetObject(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
+        protected virtual object GetObject(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
             return _ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value;
+        }
+        /// <summary>
+        /// Utilizzando un range restituisce il valore della cella.
+        /// </summary>
+        /// <param name="rng">Range di cui estrarre il valore.</param>
+        /// <returns>Il valore della cella.</returns>
+        protected virtual object GetObject(Range rng)
+        {
+            return _ws.Range[rng.ToString()].Value;
         }
         /// <summary>
         /// Utilizzando l'indicizzazione restituisce il valore della cella convertito in String.
@@ -74,9 +92,18 @@ namespace Iren.PSO.Base
         /// <param name="suffissoData">Il suffisso data per l'indicizzazione.</param>
         /// <param name="suffissoOra">Il suffisso ora per l'indicizzazione.</param>
         /// <returns>Il valore della cella convertito in String</returns>
-        protected string GetString(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
+        protected virtual string GetString(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
             return (string)(_ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? "");
+        }
+        /// <summary>
+        /// Utilizzando un range restituisce il valore della cella convertito in String.
+        /// </summary>
+        /// <param name="rng">Range di cui estrarre il valore.</param>
+        /// <returns>Il valore della cella convertito in String.</returns>
+        protected virtual string GetString(Range rng)
+        {
+            return (string)(_ws.Range[rng.ToString()].Value ?? "");
         }
         /// <summary>
         /// Definisce la formattazione degli elementi in errore nella TreeView.

@@ -85,11 +85,13 @@ namespace Iren.PSO.Core
                 _internalsqlConn = new SqlConnection(_connStr);
 
                 _cmd = new Command(_sqlConn);
+//#if !DEBUG
                 if (checkDB)
                 {
                     _internalCmd = new Command(_internalsqlConn);
                     _checkDBTrhead = new System.Threading.Timer(CheckDB, null, 0, 250 * 60);
                 }
+//#endif
             }
             catch (Exception e)
             {

@@ -112,6 +112,7 @@ namespace Iren.PSO.Applicazioni
         private void ThisWorkbook_BeforeClose(ref bool Cancel)
         {
             PSO.Base.Workbook.Close();
+            Saved = true;
         }
     }
 }

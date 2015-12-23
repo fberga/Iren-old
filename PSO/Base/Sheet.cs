@@ -1026,29 +1026,31 @@ namespace Iren.PSO.Base
                             Range rng = new Range(rngData.Rows[i].Address);
                             rng.StartColumn += _struttura.visData0H24 ? 1 : 0;                            
 
-                            string formula = "=OR(";
+                            string formula = "=O(";
                             string valoriAmmessi = "";
                             foreach (DataRow r in unit_comm)
                             {
-                                formula += rng.Cells[0, 0].ToString() + "=\"\"" + r["SiglaCommitment"] + "\"\",";
+                                formula += rng.Cells[0, 0].ToString() + "=\"" + r["SiglaCommitment"] + "\";";
                                 valoriAmmessi += r["SiglaCommitment"].ToString() + ", ";
                             }
                             formula = formula.Substring(0, formula.Length - 1) + ")";
                             valoriAmmessi = valoriAmmessi.Substring(0, valoriAmmessi.Length - 2);
 
-                            Excel.Validation v = _ws.Range[rng.ToString()].Validation;                            
-                            v.Add(Type: Excel.XlDVType.xlValidateCustom, 
-                                AlertStyle: Excel.XlDVAlertStyle.xlValidAlertStop, 
-                                Operator: Excel.XlFormatConditionOperator.xlBetween, 
+                            Excel.Validation v = _ws.Range[rng.ToString()].Validation;
+                            v.Delete();
+                            v.Add(Type: Excel.XlDVType.xlValidateCustom,
+                                AlertStyle: Excel.XlDVAlertStyle.xlValidAlertStop,
                                 Formula1: formula);
                             v.IgnoreBlank = false;
-                            v.InCellDropdown = true;
                             v.InputTitle = "Unit Commitment";
                             v.InputMessage = "Digitare un valore tra i seguenti: " + valoriAmmessi;
                             v.ErrorTitle = "Valore non ammesso";
                             v.ErrorMessage = "Il valore digitato non è tra quelli ammessi per lo Unit Commitment di questa UP. Sceglierne uno tra i seguenti: " + valoriAmmessi;
                             v.ShowError = true;
                             v.ShowInput = true;
+
+                            Marshal.ReleaseComObject(v);
+                            v = null;
                         }
                     }
 
@@ -1062,26 +1064,27 @@ namespace Iren.PSO.Base
         protected virtual void InsertFormuleValoriDefault()
         {
             DataView informazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
-            int colOffset = _definedNames.GetColOffset(_dataFine);
+            int colOffset = Date.GetOreIntervallo(_dataFine);// _definedNames.GetColOffset(_dataFine);
             foreach (DataRowView info in informazioni)
             {
                 object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
                 //tolgo la colonna della DATA0H24 dove non serve
-                int offsetAdjust = (_struttura.visData0H24 && info["Data0H24"].Equals("0") ? 1 : 0);
+                //int offsetAdjust = (_struttura.visData0H24 && info["Data0H24"].Equals("0") ? 1 : 0);
 
-                Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol());
+                Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetColData1H1());//.GetFirstCol());
+                Range data0H24 = _struttura.visData0H24 && info["Data0H24"].Equals("1") ? new Range(rng.StartRow, _definedNames.GetFirstCol()) : null;
 
                 if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                     rng.StartColumn -= _visParametro - 1;
                 else
                 {
-                    rng.StartColumn += offsetAdjust;
-                    rng.Extend(colOffset: colOffset - offsetAdjust);
+                //    rng.StartColumn += offsetAdjust;
+                    rng.Extend(colOffset: colOffset);// - offsetAdjust);
                 }
 
                 Excel.Range rngData = _ws.Range[rng.ToString()];
-                
+
                 if (info["ValoreDefault"] != DBNull.Value) 
                 {
                     rngData.Value = info["ValoreDefault"];
@@ -1092,16 +1095,19 @@ namespace Iren.PSO.Base
                     int deltaPos;
                     string formula = "=" + PreparaFormula(info, "DATA0", "DATA1", 24, out deltaNeg, out deltaPos);
 
+                    //if (deltaNeg == 0 && _struttura.visData0H24 && info["Data0H24"].Equals("1"))
+                    //    deltaNeg = 1;
+
                     if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
                     {
-                        rngData.Cells[1].Formula = "=SUM(" + rng.Columns[1, rng.Columns.Count - 1] + ")";
-                        deltaNeg = 1;
+                        _ws.Range[data0H24.ToString()].Formula = "=SUM(" + rng.Columns[0, rng.Columns.Count - 1] + ")";
+                        //deltaNeg = 1;
                     }
                     _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - 1 - deltaPos].ToString()].Formula = formula;
                 }
 
-                if (info["ValoreData0H24"] != DBNull.Value)
-                    rngData.Cells[1].Value = info["ValoreData0H24"];
+                if (data0H24 != null && info["ValoreData0H24"] != DBNull.Value)
+                    _ws.Range[data0H24.ToString()].Value = info["ValoreData0H24"];
             }
         }
         /// <summary>
@@ -1328,8 +1334,8 @@ namespace Iren.PSO.Base
                 if (val.OfType<double>().Any())
                 {
                     allNull = false;
-                    minValue = Math.Min(minValue, val.Cast<double>().Min());
-                    maxValue = Math.Max(maxValue, val.Cast<double>().Max());
+                    minValue = Math.Min(minValue, val.OfType<double>().Min());
+                    maxValue = Math.Max(maxValue, val.OfType<double>().Max());
                 }
             }
 
@@ -1340,21 +1346,29 @@ namespace Iren.PSO.Base
             }
 
             //resize dell'area del grafico per adattarla alle ore
-            Graphics grfx = Graphics.FromImage(new Bitmap(1, 1));
-            grfx.PageUnit = GraphicsUnit.Point;
-            float sizeMax = float.MinValue;
-
-            for(double val = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale; val <= chart.Axes(Excel.XlAxisType.xlValue).MaximumScale; val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit) 
+            using (Graphics grfx = Graphics.FromImage(new Bitmap(1, 1)))
             {
-                SizeF tmpSize = grfx.MeasureString(val.ToString(), new Font("Verdana", 11));
-                sizeMax = Math.Max(sizeMax, tmpSize.Width);
-            }
+                grfx.PageUnit = GraphicsUnit.Point;
+                grfx.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;                
+                float sizeMax = float.MinValue;
+                SizeF tmpSize;
+                double val = 0;
+                //controllo anche il fondo scala: se cambia l'ordine di grandezza excel lascia lo spazio nel label come se ci fosse!!
+                while (val < chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
+                {
+                    if ((val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit) > chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
+                        val = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale;
+                    
+                    tmpSize = grfx.MeasureString(val.ToString(), new Font(chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name, (float)chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size));
+                    sizeMax = Math.Max(sizeMax, tmpSize.Width);
+                }
 
-            //MANTENERE ORDINE DI QUESTE ISTRUZIONI
-            chart.ChartArea.Left = rigaGrafico.Left - sizeMax - 7;      //sposto a destra il grafico
-            chart.ChartArea.Width = rigaGrafico.Width + sizeMax + 4;    //aumento la larghezza del grafico
-            chart.PlotArea.InsideLeft = 0d;                             //allineo il grafico al bordo sinistro dell'area esterna al grafico
-            chart.PlotArea.Width = chart.ChartArea.Width + 3;           //aumento la larghezza dell'area esterna al grafico
+                //MANTENERE ORDINE DI QUESTE ISTRUZIONI
+                chart.ChartArea.Left = rigaGrafico.Left - Math.Ceiling(sizeMax) - 7;      //sposto a destra il grafico
+                chart.ChartArea.Width = rigaGrafico.Width + Math.Ceiling(sizeMax) + 4;    //aumento la larghezza del grafico
+                chart.PlotArea.InsideLeft = 0d;                                           //allineo il grafico al bordo sinistro dell'area esterna al grafico
+                chart.PlotArea.Width = chart.ChartArea.Width + 3;                         //aumento la larghezza dell'area esterna al grafico
+            }            
         }
 
         #endregion
@@ -1507,7 +1521,7 @@ namespace Iren.PSO.Base
                     }
                 }
 
-                deltaNeg = Math.Abs(tmpdeltaNeg);
+                deltaNeg = tmpdeltaNeg != 0 ? Math.Abs(tmpdeltaNeg + 1) : 0;
                 deltaPos = tmpdeltaPos;
 
                 formula = Regex.Replace(formula, @"%P\d+(E\d+)?%", delegate(Match m)
@@ -1539,7 +1553,7 @@ namespace Iren.PSO.Base
 
                         if (suffissoData == "DATA1")
                         {//traslo in avanti la formula di |deltaNeg| - |deltaOre|
-                            int ora = Math.Abs(tmpdeltaNeg) + deltaOre + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            int ora = Math.Abs(tmpdeltaNeg) + deltaOre;// +(info["Data0H24"].Equals("1") ? 0 : 1);
                             suffData = ora == 0 ? "DATA0" : "DATA1";
                             suffOra = ora == 0 ? "H24" : "H" + ora;
                         }
@@ -1555,7 +1569,7 @@ namespace Iren.PSO.Base
                     {
                         if (suffissoData == "DATA1")
                         {
-                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg) + (info["Data0H24"].Equals("1") ? 0 : 1);
+                            int ora = tmpdeltaNeg == 0 ? 1 : Math.Abs(tmpdeltaNeg);// +(info["Data0H24"].Equals("1") ? 0 : 1);
                             suffData = suffissoData;
                             suffOra = "H" + ora;
                         }

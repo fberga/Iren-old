@@ -28,7 +28,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\SistemaComandi\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\SistemaComandi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.11</ApplicationVersion>
+    <ApplicationVersion>1.0.0.16</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -144,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggiorna.cs" />
+    <Compile Include="Check.cs" />
     <Compile Include="Esporta.cs" />
     <Compile Include="Main.cs">
       <DependentUpon>SistemaComandi.xlsm</DependentUpon>

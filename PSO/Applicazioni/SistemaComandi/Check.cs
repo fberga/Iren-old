@@ -10,7 +10,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 namespace Iren.PSO.Applicazioni
 {
     /// <summary>
-    /// Funzioni di check personalizzate.
+    /// Funzione di check.
     /// </summary>
     class Check : Base.Check
     {
@@ -20,19 +20,10 @@ namespace Iren.PSO.Applicazioni
             _nomiDefiniti = definedNames;
             _check = check;
 
-            CheckOutput n = new CheckOutput();
-
-            switch (check.Type)
-            {
-                case 1:
-                    n = CheckFunc1();
-                    break;               
-            }
-
-            return n;
+            return CheckFunc1();
         }
 
-        private CheckOutput CheckFunc1()
+        private CheckOutput CheckFunc1() 
         {
             Range rngCheck = new Range(_check.Range);
 
@@ -61,18 +52,7 @@ namespace Iren.PSO.Applicazioni
                 int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
 
                 //caricamento dati                
-                decimal ePPA = GetDecimal(_check.SiglaEntita, "PEM", suffissoData, Date.GetSuffissoOra(ora));
-                decimal ePSMaxAccettata = GetDecimal(_check.SiglaEntita, "PSMAX_ACCETTATA", suffissoData, Date.GetSuffissoOra(ora));
-                decimal ePSMinAccettata = GetDecimal(_check.SiglaEntita, "PSMIN_ACCETTATA", suffissoData, Date.GetSuffissoOra(ora));
-
-                decimal offG0V = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G0VE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG0A = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G0AE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG1V = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G1VE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG1A = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G1AE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG2V = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G2VE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG2A = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G2AE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG3V = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G3VE", suffissoData, Date.GetSuffissoOra(ora));
-                decimal offG3A = GetDecimal(_check.SiglaEntita, "OFFERTA_MSD_G3AE", suffissoData, Date.GetSuffissoOra(ora));
+                object profiloPQNR = GetObject(_check.SiglaEntita, "PQNR_PROFILO", suffissoData, Date.GetSuffissoOra(ora));
                 //fine caricameto dati
 
                 TreeNode nOra = new TreeNode("Ora " + ora);
@@ -81,19 +61,9 @@ namespace Iren.PSO.Applicazioni
                 bool attenzione = false;
 
                 //controlli
-                if (ePPA > ePSMaxAccettata)
+                if (profiloPQNR == null)
                 {
-                    nOra.Nodes.Add("Programma di produzione superiore alla PMax Terna");
-                    errore |= true;
-                }
-                if (ePSMaxAccettata < ePPA && ePPA < ePSMinAccettata && ePPA > 0)
-                {
-                    nOra.Nodes.Add("Programma di produzione non coerente con PMin-PMax Terna");
-                    errore |= true;
-                }
-                if (offG0V < 0 || offG0A < 0 || offG1V < 0 || offG1A < 0 || offG2V < 0 || offG2A < 0 || offG3V < 0 || offG3A < 0)
-                {
-                    nOra.Nodes.Add("Offerta < 0");
+                    nOra.Nodes.Add("Il profilo PQNR non è selezionato");
                     errore |= true;
                 }
                 //fine controlli
@@ -129,17 +99,5 @@ namespace Iren.PSO.Applicazioni
 
             return new CheckOutput();
         }
-
-
-        protected override decimal GetDecimal(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
-        {
-            Range rng = _nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra);
-
-            if (_ws.Range[rng.ToString()].EntireRow.Hidden)
-                return 0;
-            else
-                return base.GetDecimal(rng);
-        }
-
     }
 }
