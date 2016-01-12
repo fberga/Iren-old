@@ -386,6 +386,7 @@ namespace Iren.PSO.Core
                 }
                 return null;
             }
+            catch (InvalidOperationException) { return null; }
 
         }
         /// <summary>
@@ -422,7 +423,7 @@ namespace Iren.PSO.Core
                     {
                         DataTable imp = Select(_internalCmd, "spCheckDB", "@Nome=IMP", 5, false);
 
-                        if (imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
+                        if (imp != null && imp.Rows.Count > 0 && imp.Rows[0]["Stato"].Equals(0))
                             _statoDB[NomiDB.IMP] = ConnectionState.Open;
                         else
                             _statoDB[NomiDB.IMP] = ConnectionState.Closed;
@@ -433,7 +434,7 @@ namespace Iren.PSO.Core
                     {
                         DataTable elsag = Select(_internalCmd, "spCheckDB", "@Nome=ELSAG", 5, false);
 
-                        if (elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
+                        if (elsag != null && elsag.Rows.Count > 0 && elsag.Rows[0]["Stato"].Equals(0))
                             _statoDB[NomiDB.ELSAG] = ConnectionState.Open;
                         else
                             _statoDB[NomiDB.ELSAG] = ConnectionState.Closed;

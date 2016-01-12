@@ -158,9 +158,9 @@ namespace Iren.PSO.Base
 
                 style = Workbook.WB.Styles.Add("Adjustable");
                 style.Font.Color = System.Drawing.Color.Coral;
-                style.Font.Size = 10;
+                //style.Font.Size = 10;
                 style.Interior.ColorIndex = 35;
-                style.NumberFormat = "#,##0.0;-#,##0.0;-";
+                //style.NumberFormat = "#,##0.0;-#,##0.0;-";
                 style.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
                 SetAllBorders(style, 1, Excel.XlBorderWeight.xlThin);
             }

@@ -323,7 +323,7 @@ namespace Iren.PSO.Applicazioni
                 }
                 if (pMinTernaTN1 > pMinMGPTN1)
                 {
-                    nOra.Nodes.Add("TN1 : PMin MGP > Pmin Terna");
+                    nOra.Nodes.Add("TN1 : PMin Terna > Pmin MGP");
                     errore |= true;
                 }
                 if (pMaxMGPTN1 > pMaxTernaTN1)

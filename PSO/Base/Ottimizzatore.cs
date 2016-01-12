@@ -194,25 +194,49 @@ namespace Iren.PSO.Base
                         //eseguo con prezzi a 0
                         ws.Range[rng.ToString()].Value = 1;
                         res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
-                        
+                        RoundAdjust(siglaEntitaInfo);
                         ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 0)");
 
                         //eseguo con prezzi a 500
                         ws.Range[rng.ToString()].Value = 2;
                         res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
-
+                        RoundAdjust(siglaEntitaInfo);
                         ShowErrorMessageBox(res, "Calcolo dell'ottimo (prezzo 500)");
 
                         //eseguo con previsione prezzi
                         ws.Range[rng.ToString()].Value = 3;
                         res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
-
+                        RoundAdjust(siglaEntitaInfo);
                         ShowErrorMessageBox(res, "Calcolo dell'ottimo (previsione prezzi)");
+                    }
+                    else if (siglaEntitaInfo.Equals("UP_ORX"))
+                    {
+                        Range rng = _definedNames.Get(siglaEntitaInfo, "TEMP_PROG7", Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+
+                        int res = 0;
+
+                        //eseguo con water value a -100
+                        ws.Range[rng.ToString()].Value = 1;
+                        res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
+                        RoundAdjust(siglaEntitaInfo);
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo (water value -100)");
+
+                        //eseguo con water value a 500
+                        ws.Range[rng.ToString()].Value = 2;
+                        res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
+                        RoundAdjust(siglaEntitaInfo);
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo (water value +500)");
+
+                        //eseguo con water value standard
+                        ws.Range[rng.ToString()].Value = 3;
+                        res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
+                        RoundAdjust(siglaEntitaInfo);
+                        ShowErrorMessageBox(res, "Calcolo dell'ottimo");
                     }
                     else
                     {
                         int res = Workbook.Application.Run("WBUsers.wbSolve", Arg3: "1");
-
+                        RoundAdjust(siglaEntitaInfo);
                         ShowErrorMessageBox(res, "Calcolo dell'ottimo");
                     }
                 }
@@ -243,6 +267,15 @@ namespace Iren.PSO.Base
                 Workbook.Application.Run("wbAdjust", "'" + nomeFoglio + "'!" + rng.ToString(), "Reset");
                 Workbook.Sheets[nomeFoglio].Range[rng.ToString()].ColumnWidth = width;
                 Workbook.Sheets[nomeFoglio].Range[rng.ToString()].Style = "Area dati";
+                //Workbook.Sheets[nomeFoglio].Range[rng.ToString()].NumberFormat = info["Formato"];
+
+                Style.RangeStyle(Workbook.Sheets[nomeFoglio].Range[rng.ToString()],
+                        fontSize: info["FontSize"],
+                        foreColor: info["ForeColor"],
+                        backColor: info["BackColor"],
+                        bold: info["Grassetto"].Equals("1"),
+                        numberFormat: info["Formato"],
+                        align: Enum.Parse(typeof(Excel.XlHAlign), info["Align"].ToString()));
 
                 for (DateTime giorno = Workbook.DataAttiva; giorno <= dataFine; giorno = giorno.AddDays(1))
                 {
@@ -319,6 +352,29 @@ namespace Iren.PSO.Base
             }
         }
 
+        protected virtual void RoundAdjust(object siglaEntita)
+        {
+            bool isManualCalculation = Workbook.Application.Calculation == Excel.XlCalculation.xlCalculationManual;
+            
+            if(!isManualCalculation)
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+            
+            _entitaInformazioni.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND WB <> '0' AND IdApplicazione = " + Workbook.IdApplicazione;
+            foreach (DataRowView info in _entitaInformazioni)
+            {
+                object siglaEntitaInfo = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+                Range rng = _definedNames.Get(siglaEntitaInfo, info["SiglaInformazione"], Date.SuffissoDATA1).Extend(colOffset: Date.GetOreIntervallo(_dataFine));
+
+                foreach (Range cell in rng.Cells)
+                {
+                    double val = Math.Round(Workbook.Sheets[_sheet].Range[cell.ToString()].Value, 3);
+                    Workbook.Sheets[_sheet].Range[cell.ToString()].Value = val;
+                }
+            }
+
+            if (!isManualCalculation)
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+        }
         #endregion
     }
 }
