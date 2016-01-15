@@ -1126,7 +1126,7 @@ namespace Iren.PSO.Applicazioni
             }
 
             SplashScreen.Close();
-            if (newDate != Workbook.DataAttiva && System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata a " + newDate.ToString("ddd dd MMM yyyy") + ". Continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No)
+            if (newDate != Workbook.DataAttiva && System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No)
                 newDate = Workbook.DataAttiva;
             SplashScreen.Show();
         }

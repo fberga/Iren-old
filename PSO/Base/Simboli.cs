@@ -29,7 +29,8 @@ namespace Iren.PSO.Base
             {10, "OfferteMB"},
             {11, "ValidazioneTL"},
             {12, "PrevisioneCT"},
-            {13, "InvioProgrammi"}
+            {13, "InvioProgrammi"},
+            {99, "ValidazioneGAS"}
         };
 
         public static Dictionary<int, string> FileApplicazione 
