@@ -80,26 +80,13 @@ namespace Iren.PSO.Forms
 
             Regex falseMatch = new Regex("false|0", RegexOptions.IgnoreCase);
 
-            if (settings.Contains("CategorieVisible") && falseMatch.IsMatch(settings["CategorieVisible"].ToString()))
+            if (Workbook.Repository.Applicazione["VisCategoriaRiepilogo"].Equals("0"))
             {
                 panelCategorie.Hide();
                 Width -= panelCategorie.Width;
             }
-            if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()))
-            {
-                groupDate.Hide();
-                _giorniVisible = false;
-            }
-            if (settings.Contains("GiorniVisible") && falseMatch.IsMatch(settings["GiorniVisible"].ToString()) &&
-                settings.Contains("MercatiDaEsportareVisible") && falseMatch.IsMatch(settings["MercatiDaEsportareVisible"].ToString()))
-            {
-                panelTop.Hide();
-                Height -= panelTop.Height;
-            }
-            if (settings.Contains("MeteoVisible") && falseMatch.IsMatch(settings["MeteoVisible"].ToString()))
-            {
+            if (Workbook.Repository.Applicazione["VisMeteo"].Equals("0"))
                 btnMeteo.Hide();
-            }
         }
         private void CaricaAzioni()
         {

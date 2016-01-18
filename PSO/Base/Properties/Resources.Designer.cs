@@ -343,6 +343,16 @@ namespace Iren.PSO.Base.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap validazioneGas {
+            get {
+                object obj = ResourceManager.GetObject("validazioneGas", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap validazioneTL {
             get {
                 object obj = ResourceManager.GetObject("validazioneTL", resourceCulture);

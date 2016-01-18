@@ -161,6 +161,7 @@
     <Content Include="Resources\TableRowsInsertBelowSmall.png" />
     <Content Include="Resources\test.png" />
     <Content Include="Resources\unitCommitment.png" />
+    <Content Include="Resources\validazioneGas.png" />
     <Content Include="Resources\validazioneTL.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

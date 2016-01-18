@@ -248,7 +248,9 @@ namespace Iren.PSO.Base
 
             foreach (DataRowView categoria in _categorie)
             {
-                _definedNames.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
+                if(Workbook.Repository.Applicazione["VisCategoriaRiepilogo"].Equals("1"))
+                    _definedNames.AddName(_rigaAttiva++, categoria["SiglaCategoria"]);
+
                 _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                 foreach (DataRowView e in _entita)
                 {
@@ -373,20 +375,34 @@ namespace Iren.PSO.Base
         /// </summary>
         protected void InitBarraEntita()
         {
+            int row = _definedNames.GetFirstRow() + 3;
             foreach (DataRowView categoria in _categorie)
             {
-                Range rng = new Range(_definedNames.GetRowByName(categoria["SiglaCategoria"]), _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
-                Style.RangeStyle(_ws.Range[rng.ToString()], style: "Lista categorie riepilogo", borders: "[left:medium,top:medium,right:medium]", merge: true);
-                _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
+                Range rng = new Range(row, _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
+
+                if (Workbook.Repository.Applicazione["VisCategoriaRiepilogo"].Equals("1"))
+                {
+                    Style.RangeStyle(_ws.Range[rng.ToString()], style: "Lista categorie riepilogo", borders: "[left:medium,top:medium,right:medium]", merge: true);
+                    _ws.Range[rng.Columns[0].ToString()].Value = categoria["DesCategoria"];
+                    rng.StartRow++;
+                }
+
                 _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                 foreach (DataRowView entita in _entita)
                 {
-                    rng.StartRow++;
                     _ws.Range[rng.Columns[0].ToString()].Value = (entita["Gerarchia"] is DBNull ? "" : "     ") + entita["DesEntita"];
                     _ws.Range[rng.Columns[0].ToString()].Borders[Excel.XlBordersIndex.xlEdgeTop].Weight = Excel.XlBorderWeight.xlThin;
+                    rng.StartRow++;
                 }
+                row = rng.StartRow;
             }
-            
+
+            if (Workbook.Repository.Applicazione["VisCategoriaRiepilogo"].Equals("0"))
+            {
+                Range firstRow = new Range(_definedNames.GetFirstRow() + 3, _definedNames.GetFirstCol(), 1, _definedNames.GetColOffsetRiepilogo());
+                _ws.Range[firstRow.ToString()].Borders[Excel.XlBordersIndex.xlEdgeTop].Weight = Excel.XlBorderWeight.xlMedium;
+            }
+
             _ws.Columns[_struttura.colRecap].EntireColumn.AutoFit();
         }
         /// <summary>

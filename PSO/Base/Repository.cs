@@ -100,7 +100,7 @@ namespace Iren.PSO.Base
             CaricaEntitaAzioneInformazione();
             CaricaCalcolo();
             CaricaCalcoloInformazione();
-            CaricaEntitaCalcolo();
+            //CaricaEntitaCalcolo();
             CaricaEntitaGrafico();
             CaricaEntitaGraficoInformazione();
             CaricaEntitaCommitment();
@@ -370,16 +370,16 @@ namespace Iren.PSO.Base
         /// Carica la relazione entità calcolo.
         /// </summary>
         /// <returns></returns>
-        private void CaricaEntitaCalcolo()
-        {
-            Core.QryParams parameters = new Core.QryParams() 
-                {
-                    {"@SiglaEntita", PSO.Core.DataBase.ALL},
-                    {"@SiglaCalcolo", PSO.Core.DataBase.ALL}
-                };
+        //private void CaricaEntitaCalcolo()
+        //{
+        //    Core.QryParams parameters = new Core.QryParams() 
+        //        {
+        //            {"@SiglaEntita", PSO.Core.DataBase.ALL},
+        //            {"@SiglaCalcolo", PSO.Core.DataBase.ALL}
+        //        };
 
-            CaricaDati(DataBase.TAB.ENTITA_CALCOLO, DataBase.SP.ENTITA_CALCOLO, parameters);
-        }
+        //    CaricaDati(DataBase.TAB.ENTITA_CALCOLO, DataBase.SP.ENTITA_CALCOLO, parameters);
+        //}
         /// <summary>
         /// Carica la relazione entità grafico.
         /// </summary>
