@@ -53,7 +53,7 @@ namespace Iren.PSO.Base
             colRecap = 165,
             rowRecap = 2;
         public bool visData0H24 = false,
-            visParametro = false,
+            //visParametro = false,
             visSelezione = false;
 
         #endregion

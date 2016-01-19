@@ -91,7 +91,6 @@ namespace Iren.PSO.Base
 
             CaricaAzioni();
             CaricaCategorie();
-            CaricaApplicazioneRibbon();
             CaricaAzioneCategoria();
             CaricaCategoriaEntita();
             CaricaEntitaAzione();
@@ -214,14 +213,6 @@ namespace Iren.PSO.Base
                 };
 
             CaricaDati(DataBase.TAB.LISTA_APPLICAZIONI, DataBase.SP.APPLICAZIONE, parameters);
-        }
-        /// <summary>
-        /// Carica i dati necessari alla creazione del menu ribbon.
-        /// </summary>
-        /// <returns></returns>
-        private void CaricaApplicazioneRibbon()
-        {
-            CaricaDati(DataBase.TAB.APPLICAZIONE_RIBBON, DataBase.SP.APPLICAZIONE_RIBBON, new Core.QryParams());
         }
         /// <summary>
         /// Carica le azioni.

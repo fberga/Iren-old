@@ -30,7 +30,6 @@ namespace Iren.PSO.Base
                 APPLICAZIONE_INIT = "spApplicazioneInit",
                 APPLICAZIONE_LOG = "spApplicazioneLog2",
                 APPLICAZIONE_NOTE = "spApplicazioneNote",
-                APPLICAZIONE_RIBBON = "spApplicazioneRibbon",
                 APPLICAZIONE_RIEPILOGO = "spApplicazioneRiepilogo",
                 AZIONE = "spAzione",
                 AZIONE_CATEGORIA = "spAzioneCategoria",

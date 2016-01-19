@@ -23,7 +23,7 @@ namespace Iren.PSO.Base
         protected Struct _struttura;
         protected DateTime _dataInizio;
         protected DateTime _dataFine;
-        protected int _visParametro;
+        protected int _visSelezione;
 
         protected static bool _protetto = true;
 
@@ -336,7 +336,7 @@ namespace Iren.PSO.Base
                 if (Struct.tipoVisualizzazione == "V")
                 {
                     //coloro titolo Verticale
-                    rng = new Range(row + 2, _struttura.colBlock - _visParametro - 1);
+                    rng = new Range(row + 2, _struttura.colBlock - _visSelezione - 1);
                     AssegnaColori(_ws.Range[rng.ToString()].MergeArea, giorno);
                 }
 
@@ -351,33 +351,28 @@ namespace Iren.PSO.Base
 
             _struttura = new Struct();
 
-            //cerco selezioni
             DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Workbook.IdApplicazione;
-
-            DataView entitaInformazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
-            bool visSelezione = false;
-            foreach (DataRowView entita in categoriaEntita)
-            {
-                entitaInformazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Selezione > 0 AND IdApplicazione = " + Workbook.IdApplicazione;
-                if(entitaInformazioni.Count > 0)
-                {
-                    visSelezione = true;
-                    break;
-                }
-            }
-
+            
             _struttura.rigaBlock = (int)paramApplicazione["RowBlocco"];
             _struttura.rigaGoto = (int)paramApplicazione["RowGoto"];
             _struttura.visData0H24 = paramApplicazione["VisData0H24"].ToString() == "1";
-            _struttura.visParametro = paramApplicazione["VisParametro"].ToString() == "1";
-            _struttura.visSelezione = visSelezione;
-            _struttura.colBlock = (int)paramApplicazione["ColBlocco"] + (_struttura.visParametro ? 1 : 0) + (visSelezione ? 1 : 0);
+            
+            _struttura.visSelezione =
+                (from c in Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].AsEnumerable()
+                 join e in Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].AsEnumerable()
+                 on new { SiglaEntita = c["SiglaEntita"], IdApplicazione = c["IdApplicazione"] } equals
+                    new { SiglaEntita = e["SiglaEntita"], IdApplicazione = e["IdApplicazione"] }
+                 where c["SiglaCategoria"].Equals(_siglaCategoria)
+                    && c["IdApplicazione"].Equals(Workbook.IdApplicazione)
+                    && (int)e["Selezione"] > 0
+                 select e).Count() > 0;
+            
+            _struttura.colBlock = (int)paramApplicazione["ColBlocco"] + (_struttura.visSelezione ? 1 : 0);
             Struct.tipoVisualizzazione = paramApplicazione["TipoVisualizzazione"] is DBNull ? "O" : paramApplicazione["TipoVisualizzazione"].ToString();
             Struct.intervalloGiorni = paramApplicazione["IntervalloGiorniEntita"] is DBNull ? 0 : (int)paramApplicazione["IntervalloGiorniEntita"];
             Struct.visualizzaRiepilogo = paramApplicazione["VisRiepilogo"] is DBNull ? true : paramApplicazione["VisRiepilogo"].Equals("1");
 
-            _visParametro = _struttura.visParametro ? 3 : 2 + (visSelezione ? 1 : 0);
+            _visSelezione = (_struttura.visSelezione ? 3 : 2);
 
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL) AND IdApplicazione = " + Workbook.IdApplicazione;
             _struttura.numEleMenu = (Struct.tipoVisualizzazione == "O" ? categoriaEntita.Count : (Struct.intervalloGiorni + 1));
@@ -510,13 +505,13 @@ namespace Iren.PSO.Base
             }
             
 
-            int colInfo = _struttura.colBlock - _visParametro;
+            int colInfo = _struttura.colBlock - _visSelezione;
             _ws.Columns[colInfo].ColumnWidth = Struct.cell.width.informazione;
             _ws.Columns[colInfo + 1].ColumnWidth = Struct.cell.width.unitaMisura;
             if (_struttura.visSelezione)
                 _ws.Columns[colInfo + 2].ColumnWidth = 2.5;
-            if (_struttura.visParametro)
-                _ws.Columns[colInfo + _visParametro].ColumnWidth = Struct.cell.width.parametro;
+            //if (_struttura.visParametro)
+            //    _ws.Columns[colInfo + _visParametro].ColumnWidth = Struct.cell.width.parametro;
         }
         /// <summary>
         /// Inizializza la barra di navigazione nella parte alta del foglio applicandovi lo stile "Top menu GOTO". Definisce tutte le celle e genera gli oggetti GOTO per i tasti del menù e applica lo stile "Barra navigazione con nomi" se la visualizzazione è Orizzontale altrimenti "Barra navigazione con date". Se la tipologia di visualizzazione è Orizzontale, aggiunge anche la barra della data e delle ore (applicando "Barra della data").
@@ -528,7 +523,7 @@ namespace Iren.PSO.Base
             DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND (Gerarchia = '' OR Gerarchia IS NULL ) AND IdApplicazione = " + Workbook.IdApplicazione;
 
-            int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+            int dataOreTot = (Struct.tipoVisualizzazione == "O" ? Date.GetOreIntervallo(_dataInizio, _dataFine) : 25) + (_struttura.visData0H24 ? 1 : 0);// +(_struttura.visParametro ? 1 : 0);
                 
             Excel.Range gotoBar = _ws.Range[_ws.Cells[2, 2], _ws.Cells[_struttura.rigaGoto + _struttura.numRigheMenu, _struttura.colBlock + dataOreTot - 1]];
             gotoBar.Style = "Top menu GOTO";
@@ -623,8 +618,8 @@ namespace Iren.PSO.Base
                 grafici.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "'";
                 graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             }
-            
-            _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0) + (_struttura.visParametro ? 1 : 0);
+
+            _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0);// +(_struttura.visParametro ? 1 : 0);
 
             string funzione = "";
             try
@@ -744,7 +739,7 @@ namespace Iren.PSO.Base
                     if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                     {
                         //seleziono la cella dell'unità di misura
-                        Range rng = new Range(_rigaAttiva, startCol - _visParametro + 1);
+                        Range rng = new Range(_rigaAttiva, startCol - _visSelezione + 1);
                         _definedNames.SetEditable(_rigaAttiva, rng);
                     }
                     else
@@ -849,7 +844,7 @@ namespace Iren.PSO.Base
             DataView informazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
 
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            Range rngTitolo = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visParametro - 1, informazioni.Count);
+            Range rngTitolo = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _struttura.colBlock - _visSelezione - 1, informazioni.Count);
             
             Stopwatch watch = Stopwatch.StartNew();
             Excel.Range titoloVert = _ws.Range[rngTitolo.ToString()];
@@ -867,24 +862,24 @@ namespace Iren.PSO.Base
             informazioni.RowFilter += " AND SiglaTipologiaInformazione <> 'GIORNALIERA'";
 
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
-            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol() - _visParametro, informazioni.Count, _definedNames.GetColOffset(_dataFine) + _visParametro);
+            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetFirstCol() - _visSelezione, informazioni.Count, _definedNames.GetColOffset(_dataFine) + _visSelezione);
 
             Excel.Range bloccoEntita = _ws.Range[rng.ToString()];
             bloccoEntita.Style = "Area dati";
             bloccoEntita.BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
             bloccoEntita.Columns[1].HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
             bloccoEntita.Columns[2].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-            bloccoEntita.Columns[_visParametro].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+            bloccoEntita.Columns[_visSelezione].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
             if (_struttura.visSelezione)
                 bloccoEntita.Columns[3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-            if (_struttura.visParametro)
-                bloccoEntita.Columns[3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+            //if (_struttura.visParametro)
+            //    bloccoEntita.Columns[3].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
 
 
             int col = _struttura.visData0H24 ? 1 : 0;
             CicloGiorni((oreGiorno, suffissoData, giorno) =>
             {
-                bloccoEntita.Columns[_visParametro + col].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
+                bloccoEntita.Columns[_visSelezione + col].Borders[Excel.XlBordersIndex.xlEdgeRight].Weight = Excel.XlBorderWeight.xlMedium;
                 col += oreGiorno;
             });
 
@@ -911,8 +906,8 @@ namespace Iren.PSO.Base
             object siglaEntita = informazioni[0]["SiglaEntitaRif"] is DBNull ? informazioni[0]["SiglaEntita"] : informazioni[0]["SiglaEntitaRif"];
             int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, informazioni[0]["SiglaInformazione"], Date.GetSuffissoData(_dataInizio));
 
-            Excel.Range rngRow = _ws.Range[Range.GetRange(row, col - _visParametro, informazioni.Count, colOffset + _visParametro)];
-            Excel.Range rngInfo = _ws.Range[Range.GetRange(row, col - _visParametro, informazioni.Count, 2)];
+            Excel.Range rngRow = _ws.Range[Range.GetRange(row, col - _visSelezione, informazioni.Count, colOffset + _visSelezione)];
+            Excel.Range rngInfo = _ws.Range[Range.GetRange(row, col - _visSelezione, informazioni.Count, 2)];
             Excel.Range rngData = _ws.Range[Range.GetRange(row, col, informazioni.Count, colOffset)];
 
             if(Struct.tipoVisualizzazione == "V")
@@ -937,7 +932,7 @@ namespace Iren.PSO.Base
                 int infoBackColor = info["Editabile"].ToString() == "1" ? 15 : 48;
 
                 if(info["Selezione"].Equals(0) && _struttura.visSelezione)
-                    rngRow.Rows[i].Cells[_visParametro].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                    rngRow.Rows[i].Cells[_visSelezione].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
 
                 if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                 {
@@ -1076,7 +1071,7 @@ namespace Iren.PSO.Base
                 Range data0H24 = _struttura.visData0H24 && info["Data0H24"].Equals("1") ? new Range(rng.StartRow, _definedNames.GetFirstCol()) : null;
 
                 if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
-                    rng.StartColumn -= _visParametro - 1;
+                    rng.StartColumn -= _visSelezione - 1;
                 else
                 {
                 //    rng.StartColumn += offsetAdjust;
@@ -1271,6 +1266,7 @@ namespace Iren.PSO.Base
                 string rowFilter = graficiInfo.RowFilter;
                 graficiInfo.RowFilter = rowFilter + " AND SiglaGrafico = '" + grafico["SiglaGrafico"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
+                bool hasSecondaryAxes = false;
                 foreach (DataRowView info in graficiInfo)
                 {
                     Range rngDati = new Range(_definedNames.GetRowByNameSuffissoData(grafico["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), col, 1, colOffset);
@@ -1282,7 +1278,23 @@ namespace Iren.PSO.Base
                     serie.Border.ColorIndex = info["BorderColor"];
                     serie.Border.Weight = info["BorderWeight"];
                     serie.Border.LineStyle = info["BorderLineStyle"];
+                    serie.AxisGroup = (Excel.XlAxisGroup)info["AxisGroup"];
+                    if ((Excel.XlAxisGroup)info["AxisGroup"] == Excel.XlAxisGroup.xlSecondary)
+                        hasSecondaryAxes = true;
                 }
+
+
+                //asse secondario
+                if (hasSecondaryAxes)
+                {
+                    chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).HasMajorGridlines = false;
+                    chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).HasMinorGridlines = false;
+                    chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MinorTickMark = Excel.XlTickMark.xlTickMarkOutside;
+                    chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).TickLabels.Font.Name = "Verdana";
+                    chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).TickLabels.Font.Size = 11;
+                    chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).TickLabels.NumberFormat = "general";
+                }
+
                 graficiInfo.RowFilter = rowFilter;
             }
         }
@@ -1323,9 +1335,12 @@ namespace Iren.PSO.Base
             SplashScreen.UpdateStatus("Aggiorno grafici " + chart.Name);
 
             //calcolo i valori max e min per aggiornare la scala
-            bool allNull = true;
-            double minValue = double.MaxValue;
-            double maxValue = double.MinValue;
+            bool allNullPAxes = true;
+            bool allNullSAxes = true;
+            double minValuePAxes = double.MaxValue;
+            double maxValuePAxes = double.MinValue;
+            double minValueSAxes = double.MaxValue;
+            double maxValueSAxes = double.MinValue;
 
             foreach (Excel.Series s in chart.SeriesCollection())
             {
@@ -1333,16 +1348,31 @@ namespace Iren.PSO.Base
 
                 if (val.OfType<double>().Any())
                 {
-                    allNull = false;
-                    minValue = Math.Min(minValue, val.OfType<double>().Min());
-                    maxValue = Math.Max(maxValue, val.OfType<double>().Max());
+                    
+                    if (s.AxisGroup == Excel.XlAxisGroup.xlPrimary)
+                    {
+                        allNullPAxes = false;
+                        minValuePAxes = Math.Min(minValuePAxes, val.OfType<double>().Min());
+                        maxValuePAxes = Math.Max(maxValuePAxes, val.OfType<double>().Max());
+                    }
+                    else
+                    {
+                        allNullSAxes = false;
+                        minValueSAxes = Math.Min(minValueSAxes, val.OfType<double>().Min());
+                        maxValueSAxes = Math.Max(maxValueSAxes, val.OfType<double>().Max());
+                    }
                 }
             }
 
-            if (!allNull)
+            if (!allNullPAxes)
             {
-                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Round(maxValue + maxValue * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Round(minValue - minValue * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Round(maxValuePAxes + maxValuePAxes * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Round(minValuePAxes - minValuePAxes * 5 / 100);
+            }
+            if (!allNullSAxes)
+            {
+                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale = Math.Round(maxValueSAxes + maxValueSAxes * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MinimumScale = Math.Round(minValueSAxes - minValueSAxes * 5 / 100);
             }
 
             //resize dell'area del grafico per adattarla alle ore
@@ -1353,6 +1383,7 @@ namespace Iren.PSO.Base
                 float sizeMax = float.MinValue;
                 SizeF tmpSize;
                 double val = 0;
+
                 //controllo anche il fondo scala: se cambia l'ordine di grandezza excel lascia lo spazio nel label come se ci fosse!!
                 while (val < chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
                 {
@@ -1368,6 +1399,25 @@ namespace Iren.PSO.Base
                 chart.ChartArea.Width = rigaGrafico.Width + Math.Ceiling(sizeMax) + 4;    //aumento la larghezza del grafico
                 chart.PlotArea.InsideLeft = 0d;                                           //allineo il grafico al bordo sinistro dell'area esterna al grafico
                 chart.PlotArea.Width = chart.ChartArea.Width + 3;                         //aumento la larghezza dell'area esterna al grafico
+
+
+                //se c'è un asse secondario ed aggiorno la dimensione del grafico di conseguenza
+                try
+                {
+                    sizeMax = float.MinValue;
+                    val = 0;
+                    while (val < chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale)
+                    {
+                        if ((val += chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MajorUnit) > chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale)
+                            val = chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale;
+
+                        tmpSize = grfx.MeasureString(val.ToString(), new Font(chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).TickLabels.Font.Name, (float)chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).TickLabels.Font.Size));
+                        sizeMax = Math.Max(sizeMax, tmpSize.Width);
+                    }
+
+                    chart.ChartArea.Width = chart.ChartArea.Width + Math.Ceiling(sizeMax) + 7;    //aumento la larghezza del grafico
+
+                } catch {}
             }            
         }
 
@@ -1755,7 +1805,7 @@ namespace Iren.PSO.Base
                     _ws.Range[Range.GetRange(row, col)].Value = giorno;
 
                     row += 2;//_definedNames.GetRowByName(suffissoData, "TITOLO_VERTICALE");
-                    col -= (_visParametro + 1);
+                    col -= (_visSelezione + 1);
                     if (_ws.Range[Range.GetRange(row, col)].Value != null)
                         _ws.Range[Range.GetRange(row, col)].Value = giorno;
 
