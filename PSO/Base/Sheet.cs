@@ -1366,13 +1366,13 @@ namespace Iren.PSO.Base
 
             if (!allNullPAxes)
             {
-                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Round(maxValuePAxes + maxValuePAxes * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Round(minValuePAxes - minValuePAxes * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
             }
             if (!allNullSAxes)
             {
-                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale = Math.Round(maxValueSAxes + maxValueSAxes * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MinimumScale = Math.Round(minValueSAxes - minValueSAxes * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale = Math.Ceiling(maxValueSAxes + Math.Abs(maxValueSAxes) * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MinimumScale = Math.Floor(minValueSAxes - Math.Abs(minValueSAxes) * 5 / 100);
             }
 
             //resize dell'area del grafico per adattarla alle ore
@@ -1382,16 +1382,17 @@ namespace Iren.PSO.Base
                 grfx.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;                
                 float sizeMax = float.MinValue;
                 SizeF tmpSize;
-                double val = 0;
+                double val = chart.Axes(Excel.XlAxisType.xlValue).MinimumScale;
 
                 //controllo anche il fondo scala: se cambia l'ordine di grandezza excel lascia lo spazio nel label come se ci fosse!!
-                while (val < chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
+                while (val <= chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
                 {
-                    if ((val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit) > chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
-                        val = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale;
-                    
                     tmpSize = grfx.MeasureString(val.ToString(), new Font(chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name, (float)chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size));
                     sizeMax = Math.Max(sizeMax, tmpSize.Width);
+
+                    val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit;
+                    //if ((val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit) > chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
+                    //    val = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale;
                 }
 
                 //MANTENERE ORDINE DI QUESTE ISTRUZIONI

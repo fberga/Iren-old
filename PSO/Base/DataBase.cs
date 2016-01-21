@@ -340,7 +340,7 @@ namespace Iren.PSO.Base
                             fileName = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
                             dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
 
-                            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. Il file è si trova in " + Environment.MachineName);
+                            Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. '" + fileName + "' si trova in " + Environment.MachineName);
 
                             System.Windows.Forms.MessageBox.Show("Il server ha restituito un errore nel salvataggio. Le modifiche rimarranno comunque salvate in locale.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                         }
