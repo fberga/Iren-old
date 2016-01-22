@@ -961,7 +961,8 @@ namespace Iren.PSO.Base
                         backColor: info["BackColor"],
                         merge: true,
                         bold: true,
-                        borders: "[Top:medium, Right:medium]");
+                        borders: "[Top:medium, Right:medium]",
+                        visible: info["Visibile"].Equals("1"));
 
                     col = _struttura.visData0H24 ? 1 : 0;
                     //giorni normali
@@ -1059,24 +1060,18 @@ namespace Iren.PSO.Base
         protected virtual void InsertFormuleValoriDefault()
         {
             DataView informazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
-            int colOffset = Date.GetOreIntervallo(_dataFine);// _definedNames.GetColOffset(_dataFine);
+            int colOffset = Date.GetOreIntervallo(_dataFine);
             foreach (DataRowView info in informazioni)
             {
                 object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
-                //tolgo la colonna della DATA0H24 dove non serve
-                //int offsetAdjust = (_struttura.visData0H24 && info["Data0H24"].Equals("0") ? 1 : 0);
-
-                Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetColData1H1());//.GetFirstCol());
+                Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), _definedNames.GetColData1H1());
                 Range data0H24 = _struttura.visData0H24 && info["Data0H24"].Equals("1") ? new Range(rng.StartRow, _definedNames.GetFirstCol()) : null;
 
                 if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
                     rng.StartColumn -= _visSelezione - 1;
                 else
-                {
-                //    rng.StartColumn += offsetAdjust;
-                    rng.Extend(colOffset: colOffset);// - offsetAdjust);
-                }
+                    rng.Extend(colOffset: colOffset);
 
                 Excel.Range rngData = _ws.Range[rng.ToString()];
 
@@ -1089,15 +1084,10 @@ namespace Iren.PSO.Base
                     int deltaNeg;
                     int deltaPos;
                     string formula = "=" + PreparaFormula(info, "DATA0", "DATA1", 24, out deltaNeg, out deltaPos);
-
-                    //if (deltaNeg == 0 && _struttura.visData0H24 && info["Data0H24"].Equals("1"))
-                    //    deltaNeg = 1;
-
+                    
                     if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
-                    {
                         _ws.Range[data0H24.ToString()].Formula = "=SUM(" + rng.Columns[0, rng.Columns.Count - 1] + ")";
-                        //deltaNeg = 1;
-                    }
+
                     _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - 1 - deltaPos].ToString()].Formula = formula;
                 }
 
@@ -1239,7 +1229,7 @@ namespace Iren.PSO.Base
                 xlRngGrafico.Merge();
                 xlRngGrafico.Style = "Area grafici";
                 xlRngGrafico.RowHeight = 200;
-                Excel.Chart chart = _ws.ChartObjects().Add(xlRngGrafico.Left, xlRngGrafico.Top + 1, xlRngGrafico.Width, xlRngGrafico.Height - 2).Chart;
+                Excel.Chart chart = _ws.ChartObjects().Add(Left: xlRngGrafico.Left, Top: xlRngGrafico.Top + 1, Width: xlRngGrafico.Width, Height: xlRngGrafico.Height - 2).Chart;
 
                 chart.Parent.Name = name;
 
@@ -1260,6 +1250,8 @@ namespace Iren.PSO.Base
                 chart.ChartArea.Border.Weight = 3;
                 chart.ChartArea.Border.LineStyle = 0;
                 chart.PlotVisibleOnly = false;
+
+                chart.PlotArea.Top = chart.ChartArea.Height;
 
                 chart.PlotArea.Border.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
 
@@ -1391,8 +1383,6 @@ namespace Iren.PSO.Base
                     sizeMax = Math.Max(sizeMax, tmpSize.Width);
 
                     val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit;
-                    //if ((val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit) > chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
-                    //    val = chart.Axes(Excel.XlAxisType.xlValue).MaximumScale;
                 }
 
                 //MANTENERE ORDINE DI QUESTE ISTRUZIONI
