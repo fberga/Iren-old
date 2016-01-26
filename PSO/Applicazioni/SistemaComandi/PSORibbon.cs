@@ -677,7 +677,8 @@ namespace Iren.PSO.Applicazioni
                 ((RibbonToggleButton)sender).Enabled = true;
                 ((RibbonToggleButton)sender).Image = PSO.Base.Properties.Resources.modificaSI;
                 ((RibbonToggleButton)sender).Label = "Modifica SI";
-                Workbook.WB.SheetChange += Handler.StoreEdit;
+                //Workbook.WB.SheetChange += Handler.StoreEdit;
+                Workbook.AddStdStoreEdit();
                 //Aggiungo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange += _modificaCustom.Range;
             }
@@ -689,7 +690,8 @@ namespace Iren.PSO.Applicazioni
                 DataBase.SalvaModificheDB();
                 ((RibbonToggleButton)sender).Image = PSO.Base.Properties.Resources.modificaNO;
                 ((RibbonToggleButton)sender).Label = "Modifica NO";
-                Workbook.WB.SheetChange -= Handler.StoreEdit;
+                //Workbook.WB.SheetChange -= Handler.StoreEdit;
+                Workbook.RemoveStdStoreEdit();
                 //Rimuovo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange -= _modificaCustom.Range;
 

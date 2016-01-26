@@ -35,6 +35,10 @@ namespace Iren.PSO.Base
         /// </summary>
         public static bool FromErrorPane = false;
 
+        private static bool _isStoreEditEnabled = false;
+
+        private static bool _wasInEmergency = false;
+
         #endregion
 
         #region Proprietà
@@ -290,7 +294,7 @@ namespace Iren.PSO.Base
                     if (isProtected)
                         Main.Unprotect(Workbook.Password);
 
-
+                    //refresh nel caso stia passando da emergenza a normale e viceversa
                     Riepilogo main = new Riepilogo(Workbook.Main);
 
                     if (DataBase.OpenConnection())
@@ -300,7 +304,10 @@ namespace Iren.PSO.Base
                         Simboli.ImpiantiOnline = stato[PSO.Core.DataBase.NomiDB.IMP] == ConnectionState.Open;
                         Simboli.ElsagOnline = stato[PSO.Core.DataBase.NomiDB.ELSAG] == ConnectionState.Open;
 
-                        main.UpdateData();
+                        if (_wasInEmergency)
+                            main.UpdateData();
+                        
+                        _wasInEmergency = false;
 
                         DataBase.CloseConnection();
                     }
@@ -309,8 +316,11 @@ namespace Iren.PSO.Base
                         Simboli.SQLServerOnline = false;
                         Simboli.ImpiantiOnline = false;
                         Simboli.ElsagOnline = false;
-
-                        main.RiepilogoInEmergenza();
+                        
+                        if(!_wasInEmergency)
+                            main.RiepilogoInEmergenza();
+                        
+                        _wasInEmergency = true;
                     }
 
                     if (isProtected)
@@ -419,6 +429,23 @@ namespace Iren.PSO.Base
             
         }
 
+
+        public static void AddStdStoreEdit()
+        {
+            if (!_isStoreEditEnabled)
+            {
+                WB.SheetChange += Handler.StoreEdit;
+                _isStoreEditEnabled = true;
+            }
+        }
+        public static void RemoveStdStoreEdit()
+        {
+            if (_isStoreEditEnabled)
+            {
+                WB.SheetChange -= Handler.StoreEdit;
+                _isStoreEditEnabled = false;
+            }
+        }
         #region AppSettings
         /// <summary>
         /// Quando il file è criptato capita che senza il refresh vada in errore.

@@ -17,7 +17,8 @@ namespace Iren.PSO.Applicazioni
         public override void Range(object Sh, Excel.Range Target)
         {
             //Se la funzione scrive in altre celle, ricordarsi di disabilitare gli handler per la modifica delle celle
-            Workbook.WB.SheetChange -= Handler.StoreEdit;
+            //Workbook.WB.SheetChange -= Handler.StoreEdit;
+            Workbook.RemoveStdStoreEdit();
             Workbook.WB.SheetChange -= this.Range;
 
 
@@ -74,7 +75,8 @@ namespace Iren.PSO.Applicazioni
             }
 
             //Se la funzione scrive in altre celle, ricordarsi di riabilitare gli handler per la modifica delle celle
-            Workbook.WB.SheetChange += Handler.StoreEdit;
+            //Workbook.WB.SheetChange += Handler.StoreEdit;
+            Workbook.AddStdStoreEdit();
             Workbook.WB.SheetChange += this.Range;
         }
     }

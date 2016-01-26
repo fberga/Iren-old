@@ -37,19 +37,23 @@ namespace Iren.PSO.Base
 
                     //evito di annotare il cambiamento della cella di selezione: non ha senso e cmq va in errore perché il simbolo non viene riconosciuto
                     if (Simboli.ModificaDati)
-                        Workbook.WB.SheetChange -= StoreEdit;
+                        //Workbook.WB.SheetChange -= StoreEdit;
+                        Workbook.RemoveStdStoreEdit();
+
 
                     sel.ClearSelections(Target.Worksheet);
                     sel.Select(Target.Worksheet, rng.ToString());
 
                     //annoto modifiche e le salvo sul DB
-                    Workbook.WB.SheetChange += StoreEdit;
+                    //Workbook.WB.SheetChange += StoreEdit;
+                    Workbook.AddStdStoreEdit();
 
                     Target.Worksheet.Range[sel.RifAddress].Value = val;
                     
                     //se non ero in modifica tolgo l'handler alla modifica delle celle
                     if (!Simboli.ModificaDati)
-                        Workbook.WB.SheetChange -= StoreEdit;
+                        //Workbook.WB.SheetChange -= StoreEdit;
+                        Workbook.RemoveStdStoreEdit();
 
                     DataBase.SalvaModificheDB();
                     Workbook.ScreenUpdating = true;
