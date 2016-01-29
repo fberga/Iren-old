@@ -30,18 +30,12 @@ namespace Iren.PSO.Applicazioni
             switch (siglaAzione.ToString())
             {
                 case "E_VDT":
-                    DataView entitaAssetto = Workbook.Repository[DataBase.TAB.ENTITA_ASSETTO].DefaultView;
-                    entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
-
-                    Dictionary<string,int> assettoFasce = new Dictionary<string,int>();
-                    foreach (DataRowView assetto in entitaAssetto)
-                        assettoFasce.Add((string)assetto["IdAssetto"], (int)assetto["NumeroFasce"]);
 
                     string pathStr = PreparePath(Workbook.GetUsrConfigElement("pathExportSisComTerna"));
 
                     if (Directory.Exists(pathStr))
                     {
-                        if (!CreaVariazioneDatiTecniciXML(siglaEntita, pathStr, assettoFasce))
+                        if (!CreaVariazioneDatiTecniciXML(siglaEntita, pathStr))
                             return false;
                     }
                     else
@@ -92,10 +86,13 @@ namespace Iren.PSO.Applicazioni
             return true;
         }
 
-        protected bool CreaVariazioneDatiTecniciXML(object siglaEntita, string exportPath, Dictionary<string,int> assettoFasce)
+        protected bool CreaVariazioneDatiTecniciXML(object siglaEntita, string exportPath/*, Dictionary<string,int> assettoFasce*/)
         {
             try
             {
+                DataView entitaAssetto = Workbook.Repository[DataBase.TAB.ENTITA_ASSETTO].DefaultView;
+                entitaAssetto.RowFilter = "SiglaEntita = '" + siglaEntita + "'";
+
                 string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
                 DefinedNames definedNames = new DefinedNames(nomeFoglio);
                 Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
@@ -123,47 +120,48 @@ namespace Iren.PSO.Applicazioni
                         new XElement("NOTE", "Vincoli Tecnologici dell'Unita di Produzione")
                     );
 
-                    int assetto = 1;
-                    foreach (KeyValuePair<string, int> assettoFascia in assettoFasce)
+                    //int assetto = 1;
+                    foreach (DataRowView assetto in entitaAssetto)
+                    //foreach (KeyValuePair<string, int> assettoFascia in assettoFasce)
                     {
-                        for (int j = 1; j <= assettoFascia.Value; j++)
+                        for (int j = 1; j <= (int)assetto["NumeroFasce"]; j++)
                         {
-                            Range rng = definedNames.Get(siglaEntita, "PSMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
-                            Range rngCorr = definedNames.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            Range rng = definedNames.Get(siglaEntita, "PSMIN_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            Range rngCorr = definedNames.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string psminVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "PSMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
-                            rngCorr = definedNames.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PSMAX_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rngCorr = definedNames.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string psmaxVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "PTMIN_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PTMIN_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string ptminVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "PTMAX_ASSETTO" + assetto + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "PTMAX_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             string ptmaxVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "TRISP_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TRISP_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                             string trispVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "GPA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "GPA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                             string gpaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "GPD_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "GPD_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                             string gpdVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "TAVA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TAVA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                             string tavaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "TARA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "TARA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                             string taraVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
-                            rng = definedNames.Get(siglaEntita, "BRS_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, "BRS_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                             string brsVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
 
                             string tderampaVal = null;
                             if (isTermo)
                             {
-                                rng = definedNames.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto, suffissoData, Date.GetSuffissoOra(i + 1));
+                                rng = definedNames.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
                                 tderampaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
                             }
                             if (ptminVal != "" && ptmaxVal != "")
@@ -172,7 +170,7 @@ namespace Iren.PSO.Applicazioni
                                     new XElement("PSMIN", psminVal),
                                     new XElement("PSMAX", psmaxVal),
                                     new XElement("ASSETTO",
-                                            new XElement("IDASSETTO", assettoFascia.Key),
+                                            new XElement("IDASSETTO", assetto["IdAssetto"]),
                                             new XElement("PTMIN", ptminVal),
                                             new XElement("PTMAX", ptmaxVal),
                                             new XElement("TRISP", trispVal),
@@ -187,7 +185,7 @@ namespace Iren.PSO.Applicazioni
                                 );
                             }
                         }
-                        assetto++;
+                        //assetto++;
                     }
                     if (isTermo)
                     {
@@ -226,8 +224,10 @@ namespace Iren.PSO.Applicazioni
 
                 return true;
             }
-            catch
+            catch(Exception e)
             {
+                Workbook.InsertLog(PSO.Core.DataBase.TipologiaLOG.LogErrore, "SistemaComandi.Esporta.CreaVariazioneDatiTecniciXML [" + siglaEntita + "]: " + e.Message);
+                
                 return false;
             }
         }
@@ -303,7 +303,7 @@ namespace Iren.PSO.Applicazioni
             }
             catch(Exception e)
             {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "SisCom - Esporta.InvioMail: " + e.Message);
+                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "SistemaComandi.Esporta.InvioMail [" + siglaEntita + "]: " + e.Message);
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 

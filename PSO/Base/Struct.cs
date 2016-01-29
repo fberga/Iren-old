@@ -43,6 +43,7 @@ namespace Iren.PSO.Base
         public static int intervalloGiorni = 0;
         public static bool visualizzaRiepilogo = true;
         public static Cella cell;
+        public static bool visLinkEntita = true;
 
         public int numRigheMenu = 1;
         public int numEleMenu = 1;

@@ -1092,45 +1092,52 @@ namespace Iren.PSO.Applicazioni
         /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
         private void AggiornaData(out DateTime newDate)
         {
+            bool done = true;
             newDate = Workbook.DataAttiva;
+            int ora = DateTime.Now.Hour;
+            switch (Workbook.IdApplicazione)
+            {
+                case 1:
+                    if (ora < 14)
+                        newDate = DateTime.Today.AddDays(1);
+                    else
+                        newDate = DateTime.Today.AddDays(2);
+                    break;
+                case 5:
+                    newDate = DateTime.Today;
+                    break;
+                case 6:
+                    newDate = DateTime.Today.AddDays(-5);
+                    break;
+                case 7:
+                    newDate = DateTime.Today.AddDays(-3);
+                    break;
+                case 11:
+                    newDate = DateTime.Today.AddDays(-1);
+                    break;
+                case 12:
+                    if (ora <= 15)
+                        newDate = DateTime.Today.AddDays(1);
+                    else
+                        newDate = DateTime.Today.AddDays(2);
+                    break;
+                case 14:
+                    DataTable dt = DataBase.Select(DataBase.SP.GET_LAST_DATA_VALIDATA_GAS);
+                    if (dt != null && dt.Rows.Count > 0)
+                        newDate = DateTime.ParseExact(dt.Rows[0][0].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
+                    break;
+                default:
+                    done = false;
+                    break;
+            }
 
-            if (Workbook.IdApplicazione == 1)
+            if (done)
             {
-                int ora = DateTime.Now.Hour;
-                if (ora < 14)
-                    newDate = DateTime.Today.AddDays(1);
-                else
-                    newDate = DateTime.Today.AddDays(2);
+                SplashScreen.Close();
+                if (newDate != Workbook.DataAttiva && System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No)
+                    newDate = Workbook.DataAttiva;
+                SplashScreen.Show();
             }
-            else if (Workbook.IdApplicazione == 5)
-            {
-                newDate = DateTime.Today;
-            }
-            else if (Workbook.IdApplicazione == 6)
-            {
-                newDate = DateTime.Today.AddDays(-5);
-            }
-            else if (Workbook.IdApplicazione == 7)
-            {
-                newDate = DateTime.Today.AddDays(-3);
-            }
-            else if (Workbook.IdApplicazione == 11) 
-            {
-                newDate = DateTime.Today.AddDays(-1);
-            }
-            else if (Workbook.IdApplicazione == 12)
-            {
-                int ora = DateTime.Now.Hour;
-                if (ora <= 15)
-                    newDate = DateTime.Today.AddDays(1);
-                else
-                    newDate = DateTime.Today.AddDays(2);
-            }
-
-            SplashScreen.Close();
-            if (newDate != Workbook.DataAttiva && System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No)
-                newDate = Workbook.DataAttiva;
-            SplashScreen.Show();
         }
 
 
@@ -1188,9 +1195,9 @@ namespace Iren.PSO.Applicazioni
                 if (Controls.Contains("cmbMSD"))
                     SetMercato(out newDate, out newIdApplicazione);
                 
-                int[] ids = new int[] {1,5,6,7,11,12};
-                if(ids.Contains(Workbook.IdApplicazione))
-                    AggiornaData(out newDate);
+                //int[] ids = new int[] {1,5,6,7,11,12,14};
+                //if(ids.Contains(Workbook.IdApplicazione))
+                AggiornaData(out newDate);
 
                 Riepilogo r = new Riepilogo(Workbook.Main);
 

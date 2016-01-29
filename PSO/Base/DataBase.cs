@@ -54,6 +54,7 @@ namespace Iren.PSO.Base
                 ENTITA_PARAMETRO_H = "spEntitaParametroH",
                 ENTITA_PROPRIETA = "spEntitaProprieta",
                 ENTITA_RAMPA = "spEntitaRampa",
+                GET_LAST_DATA_VALIDATA_GAS = "spGetLastDataValidataGas",
                 GET_ORE_FERMATA = "spGetOreFermata",
                 GET_VERSIONE = "spGetVersione",
                 INSERT_APPLICAZIONE_INFORMAZIONE_XML = "spInsertApplicazioneInformazioneXML2",

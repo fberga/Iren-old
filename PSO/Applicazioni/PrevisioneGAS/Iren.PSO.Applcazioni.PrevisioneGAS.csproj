@@ -147,6 +147,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggiorna.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -174,6 +175,8 @@
     <None Include="PrevisioneGAS.xlsm" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Riepilogo.cs" />
+    <Compile Include="Sheet.cs" />
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>PrevisioneGAS.xlsm</DependentUpon>
     </Compile>

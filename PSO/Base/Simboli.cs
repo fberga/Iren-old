@@ -30,7 +30,8 @@ namespace Iren.PSO.Base
             {11, "ValidazioneTL"},
             {12, "PrevisioneCT"},
             {13, "InvioProgrammi"},
-            {14, "ValidazioneGAS"}
+            {14, "ValidazioneGAS"},
+            {15, "PrevisioneGAS"}
         };
 
         public static Dictionary<int, string> FileApplicazione 
@@ -146,80 +147,6 @@ namespace Iren.PSO.Base
                 Handler.ChangeStatoDB(Core.DataBase.NomiDB.ELSAG, _elsagOnline);
             }
         }
-
-        //private static string mercato;
-        //public static string Mercato
-        //{
-        //    get { return mercato; }
-        //}
-
-        //public static string GetMercatoByAppID(string id)
-        //{
-        //    List<string> mercati = new List<string>(Workbook.AppSettings("Mercati").Split('|'));
-        //    List<string> appIDs = new List<string>(Workbook.AppSettings("AppIDMSD").Split('|'));
-
-        //    return mercati[appIDs.IndexOf(id)];
-        //}
-        //public static int GetAppIDByMercato(string mercato)
-        //{
-        //    List<string> mercati = new List<string>(Workbook.AppSettings("Mercati").Split('|'));
-        //    List<string> appIDs = new List<string>(Workbook.AppSettings("AppIDMSD").Split('|'));
-
-        //    List<int> ids = new List<int>();
-
-        //    foreach (string id in appIDs)
-        //        ids.Add(int.Parse(id));
-
-        //    return ids[mercati.IndexOf(mercato)];
-        //}
-        //public static string GetMercatoPrec()
-        //{
-        //    return GetMercatoPrec(mercato);
-        //}
-        //public static string GetMercatoPrec(string mercato)
-        //{
-        //    List<string> mercati = new List<string>(Workbook.AppSettings("Mercati").Split('|'));
-        //    int index = mercati.IndexOf(mercato);
-        //    if(index > 0)
-        //        return mercati[index - 1];
-
-        //    return null;
-        //}
-
-        //public static string Stagione
-        //{
-        //    get { return GetStagione(); }
-        //    set
-        //    {
-        //        Workbook.Ids
-                
-        //        string idStagione = GetIdStagione(value);
-        //        Workbook.ChangeAppSettings("Stagione", idStagione);
-        //        DefinedNames definedNames = new DefinedNames("Previsione");
-        //        DateTime dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
-        //        Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Utility.Date.SuffissoDATA1, Utility.Date.GetSuffissoOra(1)).Extend(colOffset: Utility.Date.GetOreIntervallo(dataFine));
-        //        Workbook.Sheets["Previsione"].Range[rng.ToString()].Value = idStagione;
-        //    }
-        //}
-
-        //private static string GetIdStagione(string stagione) 
-        //{
-        //    List<string> stagioni = new List<string>(Workbook.AppSettings("Stagioni").Split('|'));
-        //    List<string> idStagioni = new List<string>(Workbook.AppSettings("IdStagioni").Split('|'));
-
-        //    return idStagioni[stagioni.IndexOf(stagione)];
-        //}
-        //public static string GetStagione(string id)
-        //{
-        //    List<string> stagioni = new List<string>(Workbook.AppSettings("Stagioni").Split('|'));
-        //    List<string> idStagioni = new List<string>(Workbook.AppSettings("IdStagioni").Split('|'));
-
-        //    return stagioni[idStagioni.IndexOf(id)];
-        //}
-        //private static string GetStagione()
-        //{
-        //    return GetStagione(Workbook.AppSettings("Stagione"));
-        //}
         
         public static int[] rgbSfondo = { 228, 144, 144 };
         public static int[] rgbLinee = { 176, 0, 0 };

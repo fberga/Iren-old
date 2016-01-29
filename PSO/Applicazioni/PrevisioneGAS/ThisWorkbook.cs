@@ -63,7 +63,7 @@ namespace Iren.PSO.Applicazioni
         #region Cached Attribute
 
         [CachedAttribute()]
-        public int idApplicazione = 8;
+        public int idApplicazione = 15;
         [CachedAttribute()]
         public int idUtente = -1;
         [CachedAttribute()]
