@@ -214,11 +214,11 @@ namespace Iren.PSO.Base
             if(numberFormat != null)
                 rng.NumberFormat = (string)numberFormat;
 
+            if (pattern != null)
+                rng.Interior.Pattern = (Excel.XlPattern)pattern;
+
             if(backColor != null)
                 rng.Interior.ColorIndex = (int)backColor;
-            
-            if(pattern != null)
-                rng.Interior.Pattern = (Excel.XlPattern)pattern;
 
             if(orientation != null)
                 rng.Orientation = (Excel.XlOrientation)orientation;

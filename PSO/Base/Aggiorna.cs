@@ -86,6 +86,7 @@ namespace Iren.PSO.Base
         /// </summary>
         protected void CaricaDatiDalDB()
         {
+            Workbook.Repository.CaricaParametri();
             CancellaTabelle();
             DataTable entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA];
             DateTime dataFine = Workbook.DataAttiva.AddDays(Math.Max(

@@ -932,24 +932,12 @@ namespace Iren.PSO.Base
             Excel.Range rngInfo = _ws.Range[Range.GetRange(row, col - _visSelezione, informazioni.Count, 2)];
             Excel.Range rngData = _ws.Range[Range.GetRange(row, col, informazioni.Count, colOffset)];
 
-            if (Struct.tipoVisualizzazione == "V" || Struct.tipoVisualizzazione == "R")
+            if (Struct.tipoVisualizzazione == "V")
             {
-                //TODO mettere qui un ciclo per informazioni altrimenti pialla i giorni con ore diverse da 24
+                DataView infoNoGiornaliere = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE]);
+                infoNoGiornaliere.RowFilter = informazioni.RowFilter + " AND SiglaTipologiaInformazione <> 'GIORNALIERA'";
 
-                int infoCount = 0;
-                if (Struct.tipoVisualizzazione == "V")
-                {
-                    DataView infoNoGiornaliere = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE]);
-                    infoNoGiornaliere.RowFilter = informazioni.RowFilter + " AND SiglaTipologiaInformazione <> 'GIORNALIERA'";
-                    infoCount = infoNoGiornaliere.Count;
-                }
-                else
-                {
-                    infoCount = _intervalloGiorniMax + 1;
-                }
-
-
-                Excel.Range rngDataNoGiornaliere = _ws.Range[Range.GetRange(row, col, infoCount, colOffset)];
+                Excel.Range rngDataNoGiornaliere = _ws.Range[Range.GetRange(row, col, infoNoGiornaliere.Count, colOffset)];
 
                 int oreGiorno = Date.GetOreGiorno(_dataInizio);
                 if(oreGiorno < 24)
@@ -963,9 +951,17 @@ namespace Iren.PSO.Base
             {
                 if (Struct.tipoVisualizzazione == "R")
                 {
-                    CicloGiorni(_dataInizio, _dataInizio.AddDays(_intervalloGiorniMax), (oreGiorno, suffissoData, giorno) =>
+                    CicloGiorni(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni), (oreGiorno, suffissoData, giorno) =>
                     {
                         FormattaInformazione(info, rngInfo.Rows[i], rngRow.Rows[i], rngData.Rows[i], giorno);
+                        
+                        //disabilito l'ora 24 e 25 dove necessario
+                        oreGiorno = Date.GetOreGiorno(giorno);
+                        if(oreGiorno < 24)
+                            rngData.Rows[i].Columns[rngData.Columns.Count - 1].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+                        if(oreGiorno < 25)
+                            rngData.Rows[i].Columns[rngData.Columns.Count].Interior.Pattern = Excel.XlPattern.xlPatternCrissCross;
+
                         i++;
                     });
                 }
@@ -1876,7 +1872,6 @@ namespace Iren.PSO.Base
                     _ws.Range[gotos.GetFromAddressGOTO(i)].Value = giorno;
 
                 }
-                //TODO
             }
             else if (Struct.tipoVisualizzazione == "R")
             {

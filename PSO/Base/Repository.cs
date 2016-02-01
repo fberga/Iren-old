@@ -107,11 +107,16 @@ namespace Iren.PSO.Base
             CaricaEntitaAssetto();
             CaricaEntitaProprieta();
             CaricaEntitaInformazioneFormattazione();
-            CaricaEntitaParametroD();
-            CaricaEntitaParametroH();
+            CaricaParametri();
             CaricaStagioni();
 
             //_wb.RepositoryDataSet.AcceptChanges();
+        }
+
+        public void CaricaParametri()
+        {
+            CaricaEntitaParametroD();
+            CaricaEntitaParametroH();
         }
         
         #region Aggiorna Struttura Dati

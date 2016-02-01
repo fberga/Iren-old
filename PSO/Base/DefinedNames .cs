@@ -812,7 +812,8 @@ namespace Iren.PSO.Base
             if (_sheet == "Main")
             {
                 int row = GetRowByName(GetName(parts[0]));
-                int col = GetColFromName(parts[1], parts[2]);
+                
+                int col = parts.Length == 3 ? GetColFromName(parts[1], parts[2]) : GetColFromName(parts[1]);
 
                 return new Range(row, col);
             }
