@@ -15,6 +15,9 @@ namespace Iren.PSO.Applicazioni
     /// </summary>
     class Riepilogo : Base.Riepilogo
     {
+        List<DataRowView> _listaEntita = new List<DataRowView>();
+
+
         public Riepilogo()
             : base()
         {
@@ -48,6 +51,23 @@ namespace Iren.PSO.Applicazioni
         {
             _ws.Shapes.Item("lbDataInizio").TextFrame.Characters().Text = Workbook.DataAttiva.ToString("ddd d MMM yyyy");
             _ws.Shapes.Item("lbDataFine").TextFrame.Characters().Text = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("ddd d MMM yyyy");
+
+            //Aggiorno date
+            Range rng = new Range(_definedNames.GetRowByName(Date.SuffissoDATA1), _definedNames.GetColFromName("GIORNI"), Struct.intervalloGiorni + 1);
+
+            DateTime giorno = Workbook.DataAttiva;
+            foreach (Range row in rng.Rows)
+            {
+                _ws.Range[row.ToString()].Value = giorno;
+                giorno = giorno.AddDays(1);
+            }
+
+            //foreach (DataRowView categoria in _categorie)
+            //{
+            //    _entita.RowFilter = "SiglaEntita <> 'UP_TUTTE' AND SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+            //    foreach (DataRowView entita in _entita)
+            //        AggiornaPrevisione(entita["SiglaEntita"]);
+            //}
         }
 
         public override void LoadStructure()
@@ -58,28 +78,17 @@ namespace Iren.PSO.Applicazioni
             InitLabels();
             base.Clear();
 
-            //if (Struct.visualizzaRiepilogo)
-            //{
-                _categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
-                _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
-                _entita.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
+            _categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
+            _entita.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
 
-                CreaNomiCelle();
-                //InitBarraTitolo();
-                //_rigaAttiva += 2;
-                FormattaRiepilogo();
-                //InitBarraEntita();
-                //AbilitaAzioni();
-                //CaricaDatiRiepilogo();
-
-                //Se sono in multiscreen lascio il riepilogo alla fine, altrimenti lo riporto all'inizio
-                if (Screen.AllScreens.Length == 1)
-                {
-                    _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
-                }
-                //Workbook.ScreenUpdating = false;
-            //}
-
+            CreaNomiCelle();
+            FormattaRiepilogo();
+            FormuleRiepilogo();
+            //Se sono in multiscreen lascio il riepilogo alla fine, altrimenti lo riporto all'inizio
+            if (Screen.AllScreens.Length == 1)
+            {
+                _ws.Application.ActiveWindow.SmallScroll(Type.Missing, Type.Missing, _struttura.colRecap - _struttura.colBlock - 1);
+            }
         }
 
         protected override void CreaNomiCelle()
@@ -97,15 +106,17 @@ namespace Iren.PSO.Applicazioni
             _definedNames.AddCol(_colonnaInizio++, "GIORNI");
             foreach (DataRowView categoria in _categorie)
             {
-                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                _entita.RowFilter = "SiglaEntita <> 'UP_TUTTE' AND SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
                 foreach (DataRowView entita in _entita)
+                {
                     _definedNames.AddCol(_colonnaInizio++, entita["SiglaEntita"]);
+                    _listaEntita.Add(entita);
+                }
             }
             _definedNames.AddCol(_colonnaInizio++, "TOTALE");
 
             _definedNames.DumpToDataSet();
         }
-
         protected void FormattaRiepilogo()
         {
             //Titolo in alto
@@ -116,7 +127,7 @@ namespace Iren.PSO.Applicazioni
 
             //barra delle date
             Range rngBarraDate = new Range(_definedNames.GetRowByName(Date.SuffissoDATA1), _definedNames.GetColFromName("GIORNI"), Struct.intervalloGiorni + 1);
-            Style.RangeStyle(_ws.Range[rngBarraDate.ToString()], style: "Lista entita riepilogo", numberFormat: "dd/MM/yyyy", borders: "[insideh:thin]", bold: false);
+            Style.RangeStyle(_ws.Range[rngBarraDate.ToString()], style: "Lista entita riepilogo", numberFormat: "dd/MM/yyyy", borders: "[insideh:thin]", bold: false, align: Excel.XlHAlign.xlHAlignCenter);
             _ws.Range[rngBarraDate.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
             //compilo i giorni
@@ -125,12 +136,20 @@ namespace Iren.PSO.Applicazioni
             {
                 _ws.Range[rngBarraDate.Rows[i++].ToString()].Value = giorno;
             });
-            _ws.Range[rngBarraDate.ToString()].EntireColumn.AutoFit();
 
-            //area dati disabilitata
-            Range rngDati = new Range(_definedNames.GetRowByName(Date.SuffissoDATA1), _definedNames.GetColFromName("GIORNI") + 1, Struct.intervalloGiorni + 1, _definedNames.GetColOffsetRiepilogo() - 1);
-            Style.RangeStyle(_ws.Range[rngDati.ToString()], style: "Area dati riepilogo", bold: false);                      //di default, le celle sono "disabilitate"
+            //area dati
+            Range rngDati = new Range(_definedNames.GetRowByName(Date.SuffissoDATA1), _definedNames.GetColFromName(_listaEntita[0]["SiglaEntita"]), Struct.intervalloGiorni + 1, _definedNames.GetColOffsetRiepilogo() - 1);
+            Style.RangeStyle(_ws.Range[rngDati.ToString()], style: "Area dati riepilogo", bold: false, pattern: Excel.XlPattern.xlPatternNone, align: Excel.XlHAlign.xlHAlignCenter);                      
             _ws.Range[rngDati.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+
+            bool first = true;
+            foreach (DataRowView entita in _listaEntita)
+            {
+                Range rngEntita = _definedNames.Get("ENTITA", entita["SiglaEntita"]).Extend(Struct.intervalloGiorni + 2);
+                Style.RangeStyle(_ws.Range[rngEntita.Rows[0].ToString()], style: "Barra titolo riepilogo", fontSize: 9, borders: "[right:thin" + (!first ? ",left:thin]" : "]"));
+                _ws.Range[rngEntita.Rows[0].ToString()].Value = entita["DesEntita"];
+                first = false;
+            }
 
             //colonna del totale
             Range rngTotale = _definedNames.Get("ENTITA", "TOTALE").Extend(Struct.intervalloGiorni + 2);
@@ -141,121 +160,90 @@ namespace Iren.PSO.Applicazioni
             _ws.Range[rngTotale.Rows[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
             _ws.Range[rngTotale.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
-            foreach (DataRowView categoria in _categorie)
-            {
-                _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
-                foreach (DataRowView entita in _entita)
-                {
-                    Range rngEntita = _definedNames.Get("ENTITA", entita["SiglaEntita"]).Extend(Struct.intervalloGiorni + 2);
-                    _ws.Range[rngEntita.ToString()].Interior.Pattern =  Excel.XlPattern.xlPatternNone;                      //riabilito celle
-                    Style.RangeStyle(_ws.Range[rngEntita.Rows[0].ToString()], style: "Barra titolo riepilogo", fontSize: 9);
-                    _ws.Range[rngEntita.Rows[0].ToString()].Value = entita["DesEntitaBreve"];
-                }
-            }
+            Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol(), _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo());
 
-            Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo());
-
-            _ws.Range[rngAll.ToString()].ColumnWidth = 15;
+            _ws.Range[rngAll.ToString()].ColumnWidth = 17;
         }
-
-        protected void FormattaAllDati()
+        protected void FormuleRiepilogo()
         {
-            Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo() - 1);
-            Range rngData = new Range(_definedNames.GetFirstRow() + 2, _definedNames.GetFirstCol(), _definedNames.GetRowOffset() - 2, _definedNames.GetColOffsetRiepilogo());
+            Range rngEntita1 = _definedNames.Get(Date.SuffissoDATA1, _listaEntita[0]["SiglaEntita"]);
+            Range rngEntita2 = _definedNames.Get(Date.SuffissoDATA1, _listaEntita.Last()["SiglaEntita"]);
 
-            _ws.Range[rngData.ToString()].Style = "Area dati riepilogo";
-            _ws.Range[rngData.Columns[0].ToString()].Style = "Lista entita riepilogo";
-            _ws.Range[rngData.Columns[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+            Range totale = _definedNames.Get(Date.SuffissoDATA1, "TOTALE");
+            totale.Extend(Struct.intervalloGiorni + 1);
 
-            Excel.Range xlrng = _ws.Range[rngAll.Rows[1, rngAll.Rows.Count - 1].ToString()];
-            //trovo tutte le aree unite e creo il blocco col bordo grosso
-            int i = 0;
-            int colspan = 0;
-            while (i < xlrng.Columns.Count)
+            _ws.Range[totale.ToString()].Formula = "=SUM(" + rngEntita1.ToString() + ":" + rngEntita2.ToString() + ")";
+        }
+
+        public void AggiornaPrevisione(object siglaEntita)
+        {
+            DateTime dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
+            int mainRow = _definedNames.GetRowByName(Date.SuffissoDATA1);
+            int mainCol = 0;
+
+            DataView entitaInformazione = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE]);
+            entitaInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+            string nomeFoglio = DefinedNames.GetSheetName(siglaEntita);
+            Excel.Worksheet ws = Workbook.WB.Sheets[nomeFoglio];
+            DefinedNames definedNames = new DefinedNames(nomeFoglio, DefinedNames.InitType.Naming);
+
+            //copio nel main il valore dei totali
+            foreach (DataRowView info in entitaInformazione)
             {
-                colspan = xlrng.Cells[1, i + 1].MergeArea().Columns.Count;
-                _ws.Range[rngAll.Columns[i, i + colspan - 1].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
-                _ws.Range[rngAll.Columns[i, i + colspan - 1].ToString()].Borders[Excel.XlBordersIndex.xlInsideVertical].Weight = Excel.XlBorderWeight.xlThin;
-                i += colspan;
-            }
+                int col = definedNames.GetFirstCol();
+                int row = definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.SuffissoDATA1);
 
+                Array rngTotali = ws.Range[Range.GetRange(row, col + 25, Struct.intervalloGiorni)].Value as Array;
 
-            _ws.Range[rngAll.ToString()].EntireColumn.AutoFit();
-            if (rngAll.ColOffset > 1)
-            {
-                //calcolo la massima dimensione delle colonne e la riapplico a tutto il riepilogo
-                double maxWidth = double.MinValue;
-                foreach (Range col in rngAll.Columns)
-                    maxWidth = Math.Max(_ws.Range[col.ToString()].ColumnWidth, maxWidth);
+                int i = 1;
+                for (DateTime giorno = Workbook.DataAttiva; giorno < dataFine; giorno = giorno.AddDays(1))
+                {
+                    Range[] rngGiornoGas = Sheet.GetRangeGiornoGas(giorno, info, definedNames);
 
-                foreach (Range col in rngAll.Columns)
-                    _ws.Range[col.ToString()].ColumnWidth = maxWidth;
+                    Array primoGiorno = ws.Range[rngGiornoGas[0].ToString()].Value as Array;
+                    Array secondoGiorno = ws.Range[rngGiornoGas[1].ToString()].Value as Array;
+
+                    if (!(primoGiorno.OfType<double>().Any() || secondoGiorno.OfType<double>().Any()))
+                        rngTotali.SetValue(null, i, 1);
+
+                    i++;
+                }
+
+                mainCol = _definedNames.GetColFromName(siglaEntita);
+                Excel.Range rngMain = Workbook.Main.Range[Range.GetRange(mainRow, mainCol, Struct.intervalloGiorni)];
+                rngMain.Value = rngTotali;
             }
         }
 
-        //protected void InitBarraTitolo()
-        //{
-        //    Range rngTitleBar = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, 2, _categorie.Count);
-        //    Range rngAll = new Range(_definedNames.GetFirstRow() + 1, _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset() - 1, _definedNames.GetColOffsetRiepilogo() - 1);
-        //    //Range rngData = rngTitleBar.Cells[0, 0];
-        //    //Range rngEntita = rngTitleBar.Cells[1, 0];
+        public void SalvaPrevisione()
+        {
+            DataTable dt = Workbook.Repository[DataBase.TAB.MODIFICA];
 
-        //    Style.RangeStyle(_ws.Range[rngTitleBar.Rows[0].ToString()], style: "Barra titolo riepilogo", merge: true);
-        //    _ws.Range[rngTitleBar.Rows[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            //DataView entitaInformazione = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita <> 'UP_TUTTE'";
+            
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                int col = _definedNames.GetColFromName(entita["SiglaEntita"]);
+                CicloGiorni((oreGiorno, suffissoData, giorno) =>
+                {
+                    object value = _ws.Range[Range.GetRange(_definedNames.GetRowByName(suffissoData), col)].Value;
+                    DataRow newRow = dt.NewRow();
 
-        //    foreach (DataRowView categoria in _categorie)
-        //    {
-        //        _entita.RowFilter = "SiglaCategoria = '" + categoria["SiglaCategoria"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
-        //        foreach (DataRowView entita in _entita)
-        //        {
-                    
-                    
-                    
-        //            //entita["DesEntita"]
-        //        }
-        //            //_definedNames.AddCol(_colonnaInizio++, entita["SiglaEntita"]);
-        //    }
-            
-            
-            
-            
-        //    string azionePadre = "";
-            
-            
-            
-        //    //CicloGiorni((oreGiorno, suffissoData, giorno) =>
-        //    //{
-        //    //    rngTitleBar.StartColumn = rngAzioni.StartColumn;
-        //    //    _ws.Range[rngTitleBar.ToString()].Style = "Barra titolo riepilogo";
-        //    //    _ws.Range[rngTitleBar.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
+                    newRow["SiglaEntita"] = entita["SiglaEntita"];
+                    newRow["SiglaInformazione"] = "TOTALE_GIORNALIERO";
+                    newRow["Data"] = giorno.ToString("yyyyMMdd");
+                    newRow["Valore"] = value ?? "";
+                    newRow["AnnotaModifica"] = "0";
+                    newRow["IdApplicazione"] = Workbook.IdApplicazione;
+                    newRow["IdUtente"] = Workbook.IdUtente;
 
-        //    //    foreach (DataRowView azione in _azioni)
-        //    //    {
-        //    //        if (!azione["Gerarchia"].Equals(azionePadre))
-        //    //        {
-        //    //            rngEntita.ColOffset = rngAzioni.StartColumn - rngEntita.StartColumn;
-        //    //            Style.RangeStyle(_ws.Range[rngEntita.ToString()], merge: true, fontSize: 9);
-        //    //            _ws.Range[rngEntita.ToString()].Value = azionePadre;
-        //    //            azionePadre = azione["Gerarchia"].ToString();
-        //    //            rngEntita.StartColumn = rngAzioni.StartColumn;
-        //    //        }
-        //    //        _ws.Range[rngAzioni.ToString()].Value = azione["DesAzioneBreve"];
-        //    //        Style.RangeStyle(_ws.Range[rngAzioni.ToString()], fontSize: 7);
-        //    //        rngAzioni.StartColumn++;
-        //    //    }
-        //    //    rngEntita.ColOffset = rngAzioni.StartColumn - rngEntita.StartColumn;
-        //    //    Style.RangeStyle(_ws.Range[rngEntita.ToString()], merge: true, fontSize: 9);
-        //    //    _ws.Range[rngEntita.ToString()].Value = azionePadre;
-        //    //    azionePadre = "";
-        //    //    rngEntita.StartColumn = rngAzioni.StartColumn;
+                    dt.Rows.Add(newRow);
+                });
+            }
 
-        //    //    rngData.ColOffset = rngAzioni.StartColumn - rngData.StartColumn;
-        //    //    Style.RangeStyle(_ws.Range[rngData.ToString()], merge: true, fontSize: 10, numberFormat: "ddd d mmm yyyy");
-        //    //    _ws.Range[rngData.ToString()].Value = giorno;
-        //    //    rngData.StartColumn = rngAzioni.StartColumn;
-        //    //});
-
-        //    UpdateDayColor();
-        //}
+            DataBase.SalvaModificheDB();
+        }
     }
 }

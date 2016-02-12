@@ -59,6 +59,11 @@ namespace Iren.PSO.Base
                 {
                     _emergenzaForzata = value;
 
+                    bool autoCalc = Workbook.Application.Calculation == Microsoft.Office.Interop.Excel.XlCalculation.xlCalculationAutomatic;
+
+                    if (autoCalc)
+                        Workbook.Application.Calculation = Microsoft.Office.Interop.Excel.XlCalculation.xlCalculationManual;
+
                     bool screenUpdating = Workbook.ScreenUpdating;
                     if (screenUpdating)
                         Workbook.ScreenUpdating = false;
@@ -81,6 +86,9 @@ namespace Iren.PSO.Base
 
                     if (isProtected)
                         Workbook.Main.Protect(Workbook.Password);
+
+                    if(autoCalc)
+                        Workbook.Application.Calculation = Microsoft.Office.Interop.Excel.XlCalculation.xlCalculationAutomatic;
 
                     if (screenUpdating)
                         Workbook.ScreenUpdating = true;

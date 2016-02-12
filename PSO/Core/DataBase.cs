@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -176,6 +177,11 @@ namespace Iren.PSO.Core
             }
             catch (TimeoutException) 
             {
+                return false;
+            }
+            catch (SqlException e)
+            {
+                System.Windows.Forms.MessageBox.Show(e.Message);
                 return false;
             }
         }
@@ -369,8 +375,14 @@ namespace Iren.PSO.Core
             try
             {
                 DataTable dt = new DataTable();
-                using (SqlDataReader dr = cmd.SqlCmd(storedProcedure, parameters, timeout).ExecuteReader())
+
+                SqlCommand cccc = cmd.SqlCmd(storedProcedure, parameters, timeout);
+                Stopwatch watch = Stopwatch.StartNew();
+                using (SqlDataReader dr = cccc.ExecuteReader())
                 {
+                    watch.Stop();
+                    Debug.WriteLine(watch.ElapsedMilliseconds);
+
                     dt.Load(dr);
                 }
                 return dt;

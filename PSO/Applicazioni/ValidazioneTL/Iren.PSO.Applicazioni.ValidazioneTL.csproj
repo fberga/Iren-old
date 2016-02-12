@@ -21,7 +21,7 @@
     <PublishUrl>\\pc1009235\Applicazioni\PSO\ValidazioneTL\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\ValidazioneTL\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.22</ApplicationVersion>
+    <ApplicationVersion>1.0.0.25</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

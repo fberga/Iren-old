@@ -531,7 +531,7 @@ namespace Iren.PSO.Base
         /// <returns>L'indirizzo della colonna suffissoData.suffissoOra.</returns>
         public int GetColFromDate(string suffissoData, string suffissoOra = "H1")
         {
-            if (Struct.tipoVisualizzazione == "V")
+            if (Struct.tipoVisualizzazione == "V" || Struct.tipoVisualizzazione == "R")
                 suffissoData = Date.SuffissoDATA1;
 
             string name = GetName(suffissoData, suffissoOra);

@@ -684,7 +684,6 @@ namespace Iren.PSO.Applicazioni
             }
             else
             {
-                RefreshChecks();
                 //salva modifiche sul db
                 Sheet.SalvaModifiche();
                 DataBase.SalvaModificheDB();
@@ -694,6 +693,8 @@ namespace Iren.PSO.Applicazioni
                 Workbook.RemoveStdStoreEdit();
                 //Rimuovo handler per azioni custom nel caso servisse
                 Workbook.WB.SheetChange -= _modificaCustom.Range;
+                
+                RefreshChecks();
 
                 //aggiorno i label dello stato nel caso sia necessario!
                 Workbook.AggiornaLabelStatoDB();
@@ -930,7 +931,6 @@ namespace Iren.PSO.Applicazioni
             Workbook.ScreenUpdating = false;
 
             bool autoCalc = Workbook.Application.Calculation == Excel.XlCalculation.xlCalculationAutomatic;
-            
             if(autoCalc)
                 Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             try
@@ -1126,6 +1126,9 @@ namespace Iren.PSO.Applicazioni
                     if (dt != null && dt.Rows.Count > 0)
                         newDate = DateTime.ParseExact(dt.Rows[0][0].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
                     break;
+                case 15:
+                    newDate = DateTime.Today;
+                    break;
                 default:
                     done = false;
                     break;
@@ -1239,9 +1242,8 @@ namespace Iren.PSO.Applicazioni
                     Globals.ThisWorkbook.ThisApplication.DisplayDocumentActionTaskPane = false;
                     Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
                     Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
-
-                    RefreshChecks();
                 }
+                RefreshChecks();
 
                 try
                 {

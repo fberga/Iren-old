@@ -23,6 +23,8 @@ namespace Iren.PSO.Applicazioni
                 Sheet s = new Sheet(ws);
                 s.LoadStructure();
             }
+
+            //AggiornaPrevisioneRiepilogo();
         }
         protected override void StrutturaRiepilogo()
         {
@@ -37,11 +39,24 @@ namespace Iren.PSO.Applicazioni
                 Sheet s = new Sheet(ws);
                 s.UpdateData();
             }
+
+            //AggiornaPrevisioneRiepilogo();
         }
         protected override void DatiRiepilogo()
         {
             Riepilogo main = new Riepilogo();
             main.UpdateData();
+        }
+
+        public void AggiornaPrevisioneRiepilogo()
+        {
+            Riepilogo r = new Riepilogo();
+            DataView categoriaEntita = new DataView(Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA]);
+            categoriaEntita.RowFilter = "SiglaEntita <> 'UP_TUTTE'";
+            foreach (DataRowView entita in categoriaEntita)
+            {
+                r.AggiornaPrevisione(entita["SiglaEntita"]);
+            }
         }
     }
 

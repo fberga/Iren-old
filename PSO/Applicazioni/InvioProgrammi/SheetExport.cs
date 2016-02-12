@@ -400,6 +400,10 @@ namespace Iren.PSO.Applicazioni
             }
         }
 
+        protected override void InsertGrafici()
+        {
+        }
+
         #endregion
     }
 }

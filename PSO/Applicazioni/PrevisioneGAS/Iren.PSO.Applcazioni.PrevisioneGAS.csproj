@@ -17,13 +17,13 @@
     <SolutionID>6eb3e4a7-2765-4d43-aceb-5d48a1fd8000</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>publish\</PublishUrl>
-    <InstallUrl />
+    <PublishUrl>\\pc1009235\Applicazioni\PSO\PrevisioneGAS\</PublishUrl>
+    <InstallUrl>\\pc1009235\Applicazioni\PSO\PrevisioneGAS\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.1</ApplicationVersion>
+    <ApplicationVersion>1.0.0.10</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
-    <UpdateInterval>7</UpdateInterval>
+    <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
     <ProductName>PrevisioneGAS</ProductName>
     <PublisherName />
@@ -82,6 +82,9 @@
     This section specifies references for the project.
   -->
   <ItemGroup>
+    <Reference Include="Microsoft.Office.Interop.Outlook, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Tools.Applications.ServerDocument, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -148,6 +151,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggiorna.cs" />
+    <Compile Include="Carica.cs" />
+    <Compile Include="Check.cs" />
+    <Compile Include="Esporta.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -162,7 +168,6 @@
     <Content Include="Data\PrevisioneGAS.xlsm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Iren.PSO.Applcazioni.PrevisioneGAS_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -246,10 +251,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>Iren.PSO.Applcazioni.PrevisioneGAS_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>CertificatoTemporaneo.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>CA183EA7B2988395BC141CF0D020B630505F2188</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />

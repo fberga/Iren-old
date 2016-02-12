@@ -15,6 +15,8 @@
     <DefineConstants>VSTO40</DefineConstants>
     <OfficeApplication>Excel</OfficeApplication>
     <ProjectGuid>{A9CC9D99-2F0A-420F-A9CF-61A4F4AC007C}</ProjectGuid>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
+    <SolutionID>34cc4dd3-b1b4-486f-908c-bc42f79b775b</SolutionID>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <PublishUrl>\\pc1009235\Applicazioni\PSO\ValidazioneGAS\</PublishUrl>
     <InstallUrl>\\pc1009235\Applicazioni\PSO\ValidazioneGAS\</InstallUrl>
@@ -24,13 +26,11 @@
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <IsWebBootstrapper>False</IsWebBootstrapper>
     <ProductName>ValidazioneGAS</ProductName>
     <PublisherName />
     <SupportUrl />
     <FriendlyName>ValidazioneGAS</FriendlyName>
     <OfficeApplicationDescription />
-    <SolutionID>34cc4dd3-b1b4-486f-908c-bc42f79b775b</SolutionID>
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -244,10 +244,10 @@
     <VisualStudio>
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="ValidazioneGAS.xlsm" HostPackage="{825100CF-0BA7-47EA-A084-DCF3308DAF74}" OfficeVersion="14.0" VstxVersion="4.0" ApplicationType="XLS" Language="CS" TemplatesPath="VSTOTemplates" DebugInfoExeName="C:\Program Files (x86)\Microsoft Office\Office14\Excel.exe" DebugInfoCommandLine="&quot;[$OUTPUT]ValidazioneGAS.xlsm&quot;" />
-        <Host Name="Excel Document" Path=".\ValidazioneGAS.xlsm" GeneratedCodeNamespace="ValidazioneGAS">
-          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" />
-          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" />
-          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" />
+        <Host Name="Excel Document" Path=".\ValidazioneGAS.xlsm" GeneratedCodeNamespace="ValidazioneGAS" PublishedHash="3F708BE6DA9FA08EB16C3E99DE4EA96F9A77A02E">
+          <HostItem Name="Foglio1" Code="Log.cs" CanonicalName="Foglio1" DisplayName="Log" Blueprint="Log.Designer.xml" GeneratedCode="Log.Designer.cs" PublishedHash="196B179EEF7C5C12BBF470E6EFD723FB21DB5855" />
+          <HostItem Name="Foglio2" Code="Main.cs" CanonicalName="Foglio2" DisplayName="Main" Blueprint="Main.Designer.xml" GeneratedCode="Main.Designer.cs" PublishedHash="2DFF8F6D9609E6812248DE52A6BF07966B5EDE5D" />
+          <HostItem Name="ThisWorkbook" Code="ThisWorkbook.cs" CanonicalName="ThisWorkbook" Blueprint="ThisWorkbook.Designer.xml" GeneratedCode="ThisWorkbook.Designer.cs" PublishedHash="37A7A32BFEBE658D7C59098EB50749C81FBC1A3D" />
         </Host>
       </FlavorProperties>
     </VisualStudio>

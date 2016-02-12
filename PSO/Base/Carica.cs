@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -47,7 +48,6 @@ namespace Iren.PSO.Base
             try
             {
                 AzzeraInformazione(siglaEntita, siglaAzione, definedNames, giorno);
-
                 if (DataBase.OpenConnection())
                 {
                     if (azionePadre.Equals("GENERA"))
@@ -60,6 +60,7 @@ namespace Iren.PSO.Base
                         DataTable azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd"));
                         if (azioneInformazione != null)
                         {
+
                             if (azioneInformazione.Rows.Count == 0)
                             {
                                 DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);

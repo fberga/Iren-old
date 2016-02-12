@@ -25,7 +25,6 @@ namespace Iren.PSO.Forms
         private ACarica _carica;
         private List<DateTime> _toProcessDates = new List<DateTime>();
         private FormSelezioneDate selDate = new FormSelezioneDate();
-        private bool _giorniVisible = true;
 
         #endregion
 
@@ -54,7 +53,7 @@ namespace Iren.PSO.Forms
 
             ConfigStructure();
 
-            if (Struct.intervalloGiorni == 0 || !_giorniVisible)
+            if (Struct.intervalloGiorni == 0 || Struct.tipoVisualizzazione == "R")
             {
                 comboGiorni.Text = Workbook.DataAttiva.ToString("dddd dd MMM yyyy");
                 _toProcessDates.Add(Workbook.DataAttiva);
@@ -410,6 +409,7 @@ namespace Iren.PSO.Forms
                                             switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                                             {
                                                 case "CARICA":
+
                                                     presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
                                                     _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                     caricaOrGenera = true;

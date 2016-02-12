@@ -102,7 +102,7 @@ namespace Iren.PSO.Forms
                         {"Inizio Validità", typeof(DateTime)},
                         {"Fine Validità", typeof(DateTime)},
                         {"Ora", typeof(int)},
-                        {"Valore", typeof(decimal)}
+                        {"Valore", typeof(double)}
                     }
                 };
 
@@ -239,7 +239,7 @@ namespace Iren.PSO.Forms
                     {
                         {"Inizio Validità", typeof(DateTime)},
                         {"Fine Validità", typeof(DateTime)},
-                        {"Valore", typeof(decimal)}
+                        {"Valore", typeof(double)}
                     }
                 };
 
@@ -352,15 +352,15 @@ namespace Iren.PSO.Forms
                         }
                         break;
                     case 2:
-                        decimal number;
+                        double number;
                         if (value == "")
                         {
                             MessageBox.Show("Non è possibile lasciare il campo Valore vuoto!", Simboli.NomeApplicazione + " - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                             e.Cancel = true;
                         } 
-                        else if (decimal.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out number) ||
-                            decimal.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InstalledUICulture, out number))
+                        else if (double.TryParse(value, out number) ||
+                            double.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InstalledUICulture, out number))
                         {
                             dataGridParametriD.EditingControl.Text = number.ToString(CultureInfo.InstalledUICulture);
                         }
@@ -453,7 +453,7 @@ namespace Iren.PSO.Forms
                 DateTime precIV = (DateTime)dataGridParametriD["Inizio Validità", e.RowIndex - 1].Value;
                 DateTime newIV = (DateTime)dataGridParametriD["Inizio Validità", e.RowIndex].Value;
                 DateTime newFV = dataGridParametriD["Fine Validità", e.RowIndex].Value is DBNull ? DateTime.MaxValue : (DateTime)dataGridParametriD["Fine Validità", e.RowIndex].Value;
-                decimal value = (decimal)dataGridParametriD["Valore", e.RowIndex].Value;
+                double value = (double)dataGridParametriD["Valore", e.RowIndex].Value;
 
                 //insert or update
                 if (_isUpdate)

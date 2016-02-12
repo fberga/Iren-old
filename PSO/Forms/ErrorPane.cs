@@ -37,7 +37,13 @@ namespace Iren.PSO.Forms
 
         public void RefreshCheck(Check checkFunctions)
         {
-            if (Struct.tipoVisualizzazione == "O")
+            if (Struct.tipoVisualizzazione == "R")
+            {
+                //sfrutto questo spazio per fare l'aggiornamento dei dati di previsione nel caso di Previsione GAS
+                //TODO vedere se si può fare meglio...
+                checkFunctions.ExecuteCheck(null, null, null);
+            }
+            else if (Struct.tipoVisualizzazione == "O")
             {
                 SplashScreen.UpdateStatus("Aggiorno Check");
                 DefinedNames gotos = new DefinedNames("Main", DefinedNames.InitType.GOTOs);
@@ -89,6 +95,10 @@ namespace Iren.PSO.Forms
                             }
                             else
                             {
+                                if (treeViewErrori.Nodes.ContainsKey(check.SiglaEntita))
+                                {
+                                    treeViewErrori.Nodes.RemoveByKey(check.SiglaEntita);
+                                }
                                 //Reset della barra del titolo verticale
                                 Range titoloVert = new Range(check.Range);
                                 //riduco il range ad una sola cella alla colonna B

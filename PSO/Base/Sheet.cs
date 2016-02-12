@@ -73,7 +73,11 @@ namespace Iren.PSO.Base
         /// </summary>
         public abstract void AggiornaDateTitoli();
         /// <summary>
-        /// Metodi di aggiornamento dei grafici.
+        /// Metodo di inserimento dei grafici
+        /// </summary>
+        protected abstract void InsertGrafici();
+        /// <summary>
+        /// Metodo di aggiornamento dei grafici.
         /// </summary>
         public abstract void AggiornaGrafici();
         /// <summary>
@@ -599,6 +603,9 @@ namespace Iren.PSO.Base
                 graficiInfo.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + Workbook.IdApplicazione;
             }
 
+            if (informazioni.Count == 0)
+                return;
+
             _intervalloOre = Date.GetOreIntervallo(_dataInizio, _dataFine) + (_struttura.visData0H24 ? 1 : 0);// +(_struttura.visParametro ? 1 : 0);
 
             string funzione = "";
@@ -668,9 +675,9 @@ namespace Iren.PSO.Base
             int i = 1;
             foreach (DataRowView grafico in grafici)
             {
-                _definedNames.AddName(_rigaAttiva, grafico["SiglaEntita"], "GRAFICO" + i, Struct.tipoVisualizzazione == "V" ? Date.GetSuffissoData(_dataInizio) : "");
-                i++;
-                _rigaAttiva++;
+                _definedNames.AddName(_rigaAttiva++, grafico["SiglaEntita"], "GRAFICO" + i++, Struct.tipoVisualizzazione == "V" ? Date.GetSuffissoData(_dataInizio) : "");
+                //i++;
+                //_rigaAttiva++;
             }
 
             //aggiungo informazioni
@@ -1288,7 +1295,7 @@ namespace Iren.PSO.Base
         /// <summary>
         /// Inserisce i grafici creando anche le serie.
         /// </summary>
-        protected virtual void InsertGrafici()
+        protected override void InsertGrafici()
         {
             DataView grafici = Workbook.Repository[DataBase.TAB.ENTITA_GRAFICO].DefaultView;
             DataView graficiInfo = Workbook.Repository[DataBase.TAB.ENTITA_GRAFICO_INFORMAZIONE].DefaultView;
@@ -1299,7 +1306,7 @@ namespace Iren.PSO.Base
             foreach (DataRowView grafico in grafici)
             {
                 SplashScreen.UpdateStatus("Genero grafici");
-                string name = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++, Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(_dataInizio));
+                string name = DefinedNames.GetName(grafico["SiglaEntita"], "GRAFICO" + i++, Struct.tipoVisualizzazione == "V" ? Date.GetSuffissoData(_dataInizio) : "");
 
                 Range rngGrafico = new Range(_definedNames.GetRowByName(name), col, 1, colOffset);
                 Excel.Range xlRngGrafico = _ws.Range[rngGrafico.ToString()];
@@ -1338,18 +1345,37 @@ namespace Iren.PSO.Base
                 bool hasSecondaryAxes = false;
                 foreach (DataRowView info in graficiInfo)
                 {
-                    Range rngDati = new Range(_definedNames.GetRowByNameSuffissoData(grafico["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), col, 1, colOffset);
-                    Excel.Series serie = chart.SeriesCollection().NewSeries();
-                    serie.Name = info["DesInformazione"].ToString();
-                    serie.Values = _ws.Range[rngDati.ToString()];
-                    serie.ChartType = (Excel.XlChartType)info["ChartType"];
-                    serie.Interior.ColorIndex = info["InteriorColor"];
-                    serie.Border.ColorIndex = info["BorderColor"];
-                    serie.Border.Weight = info["BorderWeight"];
-                    serie.Border.LineStyle = info["BorderLineStyle"];
-                    serie.AxisGroup = (Excel.XlAxisGroup)info["AxisGroup"];
-                    if ((Excel.XlAxisGroup)info["AxisGroup"] == Excel.XlAxisGroup.xlSecondary)
-                        hasSecondaryAxes = true;
+                    if (Struct.tipoVisualizzazione == "R")
+                    {
+                        CicloGiorni(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni), (oreGiorno, suffissoData, giorno) =>
+                        {
+                            Range rngDati = new Range(_definedNames.GetRowByNameSuffissoData(grafico["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(giorno)), col, 1, Date.GetOreGiorno(giorno));
+                            Excel.Series serie = chart.SeriesCollection().NewSeries();
+                            serie.Name = giorno.ToString("dd/MM/yyyy");
+                            serie.Values = _ws.Range[rngDati.ToString()];
+                            serie.ChartType = (Excel.XlChartType)info["ChartType"];
+                            //serie.Interior.ColorIndex = info["InteriorColor"];
+                            //serie.Border.ColorIndex = info["BorderColor"];
+                            //serie.Border.Weight = info["BorderWeight"];
+                            //serie.Border.LineStyle = info["BorderLineStyle"];
+                            //serie.AxisGroup = (Excel.XlAxisGroup)info["AxisGroup"];
+                        });
+                    }
+                    else
+                    {
+                        Range rngDati = new Range(_definedNames.GetRowByNameSuffissoData(grafico["SiglaEntita"], info["SiglaInformazione"], Date.GetSuffissoData(_dataInizio)), col, 1, colOffset);
+                        Excel.Series serie = chart.SeriesCollection().NewSeries();
+                        serie.Name = info["DesInformazione"].ToString();
+                        serie.Values = _ws.Range[rngDati.ToString()];
+                        serie.ChartType = (Excel.XlChartType)info["ChartType"];
+                        serie.Interior.ColorIndex = info["InteriorColor"];
+                        serie.Border.ColorIndex = info["BorderColor"];
+                        serie.Border.Weight = info["BorderWeight"];
+                        serie.Border.LineStyle = info["BorderLineStyle"];
+                        serie.AxisGroup = (Excel.XlAxisGroup)info["AxisGroup"];
+                        if ((Excel.XlAxisGroup)info["AxisGroup"] == Excel.XlAxisGroup.xlSecondary)
+                            hasSecondaryAxes = true;
+                    }
                 }
 
 
@@ -1411,9 +1437,13 @@ namespace Iren.PSO.Base
             double minValueSAxes = double.MaxValue;
             double maxValueSAxes = double.MinValue;
 
+            //int valuesCount = 24;
+
             foreach (Excel.Series s in chart.SeriesCollection())
             {
                 Array val = s.Values as Array;
+
+                //valuesCount = Math.Max(valuesCount, val.OfType<double>().Count());
 
                 if (val.OfType<double>().Any())
                 {
@@ -1486,6 +1516,16 @@ namespace Iren.PSO.Base
                     chart.ChartArea.Width = chart.ChartArea.Width + Math.Ceiling(sizeMax) + 7;    //aumento la larghezza del grafico
 
                 } catch {}
+
+                //se visualizzazione R blocco il grafico alla 24
+                if (Struct.tipoVisualizzazione == "R")
+                {
+                    bool start = TimeZone.CurrentTimeZone.IsDaylightSavingTime(Workbook.DataAttiva);
+                    bool end = TimeZone.CurrentTimeZone.IsDaylightSavingTime(Workbook.DataAttiva.AddDays(Struct.intervalloGiorni));
+                    
+                    if(!start || end)
+                        chart.ChartArea.Width -= _ws.Range[Range.GetRange(1, _definedNames.GetColFromDate(Date.SuffissoDATA1, Date.GetSuffissoOra(25)))].Width;
+                }
             }            
         }
 
@@ -1523,7 +1563,7 @@ namespace Iren.PSO.Base
                         }
                     }
                     else
-                    {
+                    {                        
                         CaricaInformazioniEntita(datiApplicazioneH);
                         CaricaCommentiEntita(insertManuali);
                     }
@@ -1559,7 +1599,7 @@ namespace Iren.PSO.Base
             {
                 DateTime giorno = DateTime.ParseExact(dato["Data"].ToString(), "yyyyMMdd", CultureInfo.InvariantCulture);
                 
-                if (giorno <= _dataFineUP[dato["SiglaEntita"]])
+                if (_dataFineUP.ContainsKey(dato["SiglaEntita"]) && giorno <= _dataFineUP[dato["SiglaEntita"]])
                 {
                     //sono nel caso DATA0H24
                     if (giorno < Workbook.DataAttiva)
