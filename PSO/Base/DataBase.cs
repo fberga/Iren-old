@@ -322,7 +322,7 @@ namespace Iren.PSO.Base
                             return;
 
                         //salvo le modifiche appena effettuate
-                        fileName = Path.Combine(cartellaRemota, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                        fileName = Path.Combine(cartellaRemota, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + (Workbook.Ambiente != Simboli.PROD ? "_" + Workbook.Ambiente : "") + ".xml");
                         dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
 
                         //se la query indica che il processo è andato a buon fine, sposto in archivio
@@ -339,7 +339,7 @@ namespace Iren.PSO.Base
                             if (!Directory.Exists(cartellaEmergenza))
                                 Directory.CreateDirectory(cartellaEmergenza);
 
-                            fileName = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+                            fileName = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + (Workbook.Ambiente != Simboli.PROD ? "_" + Workbook.Ambiente : "") + ".xml");
                             dt.WriteXml(fileName);//, XmlWriteMode.WriteSchema);
 
                             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "Errore nel salvataggio delle modifiche. '" + fileName + "' si trova in " + Environment.MachineName);

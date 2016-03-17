@@ -367,7 +367,7 @@ namespace Iren.PSO.Base
                     maxWidth = Math.Max(_ws.Range[col.ToString()].ColumnWidth, maxWidth);
 
                 foreach (Range col in rngAll.Columns)
-                    _ws.Range[col.ToString()].ColumnWidth = maxWidth;
+                    _ws.Range[col.ToString()].ColumnWidth = maxWidth + 1;
             }
         }
         /// <summary>
@@ -529,6 +529,20 @@ namespace Iren.PSO.Base
                     _ws.Range[cell.ToString()].Value = giorno;
                 });
                 _azioni.RowFilter = "Visibile = 1 AND Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
+
+                //ridimensiono le celle per adattarle ad eventuali modifiche nei contenuti
+                //Range rngAll = new Range(_definedNames.GetFirstRow(), _definedNames.GetFirstCol() + 1, _definedNames.GetRowOffset(), _definedNames.GetColOffsetRiepilogo() - 1);
+                //_ws.Range[rngAll.ToString()].EntireColumn.AutoFit();
+                //if (rngAll.ColOffset > 1)
+                //{
+                //    //calcolo la massima dimensione delle colonne e la riapplico a tutto il riepilogo
+                //    double maxWidth = double.MinValue;
+                //    foreach (Range col in rngAll.Columns)
+                //        maxWidth = Math.Max(_ws.Range[col.ToString()].ColumnWidth, maxWidth);
+
+                //    foreach (Range col in rngAll.Columns)
+                //        _ws.Range[col.ToString()].ColumnWidth = maxWidth;
+                //}
 
                 UpdateDayColor();
             }

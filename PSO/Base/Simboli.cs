@@ -13,7 +13,7 @@ namespace Iren.PSO.Base
         public static string LocalBasePath 
         { get { return @"%APPDATA%\PSO\"; } }
         public static string RemoteBasePath
-        { get { return @"\\pc1009235\Applicazioni\PSO"; } }
+        { get { return @"\\srvpso\Applicazioni\PSO"; } }
 
         private readonly static Dictionary<int, string> _fileApplicazione = new Dictionary<int, string>()
         {

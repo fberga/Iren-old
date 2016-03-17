@@ -77,8 +77,8 @@ namespace Iren.PSO.Applicazioni
             int gasDayStart = TimeZone.CurrentTimeZone.IsDaylightSavingTime(giorno) ? 7 : 6;
             int remainingHours = 24 - Date.GetOreGiorno(giorno) + gasDayStart;
 
-            Range rng1 = new Range(row, definedNames.GetColData1H1() + gasDayStart - 1, 1, Date.GetOreGiorno(giorno) - gasDayStart + 1);
-            Range rng2 = new Range(row + 1, definedNames.GetColData1H1(), 1, remainingHours - 1);
+            Range rng1 = new Range(row, definedNames.GetColData1H1() + gasDayStart, 1, Date.GetOreGiorno(giorno) - gasDayStart);
+            Range rng2 = new Range(row + 1, definedNames.GetColData1H1(), 1, remainingHours);
 
             return new Range[] { rng1, rng2 };
         }
@@ -168,7 +168,7 @@ namespace Iren.PSO.Applicazioni
             Excel.ChartObjects charts = _ws.ChartObjects();
             foreach (Excel.ChartObject chart in charts)
             {
-                chart.Chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "[>=1000]#,##0.0,\"K\";0";
+                chart.Chart.Axes(Excel.XlAxisType.xlValue).TickLabels.NumberFormat = "[>=1000]#,##0.0,\"K\";0.0";
             }
         }
 
@@ -221,12 +221,12 @@ namespace Iren.PSO.Applicazioni
                 }
             }
 
-            if (!allNullPAxes)
-            {
-                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
-            }
-            
+            //if (!allNullPAxes)
+            //{
+            //    chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
+            //    chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
+            //}
+
             //resize dell'area del grafico per adattarla alle ore
             using (Graphics grfx = Graphics.FromImage(new Bitmap(1, 1)))
             {
@@ -239,9 +239,14 @@ namespace Iren.PSO.Applicazioni
                 //controllo anche il fondo scala: se cambia l'ordine di grandezza excel lascia lo spazio nel label come se ci fosse!!
                 while (val <= chart.Axes(Excel.XlAxisType.xlValue).MaximumScale)
                 {
-                    double tmpval = (val >= 1000 ? val / 1000.0 : val);
+                    string tmpval = "" 
+                        + (val >= 1000 ? Math.Round(val / 1000.0, 1) : val) 
+                        + ((val / 1000.0) % 1 == 0 ? ",0" : "") 
+                        + (val >= 1000 ? "K" : "");
 
-                    tmpSize = grfx.MeasureString(val.ToString(), new Font(chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name, (float)chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size));
+                    tmpval = tmpval.Replace(".", ",");
+
+                    tmpSize = grfx.MeasureString(tmpval, new Font(chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Name, (float)chart.Axes(Excel.XlAxisType.xlValue).TickLabels.Font.Size));
                     sizeMax = Math.Max(sizeMax, tmpSize.Width);
 
                     val += chart.Axes(Excel.XlAxisType.xlValue).MajorUnit;

@@ -24,10 +24,10 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <VSTO_TrustAssembliesLocation>true</VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\PC1009235\Applicazioni\RiMoST\MiddleOffice\</PublishUrl>
-    <InstallUrl>\\PC1009235\Applicazioni\RiMoST\MiddleOffice\</InstallUrl>
+    <PublishUrl>\\srvpso\Applicazioni\RiMoST\Portafoglio\</PublishUrl>
+    <InstallUrl>\\srvpso\Applicazioni\RiMoST\Portafoglio\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.1.0.6</ApplicationVersion>
+    <ApplicationVersion>1.1.0.7</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -154,8 +154,9 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="ToolsExcelCore">
-      <HintPath>\\pc1009235\Applicazioni\ToolsExcelCore\ToolsExcelCore.dll</HintPath>
+    <Reference Include="ToolsExcelCore, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Y:\PSOCore\ToolsExcelCore.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

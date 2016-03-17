@@ -866,7 +866,7 @@ namespace Iren.PSO.Base
             Excel.Range titoloVert = _ws.Range[rngTitolo.ToString()];
             int infoCount = Struct.tipoVisualizzazione == "R" ? _intervalloGiorniMax + 1 : informazioni.Count;
 
-            Style.RangeStyle(titoloVert, style: "Barra titolo verticale", orientation: infoCount == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical, merge: true, fontSize: infoCount == 1 ? 6 : 9, numberFormat: informazioni.Count > 4 ? "ddd d" : "dd");
+            Style.RangeStyle(titoloVert, style: "Barra titolo verticale", orientation: infoCount == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical, merge: true, fontSize: infoCount < 5 ? 6 : 9, numberFormat: informazioni.Count > 4 ? "ddd d" : "dd");
 
             switch (Struct.tipoVisualizzazione)
             {
@@ -1048,7 +1048,7 @@ namespace Iren.PSO.Base
                     foreColor: info["ForeColor"],
                     backColor: infoBackColor,
                     visible: info["Visibile"].Equals("1"),
-                    numberFormat: Struct.tipoVisualizzazione == "R" ? "ddd dd MMM yyyy" : "general",
+                    numberFormat: Struct.tipoVisualizzazione == "R" ? "dd/MM/yyyy" : "general",
                     borders: "[Right:medium]");
 
                 Style.RangeStyle(rngData,
@@ -1345,6 +1345,15 @@ namespace Iren.PSO.Base
                 bool hasSecondaryAxes = false;
                 foreach (DataRowView info in graficiInfo)
                 {
+                    if (info["ScalaMin"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = info["ScalaMin"];
+                    if (info["ScalaMax"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = info["ScalaMax"];
+                    if (info["IntervalloPrimaria"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue).MajorUnit = info["IntervalloPrimaria"];
+                    if ((Excel.XlAxisGroup)info["AxisGroup"] == Excel.XlAxisGroup.xlSecondary && info["IntervalloSecondaria"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MajorUnit = info["IntervalloSecondaria"];
+
                     if (Struct.tipoVisualizzazione == "R")
                     {
                         CicloGiorni(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni), (oreGiorno, suffissoData, giorno) =>

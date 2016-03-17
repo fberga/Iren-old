@@ -25,10 +25,10 @@
     <VSTO_TrustAssembliesLocation>
     </VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\pc1009235\Applicazioni\PSO\InvioProgrammi\</PublishUrl>
-    <InstallUrl>\\pc1009235\Applicazioni\PSO\InvioProgrammi\</InstallUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO\InvioProgrammi\</PublishUrl>
+    <InstallUrl>\\srvpso\Applicazioni\PSO\InvioProgrammi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.21</ApplicationVersion>
+    <ApplicationVersion>1.0.0.25</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -182,6 +182,7 @@
     <Content Include="Data\InvioProgrammi.xlsm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="CertificatoTemporaneo.pfx" />
     <None Include="InvioProgrammi.xlsm" />
   </ItemGroup>
   <ItemGroup>
@@ -229,8 +230,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>
-    </ManifestKeyFile>
+    <ManifestKeyFile>CertificatoTemporaneo.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>

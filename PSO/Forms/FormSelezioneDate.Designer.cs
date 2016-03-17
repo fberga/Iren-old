@@ -78,7 +78,7 @@
             this.btnApplica.Name = "btnApplica";
             this.btnApplica.Size = new System.Drawing.Size(113, 50);
             this.btnApplica.TabIndex = 4;
-            this.btnApplica.Text = "Scegli";
+            this.btnApplica.Text = "OK";
             this.btnApplica.UseVisualStyleBackColor = true;
             this.btnApplica.Click += new System.EventHandler(this.btnApplica_Click);
             // 

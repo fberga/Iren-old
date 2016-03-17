@@ -139,7 +139,7 @@ namespace Iren.PSO.Applicazioni
 
             //area dati
             Range rngDati = new Range(_definedNames.GetRowByName(Date.SuffissoDATA1), _definedNames.GetColFromName(_listaEntita[0]["SiglaEntita"]), Struct.intervalloGiorni + 1, _definedNames.GetColOffsetRiepilogo() - 1);
-            Style.RangeStyle(_ws.Range[rngDati.ToString()], style: "Area dati riepilogo", bold: false, pattern: Excel.XlPattern.xlPatternNone, align: Excel.XlHAlign.xlHAlignCenter);                      
+            Style.RangeStyle(_ws.Range[rngDati.ToString()], style: "Area dati riepilogo", bold: false, pattern: Excel.XlPattern.xlPatternNone, align: Excel.XlHAlign.xlHAlignCenter, numberFormat: "#,##0;-#,##0;0");                      
             _ws.Range[rngDati.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
 
             bool first = true;
@@ -155,7 +155,7 @@ namespace Iren.PSO.Applicazioni
             Range rngTotale = _definedNames.Get("ENTITA", "TOTALE").Extend(Struct.intervalloGiorni + 2);
             //titolo
             _ws.Range[rngTotale.Rows[0].ToString()].Value = "TOTALE";
-            Style.RangeStyle(_ws.Range[rngTotale.ToString()], style: "Barra titolo riepilogo", fontSize: 9, borders: "[insideh:thin]", bold: true);
+            Style.RangeStyle(_ws.Range[rngTotale.ToString()], style: "Barra titolo riepilogo", fontSize: 9, borders: "[insideh:thin]", bold: true, numberFormat: "#,##0;-#,##0;0");
             //bordi totale
             _ws.Range[rngTotale.Rows[0].ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
             _ws.Range[rngTotale.ToString()].BorderAround2(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium);
@@ -232,7 +232,7 @@ namespace Iren.PSO.Applicazioni
                     DataRow newRow = dt.NewRow();
 
                     newRow["SiglaEntita"] = entita["SiglaEntita"];
-                    newRow["SiglaInformazione"] = "TOTALE_GIORNALIERO";
+                    newRow["SiglaInformazione"] = "CONSUMO_GAS_PREVISIONE_GIORNO";
                     newRow["Data"] = giorno.ToString("yyyyMMdd");
                     newRow["Valore"] = value ?? "";
                     newRow["AnnotaModifica"] = "0";

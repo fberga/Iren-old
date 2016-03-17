@@ -18,10 +18,10 @@
     <SolutionID>43ea7656-5cc0-42ea-9249-92e09b933722</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\pc1009235\Applicazioni\PSO\ValidazioneTL\</PublishUrl>
-    <InstallUrl>\\pc1009235\Applicazioni\PSO\ValidazioneTL\</InstallUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO\ValidazioneTL\</PublishUrl>
+    <InstallUrl>\\srvpso\Applicazioni\PSO\ValidazioneTL\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.25</ApplicationVersion>
+    <ApplicationVersion>1.0.0.29</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -175,6 +175,7 @@
     <Content Include="Data\ValidazioneTL.xlsm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="CertificatoTemporaneo.pfx" />
     <None Include="ValidazioneTL.xlsm" />
   </ItemGroup>
   <ItemGroup>
@@ -223,8 +224,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>
-    </ManifestKeyFile>
+    <ManifestKeyFile>CertificatoTemporaneo.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>

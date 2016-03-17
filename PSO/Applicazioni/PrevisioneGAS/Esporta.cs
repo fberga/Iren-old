@@ -89,9 +89,9 @@ namespace Iren.PSO.Applicazioni
                 Outlook._MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
 
                 config = Workbook.GetUsrConfigElement("oggettoMail");
-                string oggetto = config.Value.Replace("%DATA%", Workbook.DataAttiva.ToString("dd-MM-yyyy"));
+                string oggetto = config.Value.Replace("%DATA%", DateTime.Now.ToString("dd-MM-yyyy")).Replace("%ORA%", DateTime.Now.ToString("HH:mm"));
                 config = Workbook.GetUsrConfigElement("messaggioMail");
-                string messaggio = config.Value;
+                string messaggio = config.Value.Replace("%NOMEUTENTE%", Workbook.NomeUtente);
                 messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 
 

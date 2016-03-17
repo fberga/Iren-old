@@ -17,10 +17,10 @@
     <SolutionID>6eb3e4a7-2765-4d43-aceb-5d48a1fd8000</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\pc1009235\Applicazioni\PSO\PrevisioneGAS\</PublishUrl>
-    <InstallUrl>\\pc1009235\Applicazioni\PSO\PrevisioneGAS\</InstallUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO\PrevisioneGAS\</PublishUrl>
+    <InstallUrl>\\srvpso\Applicazioni\PSO\PrevisioneGAS\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.0.10</ApplicationVersion>
+    <ApplicationVersion>1.0.0.15</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -168,6 +168,7 @@
     <Content Include="Data\PrevisioneGAS.xlsm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="CertificatoTemporaneo.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
