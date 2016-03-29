@@ -128,10 +128,9 @@ namespace Iren.PSO.Forms
 
         private void btnApri_Click(object sender, EventArgs e)
         {
-            var path = Workbook.GetUsrConfigElement("exportXML");
-            string cartellaExport = path.Value;
-            if (Directory.Exists(cartellaExport))
-                openFileXMLImport.InitialDirectory = cartellaExport;
+            var directory = Workbook.Repository.Applicazione["PathDatiComuniEmergenza"].ToString();
+            if (Directory.Exists(directory))
+                openFileXMLImport.InitialDirectory = directory;
 
             openFileXMLImport.Filter = "XML Files (*.xml)|*.xml";
             openFileXMLImport.ShowDialog();

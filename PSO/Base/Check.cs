@@ -52,7 +52,12 @@ namespace Iren.PSO.Base
         /// <returns>Il valore della cella convertito in Decimal</returns>
         protected virtual decimal GetDecimal(object siglaEntita, object siglaInformazione, object suffissoData, object suffissoOra)
         {
-            return (decimal)(_ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value ?? 0);
+            object tmp = _ws.Range[_nomiDefiniti.Get(siglaEntita, siglaInformazione, suffissoData, suffissoOra).ToString()].Value;
+
+            if (tmp == null || tmp.Equals(""))
+                return (decimal)0;
+
+            return Convert.ToDecimal(tmp);
         }
         /// <summary>
         /// Utilizzando un range restituisce il valore della cella convertito in Decimal.
@@ -61,7 +66,12 @@ namespace Iren.PSO.Base
         /// <returns>Il valore della cella convertito in Decimal.</returns>
         protected virtual decimal GetDecimal(Range rng)
         {
-            return (decimal)(_ws.Range[rng.ToString()].Value ?? 0);
+            object tmp = _ws.Range[rng.ToString()].Value;
+
+            if (tmp == null || tmp.Equals(""))
+                return (decimal)0;
+
+            return Convert.ToDecimal(tmp);
         }
         /// <summary>
         /// Utilizzando l'indicizzazione restituisce il valore della cella.

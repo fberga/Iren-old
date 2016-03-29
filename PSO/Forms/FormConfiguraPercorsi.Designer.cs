@@ -46,14 +46,14 @@
             this.panelButtons.Location = new System.Drawing.Point(3, 281);
             this.panelButtons.Name = "panelButtons";
             this.panelButtons.Padding = new System.Windows.Forms.Padding(0, 3, 0, 0);
-            this.panelButtons.Size = new System.Drawing.Size(984, 53);
+            this.panelButtons.Size = new System.Drawing.Size(1031, 53);
             this.panelButtons.TabIndex = 14;
             // 
             // btnApplica
             // 
             this.btnApplica.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnApplica.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnApplica.Location = new System.Drawing.Point(758, 3);
+            this.btnApplica.Location = new System.Drawing.Point(805, 3);
             this.btnApplica.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnApplica.Name = "btnApplica";
             this.btnApplica.Size = new System.Drawing.Size(113, 50);
@@ -67,7 +67,7 @@
             this.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnAnnulla.Dock = System.Windows.Forms.DockStyle.Right;
             this.btnAnnulla.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAnnulla.Location = new System.Drawing.Point(871, 3);
+            this.btnAnnulla.Location = new System.Drawing.Point(918, 3);
             this.btnAnnulla.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAnnulla.Name = "btnAnnulla";
             this.btnAnnulla.Size = new System.Drawing.Size(113, 50);
@@ -81,7 +81,7 @@
             this.panelDati.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDati.Location = new System.Drawing.Point(3, 3);
             this.panelDati.Name = "panelDati";
-            this.panelDati.Size = new System.Drawing.Size(984, 278);
+            this.panelDati.Size = new System.Drawing.Size(1031, 278);
             this.panelDati.TabIndex = 15;
             // 
             // dataGridConfigurazioni
@@ -94,18 +94,18 @@
             this.dataGridConfigurazioni.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridConfigurazioni.Location = new System.Drawing.Point(0, 0);
             this.dataGridConfigurazioni.Name = "dataGridConfigurazioni";
-            this.dataGridConfigurazioni.Size = new System.Drawing.Size(984, 278);
+            this.dataGridConfigurazioni.Size = new System.Drawing.Size(1031, 278);
             this.dataGridConfigurazioni.TabIndex = 0;
             // 
-            // FormConfig
+            // FormConfiguraPercorsi
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(990, 337);
+            this.ClientSize = new System.Drawing.Size(1037, 337);
             this.Controls.Add(this.panelDati);
             this.Controls.Add(this.panelButtons);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Name = "FormConfig";
+            this.Name = "FormConfiguraPercorsi";
             this.Padding = new System.Windows.Forms.Padding(3);
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;

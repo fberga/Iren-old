@@ -16,7 +16,8 @@ namespace Iren.PSO.Forms
             {
                 {"Key", typeof(string)},
                 {"Proprietà", typeof(string)},
-                {"Valore", typeof(string)},
+                {"Produzione", typeof(string)},
+                {"Test", typeof(string)},
                 {"Emergenza", typeof(string)}
             }
         };
@@ -29,11 +30,11 @@ namespace Iren.PSO.Forms
             
             this.Text = Simboli.NomeApplicazione + " - Configura percorsi";
 
-            int width = dataGridConfigurazioni.Width * 90 / 100;
+            int width = dataGridConfigurazioni.Width * 93 / 100;
 
             dataGridConfigurazioni.Columns[0].Visible = false;
 
-            dataGridConfigurazioni.Columns[1].Width = (width / 3);
+            dataGridConfigurazioni.Columns[1].Width = (width / 4);
             dataGridConfigurazioni.Columns[1].ReadOnly = true;
             dataGridConfigurazioni.Columns[1].DefaultCellStyle = new DataGridViewCellStyle() 
             {
@@ -42,9 +43,10 @@ namespace Iren.PSO.Forms
                 Font = new Font(dataGridConfigurazioni.Font, FontStyle.Bold)
             };
             
-            dataGridConfigurazioni.Columns[2].Width = (width / 3);
+            dataGridConfigurazioni.Columns[2].Width = (width / 4);
             
-            dataGridConfigurazioni.Columns[3].Width = (width / 3);
+            dataGridConfigurazioni.Columns[3].Width = (width / 4);
+            dataGridConfigurazioni.Columns[4].Width = (width / 4);
             //dataGridConfigurazioni.Columns[3].ReadOnly = true;
             
         }
@@ -56,7 +58,7 @@ namespace Iren.PSO.Forms
             foreach (UserConfigElement item in config.Items)
             {
                 if (item.Visibile)
-                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Emergenza);
+                    _dt.Rows.Add(item.Key, item.Desc, item.Value, item.Test, item.Emergenza);
             }
 
         }
@@ -68,7 +70,8 @@ namespace Iren.PSO.Forms
 
             foreach (DataRow r in _dt.GetChanges().Rows)
             {
-                section.Items[r["Key"].ToString()].Value = r["Valore"].ToString();
+                section.Items[r["Key"].ToString()].Value = r["Produzione"].ToString();
+                section.Items[r["Key"].ToString()].Test = r["Test"].ToString();
                 section.Items[r["Key"].ToString()].Emergenza = r["Emergenza"].ToString();
             }
 

@@ -77,6 +77,13 @@ namespace Iren.PSO.Applicazioni
 
                 string referenceNumber = codiceRUP.ToString().Replace("_", "") + "_" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
+                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'COMPANY_NAME' AND IdApplicazione = " + Workbook.IdApplicazione;
+                object companyName = entitaProprieta[0]["Valore"];
+
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'COMPANY_IDENTIFIER' AND IdApplicazione = " + Workbook.IdApplicazione;
+                object companyID = entitaProprieta[0]["Valore"];
+
                 XElement PIPEDocument = new XElement(ns + "PIPEDocument",
                         new XAttribute("ReferenceNumber", referenceNumber.Length > 30 ? referenceNumber.Substring(0,30) : referenceNumber),
                         new XAttribute("CreationDate", DateTime.Now.ToString("yyyyMMddHHmmss")),
@@ -94,8 +101,8 @@ namespace Iren.PSO.Applicazioni
                             new XElement(ns + "Recipient", 
                                 new XElement(ns + "TradingPartner", 
                                     new XAttribute("PartnerType", "Operator"),
-                                    new XElement(ns + "CompanyName", "GESTORE DEL MERCATO ELETTRICO S.P.A."),
-                                    new XElement(ns + "CompanyIdentifier", "IDGME")
+                                    new XElement(ns + "CompanyName", companyName),
+                                    new XElement(ns + "CompanyIdentifier", companyID)
                                 )
                             )
                         )

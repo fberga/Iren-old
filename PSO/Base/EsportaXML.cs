@@ -69,14 +69,13 @@ namespace Iren.PSO.Base
             }
 
             //preparo l'export
-            var path = Workbook.GetUsrConfigElement("exportXML");
-            //path della cartella di emergenza
-            string cartellaEmergenza = path.Value;
-            string cartellaExport = Path.Combine(cartellaEmergenza, Simboli.NomeApplicazione.Replace(" ", ""));
-            string fileName = Path.Combine(cartellaExport, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
 
-            if (!Directory.Exists(cartellaExport))
-                Directory.CreateDirectory(cartellaExport);
+
+            string directory = Workbook.Repository.Applicazione["PathDatiComuniEmergenza"].ToString();
+            string fileName = Path.Combine(directory, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
 
             DataTable export = Workbook.Repository[DataBase.TAB.EXPORT_XML];
             export.WriteXml(fileName);

@@ -58,7 +58,7 @@ namespace Iren.PSO.Applicazioni
             string fileName = "";
             try
             {
-                fileName = @"D:\PrevisioneGAS_" + DateTime.Now.ToString("yyyyMMddmmss") + ".xls";
+                fileName = @"D:\PrevisioneGAS_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls";
 
                 Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
 
@@ -72,7 +72,7 @@ namespace Iren.PSO.Applicazioni
                 Marshal.ReleaseComObject(wb);
 
                 var config = Workbook.GetUsrConfigElement("destMailTest");
-                string mailTo = config.Value;
+                string[] mailTo = config.Value.Split(';');
                 string mailCC = "";
 
                 DataView entitaProprieta = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA]);
@@ -80,7 +80,7 @@ namespace Iren.PSO.Applicazioni
                 if (Workbook.Ambiente == Simboli.PROD)
                 {
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'PREV_CONSUMO_GAS_MAIL_TO' AND IdApplicazione = " + Workbook.IdApplicazione;
-                    mailTo = entitaProprieta[0]["Valore"].ToString();
+                    mailTo = entitaProprieta[0]["Valore"].ToString().Split(';');
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'PREV_CONSUMO_GAS_MAIL_CC' AND IdApplicazione = " + Workbook.IdApplicazione;
                     mailCC = entitaProprieta[0]["Valore"].ToString();
                 }
@@ -105,7 +105,8 @@ namespace Iren.PSO.Applicazioni
                 mail.SendUsingAccount = senderAccount;
                 mail.Subject = oggetto;
                 mail.Body = messaggio;
-                mail.Recipients.Add(mailTo);
+                foreach(string dest in mailTo)
+                    mail.Recipients.Add(dest);
                 mail.CC = mailCC;
                 mail.Attachments.Add(fileName);
 

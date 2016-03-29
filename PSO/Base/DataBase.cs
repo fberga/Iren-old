@@ -269,15 +269,12 @@ namespace Iren.PSO.Base
                     dt.TableName = modifiche.TableName;
                     dt.Namespace = "";
 
-                    //vari path per la funzione del salvataggio delle modifiche sul server
-                    var path = Workbook.GetUsrConfigElement("pathExportModifiche");
-
                     //path del caricatore sul server
-                    string cartellaRemota = path.Value;
+                    string cartellaRemota = Workbook.Repository.Applicazione["PathExportModifiche"].ToString();
                     //path della cartella di emergenza
-                    string cartellaEmergenza = path.Emergenza;
+                    string cartellaEmergenza = Workbook.Repository.Applicazione["PathExportModificheEmergenza"].ToString();
                     //path della cartella di archivio in cui copiare i file in caso di esito positivo nel saltavaggio
-                    string cartellaArchivio = path.Archivio;
+                    string cartellaArchivio = Workbook.Repository.Applicazione["PathExportModificheArchivio"].ToString();
 
                     string fileName = "";
                     //se la connessione è aperta (in emergenza forzata sarà sempre false) ed esiste la cartella del caricatore

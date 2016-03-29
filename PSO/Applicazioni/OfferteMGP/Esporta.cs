@@ -53,7 +53,7 @@ namespace Iren.PSO.Applicazioni
 
                     if (Directory.Exists(pathStr))
                     {
-                        if (!CreaOfferteSuggeriteXML_GME(siglaEntita, siglaAzione, pathStr, dataRif))
+                        if (!CreaOfferteXML_GME(siglaEntita, siglaAzione, pathStr, dataRif))
                             return false;
                     }
                     else
@@ -152,7 +152,7 @@ namespace Iren.PSO.Applicazioni
                 return false;
             }
         }
-        protected bool CreaOfferteSuggeriteXML_GME(object siglaEntita, object siglaAzione, string exportPath, DateTime dataRif)
+        protected bool CreaOfferteXML_GME(object siglaEntita, object siglaAzione, string exportPath, DateTime dataRif)
         {
             try
             {
@@ -171,7 +171,11 @@ namespace Iren.PSO.Applicazioni
                 entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione ='" + siglaAzione + "' AND SiglaInformazione LIKE 'OFFERTA_MGP_E%' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
-                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA' AND IdApplicazione = " + Workbook.IdApplicazione;
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'COMPANY_NAME' AND IdApplicazione = " + Workbook.IdApplicazione;
+                object companyName = entitaProprieta[0]["Valore"];
+
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'COMPANY_IDENTIFIER' AND IdApplicazione = " + Workbook.IdApplicazione;
+                object companyID = entitaProprieta[0]["Valore"];
 
                 XNamespace ns = XNamespace.Get("urn:XML-PIPE");
                 XNamespace xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
@@ -191,8 +195,8 @@ namespace Iren.PSO.Applicazioni
                             new XElement(ns + "Sender",
                                 new XElement(ns + "TradingPartner",
                                     new XAttribute("PartnerType", "Market Participant"),
-                                    new XElement(ns + "CompanyName", "IREN MERCATO S.P.A."),
-                                    new XElement(ns + "CompanyIdentifier", "OEACSMG")
+                                    new XElement(ns + "CompanyName", companyName),
+                                    new XElement(ns + "CompanyIdentifier", companyID)
                                 )
                             ),
                             new XElement(ns + "Recipient",
@@ -204,6 +208,8 @@ namespace Iren.PSO.Applicazioni
                             )
                         )
                     );
+
+                entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'OFFERTA_MGP_TIPO_OFFERTA' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 foreach(DataRowView info in entitaAzioneInformazione)
                 {

@@ -72,15 +72,12 @@ namespace Iren.PSO.Base
         protected Outlook.Application GetOutlookInstance()
         {
             Outlook.Application application = null;
-
-            // Check whether there is an Outlook process running.
-            if (Process.GetProcessesByName("OUTLOOK").Count() > 0)
+            try 
             {
-
                 // If so, use the GetActiveObject method to obtain the process and cast it to an Application object.
                 application = Marshal.GetActiveObject("Outlook.Application") as Outlook.Application;
             }
-            else
+            catch
             {
 
                 // If not, create a new instance of Outlook and log on to the default profile.
@@ -137,8 +134,11 @@ namespace Iren.PSO.Base
         public static string PreparePath(UserConfigElement path)
         {
             //Controllo stato connessione
-            
-            string p = DataBase.OpenConnection() ? path.Value : path.Emergenza;
+            string p;
+            if(Workbook.Ambiente == Simboli.PROD)
+                p = DataBase.OpenConnection() ? path.Value : path.Emergenza;
+            else
+                p = DataBase.OpenConnection() ? path.Test : path.Emergenza;
             DataBase.CloseConnection();
 
             return p;

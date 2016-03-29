@@ -63,6 +63,13 @@ namespace Iren.PSO.UserConfig
             set { base["archivio"] = value; }
         }
 
+        [ConfigurationProperty("test", IsRequired = false, DefaultValue = "")]
+        public string Test
+        {
+            get { return Environment.ExpandEnvironmentVariables((string)base["test"]); }
+            set { base["test"] = value; }
+        }
+
         [ConfigurationProperty("visibile", IsRequired = false, DefaultValue="true")]
         public bool Visibile
         {

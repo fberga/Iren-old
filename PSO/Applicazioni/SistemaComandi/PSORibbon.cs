@@ -837,16 +837,22 @@ namespace Iren.PSO.Applicazioni
         /// <param name="e"></param>
         private void btnChiudi_Click(object sender, RibbonControlEventArgs e)
         {
-            //TODO check se backup serve
-            //TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
-            //string pathStr = Workbook.GetUsrConfigElement("backup").Value;
-            //if (!Directory.Exists(pathStr))
-            //    Directory.CreateDirectory(pathStr);
+            TextInfo ti = new CultureInfo("it-IT", false).TextInfo;
+            string pathStr = Workbook.Repository.Applicazione["PathBackup"].ToString();
+            try
+            {
+                if (!Directory.Exists(pathStr))
+                    Directory.CreateDirectory(pathStr);
 
-            //string filename = ti.ToTitleCase(Simboli.nomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
+                string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
-            //Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
-            Globals.ThisWorkbook.Close();
+                Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
+            }
+            catch(DirectoryNotFoundException)
+            {
+                if(System.Windows.Forms.MessageBox.Show("Il percorso di backup non è raggiungibile. Chiudere comunque il file senza eseguire il backup?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                    Globals.ThisWorkbook.Close();
+            }
         }
         /// <summary>
         /// Handler del click del tasto per visualizzare l'actionsPane del documento.
@@ -1112,6 +1118,13 @@ namespace Iren.PSO.Applicazioni
                 case 7:
                     newDate = DateTime.Today.AddDays(-3);
                     break;
+                case 8:
+                case 9:
+                    if (ora < 12)
+                        newDate = DateTime.Today;
+                    else
+                        newDate = DateTime.Today.AddDays(1);
+                    break;
                 case 11:
                     newDate = DateTime.Today.AddDays(-1);
                     break;
@@ -1198,8 +1211,6 @@ namespace Iren.PSO.Applicazioni
                 if (Controls.Contains("cmbMSD"))
                     SetMercato(out newDate, out newIdApplicazione);
                 
-                //int[] ids = new int[] {1,5,6,7,11,12,14};
-                //if(ids.Contains(Workbook.IdApplicazione))
                 AggiornaData(out newDate);
 
                 Riepilogo r = new Riepilogo(Workbook.Main);
@@ -1220,7 +1231,8 @@ namespace Iren.PSO.Applicazioni
 
                     if (aggiornaStruttura)
                         aggiorna.Struttura(avoidRepositoryUpdate: true);
-                    else if (aggiornaDati)
+                    else if (aggiornaDati || 
+                        System.Windows.Forms.MessageBox.Show("Aggiornare i dati?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                         aggiorna.Dati();
 
                 }

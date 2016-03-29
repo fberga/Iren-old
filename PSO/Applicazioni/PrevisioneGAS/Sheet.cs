@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -221,11 +222,11 @@ namespace Iren.PSO.Applicazioni
                 }
             }
 
-            //if (!allNullPAxes)
-            //{
-            //    chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
-            //    chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
-            //}
+            if (!allNullPAxes)
+            {
+                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
+                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
+            }
 
             //resize dell'area del grafico per adattarla alle ore
             using (Graphics grfx = Graphics.FromImage(new Bitmap(1, 1)))
@@ -253,10 +254,17 @@ namespace Iren.PSO.Applicazioni
                 }
 
                 //MANTENERE ORDINE DI QUESTE ISTRUZIONI
-                chart.ChartArea.Left = rigaGrafico.Left - Math.Ceiling(sizeMax) - 7;      //sposto a destra il grafico
-                chart.ChartArea.Width = rigaGrafico.Width + Math.Ceiling(sizeMax) + 4;    //aumento la larghezza del grafico
-                chart.PlotArea.InsideLeft = 0d;                                           //allineo il grafico al bordo sinistro dell'area esterna al grafico
-                chart.PlotArea.Width = chart.ChartArea.Width + 3;                         //aumento la larghezza dell'area esterna al grafico
+                chart.ChartArea.Left = rigaGrafico.Left - Math.Ceiling(sizeMax) - 7;        //sposto a destra il grafico
+                chart.ChartArea.Width = rigaGrafico.Width + Math.Ceiling(sizeMax) + 4;      //aumento la larghezza del grafico
+                Excel.PlotArea plotArea = chart.PlotArea;
+                try
+                {
+                    plotArea.InsideLeft = 0d;                                               //allineo il grafico al bordo sinistro dell'area esterna al grafico
+                }
+                catch { }
+                plotArea.Width = chart.ChartArea.Width + 3;                                 //aumento la larghezza dell'area esterna al grafico
+                Marshal.ReleaseComObject(plotArea);
+                plotArea = null;
 
                 bool start = TimeZone.CurrentTimeZone.IsDaylightSavingTime(Workbook.DataAttiva);
                 bool end = TimeZone.CurrentTimeZone.IsDaylightSavingTime(Workbook.DataAttiva.AddDays(Struct.intervalloGiorni));

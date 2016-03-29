@@ -622,7 +622,7 @@ namespace Iren.PSO.Base
             {
                 if (ele.Type == UserConfigElement.ElementType.path)
                 {
-                    string pathStr = ele.Value;
+                    string pathStr = Esporta.PreparePath(ele);
 
                     try { System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(pathStr); }
                     catch { pathNonDisponibili.Add(ele.Desc, pathStr); }

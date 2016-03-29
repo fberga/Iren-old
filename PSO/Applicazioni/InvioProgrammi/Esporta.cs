@@ -130,7 +130,7 @@ namespace Iren.PSO.Applicazioni
                 if (entitaProprieta.Count > 0)
                 {
                     //creo file Excel da allegare
-                    string pathExport = PreparePath(Workbook.GetUsrConfigElement("exportXML"));
+                    string pathExport = @"D:\";
                     attachments.Add(Path.Combine(pathExport, Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls"));
 
                     hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);

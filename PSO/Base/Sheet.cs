@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -1504,8 +1505,11 @@ namespace Iren.PSO.Base
                 //MANTENERE ORDINE DI QUESTE ISTRUZIONI
                 chart.ChartArea.Left = rigaGrafico.Left - Math.Ceiling(sizeMax) - 7;      //sposto a destra il grafico
                 chart.ChartArea.Width = rigaGrafico.Width + Math.Ceiling(sizeMax) + 4;    //aumento la larghezza del grafico
-                chart.PlotArea.InsideLeft = 0d;                                           //allineo il grafico al bordo sinistro dell'area esterna al grafico
-                chart.PlotArea.Width = chart.ChartArea.Width + 3;                         //aumento la larghezza dell'area esterna al grafico
+                Excel.PlotArea plotArea = chart.PlotArea;
+                plotArea.InsideLeft -= plotArea.InsideLeft;
+                plotArea.Width = chart.ChartArea.Width + 3;
+                //chart.PlotArea.Width = chart.ChartArea.Width + 3;                         //aumento la larghezza dell'area esterna al grafico
+                
 
 
                 //se c'è un asse secondario ed aggiorno la dimensione del grafico di conseguenza
