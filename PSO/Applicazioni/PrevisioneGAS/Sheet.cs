@@ -193,7 +193,7 @@ namespace Iren.PSO.Applicazioni
                     int row = _definedNames.GetRowByName(chart.Name);
                     Excel.Range rng = _ws.Range[Range.GetRange(row, col)];
                     AggiornaGrafici(chart.Chart, rng.MergeArea);
-                    chart.Chart.Refresh();
+                    //chart.Chart.Refresh();
                 }
             }
         }
@@ -206,28 +206,7 @@ namespace Iren.PSO.Applicazioni
         {
             SplashScreen.UpdateStatus("Aggiorno grafici " + chart.Name);
 
-            //calcolo i valori max e min per aggiornare la scala
-            bool allNullPAxes = true;
-            double minValuePAxes = double.MaxValue;
-            double maxValuePAxes = double.MinValue;
-
-            foreach (Excel.Series s in chart.SeriesCollection())
-            {
-                Array val = s.Values as Array;
-                if (val.OfType<double>().Any())
-                {
-                    allNullPAxes = false;
-                    minValuePAxes = Math.Min(minValuePAxes, val.OfType<double>().Min());
-                    maxValuePAxes = Math.Max(maxValuePAxes, val.OfType<double>().Max());
-                }
-            }
-
-            if (!allNullPAxes)
-            {
-                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
-            }
-
+            chart.Refresh();
             //resize dell'area del grafico per adattarla alle ore
             using (Graphics grfx = Graphics.FromImage(new Bitmap(1, 1)))
             {
@@ -272,6 +251,7 @@ namespace Iren.PSO.Applicazioni
                 if (!start || end)
                     chart.ChartArea.Width -= _ws.Range[Range.GetRange(1, _definedNames.GetColFromDate(Date.SuffissoDATA1, Date.GetSuffissoOra(25)))].Width;
             }
+            chart.Refresh();
         }
     }
 }

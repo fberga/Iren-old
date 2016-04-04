@@ -105,12 +105,12 @@ namespace Iren.PSO.Base
             {
                 if (_protetto != value)
                 {
-                    _protetto = value;
-
                     if (value)
                         Workbook.WB.Protect(Workbook.Password);
                     else
                         Workbook.WB.Unprotect(Workbook.Password);
+
+                    _protetto = value;
 
                     foreach (Excel.Worksheet ws in Workbook.Sheets)
                     {
@@ -1346,15 +1346,6 @@ namespace Iren.PSO.Base
                 bool hasSecondaryAxes = false;
                 foreach (DataRowView info in graficiInfo)
                 {
-                    if (info["ScalaMin"] != DBNull.Value)
-                        chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = info["ScalaMin"];
-                    if (info["ScalaMax"] != DBNull.Value)
-                        chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = info["ScalaMax"];
-                    if (info["IntervalloPrimaria"] != DBNull.Value)
-                        chart.Axes(Excel.XlAxisType.xlValue).MajorUnit = info["IntervalloPrimaria"];
-                    if ((Excel.XlAxisGroup)info["AxisGroup"] == Excel.XlAxisGroup.xlSecondary && info["IntervalloSecondaria"] != DBNull.Value)
-                        chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MajorUnit = info["IntervalloSecondaria"];
-
                     if (Struct.tipoVisualizzazione == "R")
                     {
                         CicloGiorni(_dataInizio, _dataInizio.AddDays(Struct.intervalloGiorni), (oreGiorno, suffissoData, giorno) =>
@@ -1364,11 +1355,6 @@ namespace Iren.PSO.Base
                             serie.Name = giorno.ToString("dd/MM/yyyy");
                             serie.Values = _ws.Range[rngDati.ToString()];
                             serie.ChartType = (Excel.XlChartType)info["ChartType"];
-                            //serie.Interior.ColorIndex = info["InteriorColor"];
-                            //serie.Border.ColorIndex = info["BorderColor"];
-                            //serie.Border.Weight = info["BorderWeight"];
-                            //serie.Border.LineStyle = info["BorderLineStyle"];
-                            //serie.AxisGroup = (Excel.XlAxisGroup)info["AxisGroup"];
                         });
                     }
                     else
@@ -1386,6 +1372,13 @@ namespace Iren.PSO.Base
                         if ((Excel.XlAxisGroup)info["AxisGroup"] == Excel.XlAxisGroup.xlSecondary)
                             hasSecondaryAxes = true;
                     }
+
+                    if (info["ScalaMin"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue, (Excel.XlAxisGroup)info["AxisGroup"]).MinimumScale = info["ScalaMin"];
+                    if (info["ScalaMax"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue, (Excel.XlAxisGroup)info["AxisGroup"]).MaximumScale = info["ScalaMax"];
+                    if (info["Intervallo"] != DBNull.Value)
+                        chart.Axes(Excel.XlAxisType.xlValue, (Excel.XlAxisGroup)info["AxisGroup"]).MajorUnit = info["Intervallo"];
                 }
 
 
@@ -1426,7 +1419,7 @@ namespace Iren.PSO.Base
                     int row = _definedNames.GetRowByName(chart.Name);
                     Excel.Range rng = _ws.Range[Range.GetRange(row, col)];
                     AggiornaGrafici(chart.Chart, rng.MergeArea);
-                    chart.Chart.Refresh();
+                    //chart.Chart.Refresh();
                 }
             }
         }
@@ -1439,51 +1432,7 @@ namespace Iren.PSO.Base
         {
             SplashScreen.UpdateStatus("Aggiorno grafici " + chart.Name);
 
-            //calcolo i valori max e min per aggiornare la scala
-            bool allNullPAxes = true;
-            bool allNullSAxes = true;
-            double minValuePAxes = double.MaxValue;
-            double maxValuePAxes = double.MinValue;
-            double minValueSAxes = double.MaxValue;
-            double maxValueSAxes = double.MinValue;
-
-            //int valuesCount = 24;
-
-            foreach (Excel.Series s in chart.SeriesCollection())
-            {
-                Array val = s.Values as Array;
-
-                //valuesCount = Math.Max(valuesCount, val.OfType<double>().Count());
-
-                if (val.OfType<double>().Any())
-                {
-                    
-                    if (s.AxisGroup == Excel.XlAxisGroup.xlPrimary)
-                    {
-                        allNullPAxes = false;
-                        minValuePAxes = Math.Min(minValuePAxes, val.OfType<double>().Min());
-                        maxValuePAxes = Math.Max(maxValuePAxes, val.OfType<double>().Max());
-                    }
-                    else
-                    {
-                        allNullSAxes = false;
-                        minValueSAxes = Math.Min(minValueSAxes, val.OfType<double>().Min());
-                        maxValueSAxes = Math.Max(maxValueSAxes, val.OfType<double>().Max());
-                    }
-                }
-            }
-
-            if (!allNullPAxes)
-            {
-                chart.Axes(Excel.XlAxisType.xlValue).MaximumScale = Math.Ceiling(maxValuePAxes + Math.Abs(maxValuePAxes) * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue).MinimumScale = Math.Floor(minValuePAxes - Math.Abs(minValuePAxes) * 5 / 100);
-            }
-            if (!allNullSAxes)
-            {
-                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MaximumScale = Math.Ceiling(maxValueSAxes + Math.Abs(maxValueSAxes) * 5 / 100);
-                chart.Axes(Excel.XlAxisType.xlValue, Excel.XlAxisGroup.xlSecondary).MinimumScale = Math.Floor(minValueSAxes - Math.Abs(minValueSAxes) * 5 / 100);
-            }
-
+            chart.Refresh();
             //resize dell'area del grafico per adattarla alle ore
             using (Graphics grfx = Graphics.FromImage(new Bitmap(1, 1)))
             {
@@ -1506,12 +1455,15 @@ namespace Iren.PSO.Base
                 chart.ChartArea.Left = rigaGrafico.Left - Math.Ceiling(sizeMax) - 7;      //sposto a destra il grafico
                 chart.ChartArea.Width = rigaGrafico.Width + Math.Ceiling(sizeMax) + 4;    //aumento la larghezza del grafico
                 Excel.PlotArea plotArea = chart.PlotArea;
-                plotArea.InsideLeft -= plotArea.InsideLeft;
-                plotArea.Width = chart.ChartArea.Width + 3;
-                //chart.PlotArea.Width = chart.ChartArea.Width + 3;                         //aumento la larghezza dell'area esterna al grafico
+                try
+                {
+                    plotArea.InsideLeft = 0d;                                               //allineo il grafico al bordo sinistro dell'area esterna al grafico
+                }
+                catch { }
+                plotArea.Width = chart.ChartArea.Width + 3;                                 //aumento la larghezza dell'area esterna al grafico
+                Marshal.ReleaseComObject(plotArea);
+                plotArea = null;
                 
-
-
                 //se c'è un asse secondario ed aggiorno la dimensione del grafico di conseguenza
                 try
                 {
@@ -1539,7 +1491,8 @@ namespace Iren.PSO.Base
                     if(!start || end)
                         chart.ChartArea.Width -= _ws.Range[Range.GetRange(1, _definedNames.GetColFromDate(Date.SuffissoDATA1, Date.GetSuffissoOra(25)))].Width;
                 }
-            }            
+            }
+            chart.Refresh();
         }
 
         #endregion

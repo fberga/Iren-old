@@ -95,19 +95,19 @@ namespace Iren.PSO.Base
                      select int.Parse(r["Valore"].ToString())).DefaultIfEmpty().Max(), Struct.intervalloGiorni));
 
             SplashScreen.UpdateStatus("Carico informazioni dal DB");
-            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
+            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd")) ?? new DataTable();
 
             datiApplicazioneH.TableName = DataBase.TAB.DATI_APPLICAZIONE_H;
             Workbook.Repository.Add(datiApplicazioneH);
 
             SplashScreen.UpdateStatus("Carico commenti dal DB");
-            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd") + ";@All=1") ?? new DataTable();
+            DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd")) ?? new DataTable();
 
             insertManuali.TableName = DataBase.TAB.DATI_APPLICAZIONE_COMMENTO;
             Workbook.Repository.Add(insertManuali);
 
             SplashScreen.UpdateStatus("Carico informazioni giornaliere dal DB");
-            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd") + ";@Tipo=1;@All=1") ?? new DataTable();
+            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd")) ?? new DataTable();
 
             datiApplicazioneD.TableName = DataBase.TAB.DATI_APPLICAZIONE_D;
             Workbook.Repository.Add(datiApplicazioneD);

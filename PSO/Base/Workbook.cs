@@ -628,6 +628,14 @@ namespace Iren.PSO.Base
                     catch { pathNonDisponibili.Add(ele.Desc, pathStr); }
                 }
             }
+
+            if (Workbook.Repository.Applicazione != null)
+            {
+                //controllo il percorso di backup che ora è remoto
+                try { System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(Workbook.Repository.Applicazione["PathBackup"].ToString()); }
+                catch { pathNonDisponibili.Add("Percorso di backup", Workbook.Repository.Applicazione["PathBackup"].ToString()); }
+            }
+
             //segnalo all'utente l'impossibilità di accedere alle aree di rete
             if (pathNonDisponibili.Count > 0)
             {
@@ -654,8 +662,8 @@ namespace Iren.PSO.Base
             DaAggiornare = false;
 
             //TODO ripristinare 
-            //DataBase.CreateNew(Ambiente);
-            DataBase.CreateNew(Simboli.DEV);
+            DataBase.CreateNew(Ambiente);
+            //DataBase.CreateNew(Simboli.DEV);
 
             DataBase.AddPropertyChanged(Workbook.StatoDBChanged);
 

@@ -19,7 +19,7 @@ using System.Deployment.Application;
 
 namespace Iren.PSO.Launcher
 {
-    public class LDaemon : ApplicationContext
+    public class LDaemon : ApplicationContext, IDisposable
     {
         public int IdUtente 
         {
@@ -33,6 +33,8 @@ namespace Iren.PSO.Launcher
         private LForm launcherForm;
 
         private static Excel.Application _xlApp;
+
+        private bool disposed = false;
 
         public LDaemon()
         {
@@ -58,19 +60,7 @@ namespace Iren.PSO.Launcher
 
         ~LDaemon()
         {
-            try
-            {
-                foreach (Excel.Workbook wb in _xlApp.Workbooks)
-                {
-                    wb.Close(false);
-                    Marshal.ReleaseComObject(wb);
-                }
-                _xlApp.Quit();
-                Marshal.ReleaseComObject(_xlApp);
-            }
-            catch { }
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
+            Dispose(false);
         }
 
         private void Initialize()
@@ -262,6 +252,39 @@ namespace Iren.PSO.Launcher
                 return tsi.Tag;
 
             throw new ArgumentException("Unexpected sender");
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+            
+            if (disposing)
+            {
+
+            }
+
+            try
+            {
+                foreach (Excel.Workbook wb in _xlApp.Workbooks)
+                {
+                    wb.Close(false);
+                    Marshal.ReleaseComObject(wb);
+                }
+                _xlApp.Quit();
+                Marshal.ReleaseComObject(_xlApp);
+            }
+            catch { }
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            disposed = true;
         }
     }
 }

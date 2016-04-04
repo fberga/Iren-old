@@ -24,11 +24,14 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             _gruppoControllo = DataBase.Select(DataBase.SP.RIBBON.GRUPPO_CONTROLLO, "@IdApplicazione=-1;@IdUtente=-1");
             _applicazioni = DataBase.Select(DataBase.SP.APPLICAZIONE, "@IdApplicazione=0");
-            _utenti = DataBase.Select(DataBase.SP.UTENTE_GRUPPO, "@IdUtenteGruppo=5");
+            _utenti = DataBase.Select(DataBase.SP.UTENTE_GRUPPO, "@IdUtenteGruppo=0");
+
+            _utenti.DefaultView.RowFilter = "IdUtenteGruppo = 1 OR IdUtenteGruppo = 5";
 
             var utentiFrom = 
                 (from r in _gruppoControllo.AsEnumerable()
-                 join r1 in _utenti.AsEnumerable() on r["IdUtente"] equals r1["IdUtente"]                 
+                 join r1 in _utenti.AsEnumerable() on r["IdUtente"] equals r1["IdUtente"]
+                 where r1["IdUtenteGruppo"].Equals(1) || r1["IdUtenteGruppo"].Equals(5)
                  orderby r["IdUtente"]
                  select new KeyValuePair<int, string>((int)r["IdUtente"], r1["Nome"].ToString()))
                  .Distinct()
@@ -61,7 +64,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 listBoxApplicazioni.ValueMember = "Key";
                 listBoxApplicazioni.DisplayMember = "Value";
 
-                ((DataView)listBoxUtentiTo.DataSource).RowFilter = "IdUtente <> " + listBoxUtentiFrom.SelectedValue;
+                ((DataView)listBoxUtentiTo.DataSource).RowFilter = "IdUtenteGruppo = 1 OR IdUtenteGruppo = 5 AND IdUtente <> " + listBoxUtentiFrom.SelectedValue;
 
             }
             else

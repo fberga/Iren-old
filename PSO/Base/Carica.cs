@@ -315,11 +315,15 @@ namespace Iren.PSO.Base
             object valore1 = 0d;
             object valore2 = 0d;
 
+            bool isEmptyVal1 = false;
+
             if (calcolo["SiglaInformazione1"] != DBNull.Value)
             {
                 try
                 {
                     Range cella1 = definedNames.Get(siglaEntitaRif1, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1));
+                    
+                    isEmptyVal1 = ws.Range[cella1.ToString()].Value == null;
 
                     switch (calcolo["SiglaInformazione1"].ToString())
                     {
@@ -363,7 +367,7 @@ namespace Iren.PSO.Base
             else if (calcolo["IdParametroD"] != DBNull.Value)
             {
                 DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"] + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"] + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaParametro.Count > 0)
                     valore1 =entitaParametro[0]["Valore"];
@@ -371,7 +375,7 @@ namespace Iren.PSO.Base
             else if (calcolo["IdParametroH"] != DBNull.Value)
             {
                 DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_H].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"] + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"] + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaParametro.Count > 0)
                     valore1 = entitaParametro[0]["Valore"];
@@ -500,6 +504,10 @@ namespace Iren.PSO.Base
                         retVal = double.MaxValue;
                         foreach (var kvp in entitaRiferimento)
                             retVal = Math.Min(ws.Range[definedNames.Get(kvp.Key, calcolo["SiglaInformazione1"], suffissoData, Date.GetSuffissoOra(ora1)).ToString()].Value ?? 0, retVal);
+                    }
+                    else if (func.Contains("isempty"))
+                    {
+                        retVal = isEmptyVal1 ? 1 : 0;
                     }
                 }
                 //caso in cui ci sia anche SiglaInformazione2

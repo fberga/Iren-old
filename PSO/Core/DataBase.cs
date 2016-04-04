@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -60,6 +58,8 @@ namespace Iren.PSO.Core
         public event PropertyChangedEventHandler PropertyChanged;
 
         private int _chechDBCount = 4;
+
+        private bool disposed = false;
 
         #endregion
 
@@ -273,22 +273,38 @@ namespace Iren.PSO.Core
 
         public void Dispose() 
         {
-            if (_sqlConn.State == ConnectionState.Open)
-                _sqlConn.Close();
-            if (_internalsqlConn != null && _internalsqlConn.State == ConnectionState.Open)
-                _internalsqlConn.Close();
+            Dispose(true);
+            GC.SuppressFinalize(this); 
+        }
 
-            PropertyChanged = null;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
 
-            _cmd.Dispose();
-            _sqlConn.Dispose();
+            if (disposing)
+            {
+                if (_sqlConn.State == ConnectionState.Open)
+                    _sqlConn.Close();
+                if (_internalsqlConn != null && _internalsqlConn.State == ConnectionState.Open)
+                    _internalsqlConn.Close();
 
-            if(_internalCmd != null)
-                _internalCmd.Dispose();
-            if(_internalsqlConn != null)
-                _internalsqlConn.Dispose();
-            if(_checkDBTrhead != null)
-                _checkDBTrhead.Dispose();
+                PropertyChanged = null;
+
+                _cmd.Dispose();
+                _sqlConn.Dispose();
+
+                if (_internalCmd != null)
+                    _internalCmd.Dispose();
+                if (_internalsqlConn != null)
+                    _internalsqlConn.Dispose();
+                if (_checkDBTrhead != null)
+                    _checkDBTrhead.Dispose();
+            }
+
+            // Free any unmanaged objects here.
+            //
+            disposed = true;
         }
 
         #endregion
@@ -376,13 +392,8 @@ namespace Iren.PSO.Core
             {
                 DataTable dt = new DataTable();
 
-                SqlCommand cccc = cmd.SqlCmd(storedProcedure, parameters, timeout);
-                Stopwatch watch = Stopwatch.StartNew();
-                using (SqlDataReader dr = cccc.ExecuteReader())
+                using (SqlDataReader dr = cmd.SqlCmd(storedProcedure, parameters, timeout).ExecuteReader())
                 {
-                    watch.Stop();
-                    Debug.WriteLine(watch.ElapsedMilliseconds);
-
                     dt.Load(dr);
                 }
                 return dt;

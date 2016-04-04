@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -41,9 +33,7 @@ namespace Iren.PSO.Base
                 BeginInvoke(new ShowDelegate(ShowSplashScreen));
                 return;
             }
-            Stopwatch watch = Stopwatch.StartNew();
-            base.Show();//Workbook.Window);
-            watch.Stop();
+            base.Show();
             if (!this.IsDisposed)
                 Application.Run(this);
         }
@@ -56,7 +46,6 @@ namespace Iren.PSO.Base
             }
 
             base.Close();
-            this.Dispose();
         }
 
         public void UdpateStatusText(string status)

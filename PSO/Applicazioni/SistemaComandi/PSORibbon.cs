@@ -1,20 +1,17 @@
-﻿using Iren.PSO;
-using Iren.PSO.Base;
+﻿using Iren.PSO.Base;
 using Iren.PSO.Forms;
 using Microsoft.Office.Tools.Ribbon;
+using Microsoft.VisualStudio.Tools.Applications;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Globalization;
-using System.Linq;
-using Excel = Microsoft.Office.Interop.Excel;
-using Office = Microsoft.Office.Core;
-using System.Collections.Generic;
-using System.Collections;
 using System.IO;
-using Microsoft.VisualStudio.Tools.Applications;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
+using Excel = Microsoft.Office.Interop.Excel;
 
 // ***************************************************** RIBBON ***************************************************** //
 
@@ -81,10 +78,10 @@ namespace Iren.PSO.Applicazioni
             int idApplicazione = -1;
             int idUtente = -1;
 #if DEBUG
-            string ambiente = Simboli.DEV;
+            string ambiente = Simboli.TEST;
 #else
-            //TODO passare a dev quando rilasciata versione ufficiale!!!
-            string ambiente = Simboli.DEV;
+            //TODO passare a PROD quando rilasciata versione ufficiale!!!
+            string ambiente = Simboli.TEST;
 #endif
             
             using (ServerDocument xls = new ServerDocument(tmpCopy))
@@ -667,47 +664,60 @@ namespace Iren.PSO.Applicazioni
         {
             Workbook.Application.EnableEvents = true;
             Workbook.ScreenUpdating = false;
-            Sheet.Protected = false;
 
-            Simboli.ModificaDati = ((RibbonToggleButton)sender).Checked;
-
-            if (((RibbonToggleButton)sender).Checked)
+            try
             {
-                AbilitaTasti(false);
-                ((RibbonToggleButton)sender).Enabled = true;
-                ((RibbonToggleButton)sender).Image = PSO.Base.Properties.Resources.modificaSI;
-                ((RibbonToggleButton)sender).Label = "Modifica SI";
-                //Workbook.WB.SheetChange += Handler.StoreEdit;
-                Workbook.AddStdStoreEdit();
-                //Aggiungo handler per azioni custom nel caso servisse
-                Workbook.WB.SheetChange += _modificaCustom.Range;
+                Sheet.Protected = false;
+                Simboli.ModificaDati = ((RibbonToggleButton)sender).Checked;
+
+
+                if (((RibbonToggleButton)sender).Checked)
+                {
+                    AbilitaTasti(false);
+                    ((RibbonToggleButton)sender).Enabled = true;
+                    ((RibbonToggleButton)sender).Image = PSO.Base.Properties.Resources.modificaSI;
+                    ((RibbonToggleButton)sender).Label = "Modifica SI";
+                    //Workbook.WB.SheetChange += Handler.StoreEdit;
+                    Workbook.AddStdStoreEdit();
+                    //Aggiungo handler per azioni custom nel caso servisse
+                    Workbook.WB.SheetChange += _modificaCustom.Range;
+                }
+                else
+                {
+                    //salva modifiche sul db
+                    Sheet.SalvaModifiche();
+                    DataBase.SalvaModificheDB();
+                    ((RibbonToggleButton)sender).Image = PSO.Base.Properties.Resources.modificaNO;
+                    ((RibbonToggleButton)sender).Label = "Modifica NO";
+                    //Workbook.WB.SheetChange -= Handler.StoreEdit;
+                    Workbook.RemoveStdStoreEdit();
+                    //Rimuovo handler per azioni custom nel caso servisse
+                    Workbook.WB.SheetChange -= _modificaCustom.Range;
+
+                    RefreshChecks();
+
+                    //aggiorno i label dello stato nel caso sia necessario!
+                    Workbook.AggiornaLabelStatoDB();
+
+                    AbilitaTasti(true);
+                    StatoDB_Changed(null, null);
+                }
+                Sheet.AbilitaModifica(((RibbonToggleButton)sender).Checked);
+
+                Workbook.RefreshLog();
+                Sheet.Protected = true;
             }
-            else
+            catch(System.Runtime.InteropServices.COMException ex)
             {
-                //salva modifiche sul db
-                Sheet.SalvaModifiche();
-                DataBase.SalvaModificheDB();
-                ((RibbonToggleButton)sender).Image = PSO.Base.Properties.Resources.modificaNO;
-                ((RibbonToggleButton)sender).Label = "Modifica NO";
-                //Workbook.WB.SheetChange -= Handler.StoreEdit;
-                Workbook.RemoveStdStoreEdit();
-                //Rimuovo handler per azioni custom nel caso servisse
-                Workbook.WB.SheetChange -= _modificaCustom.Range;
-                
-                RefreshChecks();
-
-                //aggiorno i label dello stato nel caso sia necessario!
-                Workbook.AggiornaLabelStatoDB();
-
-                AbilitaTasti(true);
-                StatoDB_Changed(null, null);
+                if (ex.Message.Contains("0x800A03EC"))
+                {
+                    System.Windows.Forms.MessageBox.Show("Prima di chiudere la modifica è necessario uscire dalla modalità di modifica della cella. Premere invio o selezionare un'altra cella.", Simboli.NomeApplicazione + " - ATTENZIONE!!!");
+                }
+                ((RibbonToggleButton)sender).Checked = !((RibbonToggleButton)sender).Checked;
             }
-            Sheet.AbilitaModifica(((RibbonToggleButton)sender).Checked);
 
-            Workbook.RefreshLog();
-
-            Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
+            
         }
         /// <summary>
         /// Handler del click del tasto di Ottimizzazione.
@@ -941,7 +951,12 @@ namespace Iren.PSO.Applicazioni
                 Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
             try
             {
+                System.Diagnostics.Stopwatch wc = System.Diagnostics.Stopwatch.StartNew();
                 _errorPane.RefreshCheck(_checkFunctions);
+                wc.Stop();
+                //quando non ci sono funzioni di check rischia di andare in errore perché non riesce ad inizializzare la splashscreen prima di chiuderla
+                if(wc.ElapsedMilliseconds < 3)
+                    System.Threading.Thread.Sleep(3);
             }
             catch { }
             SplashScreen.Close();

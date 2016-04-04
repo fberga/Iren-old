@@ -64,12 +64,17 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             }
 
             //carico la lista degli utenti
-            DataTable utenti = DataBase.Select(DataBase.SP.UTENTE_GRUPPO, "@IdUtenteGruppo=5");
+            DataTable utenti = DataBase.Select(DataBase.SP.UTENTE_GRUPPO, "@IdUtenteGruppo=0");
+            var allUser = utenti.AsEnumerable()
+                .Where(r => r["IdUtenteGruppo"].Equals(1) || r["IdUtenteGruppo"].Equals(5))
+                .Select(r => new { IdUtente = r["IdUtente"], Nome = r["Nome"] })
+                .ToList();
+
             if (utenti != null)
             {
                 drpUtenti.DisplayMember = "Nome";
                 drpUtenti.ValueMember = "IdUtente";
-                drpUtenti.DataSource = utenti;
+                drpUtenti.DataSource = allUser;
             }
         }
 

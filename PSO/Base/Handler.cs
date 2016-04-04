@@ -342,6 +342,14 @@ namespace Iren.PSO.Base
                 DateTime dataFine = Workbook.DataAttiva.AddDays(Struct.intervalloGiorni);
                 Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Date.SuffissoDATA1, Date.GetSuffissoOra(1)).Extend(colOffset: Date.GetOreIntervallo(dataFine));
                 sheetPrevisione.Range[rng.ToString()].Value = idStagione;
+                if (!Simboli.ModificaDati && DataBase.OpenConnection())
+                {
+                    Handler.StoreEdit(sheetPrevisione, sheetPrevisione.Range[rng.ToString()]);
+                    DataBase.SalvaModificheDB();
+
+                    DataBase.CloseConnection();
+                }
+                
             }
             if (wasProtected)
                 sheetPrevisione.Protect(Workbook.Password);
