@@ -1,8 +1,4 @@
-﻿using Iren.PSO.Core;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 

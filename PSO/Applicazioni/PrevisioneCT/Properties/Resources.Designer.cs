@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Iren.PSO.Applicazioni.Properties {
-    using System;
-    
-    
+namespace Iren.PSO.Applicazioni.Properties
+{
+
+
     /// <summary>
     ///   Classe di risorse fortemente tipizzata per la ricerca di stringhe localizzate e così via.
     /// </summary>

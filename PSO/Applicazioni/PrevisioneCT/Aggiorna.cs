@@ -1,12 +1,6 @@
 ﻿using Iren.PSO.Base;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Text;
-using Excel = Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.PSO.Applicazioni
 {

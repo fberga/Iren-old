@@ -1,5 +1,4 @@
-﻿using Iren.PSO;
-using Iren.PSO.Base;
+﻿using Iren.PSO.Base;
 using System;
 using System.Data;
 using System.Globalization;

@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Iren.PSO.Base;
-using System.Configuration;
+﻿using Iren.PSO.Base;
+using System;
 using System.Collections;
-using System.Globalization;
-using System.Drawing;
+using System.Configuration;
 using System.Data;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.IO.MemoryMappedFiles;
-using System.Threading;
 using System.Deployment.Application;
+using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.PSO.Launcher
 {

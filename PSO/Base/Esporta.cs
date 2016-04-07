@@ -1,16 +1,12 @@
 ﻿using Iren.PSO.UserConfig;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Excel = Microsoft.Office.Interop.Excel;
-using Outlook = Microsoft.Office.Interop.Outlook;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Reflection;
+using System.Text.RegularExpressions;
+using Outlook = Microsoft.Office.Interop.Outlook;
 
 
 namespace Iren.PSO.Base

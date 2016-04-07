@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Iren.ToolsExcel.ConfiguratoreRibbon.Properties {
-    using System;
-    
-    
+namespace Iren.ToolsExcel.ConfiguratoreRibbon.Properties
+{
+
+
     /// <summary>
     ///   Classe di risorse fortemente tipizzata per la ricerca di stringhe localizzate e così via.
     /// </summary>

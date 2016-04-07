@@ -1,16 +1,9 @@
-﻿using Iren.PSO.UserConfig;
-using Iren.PSO.Base;
+﻿using Iren.PSO.Base;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Reflection;
 
 
 namespace Iren.PSO.Applicazioni

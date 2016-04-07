@@ -857,6 +857,7 @@ namespace Iren.PSO.Applicazioni
                 string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
                 Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
+                Globals.ThisWorkbook.Close();
             }
             catch(DirectoryNotFoundException)
             {
@@ -1111,9 +1112,10 @@ namespace Iren.PSO.Applicazioni
         /// <param name="appID">L'ID applicazione</param>
         /// <param name="dataAttiva">La data attiva da cambiare se necessario</param>
         /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
-        private void AggiornaData(out DateTime newDate)
+        private void AggiornaData(out DateTime newDate, out bool refused)
         {
             bool done = true;
+            refused = false;
             newDate = Workbook.DataAttiva;
             int ora = DateTime.Now.Hour;
             switch (Workbook.IdApplicazione)
@@ -1164,10 +1166,15 @@ namespace Iren.PSO.Applicazioni
 
             if (done)
             {
-                SplashScreen.Close();
-                if (newDate != Workbook.DataAttiva && System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No)
-                    newDate = Workbook.DataAttiva;
-                SplashScreen.Show();
+                
+                if (newDate != Workbook.DataAttiva)
+                {
+                    SplashScreen.Close();
+                    refused = System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No;
+                    SplashScreen.Show();
+                    if(refused)
+                        newDate = Workbook.DataAttiva;
+                }
             }
         }
 
@@ -1226,7 +1233,8 @@ namespace Iren.PSO.Applicazioni
                 if (Controls.Contains("cmbMSD"))
                     SetMercato(out newDate, out newIdApplicazione);
                 
-                AggiornaData(out newDate);
+                bool rifiutatoCambioData;
+                AggiornaData(out newDate, out rifiutatoCambioData);
 
                 Riepilogo r = new Riepilogo(Workbook.Main);
 
@@ -1246,10 +1254,19 @@ namespace Iren.PSO.Applicazioni
 
                     if (aggiornaStruttura)
                         aggiorna.Struttura(avoidRepositoryUpdate: true);
-                    else if (aggiornaDati || 
-                        System.Windows.Forms.MessageBox.Show("Aggiornare i dati?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
-                        aggiorna.Dati();
-
+                    else if(!rifiutatoCambioData)
+                    {
+                        if(aggiornaDati)
+                            aggiorna.Dati();
+                        else 
+                        {
+                            SplashScreen.Close();
+                            bool scelta = System.Windows.Forms.MessageBox.Show("Aggiornare i dati?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes;
+                            SplashScreen.Show();
+                            if(scelta)
+                                aggiorna.Dati();
+                        }
+                    }
                 }
                 else
                 {

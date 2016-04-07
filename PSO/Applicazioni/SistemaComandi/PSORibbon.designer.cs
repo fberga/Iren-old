@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection;
-namespace Iren.PSO.Applicazioni
+﻿namespace Iren.PSO.Applicazioni
 {
     partial class ToolsExcelRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
     {

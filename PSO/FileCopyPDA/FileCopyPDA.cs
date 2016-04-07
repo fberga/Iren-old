@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.Tools.Applications.Deployment;
-using Microsoft.VisualStudio.Tools.Applications;
-using System.IO;
+﻿using Microsoft.VisualStudio.Tools.Applications;
+using Microsoft.VisualStudio.Tools.Applications.Deployment;
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 

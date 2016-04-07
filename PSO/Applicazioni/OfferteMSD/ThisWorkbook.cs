@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Xml.Linq;
+﻿using Iren.PSO.Base;
 using Microsoft.Office.Tools.Excel;
 using Microsoft.VisualStudio.Tools.Applications.Runtime;
-using Excel = Microsoft.Office.Interop.Excel;
-using Office = Microsoft.Office.Core;
-using Microsoft.Office.Core;
-using System.Configuration;
-using System.IO;
+using System;
+using System.Data;
 using System.Deployment.Application;
 using System.Reflection;
-using System.Globalization;
-using Iren.PSO.Base;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 // ************************************************************* OFFERTE MSD ************************************************************* //
 

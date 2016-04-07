@@ -1,7 +1,4 @@
-﻿using Microsoft.Office.Tools.Excel;
-using System;
-using System.Data;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Iren.PSO.Base

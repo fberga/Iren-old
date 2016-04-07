@@ -1,10 +1,9 @@
 ﻿using Iren.PSO.Base;
-using System.Linq;
 using System;
-using System.Data;
-using System.Windows.Forms;
-using Excel = Microsoft.Office.Interop.Excel;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Iren.PSO.Forms
 {

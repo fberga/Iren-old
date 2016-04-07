@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.Deployment.Application;
-using System.Text.RegularExpressions;
-using System.IO;
 
 namespace Iren.PSO.Launcher
 {

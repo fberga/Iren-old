@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
-using System.Resources;
-using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
-using Office = Microsoft.Office.Core;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Iren.PSO.Base
 {
