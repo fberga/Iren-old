@@ -88,8 +88,8 @@ namespace Iren.PSO.Applicazioni
                             new XElement(ns + "Sender", 
                                 new XElement(ns + "TradingPartner", 
                                     new XAttribute("PartnerType", "Market Participant"),
-                                    new XElement(ns + "CompanyName", "IREN MERCATO S.P.A."),
-                                    new XElement(ns + "CompanyIdentifier", "OEACSMG")
+                                    new XElement(ns + "CompanyName", companyName),
+                                    new XElement(ns + "CompanyIdentifier", companyID)
                                 )
                             ),
                             new XElement(ns + "Recipient", 
@@ -177,7 +177,7 @@ namespace Iren.PSO.Applicazioni
                     if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE"))
                     {
                         //aggiusto la colonna che mi ritorna DATA1.H1
-                        rng.StartColumn -= 1;
+                        //rng.StartColumn -= 1;
                         prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                     }
 
@@ -197,7 +197,7 @@ namespace Iren.PSO.Applicazioni
                     if (definedNames.TryGet(out rng, siglaEntita, "CAMBIO_ASSETTO"))
                     {
                         //aggiusto la colonna che mi ritorna DATA1.H1
-                        rng.StartColumn -= 1;
+                        //rng.StartColumn -= 1;
                         prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                     }
 
@@ -278,7 +278,7 @@ namespace Iren.PSO.Applicazioni
                 string energia = "";
                 if (definedNames.TryGet(out rng, siglaEntita, "CAMBIO_ASSETTO"))
                 {
-                    rng.StartColumn -= 1;
+                    //rng.StartColumn -= 1;
                     prezzo = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
                     energia = "0";
                     XElement gradino = new XElement(ns + "CambioAssetto");
@@ -431,12 +431,12 @@ namespace Iren.PSO.Applicazioni
                     coordinate.Add(altriServizi);
 
                 //accensione
-                rng = definedNames.Get(siglaEntita, "ACCENSIONE", suffissoData);
+                rng = new Range();
                 energia = "0";
                 prezzo = "0";
                 if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE"))
                 {
-                    rng.StartColumn -= 1;
+                    //rng.StartColumn -= 1;
                     prezzo = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
 
                     XElement gradino = new XElement(ns + "Accensione");

@@ -125,8 +125,8 @@ namespace Iren.PSO.Applicazioni
                 if (entitaProprieta.Count > 0)
                 {
                     //creo file Excel da allegare
-                    string pathExport = @"D:\";
-                    attachments.Add(Path.Combine(pathExport, Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls"));
+                    string excelExport = Path.Combine(@"C:\Emergenza", Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls");
+                    attachments.Add(excelExport);
 
                     hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
@@ -161,8 +161,8 @@ namespace Iren.PSO.Applicazioni
                             foreach (string file in files)
                                 attachments.Add(file);
                         }
-
-                        entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Workbook.IdApplicazione;
+                        
+                        /*entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
                         {
                             //cerco i file XML
@@ -197,7 +197,7 @@ namespace Iren.PSO.Applicazioni
                                 foreach (string file in files)
                                     attachments.Add(file);
                             }
-                        }
+                        }*/
                         entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
                         {
@@ -223,7 +223,7 @@ namespace Iren.PSO.Applicazioni
                     if (!interrupt)
                     {
                         var config = Workbook.GetUsrConfigElement("destMailTest");
-                        string mailTo = config.Value;
+                        string mailTo = config.Test;
                         string mailCC = "";
 
                         if (Workbook.Ambiente == Simboli.PROD)
@@ -254,7 +254,9 @@ namespace Iren.PSO.Applicazioni
                         mail.SendUsingAccount = senderAccount;
                         mail.Subject = oggetto;
                         mail.Body = messaggio;
-                        mail.Recipients.Add(mailTo);
+                        foreach (string dest in mailTo.Split(';'))
+                            if(dest.Trim() != "")
+                                mail.Recipients.Add(dest.Trim());
                         mail.CC = mailCC;
 
                         //aggiungo allegato XLS
@@ -263,9 +265,8 @@ namespace Iren.PSO.Applicazioni
 
                         mail.Send();
                     }
-                    
-                    foreach (string file in attachments)
-                        File.Delete(file);
+
+                    File.Delete(excelExport);
 
                     return !interrupt;
                 }

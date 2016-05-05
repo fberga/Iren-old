@@ -66,7 +66,7 @@ namespace Iren.PSO.Applicazioni
                 Marshal.ReleaseComObject(wb);
 
                 var config = Workbook.GetUsrConfigElement("destMailTest");
-                string[] mailTo = config.Value.Split(';');
+                string mailTo = config.Test;
                 string mailCC = "";
 
                 DataView entitaProprieta = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA]);
@@ -74,9 +74,14 @@ namespace Iren.PSO.Applicazioni
                 if (Workbook.Ambiente == Simboli.PROD)
                 {
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'PREV_CONSUMO_GAS_MAIL_TO' AND IdApplicazione = " + Workbook.IdApplicazione;
-                    mailTo = entitaProprieta[0]["Valore"].ToString().Split(';');
+                    
+                    if(entitaProprieta.Count > 0)
+                        mailTo = entitaProprieta[0]["Valore"].ToString();
+                    
                     entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'PREV_CONSUMO_GAS_MAIL_CC' AND IdApplicazione = " + Workbook.IdApplicazione;
-                    mailCC = entitaProprieta[0]["Valore"].ToString();
+                    
+                    if(entitaProprieta.Count > 0)
+                        mailCC = entitaProprieta[0]["Valore"].ToString();
                 }
 
                 Outlook.Application outlook = GetOutlookInstance();
@@ -99,8 +104,9 @@ namespace Iren.PSO.Applicazioni
                 mail.SendUsingAccount = senderAccount;
                 mail.Subject = oggetto;
                 mail.Body = messaggio;
-                foreach(string dest in mailTo)
-                    mail.Recipients.Add(dest);
+                foreach(string dest in mailTo.Split(';'))
+                    if(dest.Trim() != "")
+                        mail.Recipients.Add(dest.Trim());
                 mail.CC = mailCC;
                 mail.Attachments.Add(fileName);
 

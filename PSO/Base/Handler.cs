@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -136,10 +137,21 @@ namespace Iren.PSO.Base
                 }
 
                 string[] ranges = Target.Address.Split(',');
-
                 foreach (string range in ranges)
                 {
                     Range rng = new Range(range);
+                    Range merged = null;
+                    object mergedVal = null;
+                    try
+                    {   //controllo se c'è un merge nel range
+                        merged = new Range(ws.Range[rng.ToString()].MergeArea.Address);
+                        //salvo il valore
+                        mergedVal = ws.Range[rng.ToString()].Value;
+                        rng = merged;
+                    }
+                    catch { }
+
+                    
                     foreach (Range row in rng.Rows)
                     {
                         if (definedNames.SaveDB(row.StartRow))
@@ -158,16 +170,28 @@ namespace Iren.PSO.Base
                                 if (!Workbook.Application.WorksheetFunction.IsErr(ws.Range[column.ToString()]))
                                 {
                                     DataRow r = dt.Rows.Find(new object[] { parts[0], parts[1], data });
-                                    if (r != null)
-                                        r["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                    if (r != null) 
+                                    {
+                                        object val = ws.Range[column.ToString()].Value ?? "";
+
+                                        if (merged == null)
+                                            r["Valore"] = (val.Equals("-") ? "0" : val);
+                                        else
+                                            r["Valore"] = mergedVal ?? "";
+                                    }
                                     else
                                     {
                                         DataRow newRow = dt.NewRow();
 
+                                        object val = ws.Range[column.ToString()].Value ?? "";
+
                                         newRow["SiglaEntita"] = parts[0];
                                         newRow["SiglaInformazione"] = parts[1];
                                         newRow["Data"] = data;
-                                        newRow["Valore"] = ws.Range[column.ToString()].Value ?? "";
+                                        if (merged == null)
+                                            newRow["Valore"] = (val.Equals("-") ? "0" : val);
+                                        else
+                                            newRow["Valore"] = mergedVal ?? "";
                                         newRow["AnnotaModifica"] = annota ? "1" : "0";
                                         newRow["IdApplicazione"] = Workbook.IdApplicazione;
                                         newRow["IdUtente"] = Workbook.IdUtente;
@@ -234,24 +258,28 @@ namespace Iren.PSO.Base
         /// <param name="ambiente">Sigla Ambiente.</param>
         public static void ChangeAmbiente(string ambiente)
         {
+            bool isProt = Sheet.Protected;
+            if (isProt)
+                Sheet.Protected = false;
+
             Workbook.Main.Shapes.Item("lbTest").Locked = false;
             switch (ambiente)
             {
-                case "Dev":
+                case Simboli.DEV:
                     Workbook.Main.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: DEVELOPMENT";
                     //rosso
                     Workbook.Main.Shapes.Item("lbTest").Line.Weight = 2f;
                     Workbook.Main.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(140, 56, 54));
                     Workbook.Main.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(192, 80, 77));
                     break;
-                case "Test":
+                case Simboli.TEST:
                     Workbook.Main.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: TEST";
                     //giallo
                     Workbook.Main.Shapes.Item("lbTest").Line.Weight = 2f;
                     Workbook.Main.Shapes.Item("lbTest").Line.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 204, 0));
                     Workbook.Main.Shapes.Item("lbTest").Fill.ForeColor.RGB = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(255, 255, 102));
                     break;
-                case "Produzione":
+                case Simboli.PROD:
                     Workbook.Main.Shapes.Item("lbTest").TextFrame.Characters().Text = "Ambiente: PRODUZIONE";
                     //bianco normale
                     Workbook.Main.Shapes.Item("lbTest").Line.Weight = 0.75f;
@@ -261,6 +289,9 @@ namespace Iren.PSO.Base
                     break;
             }
             Workbook.Main.Shapes.Item("lbTest").Locked = true;
+
+            if (isProt)
+                Sheet.Protected = true;
         }
         /// <summary>
         /// Handler per cambiare i label in base alla modifica dello stato del DB.

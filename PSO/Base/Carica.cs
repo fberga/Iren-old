@@ -45,7 +45,8 @@ namespace Iren.PSO.Base
             DefinedNames definedNames = new DefinedNames(DefinedNames.GetSheetName(siglaEntita));
             try
             {
-                AzzeraInformazione(siglaEntita, siglaAzione, definedNames, giorno);
+
+                AzzeraInformazione(siglaEntita, siglaAzione, definedNames, giorno, azionePadre.Equals("CARICA"));
                 if (DataBase.OpenConnection())
                 {
                     if (azionePadre.Equals("GENERA"))
@@ -105,7 +106,7 @@ namespace Iren.PSO.Base
         /// <param name="siglaAzione">Sigla dell'azione per cui sono richieste la generazione o il caricamento dei dati.</param>
         /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
         /// <param name="giorno">Data di riferimento.</param>
-        protected virtual void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno)
+        protected virtual void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno, bool isCarica)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
 
@@ -122,6 +123,8 @@ namespace Iren.PSO.Base
                     siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                     Range rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
                     ws.Range[rng.ToString()].Value = null;
+                    if(!isCarica)
+                        Handler.StoreEdit(ws.Range[rng.ToString()], 0, true);
                     Style.RangeStyle(ws.Range[rng.ToString()], backColor: info["BackColor"], foreColor: info["ForeColor"]);
                     ws.Range[rng.ToString()].ClearComments();
                 }
@@ -373,7 +376,7 @@ namespace Iren.PSO.Base
             else if (calcolo["IdParametroH"] != DBNull.Value)
             {
                 DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_H].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"] + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"] + " AND Ora = " + ora1 + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaParametro.Count > 0)
                     valore1 = entitaParametro[0]["Valore"];

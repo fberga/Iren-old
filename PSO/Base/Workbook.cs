@@ -248,9 +248,14 @@ namespace Iren.PSO.Base
         /// <summary>
         /// Carica dal DB i dati riguardanti le proprietà dell'applicazione che si trovano nella tabella APPLICAZIONE. Assegna alle variabili globali di applicazione i valori.
         /// </summary>
-        public static void AggiornaParametriApplicazione() 
+        public static void AggiornaParametriApplicazione(bool avoidRepositoryUpdate) 
         {
-            DataRow r = Workbook.Repository.CaricaApplicazione(_wb.IdApplicazione);
+            DataRow r;
+            if (!avoidRepositoryUpdate)
+                r = Workbook.Repository.CaricaApplicazione(_wb.IdApplicazione);
+            else
+                r = Workbook.Repository.CambiaApplicazione(_wb.IdApplicazione);
+
             if (r == null)
                 throw new Core.ApplicationNotFoundException("L'appID inserito non ha restituito risultati.");
 
@@ -532,7 +537,7 @@ namespace Iren.PSO.Base
                     DaAggiornare = true;
                 }
                 
-                Workbook.AggiornaParametriApplicazione();
+                Workbook.AggiornaParametriApplicazione(false);
 
                 if (Workbook.Repository.Applicazione != null)
                 {

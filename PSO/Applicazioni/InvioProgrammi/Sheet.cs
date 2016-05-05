@@ -59,7 +59,7 @@ namespace Iren.PSO.Applicazioni
 
                 foreach (DataRowView entita in categoriaEntita)
                 {
-                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND Visibile = '1' AND IdApplicazione = " + Workbook.IdApplicazione;
+                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaInformazione <> 'CHECK' AND Visibile = '1' AND IdApplicazione = " + Workbook.IdApplicazione;
                     foreach (DataRowView info in informazioni)
                     {
                         object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];

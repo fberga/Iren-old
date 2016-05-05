@@ -160,11 +160,11 @@ namespace Iren.PSO.Applicazioni
             DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
             categoriaEntita.RowFilter = "Gerarchia = '' OR Gerarchia IS NULL AND IdApplicazione = " + _appID;
 
-            if (DataCaricamentoStruttura != Workbook.DataAttiva)
-            {
+            //if (DataCaricamentoStruttura != Workbook.DataAttiva)
+            //{
                 Clear();
                 InitBarraNavigazione();
-            }
+            //}
 
             InitColumns();
 
@@ -175,7 +175,7 @@ namespace Iren.PSO.Applicazioni
 
             _definedNames.DumpToDataSet();
 
-            if (DataCaricamentoStruttura != Workbook.DataAttiva)
+            //if (DataCaricamentoStruttura != Workbook.DataAttiva)
                 CaricaInformazioni();
 
             if (_dataCaricaStruttura.ContainsKey(_mercato))
@@ -193,10 +193,10 @@ namespace Iren.PSO.Applicazioni
             informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND IdApplicazione = " + _appID;
             CreaNomiCelle(entita["SiglaEntita"]);
             
-            if (DataCaricamentoStruttura != Workbook.DataAttiva)
-            {
+            //if (DataCaricamentoStruttura != Workbook.DataAttiva)
+            //{
                 FormattaBloccoEntita(entita["SiglaEntita"], entita["DesEntita"], entita["CodiceRUP"]);
-            }
+            //}
 
         }
         /// <summary>
@@ -256,7 +256,7 @@ namespace Iren.PSO.Applicazioni
                 //range grande come tutta la tabella
                 rng = new Range(_definedNames.GetRowByName(siglaEntita, "UM", "T"), _definedNames.GetColFromName("RIF" + (i + 1), "PROGRAMMAQ1") - 1, Date.GetOreGiorno(Workbook.DataAttiva) + 2, 5);
 
-                Style.RangeStyle(_ws.Range[rng.ToString()], borders: "[top:medium,right:medium,bottom:medium,left:medium,insideH:thin,insideV:thin]", align: Excel.XlHAlign.xlHAlignCenter, numberFormat: informazioni[0]["Formato"]);
+                Style.RangeStyle(_ws.Range[rng.ToString()], borders: "[top:medium,right:medium,bottom:medium,left:medium,insideH:thin,insideV:thin]", align: Excel.XlHAlign.xlHAlignCenter, numberFormat: "general");
                 Style.RangeStyle(_ws.Range[rng.Rows[1, rng.Rows.Count - 1].Columns[0].ToString()], backColor: 15, bold: true, align: Excel.XlHAlign.xlHAlignLeft);
                 Style.RangeStyle(_ws.Range[rng.Rows[0].ToString()], backColor: 15, bold: true, fontSize: 11);
                 Style.RangeStyle(_ws.Range[rng.Rows[1].ToString()], backColor: 15, bold: true);
@@ -269,7 +269,11 @@ namespace Iren.PSO.Applicazioni
                 for (int h = 1; h <= Date.GetOreGiorno(Workbook.DataAttiva); h++)
                     _ws.Range[rng.Columns[0].Rows[h + 1].ToString()].Value = "Ora " + h;
 
-                if (informazioni.Count == 4)
+                var isOrario = informazioni
+                    .OfType<DataRowView>()
+                    .Any(r => r["SiglaInformazione"].ToString().StartsWith("PROGRAMMA_"));
+
+                if (!isOrario)
                 {
                     for (int j = 0; j < 4; j++)
                         _ws.Range[rng.Rows[1].Columns[j + 1].ToString()].Value = 15 * j + "-" + 15 * (j+1);

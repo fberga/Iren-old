@@ -1062,6 +1062,28 @@ namespace Iren.PSO.Base
                 if (_struttura.visData0H24)
                     rngData.Cells[1].Font.Size -= 1;
 
+                //Celle merged
+                if (info["CriterioUnione"] != DBNull.Value)
+                {
+                    string[] uCriteria = info["CriterioUnione"].ToString().Split(';');
+                    foreach (string uCrit in uCriteria)
+                    {
+                        var interval = uCrit
+                            .Split('-')
+                            .OfType<string>()
+                            .Select(s => int.Parse(Regex.Match(s, @"\d+").Value))
+                            .ToArray();
+
+                        if (interval[1] == 25 && Date.GetOreGiorno(_dataInizio) < 25)
+                            interval[1] = Date.GetOreGiorno(_dataInizio);
+
+                        Range union = new Range(rngData.Columns[interval[0]].Address() + ":" + rngData.Columns[interval[1]].Address());
+
+                        _ws.Range[union.ToString()].Merge();
+                    }
+                    rngData.HorizontalAlignment = Excel.XlHAlign.xlHAlignLeft;
+                }
+
                 //Validazione celle se UNIT_COMM
                 if (info["SiglaInformazione"].Equals("UNIT_COMM"))
                 {
@@ -1529,20 +1551,20 @@ namespace Iren.PSO.Base
                         CaricaInformazioniEntita(datiApplicazioneH);
                         CaricaCommentiEntita(insertManuali);
                     }
+                    //TODO se dati giornalieri riabilitare
+                    //SplashScreen.UpdateStatus("Carico dati giornalieri");
+                    ////carico dati giornalieri
+                    //DataView datiApplicazioneD = Workbook.Repository[DataBase.TAB.DATI_APPLICAZIONE_D].DefaultView;
 
-                    SplashScreen.UpdateStatus("Carico dati giornalieri");
-                    //carico dati giornalieri
-                    DataView datiApplicazioneD = Workbook.Repository[DataBase.TAB.DATI_APPLICAZIONE_D].DefaultView;
+                    //foreach (DataRowView dato in datiApplicazioneD)
+                    //{
+                    //    if (_definedNames.IsDefined(dato["SiglaEntita"]))
+                    //    {
+                    //        Range rng = new Range(_definedNames.GetRowByNameSuffissoData(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _definedNames.GetFirstCol() - 1);
 
-                    foreach (DataRowView dato in datiApplicazioneD)
-                    {
-                        if (_definedNames.IsDefined(dato["SiglaEntita"]))
-                        {
-                            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(dato["SiglaEntita"], dato["SiglaInformazione"], Date.GetSuffissoData(dato["Data"].ToString())), _definedNames.GetFirstCol() - 1);
-
-                            _ws.Range[rng.ToString()].Value = dato["Valore"];
-                        }
-                    }
+                    //        _ws.Range[rng.ToString()].Value = dato["Valore"];
+                    //    }
+                    //}
                 }
             }
             catch (Exception e)
@@ -1595,7 +1617,7 @@ namespace Iren.PSO.Base
             {
                 DateTime giorno = DateTime.ParseExact(commento["Data"].ToString().Substring(0,8), "yyyyMMdd", CultureInfo.InvariantCulture);
 
-                if (giorno <= _dataFineUP[commento["SiglaEntita"]])
+                if (_dataFineUP.ContainsKey(commento["SiglaEntita"]) && giorno <= _dataFineUP[commento["SiglaEntita"]])
                 {
                     SplashScreen.UpdateStatus("Scrivo commenti " + commento["SiglaEntita"]);
                     Range rng = _definedNames.Get(commento["SiglaEntita"], commento["SiglaInformazione"], Date.GetSuffissoData(giorno), Date.GetSuffissoOra(commento["Data"].ToString()));

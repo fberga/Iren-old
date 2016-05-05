@@ -95,9 +95,9 @@ namespace Iren.PSO.Applicazioni
             Application.ScreenUpdating = false;
 #if DEBUG
             //TODO Ripristinare DEV
-            ambiente = Simboli.TEST;
+            ambiente = Simboli.DEV;
 #else
-            ambiente = Simboli.TEST;
+            //ambiente = Simboli.TEST;
 #endif
             PSO.Base.Workbook.StartUp(this);
             Globals.Ribbons.GetRibbon<ToolsExcelRibbon>().InitRibbon();

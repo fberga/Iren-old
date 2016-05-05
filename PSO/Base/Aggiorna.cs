@@ -104,10 +104,11 @@ namespace Iren.PSO.Base
             Workbook.Repository.Add(insertManuali);
 
             SplashScreen.UpdateStatus("Carico informazioni giornaliere dal DB");
-            DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd")) ?? new DataTable();
+            //TODO se dati giornalieri ancora presenti riabilitare
+            //DataTable datiApplicazioneD = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_D, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + Workbook.DataAttiva.AddDays(Struct.intervalloGiorni).ToString("yyyyMMdd")) ?? new DataTable();
 
-            datiApplicazioneD.TableName = DataBase.TAB.DATI_APPLICAZIONE_D;
-            Workbook.Repository.Add(datiApplicazioneD);
+            //datiApplicazioneD.TableName = DataBase.TAB.DATI_APPLICAZIONE_D;
+            //Workbook.Repository.Add(datiApplicazioneD);
         }
         /// <summary>
         /// Cancella le tabelle create in modo da non avere duplicati nel dataset.
@@ -132,8 +133,7 @@ namespace Iren.PSO.Base
             if (DataBase.OpenConnection() || avoidRepositoryUpdate)
             {
                 //aggiorno i parametri di base dell'applicazione
-                if (!avoidRepositoryUpdate)
-                    Workbook.AggiornaParametriApplicazione();
+                Workbook.AggiornaParametriApplicazione(avoidRepositoryUpdate);
 
                 SplashScreen.Show();
 
@@ -159,6 +159,38 @@ namespace Iren.PSO.Base
                 DataView categorie = Workbook.Repository[DataBase.TAB.CATEGORIA].DefaultView;
                 categorie.RowFilter = "Operativa = 1 AND IdApplicazione = " + Workbook.IdApplicazione;
 
+                //cancello i fogli che non ci sono più come categorie
+                if (Workbook.CategorySheets != null)
+                {
+                    foreach (Excel.Worksheet categorySheet in Workbook.CategorySheets)
+                    {
+                        if ((from DataRowView r in categorie
+                             where r["DesCategoria"].Equals(categorySheet.Name)
+                             select r).Count() == 0)
+                        {
+                            bool isactive = Workbook.Application.DisplayAlerts;
+                            try
+                            {
+                                if(isactive)
+                                    Workbook.Application.DisplayAlerts = false;
+                                
+                                Workbook.Sheets[categorySheet.Name].Delete();
+                                
+                                if(isactive)
+                                    Workbook.Application.DisplayAlerts = true;
+                            }
+                            catch
+                            {
+                                if (isactive)
+                                    Workbook.Application.DisplayAlerts = true;
+                            }
+                            
+                        }
+                            
+                    }
+                }
+                
+                //creo fogli che si sono aggiunti alle categorie
                 foreach (DataRowView categoria in categorie)
                 {
                     Excel._Worksheet ws;

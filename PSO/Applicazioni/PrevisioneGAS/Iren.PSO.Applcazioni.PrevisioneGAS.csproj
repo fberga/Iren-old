@@ -20,7 +20,7 @@
     <PublishUrl>\\srvpso\Applicazioni\PSO\PrevisioneGAS\</PublishUrl>
     <InstallUrl>\\srvpso\Applicazioni\PSO\PrevisioneGAS\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>1.0.1.4</ApplicationVersion>
+    <ApplicationVersion>2.0.0.7</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
@@ -168,7 +168,7 @@
     <Content Include="Data\PrevisioneGAS.xlsm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="CertificatoTemporaneo.pfx" />
+    <None Include="Iren.PSO.CertificatoTemporaneo.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -252,10 +252,10 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>CertificatoTemporaneo.pfx</ManifestKeyFile>
+    <ManifestKeyFile>Iren.PSO.CertificatoTemporaneo.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>AC7332EB812040DD6F8F471EE3C13A2D9A2D5957</ManifestCertificateThumbprint>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />

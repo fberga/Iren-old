@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -124,41 +125,41 @@ namespace Iren.PSO.Applicazioni
                         {
                             Range rng = definedNames.Get(siglaEntita, "PSMIN_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             Range rngCorr = definedNames.Get(siglaEntita, "PSMIN_CORRETTA_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
-                            string psminVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
+                            string psminVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace(',','.');
 
                             rng = definedNames.Get(siglaEntita, "PSMAX_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
                             rngCorr = definedNames.Get(siglaEntita, "PSMAX_CORRETTA_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
-                            string psmaxVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace('.', ',');
+                            string psmaxVal = (ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "PTMIN_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
-                            string ptminVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string ptminVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "PTMAX_ASSETTO" + assetto["Riferimento"] + "_FASCIA" + j, suffissoData, Date.GetSuffissoOra(i + 1));
-                            string ptmaxVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string ptmaxVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "TRISP_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                            string trispVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string trispVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "GPA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                            string gpaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string gpaVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "GPD_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                            string gpdVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string gpdVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "TAVA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                            string tavaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string tavaVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "TARA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                            string taraVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string taraVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             rng = definedNames.Get(siglaEntita, "BRS_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                            string brsVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                            string brsVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
 
                             string tderampaVal = null;
                             if (isTermo)
                             {
                                 rng = definedNames.Get(siglaEntita, "TDERAMPA_ASSETTO" + assetto["Riferimento"], suffissoData, Date.GetSuffissoOra(i + 1));
-                                tderampaVal = ws.Range[rng.ToString()].Value.ToString().Replace('.', ',');
+                                tderampaVal = (ws.Range[rng.ToString()].Value).ToString().Replace(',', '.');
                             }
                             if (ptminVal != "" && ptmaxVal != "")
                             {
@@ -250,15 +251,15 @@ namespace Iren.PSO.Applicazioni
                     }
                     wb.Sheets[1].Columns["B:C"].EntireColumn.AutoFit();
                     wb.Sheets[1].Range["A1"].Select();
-                    wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel8);
+                    wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel12);
                     wb.Close();
                     Marshal.ReleaseComObject(wb);
 
                     var config = Workbook.GetUsrConfigElement("destMailTest");
-                    string mailTo = config.Value;
+                    string mailTo = config.Test;
                     string mailCC = "";
 
-                    if (Workbook.Ambiente == "Produzione")
+                    if (Workbook.Ambiente == Simboli.PROD)
                     {
                         entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_MAIL_TO' AND IdApplicazione = " + Workbook.IdApplicazione;
                         mailTo = entitaProprieta[0]["Valore"].ToString();
@@ -288,7 +289,9 @@ namespace Iren.PSO.Applicazioni
                     mail.SendUsingAccount = senderAccount;
                     mail.Subject = oggetto;
                     mail.Body = messaggio;
-                    mail.Recipients.Add(mailTo);
+                    foreach(string dest in mailTo.Split(';'))
+                        if(dest.Trim() != "")
+                            mail.Recipients.Add(dest.Trim());
                     mail.CC = mailCC;
                     mail.Attachments.Add(fileName);
 

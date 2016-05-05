@@ -168,6 +168,21 @@ namespace Iren.PSO.Base
             return name;
         }
 
+        protected static decimal GetDecimal(Microsoft.Office.Interop.Excel.Worksheet ws, Range rngCorr, Range rng = null)
+        {
+            object val = null;
+            
+            if(rng == null)
+                val = ws.Range[rngCorr.ToString()].Value ?? 0M;
+            else
+                val = ws.Range[rngCorr.ToString()].Value ?? ws.Range[rng.ToString()].Value ?? 0M;
+
+            if (val.Equals(""))
+                return 0M;
+
+            return Convert.ToDecimal(val);
+        }
+
         #endregion
     }
 

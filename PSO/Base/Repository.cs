@@ -527,6 +527,10 @@ namespace Iren.PSO.Base
         {
             CaricaApplicazioni();
 
+            return CambiaApplicazione(IdApplicazione);
+        }
+        public DataRow CambiaApplicazione(object IdApplicazione)
+        {
             Applicazione = this[DataBase.TAB.LISTA_APPLICAZIONI].AsEnumerable()
                 .Where(r => r["IdApplicazione"].Equals(IdApplicazione))
                 .FirstOrDefault();

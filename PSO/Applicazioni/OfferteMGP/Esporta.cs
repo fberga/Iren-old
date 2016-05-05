@@ -108,7 +108,7 @@ namespace Iren.PSO.Applicazioni
                     {
                         object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
                         Range rng = definedNames.Get(siglaEntitaRif, info["SiglaInformazione"], suffissoData, Date.GetSuffissoOra(i + 1));
-                        values[j++] = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace('.', ',');
+                        values[j++] = Math.Abs(GetDecimal(ws, rng)).ToString(CultureInfo.InstalledUICulture);
 
                     }
 
@@ -215,8 +215,8 @@ namespace Iren.PSO.Applicazioni
 
                     for (int i = 0; i < oreGiorno; i++)
                     {
-                        decimal valoreOfferta = Math.Abs((decimal)(ws.Range[rngEnergia.Columns[i].ToString()].Value ?? 0));
-                        decimal prezzoOfferta = (decimal)(ws.Range[rngPrezzo.Columns[i].ToString()].Value ?? 0);
+                        decimal valoreOfferta = GetDecimal(ws, rngEnergia.Columns[i]);// (decimal)(ws.Range[rngEnergia.Columns[i].ToString()].Value ?? 0);
+                        decimal prezzoOfferta = GetDecimal(ws, rngPrezzo.Columns[i]);// (decimal)(ws.Range[rngPrezzo.Columns[i].ToString()].Value ?? 0);
 
                         if (valoreOfferta != 0)
                         {
@@ -232,7 +232,7 @@ namespace Iren.PSO.Applicazioni
                                     new XElement(ns + "Hour", i + 1),
                                     new XElement(ns + "UnitReferenceNumber", codiceRUP),
                                     new XElement(ns + "BidQuantity",
-                                        new XAttribute("UnitOfMeasure", "MWh"), valoreOfferta.ToString(CultureInfo.InstalledUICulture)),
+                                        new XAttribute("UnitOfMeasure", "MWh"), Math.Abs(valoreOfferta).ToString(CultureInfo.InstalledUICulture)),
                                     new XElement(ns + "EnergyPrice", prezzoOfferta.ToString(CultureInfo.InstalledUICulture))
                                 );
 
@@ -304,14 +304,14 @@ namespace Iren.PSO.Applicazioni
 
                     for (int i = 0; i < oreGiorno; i++)
                     {
-                        decimal valoreOfferta = Math.Abs((decimal)(ws.Range[rngEnergia.Columns[i].ToString()].Value ?? 0));
-                        decimal prezzoOfferta = (decimal)(ws.Range[rngPrezzo.Columns[i].ToString()].Value ?? 0);
+                        decimal valoreOfferta = GetDecimal(ws, rngEnergia.Columns[i]);// (decimal)(ws.Range[rngEnergia.Columns[i].ToString()].Value ?? 0);
+                        decimal prezzoOfferta = GetDecimal(ws, rngPrezzo.Columns[i]);// (decimal)(ws.Range[rngPrezzo.Columns[i].ToString()].Value ?? 0);
 
                         object tipoOfferta = entitaProprieta[0]["Valore"].Equals("MISTA") ? (valoreOfferta < 0 ? "ACQ" : "VEN") : entitaProprieta[0]["Valore"];
 
                         XElement sg = new XElement(ns + ("SG" + gradino),
                                 new XAttribute("PRE", prezzoOfferta.ToString(CultureInfo.InstalledUICulture)),
-                                new XAttribute("QUA", valoreOfferta.ToString(CultureInfo.InstalledUICulture)),
+                                new XAttribute("QUA", Math.Abs(valoreOfferta).ToString(CultureInfo.InstalledUICulture)),
                                 new XAttribute("AZIONE", tipoOfferta),
                                 (i + 1)
                             );

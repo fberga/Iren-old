@@ -78,10 +78,10 @@ namespace Iren.PSO.Applicazioni
             int idApplicazione = -1;
             int idUtente = -1;
 #if DEBUG
-            string ambiente = Simboli.TEST;
+            string ambiente = Simboli.DEV;
 #else
             //TODO passare a PROD quando rilasciata versione ufficiale!!!
-            string ambiente = Simboli.TEST;
+            string ambiente = Simboli.PROD;
 #endif
             
             using (ServerDocument xls = new ServerDocument(tmpCopy))
@@ -94,8 +94,13 @@ namespace Iren.PSO.Applicazioni
                 {
                     using (System.IO.StringReader stringReader = new System.IO.StringReader(cachedAmbiente.Xml))
                     {
-                        System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(string));
-                        ambiente = (string)serializer.Deserialize(stringReader);
+                        try
+                        {
+                            System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(string));
+                            ambiente = (string)serializer.Deserialize(stringReader);
+                        }
+                        catch { }
+                        
                     }
                 }
                 //inizializzo connessione con parametri temporanei
@@ -110,8 +115,12 @@ namespace Iren.PSO.Applicazioni
                 {
                     using (System.IO.StringReader stringReader = new System.IO.StringReader(cachedIdApplicazione.Xml))
                     {
-                        System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(int));
-                        idApplicazione = (int)serializer.Deserialize(stringReader);
+                        try
+                        {
+                            System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(int));
+                            idApplicazione = (int)serializer.Deserialize(stringReader);
+                        }
+                        catch { }
                     }
                 }
 
@@ -125,8 +134,12 @@ namespace Iren.PSO.Applicazioni
                 {
                     using (System.IO.StringReader stringReader = new System.IO.StringReader(cachedIdUtente.Xml))
                     {
-                        System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(int));
-                        idUtente = (int)serializer.Deserialize(stringReader);
+                        try
+                        {
+                            System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(typeof(int));
+                            idUtente = (int)serializer.Deserialize(stringReader);
+                        }
+                        catch { }
                     }
                 }
 
@@ -898,6 +911,8 @@ namespace Iren.PSO.Applicazioni
             Aggiorna aggiorna = new Aggiorna();
             aggiorna.Struttura(avoidRepositoryUpdate: true);
 
+            RefreshChecks();
+
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
         }
@@ -1091,15 +1106,11 @@ namespace Iren.PSO.Applicazioni
         /// <param name="appID">L'ID applicazione che identifica anche in quale mercato il foglio è impostato.</param>
         /// <param name="dataAttiva">La data attiva da modificare all'occorrenza.</param>
         /// <returns>Restituisce true se il foglio è da aggiornare, false altrimenti.</returns>
-        private void SetMercato(out DateTime newDate, out int newAppId)
+        private void SetMercato(out int newAppId)
         {
             //configuro la data attiva
             int ora = DateTime.Now.Hour;
-            if (ora > 17)
-                newDate = DateTime.Today.AddDays(1);
-            else
-                newDate = DateTime.Today;
-
+            
             ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged -= cmbMSD_SelectionChanged;
             ((RibbonDropDown)Controls["cmbMSD"]).SelectedItem = ((RibbonDropDown)Controls["cmbMSD"]).Items.Where(i => i.Label == Simboli.OreMSD[ora]).First();
             ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged += cmbMSD_SelectionChanged;
@@ -1125,6 +1136,15 @@ namespace Iren.PSO.Applicazioni
                         newDate = DateTime.Today.AddDays(1);
                     else
                         newDate = DateTime.Today.AddDays(2);
+                    break;
+                case 2:
+                case 3:
+                case 4:
+                case 13:
+                    if (ora > 17)
+                        newDate = DateTime.Today.AddDays(1);
+                    else
+                        newDate = DateTime.Today;
                     break;
                 case 5:
                     newDate = DateTime.Today;
@@ -1231,7 +1251,7 @@ namespace Iren.PSO.Applicazioni
                 int newIdApplicazione = Workbook.IdApplicazione;
 
                 if (Controls.Contains("cmbMSD"))
-                    SetMercato(out newDate, out newIdApplicazione);
+                    SetMercato(out newIdApplicazione);
                 
                 bool rifiutatoCambioData;
                 AggiornaData(out newDate, out rifiutatoCambioData);

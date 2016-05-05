@@ -26,7 +26,14 @@ namespace Iren.PSO.Applicazioni
 
         public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null)
         {
+            bool isGenera = azionePadre.Equals("GENERA");
+            if (isGenera)
+                azionePadre = "CARICA";
+
             bool o = base.AzioneInformazione(siglaEntita, siglaAzione, azionePadre, giorno, parametro);
+
+            if(isGenera)
+                azionePadre = "GENERA";
 
             //non ho fatto nulla, la connessione non si apre e l'azione padre è CARICA... rientro nel caso del caricamento da XML
             if (o == false && !DataBase.OpenConnection() && azionePadre.Equals("CARICA")) 

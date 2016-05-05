@@ -445,6 +445,9 @@ namespace Iren.PSO.Base
             if (!_toNote.Contains(row))
                 _toNote.Add(row);
         }
+
+        
+
         /// <summary>
         /// Marca la riga come check.
         /// </summary>

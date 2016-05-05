@@ -12,7 +12,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 {
     public partial class ConfiguratoreRibbon : Form
     {
-        private string[] _ambienti;
+        //private string[] _ambienti;
 
         //public static int IdApplicazione { get; private set; }
         public static List<int> IdUtenti { get { return new List<int>() { 62 }; } }// private set; }
@@ -26,11 +26,14 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
         {
             Utility.InitializeUtility();
             Utility.StdFont = this.Font;
-            InitializeComponent();            
+            InitializeComponent();
+
+            btnDev.Image = Iren.PSO.Base.Properties.Resources.dev;
+            btnTest.Image = Iren.PSO.Base.Properties.Resources.test;
 
             //trovo tutte le risorse disponibili in Iren.ToolsExcel.Base
             var resourceSet = Iren.PSO.Base.Properties.Resources.ResourceManager.GetResourceSet(CultureInfo.InstalledUICulture, true, true);
-            
+
             //Considero solo quelle che sono di tipo Image
             var imgs =
                 from r in resourceSet.Cast<DictionaryEntry>()
@@ -43,33 +46,15 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 Utility.ImageListSmall.Images.Add(img.Key as string, img.Value as Image);
             }
 
+
+
             //inizializzazione connessione
-            _ambienti = Workbook.AppSettings("Ambienti").Split('|');
-            DataBase.CreateNew(_ambienti[0]);
+            //_ambienti = Workbook.AppSettings("Ambienti").Split('|');
+            btnDev.Checked = true;
+            ChangeAmbiente(btnDev, null);
+            //
             //DataBase.DB.SetParameters(idUtente: 62);
 
-            //carico la lista di applicazioni configurabili
-            DataTable applicazioni = DataBase.Select(DataBase.SP.APPLICAZIONE, "@IdApplicazione=0;@IdUtente=1");
-            if (applicazioni != null)
-            {
-                drpApplicazioni.DisplayMember = "DesApplicazione";
-                drpApplicazioni.ValueMember = "IdApplicazione";
-                drpApplicazioni.DataSource = applicazioni;
-            }
-
-            //carico la lista degli utenti
-            DataTable utenti = DataBase.Select(DataBase.SP.UTENTE_GRUPPO, "@IdUtenteGruppo=0");
-            var allUser = utenti.AsEnumerable()
-                .Where(r => r["IdUtenteGruppo"].Equals(1) || r["IdUtenteGruppo"].Equals(5))
-                .Select(r => new { IdUtente = r["IdUtente"], Nome = r["Nome"] })
-                .ToList();
-
-            if (utenti != null)
-            {
-                drpUtenti.DisplayMember = "Nome";
-                drpUtenti.ValueMember = "IdUtente";
-                drpUtenti.DataSource = allUser;
-            }
         }
 
         private void CaricaAnteprimaRibbon()
@@ -382,9 +367,69 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             using (CopiaConfigurazione form = new CopiaConfigurazione())
             {
                 form.ShowDialog();
-
-
             }
+        }
+
+        private void ChangeAmbiente(object sender, EventArgs e)
+        {
+            ToolStripButton btn = (ToolStripButton)sender;
+
+            if (!btn.Checked)
+            {
+                btn.CheckedChanged -= ChangeAmbiente;
+                btn.Checked = true;
+                btn.CheckedChanged += ChangeAmbiente;
+                return;
+            }
+                
+            btnDev.CheckedChanged -= ChangeAmbiente;
+            btnTest.CheckedChanged -= ChangeAmbiente;
+
+            if (btn == btnDev)
+                btnTest.Checked = false;
+            else
+                btnDev.Checked = false;
+
+            btnTest.CheckedChanged += ChangeAmbiente;
+            btnDev.CheckedChanged += ChangeAmbiente;
+            if(DataBase.IsInitialized)
+                DataBase.Close();
+            if (btn == btnDev)
+                DataBase.CreateNew(Simboli.DEV, false);
+            else if (btn == btnTest)
+                DataBase.CreateNew(Simboli.TEST, false);
+
+            drpApplicazioni.SelectedValueChanged -= CambioApplicazione;
+            drpUtenti.SelectedValueChanged -= CambioUtente;
+            //carico la lista di applicazioni configurabili
+            DataTable applicazioni = DataBase.Select(DataBase.SP.APPLICAZIONE, "@IdApplicazione=0;@IdUtente=1");
+            if (applicazioni != null)
+            {
+                drpApplicazioni.DisplayMember = "DesApplicazione";
+                drpApplicazioni.ValueMember = "IdApplicazione";
+                drpApplicazioni.DataSource = applicazioni;
+            }
+
+            //carico la lista degli utenti
+            DataTable utenti = DataBase.Select(DataBase.SP.UTENTE_GRUPPO, "@IdUtenteGruppo=0");
+            var allUser = utenti.AsEnumerable()
+                .Where(r => r["IdUtenteGruppo"].Equals(1) || r["IdUtenteGruppo"].Equals(5))
+                .Select(r => new { IdUtente = r["IdUtente"], Nome = r["Nome"] })
+                .ToList();
+
+            if (utenti != null)
+            {
+                drpUtenti.DisplayMember = "Nome";
+                drpUtenti.ValueMember = "IdUtente";
+                drpUtenti.DataSource = allUser;
+            }
+            DataBase.IdApplicazione = (int)drpApplicazioni.SelectedValue;
+            DataBase.IdUtente = (int)drpUtenti.SelectedValue;
+
+            drpApplicazioni.SelectedValueChanged += CambioApplicazione;
+            drpUtenti.SelectedValueChanged += CambioUtente;
+            
+            RicaricaRibbon_Click(null, null);
         }
     }
 }

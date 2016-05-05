@@ -25,8 +25,8 @@
     <InstallUrl>\\srvpso\Applicazioni\PSO\PSOLauncher\</InstallUrl>
     <TargetCulture>it-IT</TargetCulture>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>23</ApplicationRevision>
-    <ApplicationVersion>1.0.0.23</ApplicationVersion>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>2.0.0.1</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>

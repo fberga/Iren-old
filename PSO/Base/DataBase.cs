@@ -91,7 +91,7 @@ namespace Iren.PSO.Base
             public const string ADDRESS_FROM = "AddressFrom",
                 ADDRESS_TO = "AddressTo",
                 ANNOTA = "AnnotaModifica",
-                APPLICAZIONE_RIBBON = "ApplicazioneRibbon",
+                //APPLICAZIONE_RIBBON = "ApplicazioneRibbon",
                 AZIONE = "Azione",
                 AZIONE_CATEGORIA = "AzioneCategoria",
                 CALCOLO = "Calcolo",
@@ -553,7 +553,7 @@ namespace Iren.PSO.Base
         /// <param name="message">Messaggio del Log.</param>
         public void InsertLog(Core.DataBase.TipologiaLOG logType, string message)
         {
-#if (!DEBUG)
+#if (!DEBUG || DEBUG)
             if (OpenConnection())
             {
                 Insert(SP.INSERT_LOG, new Core.QryParams() { { "@IdTipologia", logType }, { "@Messaggio", message } });

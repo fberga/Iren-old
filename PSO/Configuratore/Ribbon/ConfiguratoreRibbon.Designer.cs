@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConfiguratoreRibbon));
             this.toolStripTopMenu = new System.Windows.Forms.ToolStrip();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.Salva = new System.Windows.Forms.ToolStripButton();
@@ -50,6 +51,8 @@
             this.ctrlUpButton = new System.Windows.Forms.ToolStripButton();
             this.ctrlRightButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnTest = new System.Windows.Forms.ToolStripButton();
+            this.btnDev = new System.Windows.Forms.ToolStripButton();
             this.panelRibbonLayout = new System.Windows.Forms.Panel();
             this.panelApplicazione = new System.Windows.Forms.Panel();
             this.drpUtenti = new System.Windows.Forms.ComboBox();
@@ -86,7 +89,9 @@
             this.ctrlDownButton,
             this.ctrlUpButton,
             this.ctrlRightButton,
-            this.toolStripSeparator3});
+            this.toolStripSeparator3,
+            this.btnTest,
+            this.btnDev});
             this.toolStripTopMenu.Location = new System.Drawing.Point(485, 0);
             this.toolStripTopMenu.Name = "toolStripTopMenu";
             this.toolStripTopMenu.Size = new System.Drawing.Size(1035, 56);
@@ -285,6 +290,27 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 56);
             // 
+            // btnTest
+            // 
+            this.btnTest.CheckOnClick = true;
+            this.btnTest.Image = ((System.Drawing.Image)(resources.GetObject("btnTest.Image")));
+            this.btnTest.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(36, 53);
+            this.btnTest.Text = "Test";
+            this.btnTest.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.btnTest.CheckedChanged += new System.EventHandler(this.ChangeAmbiente);
+            // 
+            // btnDev
+            // 
+            this.btnDev.CheckOnClick = true;
+            this.btnDev.Image = ((System.Drawing.Image)(resources.GetObject("btnDev.Image")));
+            this.btnDev.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnDev.Name = "btnDev";
+            this.btnDev.Size = new System.Drawing.Size(36, 53);
+            this.btnDev.Text = "Dev";
+            this.btnDev.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            // 
             // panelRibbonLayout
             // 
             this.panelRibbonLayout.AutoScroll = true;
@@ -385,7 +411,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1553, 383);
+            this.ClientSize = new System.Drawing.Size(1360, 383);
             this.Controls.Add(this.tableLayoutForm);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
@@ -434,6 +460,8 @@
         private System.Windows.Forms.ToolStripButton copiaA;
         private System.Windows.Forms.ComboBox drpUtenti;
         private System.Windows.Forms.Label lbUtenti;
+        private System.Windows.Forms.ToolStripButton btnTest;
+        private System.Windows.Forms.ToolStripButton btnDev;
     }
 }
 

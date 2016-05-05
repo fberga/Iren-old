@@ -36,6 +36,7 @@ namespace Iren.PSO.Forms
 
             dataGridConfigurazioni.Columns[1].Width = (width / 4);
             dataGridConfigurazioni.Columns[1].ReadOnly = true;
+            dataGridConfigurazioni.Columns[2].ReadOnly = true;
             dataGridConfigurazioni.Columns[1].DefaultCellStyle = new DataGridViewCellStyle() 
             {
                 SelectionBackColor = System.Drawing.Color.White,
