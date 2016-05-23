@@ -157,7 +157,13 @@ namespace Iren.PSO.Base
                     {
                         foreach (string subRange in subRanges)
                         {
-                            ws.Range[subRange].Locked = !abilita;
+                            Range rng = new Range(subRange);
+                            //sono in un range dei dati
+                            if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1") && rng.Columns.Count > 22 && rng.Columns.Count < 26)
+                            {
+                                rng = GetModifiableRange(DateTime.Now.Hour, rng);
+                            }
+                            ws.Range[rng.ToString()].Locked = !abilita;
                         }
                     }
                 }
@@ -165,6 +171,22 @@ namespace Iren.PSO.Base
             
             if(prot)
                 Protected = true;
+        }
+        /// <summary>
+        /// Restituisce il range che è effettivamente modificabile in caso ci siano mercati chiusi. Presuppone che la riga considerata sia una riga di dati.
+        /// </summary>
+        /// <param name="hour">Ora in cui effettuare il controllo.</param>
+        /// <param name="rng">Range originale.</param>
+        /// <returns>Ritorna un range più piccolo dell'originale che contiene le ore effettivamente modificabili.</returns>
+        public static Range GetModifiableRange(int hour, Range rng)
+        {
+            int startHour = Simboli.GetMarketOffset(hour);
+            Range o = new Range(rng);
+
+            o.StartColumn += startHour;
+            o.ColOffset -= startHour;
+
+            return o;
         }
         /// <summary>
         /// Metodo che registra in DataBase.LocalDB le modifiche effettuate dall'utente durante il periodo in cui la modifica è attiva. Lavora con le sole entità modificate in modo da non sovraccaricare di modifiche il DB.
@@ -213,7 +235,6 @@ namespace Iren.PSO.Base
                 }
             }
         }
-
         /// <summary>
         /// Assegna il colore al range confrontando il suo contenuto con lo schema definito dagli utenti: Giallo per le date antecedenti a oggi, verde oggi, azzurro domani, arancione dopodomani, grigio il resto.
         /// </summary>
@@ -221,6 +242,8 @@ namespace Iren.PSO.Base
         /// <param name="giorno">Giorno con cui fare il confronto.</param>
         public static void AssegnaColori(Excel.Range rng, DateTime giorno)
         {
+            Style.RangeStyle(rng, pattern: Excel.XlPattern.xlPatternNone);
+
             if (giorno.Date < DateTime.Now.Date)
                 rng.Interior.Color = System.Drawing.Color.FromArgb(240, 230, 140);
             else if (giorno.Date == DateTime.Now.Date)
@@ -328,6 +351,13 @@ namespace Iren.PSO.Base
                     Range rng = new Range(row, _definedNames.GetColFromDate(giorno), 2, oreGiorno);
 
                     AssegnaColori(_ws.Range[rng.ToString()], giorno);
+
+                    if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+                    {
+                        int offset = Simboli.GetMarketOffset(DateTime.Now.Hour);
+                        Range rngDisabled = new Range(row + 1, _definedNames.GetColFromDate(giorno), 1, offset);
+                        Style.RangeStyle(_ws.Range[rngDisabled.ToString()], pattern: Excel.XlPattern.xlPatternGray50);
+                    }
 
                     if (Struct.tipoVisualizzazione == "V")
                     {
@@ -441,6 +471,7 @@ namespace Iren.PSO.Base
             _definedNames.DumpToDataSet();
             CaricaInformazioni();
             AggiornaGrafici();
+            MakeCellsDisabled();
         }
         /// <summary>
         /// Metodo per eliminare la struttura esistente dal foglio e prepararlo alla nuova che verrà caricata.
@@ -709,6 +740,8 @@ namespace Iren.PSO.Base
         protected virtual void AggiungiNomeInformazione(DataRowView info, DateTime dataInizio, int startCol, int colOffset, int remove25hour, ref bool isSelection, ref string rifSel, ref Dictionary<string, int> peers)
         {
             object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+            
+
             _definedNames.AddName(_rigaAttiva, siglaEntitaRif, info["SiglaInformazione"], Struct.tipoVisualizzazione == "O" ? "" : Date.GetSuffissoData(dataInizio));
 
             int data0H24 = (info["Data0H24"].Equals("0") && _struttura.visData0H24 ? 1 : 0);
@@ -1311,6 +1344,7 @@ namespace Iren.PSO.Base
                 }
             }
         }
+
         /// <summary>
         /// Inserisce i grafici creando anche le serie.
         /// </summary>
@@ -1742,6 +1776,7 @@ namespace Iren.PSO.Base
             AggiornaGrafici();
             SplashScreen.UpdateStatus("Aggiorno colori date");
             UpdateDayColor();
+            MakeCellsDisabled();
         }
         #region UpdateData
 
@@ -1833,7 +1868,13 @@ namespace Iren.PSO.Base
                 }
             }
         }
-
+        /// <summary>
+        /// Cancella il contenuto di una specifica riga di informazione.
+        /// </summary>
+        /// <param name="info">Informazione da cancellare</param>
+        /// <param name="row">Riga dell'informazione</param>
+        /// <param name="col">Colonna di inizio dell'informazione</param>
+        /// <param name="realColOffset">Offset di colonne reale.</param>
         private void CancellaInformazione(DataRowView info, int row, int col, int realColOffset)
         {
             if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
@@ -1855,9 +1896,6 @@ namespace Iren.PSO.Base
                 Style.RangeStyle(rngData, backColor: info["BackColor"], foreColor: info["ForeColor"]);
             }
         }
-
-
-
         /// <summary>
         /// Aggiorna le date dei titolo (per il caso in cui l'aggiornamento venga da un cambio giorno).
         /// </summary>
@@ -1952,7 +1990,71 @@ namespace Iren.PSO.Base
             ColoraGOTO();
         }
 
+        #endregion  
+      
+        #region Disabilita celle per mercati MB
+        
+        /// <summary>
+        /// Applica un pattern alle informazioni nella parte che non è editabile a causa della chiusura del mercato.
+        /// </summary>
+        private void MakeCellsDisabled()
+        {
+            if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+            {
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaCategoria = '" + _siglaCategoria + "' AND IdApplicazione = " + Workbook.IdApplicazione; // AND (Gerarchia = '' OR Gerarchia IS NULL )";
+
+                int colOffset = _definedNames.GetColOffset();
+                int marketOffset = Simboli.GetMarketOffset(DateTime.Now.Hour);
+
+                foreach (DataRowView entita in categoriaEntita)
+                {
+                    DataView informazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
+                    informazioni.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaTipologiaInformazione NOT LIKE 'TITOLO%' AND SiglaTipologiaInformazione <> 'CHECK' AND IdApplicazione = " + Workbook.IdApplicazione;// AND ValoreDefault IS NULL";
+
+                    foreach (DataRowView info in informazioni)
+                    {
+                        int col = _definedNames.GetFirstCol();
+                        object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
+                        if (Struct.tipoVisualizzazione == "O")
+                        {
+                            int row = _definedNames.GetRowByName(siglaEntita, info["SiglaInformazione"]);
+                            MakeCellsDisabled(info, row, col, colOffset, marketOffset);
+                        }
+                        else
+                        {
+                            CicloGiorni(Workbook.DataAttiva, Workbook.DataAttiva.AddDays(Struct.intervalloGiorni), (oreGiorno, suffData, giorno) =>
+                            {
+                                int row = _definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], suffData);
+                                MakeCellsDisabled(info, row, col, Date.GetOreGiorno(giorno), marketOffset);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Applica un pattern alla specifica riga di informazione nella parte che non è editabile a causa della chiusura del mercato.
+        /// </summary>
+        /// <param name="info">Informazione.</param>
+        /// <param name="row">Riga dell'informazione.</param>
+        /// <param name="col">Colonna di inizio dell'informazione.</param>
+        /// <param name="colOffset">Offset dell'intera riga per fare il clean da situazioni precedenti.</param>
+        /// <param name="disabledOffset">Offset a cui applicare il pattern.</param>
+        private void MakeCellsDisabled(DataRowView info, int row, int col, int colOffset, int disabledOffset)
+        {
+            //clear del pattern
+            Range rng = new Range(row, col, 1, colOffset);
+            Style.RangeStyle(_ws.Range[rng.ToString()], pattern: Excel.XlPattern.xlPatternAutomatic);
+
+            //applico stile
+            rng = new Range(row, col, 1, disabledOffset);
+            Style.RangeStyle(_ws.Range[rng.ToString()], pattern: Excel.XlPattern.xlPatternGray50);
+        }
+        
         #endregion
+
 
         public void Dispose()
         {

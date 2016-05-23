@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -199,6 +200,48 @@ namespace Iren.PSO.Base
 
             return "";
 
+        }
+
+        /* MB2 9;12
+         * MB3 13;16
+         * MB4 17;22
+         * MB5 23;24
+         */
+
+        private readonly static Dictionary<string, Tuple<int, int>> mercatiMB = new Dictionary<string, Tuple<int, int>>()
+        {
+            {"MB1", Tuple.Create(1,8)},
+            {"MB2", Tuple.Create(9,12)},
+            {"MB3", Tuple.Create(13,16)},
+            {"MB4", Tuple.Create(17,22)},
+            {"MB5", Tuple.Create(23,25)}
+        };
+        public static Dictionary<string, Tuple<int, int>> MercatiMB { get { return mercatiMB; } }
+
+        public static int GetMarketOffset(int hour)
+        {
+            if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+            {
+                int offset = Simboli.MercatiMB["MB1"].Item2;
+                if (hour > Simboli.MercatiMB["MB1"].Item2)
+                    offset = Simboli.MercatiMB
+                        .Where(kv => kv.Value.Item2 < hour)
+                        .Select(kv => kv.Value.Item2)
+                        .Last();
+
+                return offset;
+            }
+            return 0;
+        }
+
+        public static Range GetMarketCompleteRange(string mercato, DateTime giorno, Range rng)
+        {
+            if (!mercatiMB.ContainsKey(mercato))
+                return null;
+
+            int[] orario = new int[2] { Simboli.MercatiMB[mercato].Item1, Math.Min(Simboli.MercatiMB[mercato].Item2, Date.GetOreGiorno(giorno)) };
+
+            return new Range(rng.StartRow, rng.StartColumn + orario[0] - 1, 1, orario[1] - orario[0] + 1);
         }
     }
 }

@@ -33,6 +33,12 @@
             this.btnApplica = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
+            this.groupMB = new System.Windows.Forms.GroupBox();
+            this.checkMB5 = new System.Windows.Forms.CheckBox();
+            this.checkMB4 = new System.Windows.Forms.CheckBox();
+            this.checkMB3 = new System.Windows.Forms.CheckBox();
+            this.checkMB2 = new System.Windows.Forms.CheckBox();
+            this.checkMB1 = new System.Windows.Forms.CheckBox();
             this.checkTutte = new System.Windows.Forms.CheckBox();
             this.groupDate = new System.Windows.Forms.GroupBox();
             this.comboGiorni = new System.Windows.Forms.Button();
@@ -45,6 +51,7 @@
             this.treeViewAzioni = new Iren.PSO.Forms.BugFixedTreeView();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
+            this.groupMB.SuspendLayout();
             this.groupDate.SuspendLayout();
             this.panelCentrale.SuspendLayout();
             this.panelUP.SuspendLayout();
@@ -105,6 +112,7 @@
             // 
             // panelTop
             // 
+            this.panelTop.Controls.Add(this.groupMB);
             this.panelTop.Controls.Add(this.checkTutte);
             this.panelTop.Controls.Add(this.groupDate);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
@@ -112,6 +120,71 @@
             this.panelTop.Name = "panelTop";
             this.panelTop.Size = new System.Drawing.Size(1050, 53);
             this.panelTop.TabIndex = 13;
+            // 
+            // groupMB
+            // 
+            this.groupMB.Controls.Add(this.checkMB5);
+            this.groupMB.Controls.Add(this.checkMB4);
+            this.groupMB.Controls.Add(this.checkMB3);
+            this.groupMB.Controls.Add(this.checkMB2);
+            this.groupMB.Controls.Add(this.checkMB1);
+            this.groupMB.Dock = System.Windows.Forms.DockStyle.Left;
+            this.groupMB.Location = new System.Drawing.Point(350, 0);
+            this.groupMB.Name = "groupMB";
+            this.groupMB.Size = new System.Drawing.Size(350, 53);
+            this.groupMB.TabIndex = 3;
+            this.groupMB.TabStop = false;
+            this.groupMB.Text = "Mercati MB";
+            // 
+            // checkMB5
+            // 
+            this.checkMB5.AutoSize = true;
+            this.checkMB5.Location = new System.Drawing.Point(295, 25);
+            this.checkMB5.Name = "checkMB5";
+            this.checkMB5.Size = new System.Drawing.Size(48, 17);
+            this.checkMB5.TabIndex = 4;
+            this.checkMB5.Text = "MB5";
+            this.checkMB5.UseVisualStyleBackColor = true;
+            // 
+            // checkMB4
+            // 
+            this.checkMB4.AutoSize = true;
+            this.checkMB4.Location = new System.Drawing.Point(223, 25);
+            this.checkMB4.Name = "checkMB4";
+            this.checkMB4.Size = new System.Drawing.Size(48, 17);
+            this.checkMB4.TabIndex = 3;
+            this.checkMB4.Text = "MB4";
+            this.checkMB4.UseVisualStyleBackColor = true;
+            // 
+            // checkMB3
+            // 
+            this.checkMB3.AutoSize = true;
+            this.checkMB3.Location = new System.Drawing.Point(151, 25);
+            this.checkMB3.Name = "checkMB3";
+            this.checkMB3.Size = new System.Drawing.Size(48, 17);
+            this.checkMB3.TabIndex = 2;
+            this.checkMB3.Text = "MB3";
+            this.checkMB3.UseVisualStyleBackColor = true;
+            // 
+            // checkMB2
+            // 
+            this.checkMB2.AutoSize = true;
+            this.checkMB2.Location = new System.Drawing.Point(79, 25);
+            this.checkMB2.Name = "checkMB2";
+            this.checkMB2.Size = new System.Drawing.Size(48, 17);
+            this.checkMB2.TabIndex = 1;
+            this.checkMB2.Text = "MB2";
+            this.checkMB2.UseVisualStyleBackColor = true;
+            // 
+            // checkMB1
+            // 
+            this.checkMB1.AutoSize = true;
+            this.checkMB1.Location = new System.Drawing.Point(7, 25);
+            this.checkMB1.Name = "checkMB1";
+            this.checkMB1.Size = new System.Drawing.Size(48, 17);
+            this.checkMB1.TabIndex = 0;
+            this.checkMB1.Text = "MB1";
+            this.checkMB1.UseVisualStyleBackColor = true;
             // 
             // checkTutte
             // 
@@ -260,6 +333,8 @@
             this.panelButtons.ResumeLayout(false);
             this.panelTop.ResumeLayout(false);
             this.panelTop.PerformLayout();
+            this.groupMB.ResumeLayout(false);
+            this.groupMB.PerformLayout();
             this.groupDate.ResumeLayout(false);
             this.panelCentrale.ResumeLayout(false);
             this.panelUP.ResumeLayout(false);
@@ -286,5 +361,11 @@
         private System.Windows.Forms.Button btnMeteo;
         private System.Windows.Forms.CheckBox checkTutte;
         private System.Windows.Forms.Button comboGiorni;
+        private System.Windows.Forms.GroupBox groupMB;
+        private System.Windows.Forms.CheckBox checkMB5;
+        private System.Windows.Forms.CheckBox checkMB4;
+        private System.Windows.Forms.CheckBox checkMB3;
+        private System.Windows.Forms.CheckBox checkMB2;
+        private System.Windows.Forms.CheckBox checkMB1;
     }
 }

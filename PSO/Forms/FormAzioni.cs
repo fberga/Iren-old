@@ -86,6 +86,23 @@ namespace Iren.PSO.Forms
             }
             if (Workbook.Repository.Applicazione["VisMeteo"].Equals("0"))
                 btnMeteo.Hide();
+
+            if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("0"))
+                groupMB.Hide();
+            else
+            {
+                int hour = DateTime.Now.Hour;
+
+                var mercatiMB = Simboli.MercatiMB
+                    .Select(kv => new {Nome = "check" + kv.Key, Attivo = kv.Value.Item2 > hour});
+
+                foreach(var mb in mercatiMB)
+                {
+                    CheckBox chk = groupMB.Controls[mb.Nome] as CheckBox;
+                    chk.Enabled = mb.Attivo;
+                    chk.Checked = mb.Attivo;
+                }
+            }    
         }
         private void CaricaAzioni()
         {
@@ -355,6 +372,9 @@ namespace Iren.PSO.Forms
         }
         private void btnApplica_Click(object sender, EventArgs e)
         {
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
             btnApplica.Enabled = false;
             btnAnnulla.Enabled = false;
             btnMeteo.Enabled = false;
@@ -406,16 +426,26 @@ namespace Iren.PSO.Forms
                                         {
                                             SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
+                                            string[] mercati = null;
+                                            if(Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+                                            {
+                                                mercati = groupMB.Controls
+                                                    .OfType<CheckBox>()
+                                                    .Where(c => c.Checked)
+                                                    .Select(c => c.Text)
+                                                    .OrderBy(s => s)
+                                                    .ToArray();
+                                            }
+
                                             switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
                                             {
                                                 case "CARICA":
-
-                                                    presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
+                                                    presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, mercati);
                                                     _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                     caricaOrGenera = true;
                                                     break;
                                                 case "GENERA":
-                                                    presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date);
+                                                    presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, mercati);
                                                     _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                     caricaOrGenera = true;
                                                     break;
@@ -481,6 +511,9 @@ namespace Iren.PSO.Forms
             btnApplica.Enabled = true;
             btnAnnulla.Enabled = true;
             btnMeteo.Enabled = true;
+
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
         private void checkTutte_CheckedChanged(object sender, EventArgs e)
         {

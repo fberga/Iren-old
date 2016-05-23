@@ -69,7 +69,7 @@ namespace Iren.PSO.Base
             //preparo l'export
 
 
-            string directory = Workbook.Repository.Applicazione["PathDatiComuniEmergenza"].ToString();
+            string directory = Path.Combine(Workbook.Repository.Applicazione["PathDatiComuniEmergenza"].ToString(), Simboli.NomeApplicazione.Replace(" ", ""));
             string fileName = Path.Combine(directory, Simboli.NomeApplicazione.Replace(" ", "").ToUpperInvariant() + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xml");
 
             if (!Directory.Exists(directory))

@@ -21,7 +21,7 @@ namespace Iren.PSO.Base
         /// <param name="giorno">Data di riferimento.</param>
         /// <param name="parametro">Parametro da specificare alla storedProcedure CARICA_AZIONE_INFORMAZIONE nel caso sia necessario.</param>
         /// <returns></returns>
-        public abstract bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null);
+        public abstract bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, string[] mercati, object parametro = null);
     }
 
     /// <summary>
@@ -38,20 +38,30 @@ namespace Iren.PSO.Base
         /// <param name="siglaAzione">Sigla dell'azione per cui è richiesto il caricamento dei dati.</param>
         /// <param name="azionePadre">Sigla dell'azione padre (di solito CARICAx o GENERA).</param>
         /// <param name="giorno">Data di riferimento.</param>
+        /// <param name="mercati">Mercati da considerare nell'azione.</param>
         /// <param name="parametro">Parametro da specificare alla storedProcedure CARICA_AZIONE_INFORMAZIONE nel caso sia necessario.</param>
         /// <returns>True se il caricamento va a buon fine.</returns>
-        public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null)
+        public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, string[] mercati, object parametro = null)
         {
             DefinedNames definedNames = new DefinedNames(DefinedNames.GetSheetName(siglaEntita));
             try
             {
 
-                AzzeraInformazione(siglaEntita, siglaAzione, definedNames, giorno, azionePadre.Equals("CARICA"));
+                AzzeraInformazione(siglaEntita, siglaAzione, definedNames, giorno, mercati, azionePadre.ToString().StartsWith("CARICA"));
                 if (DataBase.OpenConnection())
                 {
                     if (azionePadre.Equals("GENERA"))
                     {
-                        ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno);
+                        if (mercati != null)
+                        {
+                            foreach (string mercato in mercati)
+                            {
+                                Tuple<int, int> orario = Simboli.MercatiMB[mercato];
+                                ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno, orario.Item1, orario.Item2);
+                            }
+                        }
+                        else
+                            ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno);
                         DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno);
                     }
                     else
@@ -106,7 +116,7 @@ namespace Iren.PSO.Base
         /// <param name="siglaAzione">Sigla dell'azione per cui sono richieste la generazione o il caricamento dei dati.</param>
         /// <param name="definedNames">Oggetto che contiene l'indirizzamento delle celle per il foglio su cui si sta lavorando.</param>
         /// <param name="giorno">Data di riferimento.</param>
-        protected virtual void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno, bool isCarica)
+        protected virtual void AzzeraInformazione(object siglaEntita, object siglaAzione, DefinedNames definedNames, DateTime giorno, string[] mercati, bool isCarica)
         {
             Excel.Worksheet ws = Workbook.Sheets[definedNames.Sheet];
 
@@ -122,11 +132,32 @@ namespace Iren.PSO.Base
                 {
                     siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
                     Range rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
-                    ws.Range[rng.ToString()].Value = null;
-                    if(!isCarica)
-                        Handler.StoreEdit(ws.Range[rng.ToString()], 0, true);
-                    Style.RangeStyle(ws.Range[rng.ToString()], backColor: info["BackColor"], foreColor: info["ForeColor"]);
-                    ws.Range[rng.ToString()].ClearComments();
+
+                    if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+                    {
+                        foreach (string mercato in mercati) 
+                        {
+                            Range mbRng = Simboli.GetMarketCompleteRange(mercato, giorno, rng);
+                            if (mbRng != null)
+                            {
+                                ws.Range[mbRng.ToString()].Value = null;
+
+                                if (!isCarica)
+                                    Handler.StoreEdit(ws.Range[mbRng.ToString()], 0, true);
+                                Style.RangeStyle(ws.Range[mbRng.ToString()], backColor: info["BackColor"], foreColor: info["ForeColor"]);
+                                ws.Range[mbRng.ToString()].ClearComments();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ws.Range[rng.ToString()].Value = null;
+
+                        if (!isCarica)
+                            Handler.StoreEdit(ws.Range[rng.ToString()], 0, true);
+                        Style.RangeStyle(ws.Range[rng.ToString()], backColor: info["BackColor"], foreColor: info["ForeColor"]);
+                        ws.Range[rng.ToString()].ClearComments();
+                    } 
                 }
             }
         }

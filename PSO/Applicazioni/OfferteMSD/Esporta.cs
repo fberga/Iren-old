@@ -132,7 +132,8 @@ namespace Iren.PSO.Applicazioni
                             energia = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
 
                             rng = definedNames.Get(siglaEntita, informazioni[j]+"VP", suffissoData, Date.GetSuffissoOra(i + 1));
-                            prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
+                            if (ws.Range[rng.ToString()].Value != null)
+                                prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                         }
                         
                         bidSubmittal.Add(new XElement(ns + "Offer",
@@ -156,7 +157,9 @@ namespace Iren.PSO.Applicazioni
                             energia = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
 
                             rng = definedNames.Get(siglaEntita, informazioni[j]+"AP", suffissoData, Date.GetSuffissoOra(i + 1));
-                            prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
+                            
+                            if(ws.Range[rng.ToString()].Value != null)
+                                prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                         }
 
                         bidSubmittal.Add(new XElement(ns + "Offer",
@@ -178,7 +181,8 @@ namespace Iren.PSO.Applicazioni
                     {
                         //aggiusto la colonna che mi ritorna DATA1.H1
                         //rng.StartColumn -= 1;
-                        prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
+                        if(ws.Range[rng.ToString()].Value != null)
+                            prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                     }
 
                     bidSubmittal.Add(new XElement(ns + "Offer",
@@ -198,7 +202,8 @@ namespace Iren.PSO.Applicazioni
                     {
                         //aggiusto la colonna che mi ritorna DATA1.H1
                         //rng.StartColumn -= 1;
-                        prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
+                        if (ws.Range[rng.ToString()].Value != null)
+                            prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                     }
 
                     bidSubmittal.Add(new XElement(ns + "Offer",

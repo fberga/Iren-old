@@ -657,16 +657,27 @@ namespace Iren.PSO.Applicazioni
         /// <param name="e"></param>
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
+            FormIncremento frmInc = new FormIncremento(Workbook.Application.ActiveSheet, Workbook.Application.ActiveCell);
+            frmInc.ShowDialog();
+
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
-            
-            FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
-            frmAz.ShowDialog();
 
             RefreshChecks();
 
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
+
+            //FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
+            //frmAz.ShowDialog();
+
+            //Workbook.ScreenUpdating = false;
+            //Sheet.Protected = false;
+            
+            //RefreshChecks();
+            
+            //Sheet.Protected = true;
+            //Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di modifica. Attiva e disattiva la modifica foglio. Nel caso di disattivazione, aggiorna i check.
@@ -870,12 +881,12 @@ namespace Iren.PSO.Applicazioni
                 string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
 
                 Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
-                Globals.ThisWorkbook.Close();
+                Globals.ThisWorkbook.Close(saveChanges: true);
             }
             catch(DirectoryNotFoundException)
             {
                 if(System.Windows.Forms.MessageBox.Show("Il percorso di backup non è raggiungibile. Chiudere comunque il file senza eseguire il backup?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
-                    Globals.ThisWorkbook.Close();
+                    Globals.ThisWorkbook.Close(saveChanges: true);
             }
         }
         /// <summary>
@@ -950,6 +961,20 @@ namespace Iren.PSO.Applicazioni
             frmXML.ShowDialog();
         }
 
+
+        private void btnFormIncremento_Click(object sender, RibbonControlEventArgs e)
+        {
+            FormIncremento frmInc = new FormIncremento(Workbook.Application.ActiveSheet, Workbook.Application.ActiveCell);
+            frmInc.ShowDialog();
+
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
+            RefreshChecks();
+
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
+        }
         #endregion
 
         #region Metodi

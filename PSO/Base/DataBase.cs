@@ -282,7 +282,7 @@ namespace Iren.PSO.Base
                                 Array.Sort<string>(fileEmergenza);
                                 foreach (string file in fileEmergenza)
                                 {
-                                    File.Move(file, Path.Combine(cartellaRemota, file.Split('\\').Last()));
+                                    File.Copy(file, Path.Combine(cartellaRemota, file.Split('\\').Last()), true);
 
                                     executed = DataBase.Insert(SP.INSERT_APPLICAZIONE_INFORMAZIONE_XML, new Core.QryParams() { { "@NomeFile", file.Split('\\').Last() } });
                                     if (executed)
@@ -291,6 +291,7 @@ namespace Iren.PSO.Base
                                             Directory.CreateDirectory(cartellaArchivio);
 
                                         File.Move(Path.Combine(cartellaRemota, file.Split('\\').Last()), Path.Combine(cartellaArchivio, file.Split('\\').Last()));
+                                        File.Delete(file);
                                     }
                                     else
                                     {

@@ -297,7 +297,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("TN1 : Costo marginale assente");
                     attenzione |= true;
                 }
-                if (pMinTernaMT2R > pMinMGPMT2R)
+                if (pMinTernaMT2R > pMinMGPMT2R && (!unitCommMT2R.Equals("rav") || !unitCommMT2R.Equals("off")))
                 {
                     nOra.Nodes.Add("MT2R : PMin Terna > PMin MGP");
                     errore |= true;
@@ -307,7 +307,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("MT2R : PMax MGP > PMax Terna");
                     errore |= true;
                 }
-                if (pMinTernaMT3 > pMinMGPMT3)
+                if (pMinTernaMT3 > pMinMGPMT3 && (!unitCommMT3.Equals("rav") || !unitCommMT3.Equals("off")))
                 {
                     nOra.Nodes.Add("MT3 : PMin Terna > PMin MGP");
                     errore |= true;
@@ -317,7 +317,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("MT3 : PMax MGP > PMax Terna");
                     errore |= true;
                 }
-                if (pMinTernaTN1 > pMinMGPTN1)
+                if (pMinTernaTN1 > pMinMGPTN1 && (!unitCommTN1.Equals("rav") || !unitCommTN1.Equals("off")))
                 {
                     nOra.Nodes.Add("TN1 : PMin Terna > Pmin MGP");
                     errore |= true;

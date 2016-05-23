@@ -155,7 +155,7 @@ namespace Iren.PSO.Forms
 
             string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
 
-            bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif,  dataEmissione);
+            bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, null,  dataEmissione);
 
             _riepilogo.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
 

@@ -24,13 +24,13 @@ namespace Iren.PSO.Applicazioni
             _wsMercato = Workbook.Sheets[Workbook.Mercato];
         }
 
-        public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, object parametro = null)
+        public override bool AzioneInformazione(object siglaEntita, object siglaAzione, object azionePadre, DateTime giorno, string[] mercati, object parametro = null)
         {
             bool isGenera = azionePadre.Equals("GENERA");
             if (isGenera)
                 azionePadre = "CARICA";
 
-            bool o = base.AzioneInformazione(siglaEntita, siglaAzione, azionePadre, giorno, parametro);
+            bool o = base.AzioneInformazione(siglaEntita, siglaAzione, azionePadre, giorno, mercati, parametro);
 
             if(isGenera)
                 azionePadre = "GENERA";

@@ -16,6 +16,35 @@ namespace Iren.PSO.Forms
         private DataTable _tabellaImportXML;
         private List<CommonInfo> _commonInfo;
 
+        private bool AllChecked 
+        {
+            get
+            {
+                return chkTutte.Checked;
+            }
+
+            set
+            {
+                chkTutte.CheckedChanged -= chkTutte_CheckedChanged;
+                chkTutte.Checked = value;
+                chkTutte.CheckedChanged += chkTutte_CheckedChanged;
+            }
+        }
+
+
+
+        private void ThroughAllNodes(TreeNodeCollection root, Action<TreeNode> callback)
+        {
+            if (root.Count > 0)
+            {
+                foreach (TreeNode node in root.OfType<TreeNode>())
+                {
+                    callback(node);
+                    ThroughAllNodes(node.Nodes, callback);
+                }
+            }
+        }
+
         public FormImportXML()
         {
             this.Text = Simboli.NomeApplicazione + " - Import XML (Emergenza)";
@@ -69,8 +98,12 @@ namespace Iren.PSO.Forms
 
             //tabella in ordine, posso procedere con la visualizzazione dei campi coinvolti
             SetTreeView();
-        }
+            
+            tvEntitaInformazioni.AfterCheck += EvidenziaNodi;
+            chkTutte.Checked = true;
 
+            tvEntitaInformazioni.AfterCheck += CheckAllChecked;
+        }
 
         private void SetTreeView()
         {
@@ -143,28 +176,41 @@ namespace Iren.PSO.Forms
 
             foreach (var c in _commonInfo)
             {
-                SplashScreen.UpdateStatus("Importo dati per " + c.DesEntita);
-                string foglio = DefinedNames.GetSheetName(c.SiglaEntita);
-                Excel.Worksheet ws = Workbook.Sheets[foglio];
-                DefinedNames definedNames = new DefinedNames(foglio);
-
-                foreach (var kv in c.Info)
+                if (tvEntitaInformazioni.Nodes[c.SiglaEntita].Checked)
                 {
-                    var values =
-                        from r in _tabellaImportXML.AsEnumerable()
-                        where r["SiglaEntita"].Equals(c.SiglaEntita) && r["SiglaInformazione"].Equals(kv.Key) &&
-                            (r["Data"].ToString().Substring(0,8).CompareTo(Workbook.DataAttiva.ToString("yyyyMMdd")) >= 0)
-                        select new { Data = r["Data"], Valore = r["Valore"] };
+                    SplashScreen.UpdateStatus("Importo dati per " + c.DesEntita);
+                    string foglio = DefinedNames.GetSheetName(c.SiglaEntita);
+                    Excel.Worksheet ws = Workbook.Sheets[foglio];
+                    DefinedNames definedNames = new DefinedNames(foglio);
 
-                    foreach (var val in values)
+                    foreach (var kv in c.Info)
                     {
-                        string suffissoData = Date.GetSuffissoData(val.Data.ToString());
-                        string suffissoOra = Date.GetSuffissoOra(val.Data);
-
-                        Range rng = new Range();
-                        if (definedNames.TryGet(out rng, c.SiglaEntita, kv.Key, suffissoData, suffissoOra))
+                        if (tvEntitaInformazioni.Nodes[c.SiglaEntita].Nodes[kv.Key.ToString()].Checked)
                         {
-                            ws.Range[rng.ToString()].Value = val.Valore;
+                            var values =
+                            from r in _tabellaImportXML.AsEnumerable()
+                            where r["SiglaEntita"].Equals(c.SiglaEntita) && r["SiglaInformazione"].Equals(kv.Key) &&
+                                (r["Data"].ToString().Substring(0, 8).CompareTo(Workbook.DataAttiva.ToString("yyyyMMdd")) >= 0)
+                            select new { Data = r["Data"], Valore = r["Valore"] };
+
+                            foreach (var val in values)
+                            {
+                                string suffissoData = Date.GetSuffissoData(val.Data.ToString());
+                                string suffissoOra = Date.GetSuffissoOra(val.Data);
+
+                                Range rng = new Range();
+                                if (definedNames.TryGet(out rng, c.SiglaEntita, kv.Key, suffissoData, suffissoOra))
+                                {
+                                    object tmpVal = null;
+                                    double conv;
+                                    if (Double.TryParse(val.Valore.ToString(), out conv))
+                                        tmpVal = conv;
+                                    else
+                                        tmpVal = val.Valore;
+
+                                    ws.Range[rng.ToString()].Value = tmpVal;
+                                }
+                            }
                         }
                     }
                 }
@@ -174,6 +220,60 @@ namespace Iren.PSO.Forms
             Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
             SplashScreen.Close();
             Workbook.ScreenUpdating = true;
+        }
+
+        private void chkTutte_CheckedChanged(object sender, EventArgs e)
+        {
+            tvEntitaInformazioni.AfterCheck -= CheckAllChecked;
+            
+            bool checkState = chkTutte.Checked;
+            foreach (TreeNode n in tvEntitaInformazioni.Nodes)
+            {
+                n.Checked = checkState;
+            }
+
+            tvEntitaInformazioni.AfterCheck += CheckAllChecked;
+        }
+
+        private void tvEntitaInformazioni_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Nodes.Count > 0)
+                foreach (TreeNode node in e.Node.Nodes)
+                    node.Checked = e.Node.Checked;
+        }
+
+        private void CheckAllChecked(object sender, TreeViewEventArgs e)
+        {
+            bool check = true;
+            ThroughAllNodes(tvEntitaInformazioni.Nodes, n =>
+            {
+                check = check && n.Checked;
+            });
+
+            AllChecked = check;
+        }
+
+        private void EvidenziaNodi(object sender, TreeViewEventArgs e)
+        {
+            foreach (TreeNode n in e.Node.Nodes)
+                Evidenzia(n, n.Checked);
+
+            Evidenzia(e.Node, e.Node.Checked);
+        }
+
+        private void Evidenzia(TreeNode node, bool evidenzia)
+        {
+            if (evidenzia)
+            {
+                node.BackColor = System.Drawing.Color.Gold;
+                node.ForeColor = System.Drawing.Color.DarkRed;
+            }
+            else
+            {
+                node.BackColor = tvEntitaInformazioni.BackColor;
+                node.ForeColor = tvEntitaInformazioni.ForeColor;
+                node.NodeFont = tvEntitaInformazioni.Font;
+            }
         }
     }
 

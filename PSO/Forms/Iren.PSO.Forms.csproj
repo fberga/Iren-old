@@ -11,11 +11,12 @@
     <RootNamespace>Iren.PSO.Forms</RootNamespace>
     <AssemblyName>ToolsExcelForms</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,18 +34,23 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject />
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <RegisterForComInterop>true</RegisterForComInterop>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -53,6 +60,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.Excel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -69,6 +77,10 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="ToolsExcelForms, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Release\ToolsExcelForms.exe</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BugFixedTreeView.cs">
@@ -104,6 +116,12 @@
     <Compile Include="FormImportXML.Designer.cs">
       <DependentUpon>FormImportXML.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormIncremento.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormIncremento.Designer.cs">
+      <DependentUpon>FormIncremento.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormModificaParametri.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -135,6 +153,9 @@
     <Compile Include="FormRampe.Designer.cs">
       <DependentUpon>FormRampe.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="BugFixedTreeView.resx">
+      <DependentUpon>BugFixedTreeView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ErrorPane.resx">
       <DependentUpon>ErrorPane.cs</DependentUpon>
     </EmbeddedResource>
@@ -149,6 +170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormImportXML.resx">
       <DependentUpon>FormImportXML.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormIncremento.resx">
+      <DependentUpon>FormIncremento.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormModificaParametri.resx">
       <DependentUpon>FormModificaParametri.cs</DependentUpon>

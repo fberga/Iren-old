@@ -33,9 +33,10 @@
             this.btnApri = new System.Windows.Forms.Button();
             this.btnImporta = new System.Windows.Forms.Button();
             this.btnAnnulla = new System.Windows.Forms.Button();
-            this.tvEntitaInformazioni = new System.Windows.Forms.TreeView();
             this.panelTop = new System.Windows.Forms.Panel();
+            this.chkTutte = new System.Windows.Forms.CheckBox();
             this.richTextInfoTop = new System.Windows.Forms.RichTextBox();
+            this.tvEntitaInformazioni = new Iren.PSO.Forms.BugFixedTreeView();
             this.openFileXMLImport = new System.Windows.Forms.OpenFileDialog();
             this.generalContainer.SuspendLayout();
             this.panelBottom.SuspendLayout();
@@ -47,8 +48,8 @@
             this.generalContainer.ColumnCount = 1;
             this.generalContainer.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.generalContainer.Controls.Add(this.panelBottom, 0, 2);
-            this.generalContainer.Controls.Add(this.tvEntitaInformazioni, 0, 1);
             this.generalContainer.Controls.Add(this.panelTop, 0, 0);
+            this.generalContainer.Controls.Add(this.tvEntitaInformazioni, 0, 1);
             this.generalContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.generalContainer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.generalContainer.Location = new System.Drawing.Point(0, 0);
@@ -112,23 +113,27 @@
             this.btnAnnulla.Text = "Chiudi";
             this.btnAnnulla.UseVisualStyleBackColor = true;
             // 
-            // tvEntitaInformazioni
-            // 
-            this.tvEntitaInformazioni.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tvEntitaInformazioni.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tvEntitaInformazioni.Location = new System.Drawing.Point(3, 74);
-            this.tvEntitaInformazioni.Name = "tvEntitaInformazioni";
-            this.tvEntitaInformazioni.Size = new System.Drawing.Size(866, 343);
-            this.tvEntitaInformazioni.TabIndex = 3;
-            // 
             // panelTop
             // 
+            this.panelTop.Controls.Add(this.chkTutte);
             this.panelTop.Controls.Add(this.richTextInfoTop);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelTop.Location = new System.Drawing.Point(3, 3);
             this.panelTop.Name = "panelTop";
             this.panelTop.Size = new System.Drawing.Size(866, 65);
             this.panelTop.TabIndex = 4;
+            // 
+            // chkTutte
+            // 
+            this.chkTutte.AutoSize = true;
+            this.chkTutte.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.chkTutte.Location = new System.Drawing.Point(798, 41);
+            this.chkTutte.Name = "chkTutte";
+            this.chkTutte.Size = new System.Drawing.Size(65, 24);
+            this.chkTutte.TabIndex = 7;
+            this.chkTutte.Text = "Tutte";
+            this.chkTutte.UseVisualStyleBackColor = true;
+            this.chkTutte.CheckedChanged += new System.EventHandler(this.chkTutte_CheckedChanged);
             // 
             // richTextInfoTop
             // 
@@ -140,6 +145,16 @@
             this.richTextInfoTop.Size = new System.Drawing.Size(866, 65);
             this.richTextInfoTop.TabIndex = 6;
             this.richTextInfoTop.Text = "Nessun file XML caricato...";
+            // 
+            // tvEntitaInformazioni
+            // 
+            this.tvEntitaInformazioni.CheckBoxes = true;
+            this.tvEntitaInformazioni.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tvEntitaInformazioni.Location = new System.Drawing.Point(3, 74);
+            this.tvEntitaInformazioni.Name = "tvEntitaInformazioni";
+            this.tvEntitaInformazioni.Size = new System.Drawing.Size(866, 343);
+            this.tvEntitaInformazioni.TabIndex = 5;
+            this.tvEntitaInformazioni.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvEntitaInformazioni_AfterCheck);
             // 
             // openFileXMLImport
             // 
@@ -160,6 +175,7 @@
             this.generalContainer.ResumeLayout(false);
             this.panelBottom.ResumeLayout(false);
             this.panelTop.ResumeLayout(false);
+            this.panelTop.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -172,8 +188,9 @@
         private System.Windows.Forms.Button btnImporta;
         private System.Windows.Forms.Button btnAnnulla;
         private System.Windows.Forms.Button btnApri;
-        private System.Windows.Forms.TreeView tvEntitaInformazioni;
         private System.Windows.Forms.Panel panelTop;
         private System.Windows.Forms.RichTextBox richTextInfoTop;
+        private BugFixedTreeView tvEntitaInformazioni;
+        private System.Windows.Forms.CheckBox chkTutte;
     }
 }

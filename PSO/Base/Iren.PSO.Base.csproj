@@ -141,6 +141,7 @@
     <Content Include="Resources\esportaXML.png" />
     <Content Include="Resources\forzaEmergenza.png" />
     <Content Include="Resources\importaXML.png" />
+    <Content Include="Resources\incremento.png" />
     <Content Include="Resources\invioProgrammi.png" />
     <Content Include="Resources\modificaNO.png" />
     <Content Include="Resources\modificaSI.png" />

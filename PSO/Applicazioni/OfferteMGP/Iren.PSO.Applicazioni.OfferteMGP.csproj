@@ -28,7 +28,7 @@
     <PublishUrl>\\srvpso\Applicazioni\PSO\OfferteMGP\</PublishUrl>
     <InstallUrl>\\srvpso\Applicazioni\PSO\OfferteMGP\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>2.0.0.6</ApplicationVersion>
+    <ApplicationVersion>2.0.0.11</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

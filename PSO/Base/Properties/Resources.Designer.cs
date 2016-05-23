@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Iren.PSO.Base.Properties
-{
-
-
+namespace Iren.PSO.Base.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   Classe di risorse fortemente tipizzata per la ricerca di stringhe localizzate e così via.
     /// </summary>
@@ -166,6 +166,16 @@ namespace Iren.PSO.Base.Properties
         public static System.Drawing.Bitmap importaXML {
             get {
                 object obj = ResourceManager.GetObject("importaXML", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap incremento {
+            get {
+                object obj = ResourceManager.GetObject("incremento", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
