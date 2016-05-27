@@ -802,6 +802,12 @@ namespace Iren.PSO.Base
                 return false;
             }
         }
+
+        public bool IsEditable(int row)
+        {
+            return _editable.ContainsKey(row);
+        }
+
         /// <summary>
         /// Metodo generico per la restituzione del range in base al nome. Lavora con il foglio di riepilogo come caso particolare. Per gli altri fogli, se il nome è composto da 2 parti, le considera SiglaEntita.SiglaInformazione. Se il nome è costituito da più parti, cerca il primo suffisso data valido e considera la parte antecedente come parte di riga mentre la successiva come parte di colonna. Se la parte di colonna non viene trovata, considera la colonna come la prima definita.
         /// </summary>

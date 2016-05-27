@@ -38,6 +38,7 @@ namespace Iren.PSO.Applicazioni
         /// </summary>
         public Modifica _modificaCustom = new Modifica();
 
+        public Forms.FormIncremento _frmInc;
 
         //private int _idApplicazione = -1;
         //private int _idUtente = -1;
@@ -657,25 +658,16 @@ namespace Iren.PSO.Applicazioni
         /// <param name="e"></param>
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
-            FormIncremento frmInc = new FormIncremento(Workbook.Application.ActiveSheet, Workbook.Application.ActiveCell);
-            frmInc.ShowDialog();
-
-            Workbook.ScreenUpdating = false;
-            Sheet.Protected = false;
-
-            RefreshChecks();
-
-            Sheet.Protected = true;
-            Workbook.ScreenUpdating = true;
+            btnFormIncremento_Click(sender, e);
 
             //FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
             //frmAz.ShowDialog();
 
             //Workbook.ScreenUpdating = false;
             //Sheet.Protected = false;
-            
+
             //RefreshChecks();
-            
+
             //Sheet.Protected = true;
             //Workbook.ScreenUpdating = true;
         }
@@ -964,17 +956,48 @@ namespace Iren.PSO.Applicazioni
 
         private void btnFormIncremento_Click(object sender, RibbonControlEventArgs e)
         {
-            FormIncremento frmInc = new FormIncremento(Workbook.Application.ActiveSheet, Workbook.Application.ActiveCell);
-            frmInc.ShowDialog();
+            Excel.Worksheet ws = Workbook.Application.ActiveSheet;
+            if(!Workbook.CategorySheets.Contains(ws))
+            {
+                System.Windows.Forms.MessageBox.Show("Nel foglio selezionato non è possibile eseguire questa operazione.", Simboli.NomeApplicazione + " - ERRORE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
+
+                return;
+            }
+
+            if (_frmInc == null || _frmInc.IsDisposed)
+            {
+                _frmInc = new FormIncremento(ws, Workbook.Application.Selection);
+                _frmInc.FormClosed += FrmInc_FormClosed;
+            }
+
+            Win32Window wnd = new Win32Window(new IntPtr(Workbook.Application.Hwnd));
+
+            _frmInc.Show(wnd);
+
+            wnd = null;
+
+            AbilitaTasti(false, "btnIncremento");
+        }
+
+        private void FrmInc_FormClosed(object sender, System.Windows.Forms.FormClosedEventArgs e)
+        {
+            AbilitaTasti(true);
+            StatoDB_Changed(null, null);
 
             Workbook.ScreenUpdating = false;
             Sheet.Protected = false;
 
             RefreshChecks();
-
+            
             Sheet.Protected = true;
             Workbook.ScreenUpdating = true;
+
+            Workbook.Application.Visible = true;
+            
         }
+
+
+        
         #endregion
 
         #region Metodi
@@ -1118,10 +1141,11 @@ namespace Iren.PSO.Applicazioni
         /// <summary>
         /// Abilito tutti i tasti nel caso in cui, ad esempio in seguito a un rilascio, questi vengano disabilitati da DisabilitaTasti.
         /// </summary>
-        private void AbilitaTasti(bool enable)
+        private void AbilitaTasti(bool enable, params string[] exceptions)
         {
             foreach (RibbonControl control in Controls.GetDefaultEnabled())
-                control.Enabled = enable;
+                if(!Array.Exists(exceptions, s => s == control.Name))
+                    control.Enabled = enable;
 
             _allDisabled = enable;
         }

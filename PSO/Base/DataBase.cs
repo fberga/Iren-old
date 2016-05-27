@@ -247,12 +247,12 @@ namespace Iren.PSO.Base
         /// <summary>
         /// Salva le modifiche effettuate ai fogli sul DataBase. Il processo consiste nella creazione di un file XML contenente tutte le righe della tabella di Modifica e successivo svuotamento della tabella stessa. Il processo richiede una connessione aperta. Diversamente le modifiche vengono salvate nella cartella di Emergenza dove, al momento della successiva chiamata al metodo, vengono reinviati al server in ordine cronologico.
         /// </summary>
-        public static void SalvaModificheDB()
+        public static void SalvaModificheDB(string nomeTabella = TAB.MODIFICA)
         {
             if (Workbook.Repository != null)
             {
                 //prendo la tabella di modifica e controllo se è nulla
-                DataTable modifiche = Workbook.Repository[TAB.MODIFICA];
+                DataTable modifiche = Workbook.Repository[nomeTabella];
                 if (modifiche != null && Workbook.IdUtente != 0)   //non invia se l'utente non è configurato... in ogni caso la tabella è vuota!!
                 {
                     //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server

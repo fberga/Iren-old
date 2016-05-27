@@ -9,8 +9,8 @@ namespace Iren.PSO.Forms
 {
     public partial class FormMeteo : Form
     {
-        DataView _entita;
-        DataView _entitaProprieta;
+        DataTable _entita;
+        DataTable _entitaProprieta;
         DateTime _dataRif;
         ACarica _carica;
         ARiepilogo _riepilogo;
@@ -20,8 +20,8 @@ namespace Iren.PSO.Forms
             InitializeComponent();
 
             _carica = carica;
-            _entita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-            _entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+            _entita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA];
+            _entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA];
             _dataRif = (DateTime)dataRif;
             _riepilogo = riepilogo;
 
@@ -31,24 +31,32 @@ namespace Iren.PSO.Forms
 
         private void frmMETEO_Load(object sender, EventArgs e)
         {
-            _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA' AND IdApplicazione = " + Workbook.IdApplicazione;
+            //_entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE_ATTIVA' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-            string filtro = "";
-            foreach (DataRowView prop in _entitaProprieta)
-            {
-                filtro += "'" + prop["SiglaEntita"] + "',";
-            }
+            var filter = _entitaProprieta
+                .AsEnumerable()
+                .Where(r => r["SiglaProprieta"].Equals("PROGR_IMPIANTO_TEMP_FONTE_ATTIVA") && r["IdApplicazione"].Equals(Workbook.IdApplicazione))
+                .Select(r => "'" + r["SiglaEntita"] + "'")
+                .ToList();
 
-            if (filtro.Length > 0)
-            {
-                filtro = "SiglaEntita IN (" + filtro.Remove(filtro.Length - 1) + ")";
-                _entita.RowFilter = filtro + " AND IdApplicazione = " + Workbook.IdApplicazione;
-            }
+            string filtro = String.Join(",", filter);
+            //foreach (DataRowView prop in _entitaProprieta)
+            //{
+            //    filtro += "'" + prop["SiglaEntita"] + "',";
+            //}
 
+            //if (filtro.Length > 0)
+            //{
+            //    filtro = "SiglaEntita IN (" + filtro + ")";
+            //    _entita.RowFilter = filtro + " AND IdApplicazione = " + Workbook.IdApplicazione;
+            //}
+            DataView lista = new DataView(_entita);
 
-            comboUP.DataSource = _entita;
+            lista.RowFilter = "SiglaEntita IN (" + filtro + ") AND IdApplicazione = " + Workbook.IdApplicazione;
+
             comboUP.DisplayMember = "DesEntita";
-
+            comboUP.ValueMember = "SiglaEntita";
+            comboUP.DataSource = lista;
         }
 
         private void comboUP_SelectedIndexChanged(object sender, EventArgs e)
@@ -63,7 +71,7 @@ namespace Iren.PSO.Forms
                 foreach (RadioButton rdb in radioArray)
                     groupDati.Controls.Remove(rdb);
 
-                DataTable fonti = DataBase.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + ((DataRowView)comboUP.SelectedItem)["SiglaEntita"] + ";@Data=" + _dataRif.ToString("yyyyMMdd")) ?? new DataTable();
+                DataTable fonti = DataBase.Select(DataBase.SP.CHECK_FONTE_METEO, "@SiglaEntita=" + comboUP.SelectedValue + ";@Data=" + _dataRif.ToString("yyyyMMdd")) ?? new DataTable();
 
                 int fonteOrdine = 0;
                 foreach (DataRow fonte in fonti.Rows)
@@ -105,18 +113,21 @@ namespace Iren.PSO.Forms
         {
             if (DataBase.OpenConnection())
             {
-                DataRowView entita = (DataRowView)comboUP.SelectedItem;
                 RadioButton rbt = (RadioButton)sender;
 
                 if (rbt.Checked)
                 {
                     //TODO eliminare questo filtro e passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
-                    _entitaProprieta.RowFilter = "SiglaProprieta = 'PROGR_IMPIANTO_TEMP_FONTE' AND SiglaEntita='" + entita["SiglaEntita"] + "' AND Valore = '" + rbt.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                    var proprieta = _entitaProprieta
+                        .AsEnumerable()
+                        .Where(r => r["SiglaProprieta"].Equals("PROGR_IMPIANTO_TEMP_FONTE") && r["SiglaEntita"].Equals(comboUP.SelectedValue) && r["Valore"].Equals(rbt.Name) && r["IdApplicazione"].Equals(Workbook.IdApplicazione))
+                        .Select(r => r["Ordine"])
+                        .FirstOrDefault();
 
                     DataBase.Insert(DataBase.SP.UPDATE_METEO, new Core.QryParams() 
                     {
-                        {"@SiglaEntita", entita["SiglaEntita"]},
-                        {"@Valore", _entitaProprieta[0]["Ordine"]}
+                        {"@SiglaEntita",comboUP.SelectedValue},
+                        {"@Valore", proprieta}
                     });
                 }
             }
@@ -128,7 +139,7 @@ namespace Iren.PSO.Forms
             if (DataBase.OpenConnection())
             {
                 //TODO passare direttamente il codice della fonte (DA AGGIORNARE STRUTTURA SU DB)
-                foreach (DataRowView entita in _entita)
+                foreach (DataRow entita in _entita.Rows)
                 {
                     DataBase.Insert(DataBase.SP.UPDATE_METEO, new Core.QryParams() 
                         {
@@ -136,33 +147,36 @@ namespace Iren.PSO.Forms
                             {"@Valore", "1"}
                         });
                 }
-
-                _entita.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
-                _entitaProprieta.RowFilter = "IdApplicazione = " + Workbook.IdApplicazione;
                 this.Close();
             }
         }
 
         private void btnCarica_Click(object sender, EventArgs e)
         {
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
             btnCarica.Enabled = false;
             btnAnnulla.Enabled = false;
 
-            object siglaEntita = ((DataRowView)comboUP.SelectedItem)["SiglaEntita"];
+            //object siglaEntita = comboUP.SelectedValue;
 
             string nomeCombo = "combo" + groupDati.Controls.OfType<RadioButton>().FirstOrDefault(btn => btn.Checked).Name;
             ComboBox cmb = groupDati.Controls.OfType<ComboBox>().FirstOrDefault(c => c.Name == nomeCombo);
 
             string dataEmissione = ((DateTime)cmb.SelectedItem).ToString("yyyyMMdd");
 
-            bool gone = _carica.AzioneInformazione(siglaEntita, "METEO", "CARICA", _dataRif, null,  dataEmissione);
+            bool gone = _carica.AzioneInformazione(comboUP.SelectedValue, "METEO", "CARICA", _dataRif, null, dataEmissione);
 
-            _riepilogo.AggiornaRiepilogo(siglaEntita, "METEO", gone, _dataRif);
+            _riepilogo.AggiornaRiepilogo(comboUP.SelectedValue, "METEO", gone, _dataRif);
 
             Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: Previsioni meteo");
 
             btnCarica.Enabled = true;
             btnAnnulla.Enabled = true;
+
+            Workbook.ScreenUpdating = true;
+            Sheet.Protected = true;
         }
     }
 }

@@ -134,7 +134,7 @@ namespace Iren.PSO.Base
             this[DataBase.TAB.MODIFICA] = CreaTabellaModifica(DataBase.TAB.MODIFICA);
             this[DataBase.TAB.EXPORT_XML] = CreaTabellaExportXML(DataBase.TAB.EXPORT_XML);
         }
-        private DataTable CreaTabellaModifica(string name)
+        public DataTable CreaTabellaModifica(string name)
         {
             DataTable dt = new DataTable(name)
             {

@@ -42,6 +42,15 @@ namespace Iren.PSO.Base
             set { _colOffset = value < 1 ? 1 : value; }
         }
 
+        public int EndRow
+        {
+            get { return _startRow + _rowOffset; }
+        }
+        public int EndColumn
+        {
+            get { return _startColumn + _colOffset; }
+        }
+
         public RowsCollection Rows
         {
             get { return _rows; }

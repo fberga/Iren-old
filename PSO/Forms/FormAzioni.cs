@@ -392,21 +392,21 @@ namespace Iren.PSO.Forms
 
                 bool caricaOrGenera = false;
 
-                foreach (DateTime date in _toProcessDates)
+                ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
                 {
-                    DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
-                    
-                    string suffissoData = Date.GetSuffissoData(date);
-
-                    ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
+                    if (nodoAzione.Checked && nodoAzione.Nodes.Count == 0)
                     {
-                        if (nodoAzione.Checked && nodoAzione.Nodes.Count == 0)
-                        {
-                            TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
-                            _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                        TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
+                        _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                            ThroughAllNodes(treeViewUP.Nodes, nodoEntita =>
+                        ThroughAllNodes(treeViewUP.Nodes, nodoEntita =>
+                        {
+                            foreach (DateTime date in _toProcessDates)
                             {
+                                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+
+                                string suffissoData = Date.GetSuffissoData(date);
+
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
                                 {
                                     entitaProprieta.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND SiglaProprieta LIKE '%GIORNI_STRUTTURA' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -427,7 +427,7 @@ namespace Iren.PSO.Forms
                                             SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
                                             string[] mercati = null;
-                                            if(Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+                                            if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
                                             {
                                                 mercati = groupMB.Controls
                                                     .OfType<CheckBox>()
@@ -461,7 +461,7 @@ namespace Iren.PSO.Forms
                                                 string[] azioneRelazione = _azioni[0]["Relazione"].ToString().Split(';');
 
                                                 DefinedNames definedNames = new DefinedNames("Main");
-                                                
+
                                                 foreach (string relazione in azioneRelazione)
                                                 {
                                                     _azioni.RowFilter = "SiglaAzione = '" + relazione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -478,22 +478,24 @@ namespace Iren.PSO.Forms
                                         }
                                     }
                                 }
-                            });
-                            switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
-                            {
-                                case "CARICA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Text);
-                                    break;
-                                case "GENERA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + nodoAzione.Text);
-                                    break;
-                                case "ESPORTA":
-                                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + nodoAzione.Text);
-                                    break;
                             }
+                        });
+                        switch (Regex.Match(nodoAzione.Parent.Name, @"\w[^\d]+").Value)
+                        {
+                            case "CARICA":
+                                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Text);
+                                break;
+                            case "GENERA":
+                                Workbook.Application.CalculateFull();
+                                Workbook.ScreenUpdating = false;
+                                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + nodoAzione.Text);
+                                break;
+                            case "ESPORTA":
+                                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogEsporta, "Esporta: " + nodoAzione.Text);
+                                break;
                         }
-                    });
-                }
+                    }
+                });
 
                 if (caricaOrGenera)
                 {

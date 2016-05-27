@@ -15,6 +15,7 @@
     <OfficeApplication>Excel</OfficeApplication>
     <ProjectGuid>{638BE7E9-7A04-4C56-A5E2-CBE7E11B8872}</ProjectGuid>
     <SolutionID>1b35d499-c537-48f1-a0db-7b0930507748</SolutionID>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <PublishUrl>\\srvpso\Applicazioni\PSO\OfferteMB\</PublishUrl>
     <InstallUrl>\\srvpso\Applicazioni\PSO\OfferteMB\</InstallUrl>
@@ -24,7 +25,6 @@
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
-    <IsWebBootstrapper>False</IsWebBootstrapper>
     <ProductName>OfferteMB</ProductName>
     <PublisherName />
     <SupportUrl />
@@ -89,6 +89,7 @@
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -180,7 +181,7 @@
       <SubType>Designer</SubType>
     </None>
     <Content Include="Data\OfferteMB.xlsm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="Iren.PSO.Applicazioni.OfferteMB_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
