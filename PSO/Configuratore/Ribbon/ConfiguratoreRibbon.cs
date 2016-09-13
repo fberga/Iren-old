@@ -28,7 +28,7 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
             Utility.StdFont = this.Font;
             InitializeComponent();
 
-            btnDev.Image = Iren.PSO.Base.Properties.Resources.dev;
+            btnProd.Image = Iren.PSO.Base.Properties.Resources.prod;
             btnTest.Image = Iren.PSO.Base.Properties.Resources.test;
 
             //trovo tutte le risorse disponibili in Iren.ToolsExcel.Base
@@ -50,8 +50,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             //inizializzazione connessione
             //_ambienti = Workbook.AppSettings("Ambienti").Split('|');
-            btnDev.Checked = true;
-            ChangeAmbiente(btnDev, null);
+            btnProd.Checked = true;
+            ChangeAmbiente(btnProd, null);
             //
             //DataBase.DB.SetParameters(idUtente: 62);
 
@@ -382,20 +382,20 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
                 return;
             }
                 
-            btnDev.CheckedChanged -= ChangeAmbiente;
+            btnProd.CheckedChanged -= ChangeAmbiente;
             btnTest.CheckedChanged -= ChangeAmbiente;
 
-            if (btn == btnDev)
+            if (btn == btnProd)
                 btnTest.Checked = false;
             else
-                btnDev.Checked = false;
+                btnProd.Checked = false;
 
             btnTest.CheckedChanged += ChangeAmbiente;
-            btnDev.CheckedChanged += ChangeAmbiente;
+            btnProd.CheckedChanged += ChangeAmbiente;
             if(DataBase.IsInitialized)
                 DataBase.Close();
-            if (btn == btnDev)
-                DataBase.CreateNew(Simboli.DEV, false);
+            if (btn == btnProd)
+                DataBase.CreateNew(Simboli.PROD, false);
             else if (btn == btnTest)
                 DataBase.CreateNew(Simboli.TEST, false);
 

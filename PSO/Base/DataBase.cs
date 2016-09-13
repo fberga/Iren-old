@@ -227,7 +227,7 @@ namespace Iren.PSO.Base
         /// Cambio ambiente tra Prod|Test|Prod.
         /// </summary>
         /// <param name="ambiente">Nuovo ambiente.</param>
-        public static void SwitchEnvironment(string ambiente)
+        public static bool SwitchEnvironment(string ambiente)
         {
             if (_db.Ambiente != ambiente)
             {
@@ -242,7 +242,9 @@ namespace Iren.PSO.Base
                     EventInfo ei = _db.GetType().GetEvent("PropertyChanged");
                     ei.AddEventHandler(_db, d);
                 }
+                return true;
             }
+            return false;
         }
         /// <summary>
         /// Salva le modifiche effettuate ai fogli sul DataBase. Il processo consiste nella creazione di un file XML contenente tutte le righe della tabella di Modifica e successivo svuotamento della tabella stessa. Il processo richiede una connessione aperta. Diversamente le modifiche vengono salvate nella cartella di Emergenza dove, al momento della successiva chiamata al metodo, vengono reinviati al server in ordine cronologico.
@@ -257,7 +259,7 @@ namespace Iren.PSO.Base
                 {
                     //tolgo il namespace che altrimenti aggiunge informazioni inutili al file da mandare al server
                     DataTable dt = modifiche.Copy();
-                    dt.TableName = modifiche.TableName;
+                    dt.TableName = TAB.MODIFICA;
                     dt.Namespace = "";
 
                     //path del caricatore sul server

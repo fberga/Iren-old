@@ -21,7 +21,7 @@ namespace Iren.PSO.Base
             {5, "ProgrammazioneImpianti"},
             {6, "UnitCommitment"},
             {7, "PrezziMSD"},
-            {8, "SistemaComandi"},
+            {8, "SistemaCmd1"}, //  <--prova Nicky     {8, "SistemaComandi"},
             {9, "OfferteMSD"},
             {10, "OfferteMB"},
             {11, "ValidazioneTL"},
@@ -208,26 +208,40 @@ namespace Iren.PSO.Base
          * MB5 23;24
          */
 
-        private readonly static Dictionary<string, Tuple<int, int>> mercatiMB = new Dictionary<string, Tuple<int, int>>()
+        //private readonly static Dictionary<string, Tuple<int, int>> mercatiMB = new Dictionary<string, Tuple<int, int>>()
+        //{
+        //    {"MB1", Tuple.Create(1,8)},
+        //    {"MB2", Tuple.Create(9,12)},
+        //    {"MB3", Tuple.Create(13,16)},
+        //    {"MB4", Tuple.Create(17,22)},
+        //    {"MB5", Tuple.Create(23,25)}
+        //};
+        //public static Dictionary<string, Tuple<int, int>> MercatiMB { get { return mercatiMB; } }
+
+        private readonly static Dictionary<string, MB> mercatiMB = new Dictionary<string, MB>()
         {
-            {"MB1", Tuple.Create(1,8)},
-            {"MB2", Tuple.Create(9,12)},
-            {"MB3", Tuple.Create(13,16)},
-            {"MB4", Tuple.Create(17,22)},
-            {"MB5", Tuple.Create(23,25)}
+            {"MB1", new MB(0,1,8)},
+            {"MB2", new MB(7,9,12)},
+            {"MB3", new MB(11,13,16)},
+            {"MB4", new MB(15,17,22)},
+            {"MB5", new MB(21,23,25)}
         };
-        public static Dictionary<string, Tuple<int, int>> MercatiMB { get { return mercatiMB; } }
+
+        public static Dictionary<string, MB> MercatiMB { get { return mercatiMB; } }
 
         public static int GetMarketOffset(int hour)
         {
             if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
             {
-                int offset = Simboli.MercatiMB["MB1"].Item2;
-                if (hour > Simboli.MercatiMB["MB1"].Item2)
-                    offset = Simboli.MercatiMB
-                        .Where(kv => kv.Value.Item2 < hour)
-                        .Select(kv => kv.Value.Item2)
+                int offset = Simboli.MercatiMB["MB1"].Fine;
+                if (hour >= Simboli.MercatiMB["MB2"].Chiusura)
+                {
+                    string mercatoChiuso = Simboli.MercatiMB
+                        .Where(kv => kv.Value.Chiusura <= hour)
+                        .Select(kv => kv.Key)
                         .Last();
+                    offset = Simboli.MercatiMB[mercatoChiuso].Fine;
+                }
 
                 return offset;
             }
@@ -239,9 +253,33 @@ namespace Iren.PSO.Base
             if (!mercatiMB.ContainsKey(mercato))
                 return null;
 
-            int[] orario = new int[2] { Simboli.MercatiMB[mercato].Item1, Math.Min(Simboli.MercatiMB[mercato].Item2, Date.GetOreGiorno(giorno)) };
+            int[] orario = new int[2] { Simboli.MercatiMB[mercato].Inizio, Math.Min(Simboli.MercatiMB[mercato].Fine, Date.GetOreGiorno(giorno)) };
 
             return new Range(rng.StartRow, rng.StartColumn + orario[0] - 1, 1, orario[1] - orario[0] + 1);
         }
+
+        //private readonly static Dictionary<string, int> chiusuraMB = new Dictionary<string, int>()
+        //{
+        //    {"MB1", 0},
+        //    {"MB2", 7},
+        //    {"MB3", 11},
+        //    {"MB4", 15},
+        //    {"MB5", 21}
+        //};
+        //public static Dictionary<string, int> ChiusuraMB { get { return chiusuraMB; } }
+    }
+}
+
+public class MB
+{
+    public int Chiusura { get; private set; }
+    public int Inizio { get; private set; }
+    public int Fine { get; private set; }
+
+    public MB(int chiusura, int inizio, int fine)
+    {
+        Chiusura = chiusura;
+        Inizio = inizio;
+        Fine = fine;
     }
 }

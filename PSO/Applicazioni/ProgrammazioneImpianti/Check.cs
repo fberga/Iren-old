@@ -272,7 +272,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("MT2R : Con assetto rav è necessario inserire il valore di potenza di rampa");
                     errore |= true;
                 }
-                if (unitCommMT3.Equals("rav") && rampaMT2R == null)
+                if (unitCommMT3.Equals("rav") && rampaMT3 == null)
                 {
                     nOra.Nodes.Add("MT3 : Con assetto rav è necessario inserire il valore di potenza di rampa");
                     errore |= true;

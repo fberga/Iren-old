@@ -94,7 +94,7 @@ namespace Iren.PSO.Forms
                 int hour = DateTime.Now.Hour;
 
                 var mercatiMB = Simboli.MercatiMB
-                    .Select(kv => new {Nome = "check" + kv.Key, Attivo = kv.Value.Item2 > hour});
+                    .Select(kv => new {Nome = "check" + kv.Key, Attivo = kv.Value.Chiusura > hour});
 
                 foreach(var mb in mercatiMB)
                 {
@@ -102,7 +102,7 @@ namespace Iren.PSO.Forms
                     chk.Enabled = mb.Attivo;
                     chk.Checked = mb.Attivo;
                 }
-            }    
+            }
         }
         private void CaricaAzioni()
         {
@@ -391,9 +391,17 @@ namespace Iren.PSO.Forms
                 Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
 
                 bool caricaOrGenera = false;
+                bool loaded = false;
 
                 ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
                 {
+                    if (loaded && Regex.Match(nodoAzione.Name, @"\w[^\d]+").Value == "GENERA")
+                    {
+                        Workbook.Application.CalculateFull();
+                        Workbook.ScreenUpdating = false;
+                        loaded = false;
+                    }
+
                     if (nodoAzione.Checked && nodoAzione.Nodes.Count == 0)
                     {
                         TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
@@ -426,13 +434,14 @@ namespace Iren.PSO.Forms
                                         {
                                             SplashScreen.UpdateStatus("[" + date.ToShortDateString() + "] " + nodoAzione.Parent.Text + " " + nodoAzione.Text + ": " + nodoEntita.Text);
 
+                                            //string[] mercati = null;
                                             string[] mercati = null;
                                             if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
                                             {
                                                 mercati = groupMB.Controls
                                                     .OfType<CheckBox>()
                                                     .Where(c => c.Checked)
-                                                    .Select(c => c.Text)
+                                                    .Select(c => Regex.Match(c.Text, @"\d+").Value)
                                                     .OrderBy(s => s)
                                                     .ToArray();
                                             }
@@ -443,6 +452,7 @@ namespace Iren.PSO.Forms
                                                     presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, mercati);
                                                     _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                     caricaOrGenera = true;
+                                                    loaded = true;
                                                     break;
                                                 case "GENERA":
                                                     presente = _carica.AzioneInformazione(nodoEntita.Name, nodoAzione.Name, nodoAzione.Parent.Name, date, mercati);
@@ -450,7 +460,7 @@ namespace Iren.PSO.Forms
                                                     caricaOrGenera = true;
                                                     break;
                                                 case "ESPORTA":
-                                                    presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date);
+                                                    presente = _esporta.RunExport(nodoEntita.Name, nodoAzione.Name, nodoEntita.Text, nodoAzione.Text, date, mercati);
                                                     if (presente)
                                                         _r.AggiornaRiepilogo(nodoEntita.Name, nodoAzione.Name, presente, date);
                                                     break;
@@ -486,8 +496,6 @@ namespace Iren.PSO.Forms
                                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogCarica, "Carica: " + nodoAzione.Text);
                                 break;
                             case "GENERA":
-                                Workbook.Application.CalculateFull();
-                                Workbook.ScreenUpdating = false;
                                 Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogGenera, "Genera: " + nodoAzione.Text);
                                 break;
                             case "ESPORTA":
@@ -496,6 +504,8 @@ namespace Iren.PSO.Forms
                         }
                     }
                 });
+
+                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
 
                 if (caricaOrGenera)
                 {
@@ -506,7 +516,6 @@ namespace Iren.PSO.Forms
 
                 Workbook.Application.EnableEvents = true;
                 Workbook.ScreenUpdating = true;
-                Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                 SplashScreen.Close();
             }
 

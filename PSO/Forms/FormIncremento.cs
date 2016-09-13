@@ -51,41 +51,44 @@ namespace Iren.PSO.Forms
             ChangeSelectionToIncrement(Workbook.Application.Selection);
         }
 
+        #endregion
+
+        #region Eventi
+
         private void ChangeSelectionToIncrement(Excel.Range Target)
         {
+            lbErrore.Text = "";
+            lbErrore.ForeColor = Color.Red;
             btnApplica.Enabled = false;
             _selectionIsCorrect = false;
             if (Target.Rows.Count > 1)
             {
-                foreach(Excel.Range row in Target.Rows)
+                foreach (Excel.Range row in Target.Rows)
                 {
                     if (row.EntireRow.Hidden)
                     {
-                        MessageBox.Show("Nel range selezionato ci sono righe nascoste. Fare le modifiche una riga per volta.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
+                        lbErrore.Text = "ERRORE: Nel range selezionato ci sono righe nascoste.";
                         return;
                     }
                 }
-                
-                MessageBox.Show("Nel range selezionato ci sono più righe.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                lbErrore.ForeColor = Color.DarkOrange;
+                lbErrore.Text = "ATTENZIONE: Nel range selezionato ci sono più righe.";
             }
             foreach (Excel.Range row in Target.Rows)
             {
                 if (!_definedNames.IsEditable(row.Row))
                 {
-                    MessageBox.Show("Il range selezionato contiene delle righe non modificabili. Escluderle per procedere.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
+                    lbErrore.Text = "ERRORE: Il range selezionato contiene delle righe non modificabili.";
                     return;
                 }
             }
 
             int marketOffset = Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1") ? Simboli.GetMarketOffset(DateTime.Now.Hour) : 0;
             int firstCol = _definedNames.GetColFromDate(Date.SuffissoDATA1);
-            
+
             if (Target.Column < firstCol + marketOffset)
             {
-                MessageBox.Show("Il range selezionato contiene celle appartenenti a mercati chiusi. Escluderle per procedere.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation);
-
+                lbErrore.Text = "ERRORE: Il range selezionato contiene celle appartenenti a mercati chiusi.";
                 return;
             }
 
@@ -95,14 +98,18 @@ namespace Iren.PSO.Forms
                 btnApplica.Enabled = true;
 
             btnRipristina.Enabled = false;
-            _origVal = Target.Value;
-            _origRng = Target;
+
+            if (Target.Cells.Count == 1)
+            {
+                _origVal = new object[1, 1];
+                _origVal[0, 0] = Target.Value;
+            }
+            else
+                _origVal = Target.Value;
             
+            _origRng = Target;
+
         }
-
-        #endregion
-
-        #region Eventi
 
         private void TipoIncermento_checkedChanged(object sender, EventArgs e)
         {
@@ -132,8 +139,9 @@ namespace Iren.PSO.Forms
             }
 
             double val;
+            string text = txt.Text.Replace(".", ",");
 
-            if (Double.TryParse(txt.Text, out val))
+            if (Double.TryParse(text, out val))
             {
                 btnApplica.Enabled = true;
             }
@@ -181,10 +189,10 @@ namespace Iren.PSO.Forms
                     {
                         rng.Value = val + val * _percentage.Value;
                     }
-                }
-                else if (_increment != null)
-                {
-                    rng.Value = _increment.Value;
+                    else if (_increment != null)
+                    {
+                        rng.Value += _increment.Value;
+                    }
                 }
             }
 
@@ -232,6 +240,11 @@ namespace Iren.PSO.Forms
             }
 
             Workbook.Repository.Remove(MODIFICA);
+        }
+
+        private void btnAnnulla_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 
         #endregion

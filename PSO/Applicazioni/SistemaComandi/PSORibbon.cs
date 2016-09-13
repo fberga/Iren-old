@@ -67,7 +67,9 @@ namespace Iren.PSO.Applicazioni
         public void InitializeComponent2()
         {
 #if DEBUG
-            string path = @"D:\Repository\Iren\PSO\Applicazioni\" + System.AppDomain.CurrentDomain.FriendlyName.Split('.')[0] + @"\bin\Debug\" + System.AppDomain.CurrentDomain.FriendlyName;
+            //string path = @"D:\Repository\Iren\PSO\Applicazioni\" + System.AppDomain.CurrentDomain.FriendlyName.Split('.')[0] + @"\bin\Debug\" + System.AppDomain.CurrentDomain.FriendlyName;
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, System.AppDomain.CurrentDomain.FriendlyName);
+            //System.Windows.Forms.MessageBox.Show(path);
 #else
             string path = Environment.ExpandEnvironmentVariables(Path.Combine(Simboli.LocalBasePath, System.AppDomain.CurrentDomain.FriendlyName));
 #endif
@@ -79,7 +81,7 @@ namespace Iren.PSO.Applicazioni
             int idApplicazione = -1;
             int idUtente = -1;
 #if DEBUG
-            string ambiente = Simboli.DEV;
+            string ambiente = Simboli.TEST;
 #else
             //TODO passare a PROD quando rilasciata versione ufficiale!!!
             string ambiente = Simboli.PROD;
@@ -658,18 +660,33 @@ namespace Iren.PSO.Applicazioni
         /// <param name="e"></param>
         private void btnAzioni_Click(object sender, RibbonControlEventArgs e)
         {
-            btnFormIncremento_Click(sender, e);
+            //aggiorno i limiti delle celle editabili
+            if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+            {
+                Workbook.ScreenUpdating = false;
+                Sheet.Protected = false;
 
-            //FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
-            //frmAz.ShowDialog();
+                foreach (Excel.Worksheet ws in Workbook.CategorySheets)
+                {
+                    Sheet s = new Sheet(ws);
+                    s.MakeCellsDisabled();
+                    s.UpdateDayColor();
+                }
 
-            //Workbook.ScreenUpdating = false;
-            //Sheet.Protected = false;
+                Sheet.Protected = true;
+                Workbook.ScreenUpdating = true;
+            }
 
-            //RefreshChecks();
+            FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
+            frmAz.ShowDialog();
 
-            //Sheet.Protected = true;
-            //Workbook.ScreenUpdating = true;
+            Workbook.ScreenUpdating = false;
+            Sheet.Protected = false;
+
+            RefreshChecks();
+
+            Sheet.Protected = true;
+            Workbook.ScreenUpdating = true;
         }
         /// <summary>
         /// Handler del click del tasto di modifica. Attiva e disattiva la modifica foglio. Nel caso di disattivazione, aggiorna i check.
@@ -697,6 +714,16 @@ namespace Iren.PSO.Applicazioni
                     Workbook.AddStdStoreEdit();
                     //Aggiungo handler per azioni custom nel caso servisse
                     Workbook.WB.SheetChange += _modificaCustom.Range;
+                    
+                    if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+                    {
+                        foreach (Excel.Worksheet ws in Workbook.CategorySheets)
+                        {
+                            Sheet s = new Sheet(ws);
+                            s.MakeCellsDisabled();
+                            s.UpdateDayColor();
+                        }
+                    }
                 }
                 else
                 {
@@ -1288,7 +1315,7 @@ namespace Iren.PSO.Applicazioni
                 }
 
                 ((RibbonToggleButton)Controls["btn" + Workbook.Ambiente]).Checked = true;
-                DataBase.SwitchEnvironment(Workbook.Ambiente);
+                bool switchEnv = DataBase.SwitchEnvironment(Workbook.Ambiente);
 
                 Workbook.StatoDBChanged(null, null);
 
@@ -1305,6 +1332,11 @@ namespace Iren.PSO.Applicazioni
                 bool rifiutatoCambioData;
                 AggiornaData(out newDate, out rifiutatoCambioData);
 
+                //System.Windows.Forms.MessageBox.Show("Workbook.DataAttiva: " + Workbook.DataAttiva);
+                //System.Windows.Forms.MessageBox.Show("newDate: " + newDate);
+                //System.Windows.Forms.MessageBox.Show("rifiutatoCambioData: " + rifiutatoCambioData);
+                //System.Windows.Forms.MessageBox.Show("aggiornaDati (Workbook.DataAttiva != newDate): " + (Workbook.DataAttiva != newDate));
+
                 Riepilogo r = new Riepilogo(Workbook.Main);
 
                 Aggiorna aggiorna = new Aggiorna();
@@ -1313,6 +1345,9 @@ namespace Iren.PSO.Applicazioni
 
                 if (DataBase.OpenConnection())
                 {
+                    //System.Windows.Forms.MessageBox.Show("CheckCambioStruttura: " + CheckCambioStruttura(Workbook.DataAttiva, newDate));
+                    //System.Windows.Forms.MessageBox.Show("Workbook.DaAggiornare: " + Workbook.DaAggiornare);
+
                     aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione || Workbook.DaAggiornare;
 
                     if (Workbook.DataAttiva != newDate)
@@ -1322,7 +1357,7 @@ namespace Iren.PSO.Applicazioni
                     Workbook.IdApplicazione = newIdApplicazione;
 
                     if (aggiornaStruttura)
-                        aggiorna.Struttura(avoidRepositoryUpdate: true);
+                        aggiorna.Struttura(avoidRepositoryUpdate: !switchEnv);
                     else if(!rifiutatoCambioData)
                     {
                         if(aggiornaDati)

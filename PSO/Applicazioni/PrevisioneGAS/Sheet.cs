@@ -188,6 +188,11 @@ namespace Iren.PSO.Applicazioni
                     }
                     int row = _definedNames.GetRowByName(chart.Name);
                     Excel.Range rng = _ws.Range[Range.GetRange(row, col)];
+                    int i = 0;
+                    foreach (Excel.Series s in chart.Chart.SeriesCollection())
+                    {
+                        s.Name = Workbook.DataAttiva.AddDays(i++).ToString("dd/MM/yyyy");
+                    }
                     AggiornaGrafici(chart.Chart, rng.MergeArea);
                     //chart.Chart.Refresh();
                 }

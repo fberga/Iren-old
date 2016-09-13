@@ -46,7 +46,6 @@ namespace Iren.PSO.Base
             DefinedNames definedNames = new DefinedNames(DefinedNames.GetSheetName(siglaEntita));
             try
             {
-
                 AzzeraInformazione(siglaEntita, siglaAzione, definedNames, giorno, mercati, azionePadre.ToString().StartsWith("CARICA"));
                 if (DataBase.OpenConnection())
                 {
@@ -56,8 +55,8 @@ namespace Iren.PSO.Base
                         {
                             foreach (string mercato in mercati)
                             {
-                                Tuple<int, int> orario = Simboli.MercatiMB[mercato];
-                                ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno, orario.Item1, orario.Item2);
+                                MB m = Simboli.MercatiMB["MB" + mercato];
+                                ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno, m.Inizio, Math.Min(Date.GetOreGiorno(giorno), m.Fine));
                             }
                         }
                         else
@@ -66,7 +65,12 @@ namespace Iren.PSO.Base
                     }
                     else
                     {
-                        DataTable azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd"));
+                        DataTable azioneInformazione = null;
+                        if(mercati != null)
+                            azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + String.Join(",",mercati) + ";@Data=" + giorno.ToString("yyyyMMdd"));
+                        else
+                            azioneInformazione = DataBase.Select(DataBase.SP.CARICA_AZIONE_INFORMAZIONE, "@SiglaEntita=" + siglaEntita + ";@SiglaAzione=" + siglaAzione + ";@Parametro=" + parametro + ";@Data=" + giorno.ToString("yyyyMMdd"));
+
                         if (azioneInformazione != null)
                         {
 
@@ -131,13 +135,21 @@ namespace Iren.PSO.Base
                 if (info["FormulaInCella"].Equals("0"))
                 {
                     siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
-                    Range rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    Range rng;
+                    if (Base.Struct.tipoVisualizzazione == "R")
+                    {
+                        rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(Struct.intervalloGiorni + 1, 25);
+                    }
+                    else
+                    {
+                        rng = definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: Date.GetOreGiorno(giorno));
+                    }
 
                     if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
                     {
                         foreach (string mercato in mercati) 
                         {
-                            Range mbRng = Simboli.GetMarketCompleteRange(mercato, giorno, rng);
+                            Range mbRng = Simboli.GetMarketCompleteRange("MB" + mercato, giorno, rng);
                             if (mbRng != null)
                             {
                                 ws.Range[mbRng.ToString()].Value = null;

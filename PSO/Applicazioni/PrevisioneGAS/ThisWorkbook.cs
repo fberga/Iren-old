@@ -95,7 +95,7 @@ namespace Iren.PSO.Applicazioni
             Application.ScreenUpdating = false;
 #if DEBUG
             //TODO Ripristinare DEV
-            ambiente = Simboli.DEV;
+            ambiente = Simboli.TEST;
 #else
             //ambiente = Simboli.TEST;
 #endif

@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.panelCentrale = new System.Windows.Forms.Panel();
+            this.lbErrore = new System.Windows.Forms.Label();
             this.lbScegli = new System.Windows.Forms.Label();
             this.txtValore = new System.Windows.Forms.TextBox();
             this.txtPercentuale = new System.Windows.Forms.TextBox();
@@ -36,14 +37,15 @@
             this.rdbPercentuale = new System.Windows.Forms.RadioButton();
             this.panelButtons = new System.Windows.Forms.Panel();
             this.btnApplica = new System.Windows.Forms.Button();
-            this.btnAnnulla = new System.Windows.Forms.Button();
             this.btnRipristina = new System.Windows.Forms.Button();
+            this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelCentrale.SuspendLayout();
             this.panelButtons.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelCentrale
             // 
+            this.panelCentrale.Controls.Add(this.lbErrore);
             this.panelCentrale.Controls.Add(this.lbScegli);
             this.panelCentrale.Controls.Add(this.txtValore);
             this.panelCentrale.Controls.Add(this.txtPercentuale);
@@ -53,8 +55,19 @@
             this.panelCentrale.Location = new System.Drawing.Point(0, 0);
             this.panelCentrale.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panelCentrale.Name = "panelCentrale";
-            this.panelCentrale.Size = new System.Drawing.Size(552, 119);
+            this.panelCentrale.Size = new System.Drawing.Size(552, 130);
             this.panelCentrale.TabIndex = 5;
+            // 
+            // lbErrore
+            // 
+            this.lbErrore.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.lbErrore.ForeColor = System.Drawing.Color.Red;
+            this.lbErrore.Location = new System.Drawing.Point(0, 99);
+            this.lbErrore.Name = "lbErrore";
+            this.lbErrore.Size = new System.Drawing.Size(552, 31);
+            this.lbErrore.TabIndex = 9;
+            this.lbErrore.Text = "label1";
+            this.lbErrore.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lbScegli
             // 
@@ -67,6 +80,7 @@
             // 
             // txtValore
             // 
+            this.txtValore.Enabled = false;
             this.txtValore.Location = new System.Drawing.Point(166, 68);
             this.txtValore.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtValore.Name = "txtValore";
@@ -117,7 +131,7 @@
             this.panelButtons.Controls.Add(this.btnRipristina);
             this.panelButtons.Controls.Add(this.btnAnnulla);
             this.panelButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelButtons.Location = new System.Drawing.Point(0, 119);
+            this.panelButtons.Location = new System.Drawing.Point(0, 130);
             this.panelButtons.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panelButtons.Name = "panelButtons";
             this.panelButtons.Padding = new System.Windows.Forms.Padding(0, 5, 0, 0);
@@ -137,19 +151,6 @@
             this.btnApplica.UseVisualStyleBackColor = true;
             this.btnApplica.Click += new System.EventHandler(this.btnApplica_Click);
             // 
-            // btnAnnulla
-            // 
-            this.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnAnnulla.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnAnnulla.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAnnulla.Location = new System.Drawing.Point(439, 5);
-            this.btnAnnulla.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.btnAnnulla.Name = "btnAnnulla";
-            this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
-            this.btnAnnulla.TabIndex = 5;
-            this.btnAnnulla.Text = "Annulla";
-            this.btnAnnulla.UseVisualStyleBackColor = true;
-            // 
             // btnRipristina
             // 
             this.btnRipristina.Dock = System.Windows.Forms.DockStyle.Right;
@@ -163,11 +164,26 @@
             this.btnRipristina.UseVisualStyleBackColor = true;
             this.btnRipristina.Click += new System.EventHandler(this.RipristinaValori_Click);
             // 
+            // btnAnnulla
+            // 
+            this.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnAnnulla.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnAnnulla.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnAnnulla.Location = new System.Drawing.Point(439, 5);
+            this.btnAnnulla.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.btnAnnulla.Name = "btnAnnulla";
+            this.btnAnnulla.Size = new System.Drawing.Size(113, 48);
+            this.btnAnnulla.TabIndex = 5;
+            this.btnAnnulla.Text = "Chiudi";
+            this.btnAnnulla.UseVisualStyleBackColor = true;
+            this.btnAnnulla.Click += new System.EventHandler(this.btnAnnulla_Click);
+            // 
             // FormIncremento
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(552, 172);
+            this.CancelButton = this.btnAnnulla;
+            this.ClientSize = new System.Drawing.Size(552, 183);
             this.Controls.Add(this.panelCentrale);
             this.Controls.Add(this.panelButtons);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
@@ -197,5 +213,6 @@
         private System.Windows.Forms.Button btnAnnulla;
         private System.Windows.Forms.Label lbScegli;
         private System.Windows.Forms.Button btnRipristina;
+        private System.Windows.Forms.Label lbErrore;
     }
 }

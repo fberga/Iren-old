@@ -64,6 +64,8 @@ namespace Iren.PSO.Base
             get { return _cells; }
         }
 
+        public bool Lock { get; set; }
+
         #endregion
 
         #region Costruttori
@@ -179,7 +181,7 @@ namespace Iren.PSO.Base
         /// <returns>La stringa di indirizzo in formato A1.</returns>
         public override string ToString()
         {
-            return GetRange(_startRow, _startColumn, _rowOffset, _colOffset);
+            return GetRange(_startRow, _startColumn, _rowOffset, _colOffset, Lock);
         }
         /// <summary>
         /// Verifica se il range contiene rng.
@@ -204,7 +206,7 @@ namespace Iren.PSO.Base
         /// <param name="riga">Riga.</param>
         /// <param name="colonna">Colonna.</param>
         /// <returns>La stringa che rappresenta l'indirizzo in formato A1.</returns>
-        public static string R1C1toA1(int riga, int colonna)
+        public static string R1C1toA1(int riga, int colonna, bool lk = false)
         {
             string output = "";
             while (colonna > 0)
@@ -213,8 +215,8 @@ namespace Iren.PSO.Base
                 output = Convert.ToChar(lettera + 65) + output;
                 colonna = (colonna - lettera) / 26;
             }
-            output += riga;
-            return output;
+            output += (lk ? "$" : "") + riga;
+            return (lk ? "$" : "") + output;
         }
         /// <summary>
         /// Converte l'indirizzo in formato A1 in un oggetto Range.
@@ -264,12 +266,12 @@ namespace Iren.PSO.Base
         /// <param name="rowOffset">Righe di offset.</param>
         /// <param name="colOffset">Colonne di offset.</param>
         /// <returns>Stringa di indirizzo in formato A1.</returns>
-        public static string GetRange(int row, int column, int rowOffset = 1, int colOffset = 1)
+        public static string GetRange(int row, int column, int rowOffset = 1, int colOffset = 1, bool lk = false)
         {
             if ((rowOffset == 1 && colOffset == 1))
-                return R1C1toA1(row, column);
+                return R1C1toA1(row, column, lk);
 
-            return R1C1toA1(row, column) + ":" + R1C1toA1(row + rowOffset - 1, column + colOffset - 1);
+            return R1C1toA1(row, column, lk) + ":" + R1C1toA1(row + rowOffset - 1, column + colOffset - 1, lk);
         }
 
         #endregion

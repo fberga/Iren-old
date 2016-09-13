@@ -17,7 +17,7 @@ namespace Iren.PSO.Applicazioni
     /// </summary>
     class Esporta : AEsporta
     {
-        protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
+        protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif, string[] mercati)
         {
             DataView entitaAzione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -228,7 +228,6 @@ namespace Iren.PSO.Applicazioni
                 return false;
             }
         }
-
         protected bool InviaMail(string nomeFoglio, object siglaEntita, List<Range> export) 
         {
             string fileName = "";
@@ -240,7 +239,8 @@ namespace Iren.PSO.Applicazioni
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (entitaProprieta.Count > 0)
                 {
-                    fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xls";
+                    fileName = Environment.ExpandEnvironmentVariables(@"%TEMP%\" + entitaProprieta[0]["Valore"] + "_VDT_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xls");
+                    //fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xls";
 
                     Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
                     int i = 2;

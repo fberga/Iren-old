@@ -24,11 +24,11 @@ namespace Iren.PSO.Base
         /// <param name="desAzione">Descrizione dell'azione.</param>
         /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
         /// <returns>True se l'azione di esportazione è andata a buon fine, false altrimenti.</returns>
-        public virtual bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
+        public virtual bool RunExport(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif, string[] mercati)
         {
             try
             {
-                if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif))
+                if (EsportaAzioneInformazione(siglaEntita, siglaAzione, desEntita, desAzione, dataRif, mercati))
                 {
                     if (DataBase.OpenConnection())
                         DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, dataRif);
@@ -60,7 +60,7 @@ namespace Iren.PSO.Base
         /// <param name="desAzione">Descrizione dell'azione.</param>
         /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
         /// <returns></returns>
-        protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif);
+        protected abstract bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif, string[] mercati);
         /// <summary>
         /// Restituisce un'istanza di Outlook (quella aperta se ce n'è una, una nuova altrimenti).
         /// </summary>
@@ -199,7 +199,7 @@ namespace Iren.PSO.Base
         /// <param name="desAzione">Descrizione dell'azione.</param>
         /// <param name="dataRif">La data di riferimento per cui esportare i dati.</param>
         /// <returns></returns>
-        protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
+        protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif, string[] mercati)
         {
             return true;
         }

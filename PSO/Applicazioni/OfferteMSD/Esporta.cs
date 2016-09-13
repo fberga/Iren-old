@@ -12,7 +12,7 @@ namespace Iren.PSO.Applicazioni
     /// </summary>
     class Esporta : Base.Esporta
     {
-        protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif)
+        protected override bool EsportaAzioneInformazione(object siglaEntita, object siglaAzione, object desEntita, object desAzione, DateTime dataRif, string[] mercati)
         {
             DataView entitaAzione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE].DefaultView;
             entitaAzione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaAzione = '" + siglaAzione + "' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -21,13 +21,14 @@ namespace Iren.PSO.Applicazioni
 
             switch (siglaAzione.ToString())
             {
-                case "E_OFFERTA_MSD":
+                case "E_OFFERTA":
 
                     string pathStr = PreparePath(Workbook.GetUsrConfigElement("pathOfferteSuggerite"));
+                    string emergenza = Workbook.GetUsrConfigElement("pathOfferteSuggerite").Emergenza;
 
                     if (Directory.Exists(pathStr))
                     {
-                        if (!CreaOfferteSuggeriteXML_GME(siglaEntita, siglaAzione, pathStr, dataRif, "MSD1"))
+                        if (!CreaOfferteSuggeriteXML_GME(siglaEntita, siglaAzione, emergenza, dataRif, "MSD1"))
                             return false;
                         if (!CreaOfferteSuggeriteXML(siglaEntita, siglaAzione, pathStr, dataRif, "MSD1"))
                             return false;
@@ -129,9 +130,9 @@ namespace Iren.PSO.Applicazioni
                         if(!ws.Range[rng.ToString()].EntireRow.Hidden) 
                         {
                             presentedOffer = "Yes";
-                            energia = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
+                            energia = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
 
-                            rng = definedNames.Get(siglaEntita, informazioni[j]+"VP", suffissoData, Date.GetSuffissoOra(i + 1));
+                            rng = definedNames.Get(siglaEntita, informazioni[j] + "VP", suffissoData, Date.GetSuffissoOra(i + 1));
                             if (ws.Range[rng.ToString()].Value != null)
                                 prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                         }
@@ -154,11 +155,11 @@ namespace Iren.PSO.Applicazioni
                         if(!ws.Range[rng.ToString()].EntireRow.Hidden) 
                         {
                             presentedOffer = "Yes";
-                            energia = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
+                            energia = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
 
-                            rng = definedNames.Get(siglaEntita, informazioni[j]+"AP", suffissoData, Date.GetSuffissoOra(i + 1));
-                            
-                            if(ws.Range[rng.ToString()].Value != null)
+                            rng = definedNames.Get(siglaEntita, informazioni[j] + "AP", suffissoData, Date.GetSuffissoOra(i + 1));
+
+                            if (ws.Range[rng.ToString()].Value != null)
                                 prezzo = ws.Range[rng.ToString()].Value.ToString().Replace(".", ",");
                         }
 
@@ -177,7 +178,7 @@ namespace Iren.PSO.Applicazioni
                     presentedOffer = "Yes";
                     prezzo = "0";
                     energia = "0";
-                    if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE"))
+                    if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE_MSD"))
                     {
                         //aggiusto la colonna che mi ritorna DATA1.H1
                         //rng.StartColumn -= 1;
@@ -198,7 +199,7 @@ namespace Iren.PSO.Applicazioni
                     //Cambio Assetto - Vendita
                     presentedOffer = "Yes";
                     prezzo = "0";
-                    if (definedNames.TryGet(out rng, siglaEntita, "CAMBIO_ASSETTO"))
+                    if (definedNames.TryGet(out rng, siglaEntita, "CAMBIO_ASSETTO_MSD"))
                     {
                         //aggiusto la colonna che mi ritorna DATA1.H1
                         //rng.StartColumn -= 1;
@@ -281,7 +282,7 @@ namespace Iren.PSO.Applicazioni
                 Range rng1 = new Range();
                 string prezzo = "";
                 string energia = "";
-                if (definedNames.TryGet(out rng, siglaEntita, "CAMBIO_ASSETTO"))
+                if (definedNames.TryGet(out rng, siglaEntita, "CAMBIO_ASSETTO_MSD"))
                 {
                     //rng.StartColumn -= 1;
                     prezzo = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
@@ -388,6 +389,7 @@ namespace Iren.PSO.Applicazioni
 
                 //altri servizi
                 XElement altriServizi = new XElement(ns + "AltriServizi");
+
                 bool aggiungi = false;
                 int sgId = 0;
                 for (int k = 1; k < 4; k++)
@@ -405,12 +407,16 @@ namespace Iren.PSO.Applicazioni
                             energia = (ws.Range[rng.Columns[j].ToString()].Value ?? "0").ToString().Replace(".", ",");
                             prezzo = (ws.Range[rng1.Columns[j].ToString()].Value ?? "0").ToString().Replace(".", ",");
 
-                            altriServizi.Add(new XElement(ns + ("SG" + sgId), (j + 1),
+                            XElement sg = new XElement(ns + ("SG" + sgId), (j + 1),
                                     new XAttribute("PRE", prezzo),
                                     new XAttribute("QUA", energia),
                                     new XAttribute("AZIONE", "VEN")
-                                )
-                            );
+                                );
+
+                            if (calcoloPPA == 1 && k == 1 && j == 0)
+                                sg.Add(new XAttribute("RifStand", "MI1"));
+
+                            altriServizi.Add(sg);
                         }
 
                         rng = definedNames.Get(siglaEntita, "OFFERTA_MSD_G" + k + "AE", suffissoData).Extend(colOffset: oreGiorno);
@@ -439,7 +445,7 @@ namespace Iren.PSO.Applicazioni
                 rng = new Range();
                 energia = "0";
                 prezzo = "0";
-                if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE"))
+                if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE_MSD"))
                 {
                     //rng.StartColumn -= 1;
                     prezzo = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");

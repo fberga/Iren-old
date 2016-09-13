@@ -713,9 +713,12 @@ namespace Iren.PSO.Base
         {
             Excel.Worksheet log = _wb.Sheets["Log"];
             bool prot = log.ProtectContents;
+            bool events = Workbook.Application.EnableEvents;
             if (prot) log.Unprotect(Password);
+            if (events) Workbook.Application.EnableEvents = false;
             DataBase db = new DataBase();
             db.RefreshLog();
+            if (events) Workbook.Application.EnableEvents = true;
             if (prot) log.Protect(Password);
         }
         #endregion

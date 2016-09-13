@@ -86,6 +86,8 @@ namespace Iren.PSO.Base
         /// Metodo per il caricamento delle informazioni.
         /// </summary>
         public abstract void CaricaInformazioni();
+
+        public abstract void MakeCellsDisabled();
         
         #endregion
 
@@ -1179,15 +1181,36 @@ namespace Iren.PSO.Base
                     });
                 }
                 else
-                    AddInformazioneValue(info, _dataInizio, colOffset);
+                {
+                    CicloGiorni(_dataInizio, _dataFine, (oreGiorno, suffissoData, giorno) =>
+                    {
+                        AddInformazioneValue(info, giorno, oreGiorno);
+                    });
+                    //AddInformazioneValue(info, _dataInizio, colOffset);
+                    if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
+                    {
+                        AddOptFunction(info, _dataInizio, colOffset);
+                    }
+                }
             }
+        }
+
+        protected virtual void AddOptFunction(DataRowView info, DateTime giorno, int colOffset)
+        {
+            object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
+
+            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno)), _definedNames.GetColData1H1(), 1, colOffset);
+            
+            Range data0H24 = _struttura.visData0H24 && info["Data0H24"].Equals("1") ? new Range(rng.StartRow, _definedNames.GetFirstCol()) : null;
+
+            _ws.Range[data0H24.ToString()].Formula = "=SUM(" + rng.Columns[0, rng.Columns.Count - 1] + ")";
         }
 
         protected virtual void AddInformazioneValue(DataRowView info, DateTime giorno, int colOffset)
         {
             object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
-            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno)), _definedNames.GetColData1H1());
+            Range rng = new Range(_definedNames.GetRowByNameSuffissoData(siglaEntita, info["SiglaInformazione"], Date.GetSuffissoData(giorno)), _definedNames.GetColFromDate(Date.GetSuffissoData(giorno)));
             Range data0H24 = _struttura.visData0H24 && info["Data0H24"].Equals("1") ? new Range(rng.StartRow, _definedNames.GetFirstCol()) : null;
 
             if (info["SiglaTipologiaInformazione"].Equals("GIORNALIERA"))
@@ -1207,8 +1230,8 @@ namespace Iren.PSO.Base
                 int deltaPos;
                 string formula = "=" + PreparaFormula(info, Date.GetSuffissoData(giorno.AddDays(-1)), Date.GetSuffissoData(giorno), 24, out deltaNeg, out deltaPos);
 
-                if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
-                    _ws.Range[data0H24.ToString()].Formula = "=SUM(" + rng.Columns[0, rng.Columns.Count - 1] + ")";
+                //if (info["SiglaTipologiaInformazione"].Equals("OTTIMO"))
+                //    _ws.Range[data0H24.ToString()].Formula = "=SUM(" + rng.Columns[0, rng.Columns.Count - 1] + ")";
 
                 _ws.Range[rng.Columns[deltaNeg, rng.Columns.Count - 1 - deltaPos].ToString()].Formula = formula;
             }
@@ -1697,9 +1720,23 @@ namespace Iren.PSO.Base
                 deltaNeg = tmpdeltaNeg != 0 ? Math.Abs(tmpdeltaNeg + 1) : 0;
                 deltaPos = tmpdeltaPos;
 
-                formula = Regex.Replace(formula, @"%P\d+(E\d+)?%", delegate(Match m)
+                formula = Regex.Replace(formula, @"%P\d+(E\d+)?(\$(\d+|I|F))?%", delegate(Match m)
                 {
-                    string[] parametroEntita = m.Value.Split('E');
+                    string[] parametroEntitaLock = m.Value.Split('$');
+
+                    int oraLock = -1;
+                    if (parametroEntitaLock.Length > 1)
+                    {
+                        if (parametroEntitaLock[1] == "f%" || parametroEntitaLock[1] == "F%")
+                            oraLock = Date.GetOreGiorno(suffissoData);
+                        else if (parametroEntitaLock[1] == "i%" || parametroEntitaLock[1] == "I%")
+                            oraLock = 1;
+                        else
+                            int.TryParse(Regex.Match(parametroEntitaLock[1], @"\d+").Value, out oraLock);
+                    }
+
+                    string[] parametroEntita = parametroEntitaLock[0].Split('E');
+                    
                     int n = int.Parse(Regex.Match(parametroEntita[0], @"\d+").Value);
 
                     object siglaEntita = "";
@@ -1719,7 +1756,7 @@ namespace Iren.PSO.Base
                         siglaEntita = info["SiglaEntita"];
                     
                     siglaInformazione = parametri[n - 1];
-
+                    
                     if (Regex.IsMatch(siglaInformazione, @"\[[-+]?\d+\]"))
                     {
                         int deltaOre = int.Parse(siglaInformazione.Split('[')[1].Replace("]", ""));
@@ -1738,6 +1775,12 @@ namespace Iren.PSO.Base
                         }
                         siglaInformazione = Regex.Replace(siglaInformazione, @"\[[-+]?\d+\]", "");
                     }
+                    else if (oraLock > 0)
+                    {
+                        suffData = suffissoData;
+                        suffOra = "H" + oraLock;
+
+                    }
                     else
                     {
                         if (suffissoData == "DATA1")
@@ -1753,6 +1796,8 @@ namespace Iren.PSO.Base
                         }
                     }
                     Range rng = _definedNames.Get(siglaEntita, siglaInformazione, suffData, suffOra);
+                    rng.Lock = oraLock > 0;
+                    
 
                     return rng.ToString();
                 }, RegexOptions.IgnoreCase);
@@ -1997,7 +2042,7 @@ namespace Iren.PSO.Base
         /// <summary>
         /// Applica un pattern alle informazioni nella parte che non è editabile a causa della chiusura del mercato.
         /// </summary>
-        private void MakeCellsDisabled()
+        public override void MakeCellsDisabled()
         {
             if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
             {

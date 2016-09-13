@@ -406,6 +406,9 @@ namespace Iren.PSO.Applicazioni
         {
         }
 
+        public override void MakeCellsDisabled()
+        {
+        }
         #endregion
     }
 }

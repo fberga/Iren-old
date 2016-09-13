@@ -52,7 +52,7 @@
             this.ctrlRightButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnTest = new System.Windows.Forms.ToolStripButton();
-            this.btnDev = new System.Windows.Forms.ToolStripButton();
+            this.btnProd = new System.Windows.Forms.ToolStripButton();
             this.panelRibbonLayout = new System.Windows.Forms.Panel();
             this.panelApplicazione = new System.Windows.Forms.Panel();
             this.drpUtenti = new System.Windows.Forms.ComboBox();
@@ -91,7 +91,7 @@
             this.ctrlRightButton,
             this.toolStripSeparator3,
             this.btnTest,
-            this.btnDev});
+            this.btnProd});
             this.toolStripTopMenu.Location = new System.Drawing.Point(485, 0);
             this.toolStripTopMenu.Name = "toolStripTopMenu";
             this.toolStripTopMenu.Size = new System.Drawing.Size(1035, 56);
@@ -301,15 +301,15 @@
             this.btnTest.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.btnTest.CheckedChanged += new System.EventHandler(this.ChangeAmbiente);
             // 
-            // btnDev
+            // btnProd
             // 
-            this.btnDev.CheckOnClick = true;
-            this.btnDev.Image = ((System.Drawing.Image)(resources.GetObject("btnDev.Image")));
-            this.btnDev.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnDev.Name = "btnDev";
-            this.btnDev.Size = new System.Drawing.Size(36, 53);
-            this.btnDev.Text = "Dev";
-            this.btnDev.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.btnProd.CheckOnClick = true;
+            this.btnProd.Image = ((System.Drawing.Image)(resources.GetObject("btnProd.Image")));
+            this.btnProd.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnProd.Name = "btnProd";
+            this.btnProd.Size = new System.Drawing.Size(36, 53);
+            this.btnProd.Text = "Prod";
+            this.btnProd.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             // 
             // panelRibbonLayout
             // 
@@ -461,7 +461,7 @@
         private System.Windows.Forms.ComboBox drpUtenti;
         private System.Windows.Forms.Label lbUtenti;
         private System.Windows.Forms.ToolStripButton btnTest;
-        private System.Windows.Forms.ToolStripButton btnDev;
+        private System.Windows.Forms.ToolStripButton btnProd;
     }
 }
 
