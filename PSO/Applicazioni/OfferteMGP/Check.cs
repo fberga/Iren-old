@@ -53,13 +53,13 @@ namespace Iren.PSO.Applicazioni
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Workbook.IdApplicazione;
+            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Workbook.IdApplicazione;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -228,13 +228,13 @@ namespace Iren.PSO.Applicazioni
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Workbook.IdApplicazione;
+            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Workbook.IdApplicazione;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -328,13 +328,13 @@ namespace Iren.PSO.Applicazioni
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Workbook.IdApplicazione;
+            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Workbook.IdApplicazione;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -431,13 +431,13 @@ namespace Iren.PSO.Applicazioni
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Workbook.IdApplicazione;
+            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Workbook.IdApplicazione;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
@@ -567,13 +567,13 @@ namespace Iren.PSO.Applicazioni
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND IdApplicazione = " + Workbook.IdApplicazione;
+            DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmax = decimal.MaxValue;
             if (entitaParametroD.Count > 0)
                 limitePmax = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND IdApplicazione = " + Workbook.IdApplicazione;
+            entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMIN' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
             decimal limitePmin = decimal.MinValue;
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());

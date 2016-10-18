@@ -230,6 +230,7 @@ namespace Iren.PSO.Applicazioni
         }
         protected bool InviaMail(string nomeFoglio, object siglaEntita, List<Range> export) 
         {
+            string fileNameFull = "";
             string fileName = "";
             try
             {
@@ -239,7 +240,8 @@ namespace Iren.PSO.Applicazioni
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'SISTEMA_COMANDI_ALLEGATO_EXCEL' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (entitaProprieta.Count > 0)
                 {
-                    fileName = Environment.ExpandEnvironmentVariables(@"%TEMP%\" + entitaProprieta[0]["Valore"] + "_VDT_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xls");
+                    fileName = entitaProprieta[0]["Valore"] + "_VDT_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xls";
+                    fileNameFull = Environment.ExpandEnvironmentVariables(@"%TEMP%\" + fileName);
                     //fileName = @"D:\" + entitaProprieta[0]["Valore"] + "_VDT_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xls";
 
                     Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
@@ -251,7 +253,7 @@ namespace Iren.PSO.Applicazioni
                     }
                     wb.Sheets[1].Columns["B:C"].EntireColumn.AutoFit();
                     wb.Sheets[1].Range["A1"].Select();
-                    wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel12);
+                    wb.SaveAs(fileNameFull, Excel.XlFileFormat.xlExcel12);
                     wb.Close();
                     Marshal.ReleaseComObject(wb);
 
@@ -276,28 +278,40 @@ namespace Iren.PSO.Applicazioni
                     string messaggio = config.Value;
                     messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
 
-                    Outlook.Application outlook = GetOutlookInstance();
-                    Outlook._MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
-                    
-                    //TODO check se manda sempre con lo stesso account...
-                    Outlook.Account senderAccount = outlook.Session.Accounts[1];
-                    foreach (Outlook.Account account in outlook.Session.Accounts)
+                    if (DataBase.OpenConnection())
                     {
-                        if (account.DisplayName == "Bidding")
-                            senderAccount = account;
+                        Outlook.Application outlook = GetOutlookInstance();
+                        Outlook._MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
+
+                        //TODO check se manda sempre con lo stesso account...
+                        Outlook.Account senderAccount = outlook.Session.Accounts[1];
+                        foreach (Outlook.Account account in outlook.Session.Accounts)
+                        {
+                            if (account.DisplayName == "Bidding")
+                                senderAccount = account;
+                        }
+                        mail.SendUsingAccount = senderAccount;
+                        mail.Subject = oggetto;
+                        mail.Body = messaggio;
+                        foreach (string dest in mailTo.Split(';'))
+                            if (dest.Trim() != "")
+                                mail.Recipients.Add(dest.Trim());
+                        mail.CC = mailCC;
+                        mail.Attachments.Add(fileNameFull);
+
+                        mail.Send();
+
+                        File.Delete(fileNameFull);
                     }
-                    mail.SendUsingAccount = senderAccount;
-                    mail.Subject = oggetto;
-                    mail.Body = messaggio;
-                    foreach(string dest in mailTo.Split(';'))
-                        if(dest.Trim() != "")
-                            mail.Recipients.Add(dest.Trim());
-                    mail.CC = mailCC;
-                    mail.Attachments.Add(fileName);
+                    else
+                    {
+                        string emailFolder = @"C:\Emergenza\Email\" + Simboli.NomeApplicazione;
 
-                    mail.Send();
+                        if (!Directory.Exists(emailFolder))
+                            Directory.CreateDirectory(emailFolder);
 
-                    File.Delete(fileName);
+                        File.Move(fileNameFull, Path.Combine(emailFolder, fileName));
+                    }
                 }
             }
             catch(Exception e)
@@ -306,8 +320,8 @@ namespace Iren.PSO.Applicazioni
 
                 System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 
-                if(File.Exists(fileName))
-                    File.Delete(fileName);
+                if(File.Exists(fileNameFull))
+                    File.Delete(fileNameFull);
 
                 return false;
             }

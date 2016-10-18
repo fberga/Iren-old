@@ -897,7 +897,7 @@ namespace Iren.PSO.Applicazioni
                 if (!Directory.Exists(pathStr))
                     Directory.CreateDirectory(pathStr);
 
-                string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xlsm";
+                string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "_v" + Workbook.WorkbookVersion.ToString() +".xlsm";
 
                 Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
                 Globals.ThisWorkbook.Close(saveChanges: true);
@@ -1274,13 +1274,31 @@ namespace Iren.PSO.Applicazioni
             }
         }
 
-
         private bool CheckCambioStruttura(DateTime vecchia, DateTime nuova)
         {
+            //controllo se nell'intervallo ci sono giorni a 23 o 25 ore
+            //vecchia + intervallo
+            //nuova + intervallo
+            int intervalloGiorniMax = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA]
+                .AsEnumerable()
+                .Where(r => r["IdApplicazione"].Equals(Workbook.IdApplicazione))
+                .Where(r => r["SiglaProprieta"].ToString().EndsWith("GIORNI_STRUTTURA"))
+                .Select(r => int.Parse(r["Valore"].ToString()))
+                .DefaultIfEmpty()
+                .Max();
+            
+            intervalloGiorniMax = Math.Max(intervalloGiorniMax, Struct.intervalloGiorni);
+
+            int oldPeriodHours = Date.GetOreIntervallo(vecchia, vecchia.AddDays(intervalloGiorniMax));
+            int newPeriodHours = Date.GetOreIntervallo(nuova, nuova.AddDays(intervalloGiorniMax));
+
+            if (oldPeriodHours != 24 * (intervalloGiorniMax + 1) || newPeriodHours != 24 * (intervalloGiorniMax + 1))
+                return true;
+
             DataTable stato = DataBase.Select(DataBase.SP.CHECKMODIFICASTRUTTURA, "@DataOld=" + vecchia.ToString("yyyyMMdd") + ";@DataNew=" + nuova.ToString("yyyyMMdd"));
+
             return stato != null && stato.Rows.Count > 0 && stato.Rows[0]["Stato"].Equals(1);
         }
-
 
         public void InitRibbon()
         {
@@ -1328,9 +1346,6 @@ namespace Iren.PSO.Applicazioni
 
                 if (Controls.Contains("cmbMSD"))
                     SetMercato(out newIdApplicazione);
-                
-                bool rifiutatoCambioData;
-                AggiornaData(out newDate, out rifiutatoCambioData);
 
                 //System.Windows.Forms.MessageBox.Show("Workbook.DataAttiva: " + Workbook.DataAttiva);
                 //System.Windows.Forms.MessageBox.Show("newDate: " + newDate);
@@ -1345,6 +1360,9 @@ namespace Iren.PSO.Applicazioni
 
                 if (DataBase.OpenConnection())
                 {
+                    bool rifiutatoCambioData;
+                    AggiornaData(out newDate, out rifiutatoCambioData);
+
                     //System.Windows.Forms.MessageBox.Show("CheckCambioStruttura: " + CheckCambioStruttura(Workbook.DataAttiva, newDate));
                     //System.Windows.Forms.MessageBox.Show("Workbook.DaAggiornare: " + Workbook.DaAggiornare);
 
@@ -1374,6 +1392,9 @@ namespace Iren.PSO.Applicazioni
                 }
                 else
                 {
+                    SplashScreen.Close();
+                    System.Windows.Forms.MessageBox.Show("Il file si è aperto in condizioni di emergenza. I dati non sono aggiornati. La data può essere modificata manualmente.", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
+                    SplashScreen.Show();
                     r.RiepilogoInEmergenza();
                 }
 

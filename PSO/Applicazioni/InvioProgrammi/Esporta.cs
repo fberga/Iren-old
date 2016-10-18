@@ -161,43 +161,6 @@ namespace Iren.PSO.Applicazioni
                             foreach (string file in files)
                                 attachments.Add(file);
                         }
-                        
-                        /*entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_FMS' AND IdApplicazione = " + Workbook.IdApplicazione;
-                        if (entitaProprieta.Count > 0)
-                        {
-                            //cerco i file XML
-                            string nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileFMS").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                            string pathFileFMS = PreparePath(Workbook.GetUsrConfigElement("pathExportFileFMS"));
-
-                            string[] files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
-
-
-
-                            if (files.Length > 0)
-                            {
-                                foreach (string file in files)
-                                    attachments.Add(file);
-                            }
-                            else
-                            {
-                                nomeFileFMS = PrepareName(Workbook.GetUsrConfigElement("formatoNomeFileFMS_TERNA").Value, codRup: entita["CodiceRup"].ToString()) + "*.xml";
-                                pathFileFMS = PreparePath(Workbook.GetUsrConfigElement("pathExportFileFMS"));
-
-                                files = Directory.GetFiles(pathFileFMS, nomeFileFMS, SearchOption.TopDirectoryOnly);
-
-                                if (files.Length == 0)
-                                {
-                                    if (System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
-                                    {
-                                        interrupt = true;
-                                        break;
-                                    }
-                                }
-
-                                foreach (string file in files)
-                                    attachments.Add(file);
-                            }
-                        }*/
                         entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
                         {

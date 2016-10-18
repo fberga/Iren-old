@@ -111,8 +111,9 @@ namespace Iren.PSO.Base
 
         public void CaricaParametri()
         {
-            CaricaEntitaParametroD();
-            CaricaEntitaParametroH();
+            //CaricaEntitaParametroD();
+            //CaricaEntitaParametroH();
+            CaricaEntitaParametro();
         }
         
         #region Aggiorna Struttura Dati
@@ -474,17 +475,27 @@ namespace Iren.PSO.Base
         /// Carica la relazione entità parametro giornaliero.
         /// </summary>
         /// <returns></returns>
-        private void CaricaEntitaParametroD()
-        {
-            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_D, DataBase.SP.ENTITA_PARAMETRO_D, new Core.QryParams());
-        }
+        //private void CaricaEntitaParametroD()
+        //{
+        //    CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_D, DataBase.SP.ENTITA_PARAMETRO_D, new Core.QryParams());
+        //}
         /// <summary>
         /// Carica la relazione entità parametro orario.
         /// </summary>
         /// <returns></returns>
-        private void CaricaEntitaParametroH()
+        //private void CaricaEntitaParametroH()
+        //{
+        //    CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_H, DataBase.SP.ENTITA_PARAMETRO_H, new Core.QryParams());
+        //}
+
+        private void CaricaEntitaParametro()
         {
-            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO_H, DataBase.SP.ENTITA_PARAMETRO_H, new Core.QryParams());
+            Core.QryParams parameters = new Core.QryParams() 
+                {
+                    {"@Data", Workbook.DataAttiva.ToString("yyyyMMdd")}
+                };
+
+            CaricaDati(DataBase.TAB.ENTITA_PARAMETRO, DataBase.SP.ENTITA_PARAMETRO, parameters);
         }
 
         private void CaricaStagioni()

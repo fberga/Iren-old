@@ -726,8 +726,8 @@ namespace Iren.PSO.Base
                 {
                     CicloGiorni(_dataInizio, _dataInizio.AddDays(_intervalloGiorniMax), (oreGiorno, sufData, giorno) =>
                     {
-                        AggiungiNomeInformazione(info, giorno, startCol, colOffset, remove25hour, ref isSelection, ref rifSel, ref peers);
                         remove25hour = (Struct.tipoVisualizzazione == "O" ? 0 : 25 - Date.GetOreGiorno(giorno));
+                        AggiungiNomeInformazione(info, giorno, startCol, colOffset, remove25hour, ref isSelection, ref rifSel, ref peers);
                         _rigaAttiva++;
                     });
                 }
@@ -898,22 +898,30 @@ namespace Iren.PSO.Base
             Excel.Range titoloVert = _ws.Range[rngTitolo.ToString()];
             int infoCount = Struct.tipoVisualizzazione == "R" ? _intervalloGiorniMax + 1 : informazioni.Count;
 
-            Style.RangeStyle(titoloVert, style: "Barra titolo verticale", orientation: infoCount == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical, merge: true, fontSize: infoCount < 5 ? 6 : 9, numberFormat: informazioni.Count > 4 ? "ddd d" : "dd");
+            DataView infoVisible = new DataView(Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE]);
+            infoVisible.RowFilter = informazioni.RowFilter + " AND Visibile = '1'";
+
+            string titolo = "";
+
+            Style.RangeStyle(titoloVert, style: "Barra titolo verticale", orientation: infoCount == 1 ? Excel.XlOrientation.xlHorizontal : Excel.XlOrientation.xlVertical, merge: true, fontSize: infoVisible.Count < 5 ? 6 : 9, numberFormat: informazioni.Count > 4 ? "ddd d" : "dd");
 
             switch (Struct.tipoVisualizzazione)
             {
                 case "O":
-                    titoloVert.Value = desEntita;
+                    titolo = desEntita.ToString();
                     break;
                 case "V":
-                    titoloVert.Value = _dataInizio;
+                    titolo = _dataInizio.ToString();
                     break;
                 case "R":
-                    titoloVert.Value = informazioni[0]["DesInformazione"];
+                    titolo = informazioni[0]["DesInformazione"].ToString();
                     break;
             }
 
-            //titoloVert.Value = Struct.tipoVisualizzazione == "V" ? _dataInizio : desEntita; 
+            if(titolo.Length > infoVisible.Count)
+                titoloVert.Value = "";
+            else
+                titoloVert.Value = titolo;
         }
         /// <summary>
         /// Formatta l'area dati impostando lo stile di base per le informazioni ("Area dati") e imposta, se ci sono, gli spazi per le informazioni giornaliere.
@@ -1245,8 +1253,9 @@ namespace Iren.PSO.Base
         protected virtual void InsertParametri()
         {
             DataView informazioni = Workbook.Repository[DataBase.TAB.ENTITA_INFORMAZIONE].DefaultView;
-            DataView parametriD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-            DataView parametriH = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_H].DefaultView;
+            //DataView parametriD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
+            //DataView parametriH = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_H].DefaultView;
+            DataView parametri = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
 
             foreach (DataRowView info in informazioni)
             {
@@ -1256,16 +1265,20 @@ namespace Iren.PSO.Base
 
                 CicloGiorni(_dataInizio, dataFine, (oreGiorno, suffissoData, giorno) =>
                 {
+
                     Range rngData = _definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreGiorno);
-                    parametriD.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                    
+                    parametri.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "01' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                    if (parametriD.Count > 0)
-                        _ws.Range[rngData.ToString()].Formula = parametriD[0]["Valore"];
-                    else
+                    if (parametri.Count == 1) 
                     {
-                        parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                        _ws.Range[rngData.ToString()].Formula = parametri[0]["Valore"];
+                    }
+                    else if(parametri.Count > 1)
+                    {
+                        //parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                        object[] values = parametriH.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
+                        object[] values = parametri.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
 
                         if (values.Length > 0)
                             _ws.Range[rngData.ToString()].Value = values;
@@ -1588,7 +1601,7 @@ namespace Iren.PSO.Base
 
                     DateTime dataFineMax = _dataInizio.AddDays(_intervalloGiorniMax);
 
-                    DataView datiApplicazioneH = Workbook.Repository[DataBase.TAB.DATI_APPLICAZIONE_H].DefaultView;
+                    DataView datiApplicazione = Workbook.Repository[DataBase.TAB.DATI_APPLICAZIONE].DefaultView;
                     DataView insertManuali = Workbook.Repository[DataBase.TAB.DATI_APPLICAZIONE_COMMENTO].DefaultView;
 
                     if (Struct.tipoVisualizzazione == "O")
@@ -1597,15 +1610,15 @@ namespace Iren.PSO.Base
                         {
                             object siglaEntita = entita["Gerarchia"] is DBNull ? entita["SiglaEntita"] : entita["Gerarchia"];
                             SplashScreen.UpdateStatus("Scrivo informazioni " + entita["DesEntita"]);
-                            datiApplicazioneH.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + _dataFineUP[siglaEntita].ToString("yyyyMMdd");
-                            CaricaInformazioniEntita(datiApplicazioneH);
+                            datiApplicazione.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(Data, System.Int32) <= " + _dataFineUP[siglaEntita].ToString("yyyyMMdd");
+                            CaricaInformazioniEntita(datiApplicazione);
                             insertManuali.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND CONVERT(SUBSTRING(Data, 1, 8), System.Int32) <= " + _dataFineUP[siglaEntita].ToString("yyyyMMdd");
                             CaricaCommentiEntita(insertManuali);
                         }
                     }
                     else
                     {                        
-                        CaricaInformazioniEntita(datiApplicazioneH);
+                        CaricaInformazioniEntita(datiApplicazione);
                         CaricaCommentiEntita(insertManuali);
                     }
                     //TODO se dati giornalieri riabilitare

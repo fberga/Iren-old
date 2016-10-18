@@ -393,6 +393,10 @@ namespace Iren.PSO.Forms
                 bool caricaOrGenera = false;
                 bool loaded = false;
 
+                bool g_mp_mgp = false;
+
+                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
+
                 ThroughAllNodes(treeViewAzioni.Nodes, nodoAzione =>
                 {
                     if (loaded && Regex.Match(nodoAzione.Name, @"\w[^\d]+").Value == "GENERA")
@@ -406,13 +410,13 @@ namespace Iren.PSO.Forms
                     {
                         TreeNode[] nodiEntita = treeViewUP.Nodes.OfType<TreeNode>().Where(node => node.Checked).ToArray();
                         _azioni.RowFilter = "SiglaAzione = '" + nodoAzione.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                        if (!g_mp_mgp)
+                            g_mp_mgp = nodoAzione.Name == "G_MP_MGP";
 
                         ThroughAllNodes(treeViewUP.Nodes, nodoEntita =>
                         {
                             foreach (DateTime date in _toProcessDates)
                             {
-                                DataView entitaProprieta = Workbook.Repository[DataBase.TAB.ENTITA_PROPRIETA].DefaultView;
-
                                 string suffissoData = Date.GetSuffissoData(date);
 
                                 if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
@@ -512,6 +516,33 @@ namespace Iren.PSO.Forms
                     SplashScreen.UpdateStatus("Salvo su DB");
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
+                    if (Workbook.IdApplicazione == 5 && g_mp_mgp)
+                    {
+                        SplashScreen.UpdateStatus("Aggiorno rendimenti");
+                        Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationManual;
+                        
+                        ThroughAllNodes(treeViewUP.Nodes, nodoEntita =>
+                        {
+                            if (nodoEntita.Checked && nodoEntita.Nodes.Count == 0)
+                            {
+                                _categoriaEntita.RowFilter = "SiglaEntita = '" + nodoEntita.Name + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+
+                                if (_categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T"))
+                                {
+                                    foreach (DateTime date in _toProcessDates)
+                                    {
+                                        _carica.AzioneInformazione(nodoEntita.Name, "RENDIMENTO", "CARICA", date, null);
+                                    }
+                                }
+                            }
+                        });
+                        Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+                        SplashScreen.UpdateStatus("Salvo su DB");
+                        Sheet.SalvaModifiche();
+                        DataBase.SalvaModificheDB();
+                    }
+                    
+
                 }
 
                 Workbook.Application.EnableEvents = true;

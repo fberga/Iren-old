@@ -59,7 +59,7 @@ namespace Iren.PSO.Applicazioni
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
-                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
+                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
                 entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND CONVERT(DataIV, System.Int32) <= " + dataRif.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + dataRif.ToString("yyyyMMdd") + " AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 //decimal calcoloPPA = (decimal)entitaParametro[0]["Valore"];
@@ -164,7 +164,7 @@ namespace Iren.PSO.Applicazioni
                     if (!ws.Range[rng.ToString()].EntireRow.Hidden)
                     {
                         XElement gradino = new XElement(ns + "RisSecondaria");
-                        for (int j = oraInizio; j <= oraFine; j++)
+                        for (int j = oraInizio; j < oraFine; j++)
                         {
                             energia = (ws.Range[rng.Columns[j].ToString()].Value ?? "0").ToString().Replace(".", ",");
                             prezzo = (ws.Range[rng1.Columns[j].ToString()].Value ?? "0").ToString().Replace(".", ",");

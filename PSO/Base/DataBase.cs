@@ -15,9 +15,9 @@ namespace Iren.PSO.Base
         public struct SP 
         {
             public const string APPLICAZIONE = "spApplicazioneProprieta",
-                APPLICAZIONE_INFORMAZIONE_D = "spApplicazioneInformazioneD",
-                APPLICAZIONE_INFORMAZIONE_H = "spApplicazioneInformazioneH",
-                APPLICAZIONE_INFORMAZIONE_H_EXPORT = "spApplicazioneInformazioneH_Export",
+                APPLICAZIONE_INFORMAZIONE = "spApplicazioneInformazione",
+                //APPLICAZIONE_INFORMAZIONE_H = "spApplicazioneInformazioneH",
+                APPLICAZIONE_INFORMAZIONE_EXPORT = "spApplicazioneInformazione_Export",
                 APPLICAZIONE_INFORMAZIONE_COMMENTO = "spApplicazioneInformazioneCommento",
                 APPLICAZIONE_INIT = "spApplicazioneInit",
                 APPLICAZIONE_LOG = "spApplicazioneLog",
@@ -44,6 +44,7 @@ namespace Iren.PSO.Base
                 ENTITA_INFORMAZIONE_FORMATTAZIONE = "spEntitaInformazioneFormattazione",
                 ENTITA_PARAMETRO_D = "spEntitaParametroD",
                 ENTITA_PARAMETRO_H = "spEntitaParametroH",
+                ENTITA_PARAMETRO = "spEntitaParametro",
                 ENTITA_PROPRIETA = "spEntitaProprieta",
                 ENTITA_RAMPA = "spEntitaRampa",
                 GET_LAST_DATA_VALIDATA_GAS = "spGetLastDataValidataGas",
@@ -100,8 +101,8 @@ namespace Iren.PSO.Base
                 CATEGORIA_ENTITA = "CategoriaEntita",
                 CHECK = "Check",
                 DATE_DEFINITE = "DefinedDates",
-                DATI_APPLICAZIONE_H = "DatiApplicazioneH",
-                DATI_APPLICAZIONE_D = "DatiApplicazioneD",
+                DATI_APPLICAZIONE = "DatiApplicazione",
+                //DATI_APPLICAZIONE_D = "DatiApplicazioneD",
                 DATI_APPLICAZIONE_COMMENTO = "DatiApplicazioneCommento",
                 EDITABILI = "Editabili",
                 ENTITA_ASSETTO = "EntitaAssetto",
@@ -114,8 +115,9 @@ namespace Iren.PSO.Base
                 ENTITA_GRAFICO_INFORMAZIONE = "EntitaGraficoInformazione",
                 ENTITA_INFORMAZIONE = "EntitaInformazione",
                 ENTITA_INFORMAZIONE_FORMATTAZIONE = "EntitaInformazioneFormattazione",
-                ENTITA_PARAMETRO_D = "EntitaParametroD",
-                ENTITA_PARAMETRO_H = "EntitaParametroH",
+                //ENTITA_PARAMETRO_D = "EntitaParametroD",
+                //ENTITA_PARAMETRO_H = "EntitaParametroH",
+                ENTITA_PARAMETRO = "EntitaParametro",
                 ENTITA_PROPRIETA = "EntitaProprieta",
                 ENTITA_RAMPA = "EntitaRampa",
                 EXPORT_XML = "ExportXML",
@@ -368,24 +370,33 @@ namespace Iren.PSO.Base
         /// <param name="presente">Se il dato collegato alla coppia Entità - Azione è presente o no nel DB.</param>
         public static void InsertApplicazioneRiepilogo(object siglaEntita, object siglaAzione, DateTime giorno, bool presente = true)
         {
-            try
-            {
-                if (OpenConnection())
-                {
-                    Core.QryParams parameters = new Core.QryParams() {
-                    {"@SiglaEntita", siglaEntita},
-                    {"@SiglaAzione", siglaAzione},
-                    {"@Data", giorno.ToString("yyyyMMdd")},
-                    {"@Presente", presente ? "1" : "0"}
-                };
-                    _db.Insert(DataBase.SP.INSERT_APPLICAZIONE_RIEPILOGO, parameters);
-                }
-            }
-            catch (Exception e)
-            {
-                Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo [" + giorno + ", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+            bool visible = Workbook.Repository[DataBase.TAB.AZIONE]
+                .AsEnumerable()
+                .Where(r => r["SiglaAzione"].Equals(siglaAzione))
+                .Select(r => r["Visibile"].Equals("1"))
+                .FirstOrDefault();
 
-                System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            if (visible)
+            {
+                try
+                {
+                    if (OpenConnection())
+                    {
+                        Core.QryParams parameters = new Core.QryParams() {
+                            {"@SiglaEntita", siglaEntita},
+                            {"@SiglaAzione", siglaAzione},
+                            {"@Data", giorno.ToString("yyyyMMdd")},
+                            {"@Presente", presente ? "1" : "0"}
+                        };
+                        _db.Insert(DataBase.SP.INSERT_APPLICAZIONE_RIEPILOGO, parameters);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogErrore, "InsertApplicazioneRiepilogo [" + giorno + ", " + siglaEntita + ", " + siglaAzione + "]: " + e.Message);
+
+                    System.Windows.Forms.MessageBox.Show(e.Message, Simboli.NomeApplicazione + " - ERRORE!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                }
             }
         }
         /// <summary>

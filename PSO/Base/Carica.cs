@@ -73,7 +73,6 @@ namespace Iren.PSO.Base
 
                         if (azioneInformazione != null)
                         {
-
                             if (azioneInformazione.Rows.Count == 0)
                             {
                                 DataBase.InsertApplicazioneRiepilogo(siglaEntita, siglaAzione, giorno, false);
@@ -408,18 +407,18 @@ namespace Iren.PSO.Base
                 if (entitaProprieta.Count > 0)
                     valore1 = entitaProprieta[0]["Valore"];
             }
-            else if (calcolo["IdParametroD"] != DBNull.Value)
-            {
-                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"] + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+            //else if (calcolo["IdParametroD"] != DBNull.Value)
+            //{
+            //    DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
+            //    entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroD"] + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                if (entitaParametro.Count > 0)
-                    valore1 =entitaParametro[0]["Valore"];
-            }
-            else if (calcolo["IdParametroH"] != DBNull.Value)
+            //    if (entitaParametro.Count > 0)
+            //        valore1 =entitaParametro[0]["Valore"];
+            //}
+            else if (calcolo["IdParametro"] != DBNull.Value)
             {
-                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_H].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametroH"] + " AND Ora = " + ora1 + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND DataFV > '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntitaRif1 + "' AND IdParametro = " + calcolo["IdParametro"] + " AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + ora1.ToString("00") + "' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + ora1.ToString("00") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 if (entitaParametro.Count > 0)
                     valore1 = entitaParametro[0]["Valore"];

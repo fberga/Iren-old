@@ -21,7 +21,7 @@
     <PublishUrl>\\srvpso\Applicazioni\PSO\PrevisioneCT\</PublishUrl>
     <InstallUrl>\\srvpso\Applicazioni\PSO\PrevisioneCT\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>2.0.0.9</ApplicationVersion>
+    <ApplicationVersion>2.0.0.14</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

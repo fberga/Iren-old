@@ -61,8 +61,8 @@ namespace Iren.PSO.Applicazioni
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
-                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND CONVERT(DataIV, System.Int32) <= " + dataRif.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + dataRif.ToString("yyyyMMdd") + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND DataIV <= '" + dataRif.ToString("yyyyMMdd") + "01' AND DataFV >= '" + dataRif.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 decimal calcoloPPA = (decimal)entitaParametro[0]["Valore"];
 
@@ -253,8 +253,8 @@ namespace Iren.PSO.Applicazioni
                 object codiceRUP = categoriaEntita[0]["CodiceRUP"];
                 //bool isTermo = categoriaEntita[0]["SiglaCategoria"].Equals("IREN_60T");
 
-                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO_D].DefaultView;
-                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND CONVERT(DataIV, System.Int32) <= " + dataRif.ToString("yyyyMMdd") + " AND CONVERT(DataFV, System.Int32) >= " + dataRif.ToString("yyyyMMdd") + " AND IdApplicazione = " + Workbook.IdApplicazione;
+                DataView entitaParametro = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
+                entitaParametro.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND idParametro = 903 AND DataIV <= '" + dataRif.ToString("yyyyMMdd") + "01' AND DataFV >= '" + dataRif.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                 decimal calcoloPPA = (decimal)entitaParametro[0]["Valore"];
 

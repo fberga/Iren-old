@@ -373,25 +373,25 @@ namespace Iren.PSO.Applicazioni
                     SplashScreen.UpdateStatus("Carico informazioni dal DB per " + _mercato);
                     _dataInizio = Workbook.DataAttiva;
 
-                    DataView datiApplicazioneH = (DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H_EXPORT, "@IdApplicazione=" + _appID + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")) ?? new DataTable()).DefaultView;
+                    DataView datiApplicazione = (DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_EXPORT, "@IdApplicazione=" + _appID + ";@SiglaEntita=ALL;@SiglaCategoria=ALL;@DateFrom=" + _dataInizio.ToString("yyyyMMdd") + ";@DateTo=" + _dataInizio.ToString("yyyyMMdd")) ?? new DataTable()).DefaultView;
 
                     var listaEntitaInfo =
-                        (from DataRowView r in datiApplicazioneH
+                        (from DataRowView r in datiApplicazione
                          group r by new { SiglaEntita = r["SiglaEntita"], SiglaInformazione = r["SiglaInformazione"], Riferimento = r["Riferimento"] } into g
                          select new { SiglaEntita = g.Key.SiglaEntita.ToString(), SiglaInformazione = g.Key.SiglaInformazione.ToString(), Riferimento = g.Key.Riferimento.ToString() }).ToList();
 
                     foreach (var entitaInfo in listaEntitaInfo)
                     {
                         SplashScreen.UpdateStatus("Scrivo informazioni " + entitaInfo.SiglaEntita);
-                        datiApplicazioneH.RowFilter = "SiglaEntita = '" + entitaInfo.SiglaEntita + "' AND SiglaInformazione = '" + entitaInfo.SiglaInformazione + "' AND Riferimento = " + entitaInfo.Riferimento;
+                        datiApplicazione.RowFilter = "SiglaEntita = '" + entitaInfo.SiglaEntita + "' AND SiglaInformazione = '" + entitaInfo.SiglaInformazione + "' AND Riferimento = " + entitaInfo.Riferimento;
 
                         string quarter = Regex.Match(entitaInfo.SiglaInformazione, @"Q\d").Value;
                         quarter = quarter == "" ? "Q1" : quarter;
 
-                        Range rng = new Range(_definedNames.GetRowByName(entitaInfo.SiglaEntita, "UM", "T") + 2, _definedNames.GetColFromName("RIF" + datiApplicazioneH[0]["Riferimento"], "PROGRAMMA" + quarter)).Extend(rowOffset: datiApplicazioneH.Count);
+                        Range rng = new Range(_definedNames.GetRowByName(entitaInfo.SiglaEntita, "UM", "T") + 2, _definedNames.GetColFromName("RIF" + datiApplicazione[0]["Riferimento"], "PROGRAMMA" + quarter)).Extend(rowOffset: datiApplicazione.Count);
 
                         for (int i = 0; i <rng.Rows.Count; i++)
-                            _ws.Range[rng.Rows[i].ToString()].Value = datiApplicazioneH[i]["Valore"];
+                            _ws.Range[rng.Rows[i].ToString()].Value = datiApplicazione[i]["Valore"];
                     }
                 }
             }

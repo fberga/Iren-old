@@ -92,10 +92,10 @@ namespace Iren.PSO.Base
                      select int.Parse(r["Valore"].ToString())).DefaultIfEmpty().Max(), Struct.intervalloGiorni));
 
             SplashScreen.UpdateStatus("Carico informazioni dal DB");
-            DataTable datiApplicazioneH = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_H, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd")) ?? new DataTable();
+            DataTable datiApplicazione = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd")) ?? new DataTable();
 
-            datiApplicazioneH.TableName = DataBase.TAB.DATI_APPLICAZIONE_H;
-            Workbook.Repository.Add(datiApplicazioneH);
+            datiApplicazione.TableName = DataBase.TAB.DATI_APPLICAZIONE;
+            Workbook.Repository.Add(datiApplicazione);
 
             SplashScreen.UpdateStatus("Carico commenti dal DB");
             DataTable insertManuali = DataBase.Select(DataBase.SP.APPLICAZIONE_INFORMAZIONE_COMMENTO, "@SiglaCategoria=ALL;@SiglaEntita=ALL;@DateFrom=" + Workbook.DataAttiva.ToString("yyyyMMdd") + ";@DateTo=" + dataFine.ToString("yyyyMMdd")) ?? new DataTable();
@@ -116,10 +116,10 @@ namespace Iren.PSO.Base
         protected void CancellaTabelle()
         {
             //elimino le tabelle con le informazioni ormai scritte nel foglio
-            if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_H))
-                Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_H);
-            if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_D))
-                Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_D);
+            if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE))
+                Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE);
+            //if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_D))
+            //    Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_D);
             if (Workbook.Repository.Contains(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO))
                 Workbook.Repository.Remove(DataBase.TAB.DATI_APPLICAZIONE_COMMENTO);
         }
@@ -228,8 +228,8 @@ namespace Iren.PSO.Base
                     SplashScreen.UpdateStatus("Aggiorno struttura Fogli");
                     StrutturaFogli();
 
-                    SplashScreen.UpdateStatus("Salvo struttura in locale");
-                    //Workbook.DumpDataSet();
+                    SplashScreen.UpdateStatus("Abilito calcolo automatico");
+                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
 
                     SplashScreen.UpdateStatus("Invio modifiche al server");
                     Workbook.ScreenUpdating = false;
@@ -247,8 +247,6 @@ namespace Iren.PSO.Base
                     }
 
                     Workbook.Main.Select();
-                    SplashScreen.UpdateStatus("Abilito calcolo automatico");
-                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                     Workbook.Application.WindowState = Excel.XlWindowState.xlMaximized;
 
                     if (wasProtected)
@@ -317,13 +315,13 @@ namespace Iren.PSO.Base
                     SplashScreen.UpdateStatus("Aggiorno dati Fogli");
                     DatiFogli();
 
+                    SplashScreen.UpdateStatus("Abilito calcolo automatico");
+                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+
                     SplashScreen.UpdateStatus("Invio modifiche al server");
                     Workbook.ScreenUpdating = false;
                     Sheet.SalvaModifiche();
                     DataBase.SalvaModificheDB();
-
-                    SplashScreen.UpdateStatus("Abilito calcolo automatico");
-                    Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
 
                     if (wasProtected)
                         Sheet.Protected = true;

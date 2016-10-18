@@ -639,6 +639,7 @@ namespace Iren.PSO.Base
                 foreach (var kv in pathNonDisponibili)
                     paths += " - " + kv.Key + " : '" + kv.Value + "'\n";
 
+                SplashScreen.Close();
                 System.Windows.Forms.MessageBox.Show("I path seguenti non sono raggiungibili o non presentano privilegi di scrittura:" + paths, Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Warning);
             }
         }
@@ -649,11 +650,10 @@ namespace Iren.PSO.Base
         public static void StartUp(IPSOThisWorkbook wb)
         {
             _wb = wb;
-
             Application.DisplayAlerts = true;
             Application.CellDragAndDrop = false;
             Application.EnableAutoComplete = false;
-            
+
             Repository = new Repository(wb);
             DaAggiornare = false;
 

@@ -49,10 +49,12 @@ namespace Iren.PSO.Applicazioni
 
         protected bool InviaMail(DefinedNames definedNames, object siglaEntita) 
         {
+            string fileNameFull = "";
             string fileName = "";
             try
             {
-                fileName = @"D:\PrevisioneGAS_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls";
+                fileName = @"PrevisioneGAS_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls";
+                fileNameFull = Environment.ExpandEnvironmentVariables(@"%TEMP%\" + fileName);
 
                 Excel.Workbook wb = Globals.ThisWorkbook.Application.Workbooks.Add();
 
@@ -61,7 +63,7 @@ namespace Iren.PSO.Applicazioni
 
                 wb.Sheets[1].UsedRange.ColumnWidth = 17;
                 wb.Sheets[1].Range["A1"].Select();
-                wb.SaveAs(fileName, Excel.XlFileFormat.xlExcel8);
+                wb.SaveAs(fileNameFull, Excel.XlFileFormat.xlExcel8);
                 wb.Close();
                 Marshal.ReleaseComObject(wb);
 
@@ -83,36 +85,47 @@ namespace Iren.PSO.Applicazioni
                     if(entitaProprieta.Count > 0)
                         mailCC = entitaProprieta[0]["Valore"].ToString();
                 }
-
-                Outlook.Application outlook = GetOutlookInstance();
-                Outlook._MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
-
-                config = Workbook.GetUsrConfigElement("oggettoMail");
-                string oggetto = config.Value.Replace("%DATA%", DateTime.Now.ToString("dd-MM-yyyy")).Replace("%ORA%", DateTime.Now.ToString("HH:mm"));
-                config = Workbook.GetUsrConfigElement("messaggioMail");
-                string messaggio = config.Value.Replace("%NOMEUTENTE%", Workbook.NomeUtente);
-                messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
-
-
-                ////TODO check se manda sempre con lo stesso account...
-                Outlook.Account senderAccount = outlook.Session.Accounts[1];
-                foreach (Outlook.Account account in outlook.Session.Accounts)
+                if (DataBase.OpenConnection())
                 {
-                    if (account.DisplayName == "Bidding")
-                        senderAccount = account;
+                    Outlook.Application outlook = GetOutlookInstance();
+                    Outlook._MailItem mail = outlook.CreateItem(Outlook.OlItemType.olMailItem);
+
+                    config = Workbook.GetUsrConfigElement("oggettoMail");
+                    string oggetto = config.Value.Replace("%DATA%", DateTime.Now.ToString("dd-MM-yyyy")).Replace("%ORA%", DateTime.Now.ToString("HH:mm"));
+                    config = Workbook.GetUsrConfigElement("messaggioMail");
+                    string messaggio = config.Value.Replace("%NOMEUTENTE%", Workbook.NomeUtente);
+                    messaggio = Regex.Replace(messaggio, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
+
+
+                    ////TODO check se manda sempre con lo stesso account...
+                    Outlook.Account senderAccount = outlook.Session.Accounts[1];
+                    foreach (Outlook.Account account in outlook.Session.Accounts)
+                    {
+                        if (account.DisplayName == "Bidding")
+                            senderAccount = account;
+                    }
+                    mail.SendUsingAccount = senderAccount;
+                    mail.Subject = oggetto;
+                    mail.Body = messaggio;
+                    foreach (string dest in mailTo.Split(';'))
+                        if (dest.Trim() != "")
+                            mail.Recipients.Add(dest.Trim());
+                    mail.CC = mailCC;
+                    mail.Attachments.Add(fileNameFull);
+
+                    mail.Send();
+
+                    File.Delete(fileNameFull);
                 }
-                mail.SendUsingAccount = senderAccount;
-                mail.Subject = oggetto;
-                mail.Body = messaggio;
-                foreach(string dest in mailTo.Split(';'))
-                    if(dest.Trim() != "")
-                        mail.Recipients.Add(dest.Trim());
-                mail.CC = mailCC;
-                mail.Attachments.Add(fileName);
+                else
+                {
+                    string emailFolder = @"C:\Emergenza\Email\" + Simboli.NomeApplicazione;
 
-                mail.Send();
+                    if (!Directory.Exists(emailFolder))
+                        Directory.CreateDirectory(emailFolder);
 
-                File.Delete(fileName);
+                    File.Move(fileNameFull, Path.Combine(emailFolder, fileName));
+                }
             }
             catch(Exception e)
             {
