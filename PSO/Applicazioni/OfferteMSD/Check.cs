@@ -37,25 +37,19 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            System.DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if(nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 //caricamento dati                
                 decimal ePPA = GetDecimal(_check.SiglaEntita, "PEM", suffissoData, Date.GetSuffissoOra(ora));
                 decimal ePSMaxAccettata = GetDecimal(_check.SiglaEntita, "PSMAX_ACCETTATA", suffissoData, Date.GetSuffissoOra(ora));
@@ -106,13 +100,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+	            if (ora == 1)
+	            {
+		            giorno = giorno.AddDays(1);
+		            oreGiorno = Date.GetOreGiorno(giorno);
+		            suffissoData = Date.GetSuffissoData(giorno);
+
+		            if (nData.Nodes.Count > 0)
+			            n.Nodes.Add(nData);
+
+		            nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+	            }
             }
             
             if (nData.Nodes.Count > 0)

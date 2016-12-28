@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 using Outlook = Microsoft.Office.Interop.Outlook;
 
@@ -124,12 +125,28 @@ namespace Iren.PSO.Applicazioni
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_EXCEL' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (entitaProprieta.Count > 0)
                 {
+                    // 29/11/2016 - non creiamo più l'excel da inviare via e-mail
                     //creo file Excel da allegare
-                    string excelExport = Path.Combine(@"C:\Emergenza", Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls");
-                    attachments.Add(excelExport);
+                    //string excelExport = Path.Combine(@"C:\Emergenza", Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls");
+                    //attachments.Add(excelExport);
 
-                    hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
+                    //hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
+                    // 29/11/2016 - BEGIN - creiamo XML x unità produttiva di ORCO => siglaEntita.Equals("CE_ORX")
+                    string pathXmlOrcoExport = null;
+                    string fileName = null;
+                    string pathXmlOrcoExportFull = null;
+                    if (siglaEntita.Equals("CE_ORX"))
+                    {
+                        pathXmlOrcoExport = @"C:\Emergenza";
+                        fileName = "FMS_UP_ORCO_1_" + Workbook.Mercato + "D_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xml.OEIESRD.out.xml";
+                        pathXmlOrcoExportFull = pathXmlOrcoExport + "\\" + fileName;
+
+                        bool xmlCreated = CreaOutputXML(siglaEntita, pathXmlOrcoExport, fileName, Workbook.DataAttiva);
+                        
+                        attachments.Add(pathXmlOrcoExportFull);
+                    }
+                    // 29/11/2016 - END
 
                     DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
                     categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -228,8 +245,12 @@ namespace Iren.PSO.Applicazioni
 
                         mail.Send();
                     }
-
-                    File.Delete(excelExport);
+                    // 29/11/2016 - non creiamo più l'excel da inviare via e-mail
+                    //File.Delete(excelExport);
+                    if (pathXmlOrcoExportFull != null)
+                    {
+                        File.Delete(pathXmlOrcoExportFull);
+                    }
 
                     return !interrupt;
                 }
@@ -246,6 +267,97 @@ namespace Iren.PSO.Applicazioni
             }
 
             return false;
+        }
+
+        // 29/11/2016 metode to create an XML for ORCO (from excel sheet named "Iren Idro")
+        protected bool CreaOutputXML(object siglaEntita, string exportPath, string fileName, DateTime dataRif)
+        {
+            try
+            {
+                string nomeFoglio = "Iren Idro";
+                DefinedNames definedNames = new DefinedNames(nomeFoglio);
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
+                int oreGiorno = Date.GetOreGiorno(dataRif);
+
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                object codiceRUP = "UP_ORCO_1";
+                object companyName = "IREN ENERGIA SPA";
+                object companyID = "OEIESRD";
+                
+                DataView entitaAzioneInformazione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaEntitaRif = 'UP_OCX' AND  IdApplicazione = " + Workbook.IdApplicazione;
+
+                XNamespace ns = XNamespace.Get("urn:XML-PIPE");
+                XNamespace xsi = XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance");
+                XNamespace xsd = XNamespace.Get("http://www.w3.org/2001/XMLSchema");
+                XNamespace schemaLocation = XNamespace.Get("urn:XML-PIPE PIPEDocument.xsd");
+
+                string referenceNumber = codiceRUP.ToString().Replace("_", "") + "_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+                XElement PIPEDocument = new XElement(ns + "PIPEDocument",
+                        new XAttribute(XNamespace.Xmlns + "xsi", xsi),
+                        new XAttribute(XNamespace.Xmlns + "xsd", xsd),
+                        new XAttribute("ReferenceNumber", referenceNumber.Length > 30 ? referenceNumber.Substring(0, 30) : referenceNumber),
+                        new XAttribute("CreationDate", DateTime.Now.ToString("yyyyMMddHHmmss")),
+                        new XAttribute("Version", "1.0"),
+                        new XAttribute(xsi + "schemaLocation", schemaLocation),
+                        new XElement(ns + "TradingPartnerDirectory",
+                            new XElement(ns + "Recipient",
+                                new XElement(ns + "TradingPartner",
+                                    new XAttribute("PartnerType", "Operator"),
+                                    new XElement(ns + "CompanyName", companyName),
+                                    new XElement(ns + "CompanyIdentifier", companyID)
+                                )
+                            )
+                        )
+                    );
+
+                XElement fifteenMinuteSchedule = new XElement(ns + "FifteenMinuteSchedule",
+                                new XAttribute("MarketParticipantNumber", "OEIESRD"),
+                                new XAttribute("Type", "Original"),
+                                new XElement(ns + "Market", Workbook.Mercato),
+                                new XElement(ns + "Date", dataRif.ToString("yyyyMMdd")),
+                                new XElement(ns + "UnitReferenceNumber", codiceRUP)
+                            );
+
+                if (entitaAzioneInformazione.Count > 0)
+                {
+                    DataRowView info = entitaAzioneInformazione[0];
+                    string gradino = Regex.Match(info["SiglaInformazione"].ToString(), @"\d+").Value;
+                    object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
+                    Range rng = definedNames.Get(siglaEntitaRif, "PROGRAMMAQ" + gradino + "_" + Workbook.Mercato)
+                        .Extend(rowOffset: 4, colOffset: oreGiorno);
+
+                    for (int i = 0; i < oreGiorno; i++)
+                    {
+                        XElement hourDetail = new XElement(ns + "HourDetail",
+                                new XElement(ns + "Hour", i + 1)
+                            );
+
+                        for (int quarter = 0; quarter < 4; quarter++)
+                        {
+                            XElement quarterElement = new XElement(ns + "Quantity",
+                                    new XAttribute("Minute", "0"),
+                                    new XAttribute("QuarterInterval", quarter + 1),
+                                    GetDecimal(ws, rng.Columns[i].Rows[quarter])
+                                );
+                            hourDetail.Add(quarterElement);
+                        }
+                        fifteenMinuteSchedule.Add(hourDetail);
+                    }
+                    PIPEDocument.Add(new XElement(ns + "PIPTransaction", fifteenMinuteSchedule));
+                }
+                XDocument programmazioneImpianti = new XDocument(new XDeclaration("1.0", "ISO-8859-1", "yes"),
+                        PIPEDocument
+                    );
+                programmazioneImpianti.Save(Path.Combine(exportPath, fileName));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

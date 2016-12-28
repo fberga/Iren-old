@@ -87,6 +87,7 @@ namespace Iren.PSO.Applicazioni
             _ws.Rows.ClearComments();
             _ws.Rows.FormatConditions.Delete();
             _ws.Rows.EntireRow.Hidden = false;
+            _ws.Rows.UnMerge();
             _ws.Rows.Style = "Normal";
 
             _ws.Rows.RowHeight = Struct.cell.height.normal;

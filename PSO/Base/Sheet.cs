@@ -1267,21 +1267,27 @@ namespace Iren.PSO.Base
                 {
 
                     Range rngData = _definedNames.Get(siglaEntita, info["SiglaInformazione"], suffissoData).Extend(colOffset: oreGiorno);
-                    
+
                     parametri.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "01' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
 
                     if (parametri.Count == 1) 
                     {
                         _ws.Range[rngData.ToString()].Formula = parametri[0]["Valore"];
                     }
-                    else if(parametri.Count > 1)
+                    else
                     {
-                        //parametriH.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                        for (int i = 1; i <= oreGiorno; i++)
+                        {
+                            parametri.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaParametro = '" + info["SiglaTipologiaParametro"] + "' AND DataIV <= '" + giorno.ToString("yyyyMMdd") + i.ToString("00") + "' AND DataFV >= '" + giorno.ToString("yyyyMMdd") + i.ToString("00") + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+                            
+                            if (parametri.Count == 1)
+                                _ws.Range[rngData.Columns[i - 1].ToString()].Value = parametri[0]["Valore"];
+                        }
 
-                        object[] values = parametri.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
+                        //object[] values = parametri.ToTable(false, "Valore").AsEnumerable().Select(r => r["Valore"]).ToArray();
 
-                        if (values.Length > 0)
-                            _ws.Range[rngData.ToString()].Value = values;
+                        //if (values.Length > 0)
+                        //    _ws.Range[rngData.ToString()].Value = values;
                     }
                 });
             }

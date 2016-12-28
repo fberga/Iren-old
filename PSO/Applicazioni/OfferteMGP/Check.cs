@@ -48,10 +48,16 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            System.DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
 
             DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -64,19 +70,8 @@ namespace Iren.PSO.Applicazioni
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if(nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
 
                 decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal eOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Date.GetSuffissoOra(ora));
@@ -195,13 +190,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
             
             if (nData.Nodes.Count > 0)
@@ -223,10 +231,16 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            System.DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
 
             DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -239,20 +253,8 @@ namespace Iren.PSO.Applicazioni
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pce = GetDecimal(_check.SiglaEntita, "PCE", suffissoData, Date.GetSuffissoOra(ora));
                 decimal progrUC = GetDecimal(_check.SiglaEntita, "PROGR_UC", suffissoData, Date.GetSuffissoOra(ora));
@@ -295,13 +297,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
             
             if (nData.Nodes.Count > 0)
@@ -323,10 +338,16 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            System.DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
 
             DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -339,19 +360,8 @@ namespace Iren.PSO.Applicazioni
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
 
                 decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal pce = GetDecimal(_check.SiglaEntita, "PCE", suffissoData, Date.GetSuffissoOra(ora));
@@ -399,13 +409,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
             if (nData.Nodes.Count > 0)
             {
@@ -426,10 +449,16 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            System.DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
 
             DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -442,19 +471,8 @@ namespace Iren.PSO.Applicazioni
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
 
                 decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal eOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Date.GetSuffissoOra(ora));
@@ -535,13 +553,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+	            if (ora == 1)
+	            {
+		            giorno = giorno.AddDays(1);
+		            oreGiorno = Date.GetOreGiorno(giorno);
+		            suffissoData = Date.GetSuffissoData(giorno);
+
+		            if (nData.Nodes.Count > 0)
+			            n.Nodes.Add(nData);
+
+		            nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+	            }
             }
             if (nData.Nodes.Count > 0)
             {
@@ -562,10 +593,16 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            System.DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
 
             DataView entitaParametroD = Workbook.Repository[DataBase.TAB.ENTITA_PARAMETRO].DefaultView;
             entitaParametroD.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND SiglaParametro = 'LIMITE_PMAX' AND DataIV <= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "01' AND DataFV >= '" + Workbook.DataAttiva.ToString("yyyyMMdd") + "25' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -578,20 +615,8 @@ namespace Iren.PSO.Applicazioni
             if (entitaParametroD.Count > 0)
                 limitePmin = decimal.Parse(entitaParametroD[0]["Valore"].ToString());
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 decimal eOfferta1 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal eOfferta2 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E2", suffissoData, Date.GetSuffissoOra(ora));
                 decimal eOfferta3 = GetDecimal(_check.SiglaEntita, "OFFERTA_MGP_E3", suffissoData, Date.GetSuffissoOra(ora));
@@ -671,13 +696,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+                
+                ora = ora < oreGiorno ? ora + 1 : 1;
+	            if (ora == 1)
+	            {
+		            giorno = giorno.AddDays(1);
+		            oreGiorno = Date.GetOreGiorno(giorno);
+		            suffissoData = Date.GetSuffissoData(giorno);
+
+		            if (nData.Nodes.Count > 0)
+			            n.Nodes.Add(nData);
+
+		            nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+	            }
             }
             if (nData.Nodes.Count > 0)
             {

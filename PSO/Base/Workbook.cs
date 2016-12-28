@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
 
@@ -118,11 +119,6 @@ namespace Iren.PSO.Base
         { 
             get { return Application.ScreenUpdating; } set { Application.ScreenUpdating = value; } 
         }
-        /// <summary>
-        /// Serve a stabilire se il foglio sia o no inizializzato dopo un aggiornamento
-        /// </summary>
-        public static bool DaAggiornare 
-        { get; private set; }
         /// <summary>
         /// Cached password per bloccare i fogli.
         /// </summary>
@@ -240,6 +236,29 @@ namespace Iren.PSO.Base
         { get { return _wb.LogDataTable; } }
 
         public static bool AbortedLoading { get; private set; }
+
+
+        //parametri console
+        public static bool DaConsole
+        { get; private set; }
+        /// <summary>
+        /// Serve a stabilire se il foglio sia o no inizializzato dopo un aggiornamento o l'aggiornamento sia stato forzato dalla console
+        /// </summary>
+        public static bool DaAggiornare 
+        { get; private set; }
+        public static bool AccettaCambioData
+        { get; private set; }
+        public static bool RifiutaCambioData
+        { get; private set; }
+        public static bool AggiornaDati
+        { get; private set; }
+        public static bool EseguiCarica
+        { get; private set; }
+        public static bool EseguiGenera
+        { get; private set; }
+        public static bool EseguiEsporta
+        { get; private set; }
+
 
         #endregion
 
@@ -649,13 +668,20 @@ namespace Iren.PSO.Base
         /// <param name="wb">Il workbook attivo.</param>
         public static void StartUp(IPSOThisWorkbook wb)
         {
+            DaConsole = CheckAvvioAutomatico();
+
+
             _wb = wb;
             Application.DisplayAlerts = true;
             Application.CellDragAndDrop = false;
             Application.EnableAutoComplete = false;
 
             Repository = new Repository(wb);
-            DaAggiornare = false;
+
+            System.Windows.Forms.MessageBox.Show("DaConsole = " + Workbook.DaConsole);
+
+            if(!DaConsole)
+                DaAggiornare = false;
 
             //TODO ripristinare 
             DataBase.CreateNew(Ambiente);
@@ -693,6 +719,49 @@ namespace Iren.PSO.Base
             }
         }
         
+        private static bool CheckAvvioAutomatico() 
+        {
+            string path = @"C:\Emergenza\AvvioAutomatico.xml";
+            if (File.Exists(path))
+            {
+                XDocument doc = XDocument.Load(path);
+
+                foreach (XElement ele in doc.Element("AvvioAutomatico").Elements())
+                {
+                    switch (ele.Name.ToString())
+                    {
+                        case "AccettaCambioData":
+                            AccettaCambioData = bool.Parse(ele.Value);
+                            break;
+                        case "RifiutaCambioData":
+                            RifiutaCambioData = bool.Parse(ele.Value);
+                            break;
+                        case "AggiornaStruttura":
+                            DaAggiornare = bool.Parse(ele.Value);
+                            break;
+                        case "AggiornaDati":
+                            AggiornaDati = bool.Parse(ele.Value);
+                            break;
+                        case "Carica":
+                            EseguiCarica = bool.Parse(ele.Value);
+                            break;
+                        case "Genera":
+                            EseguiGenera = bool.Parse(ele.Value);
+                            break;
+                        case "Esporta":
+                            EseguiEsporta = bool.Parse(ele.Value);
+                            break;
+                    }
+                }
+
+                File.Delete(path);
+                return true;
+            }
+
+            return false;
+
+        }
+
         #endregion
 
         #region Log

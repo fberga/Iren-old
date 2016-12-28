@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iren.PSO.Applicazioni.Valid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iren.PSO.Applicazioni.OfferteMB", "Applicazioni\OfferteMB\Iren.PSO.Applicazioni.OfferteMB.csproj", "{638BE7E9-7A04-4C56-A5E2-CBE7E11B8872}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iren.PSO.ConsoleLauncher", "ConsoleLauncher\Iren.PSO.ConsoleLauncher.csproj", "{F5F263E1-F221-4268-84A0-36888C915E6C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -267,6 +269,16 @@ Global
 		{638BE7E9-7A04-4C56-A5E2-CBE7E11B8872}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{638BE7E9-7A04-4C56-A5E2-CBE7E11B8872}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{638BE7E9-7A04-4C56-A5E2-CBE7E11B8872}.Release|x86.ActiveCfg = Release|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

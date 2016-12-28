@@ -19,18 +19,23 @@ namespace Iren.PSO.Applicazioni
         private void AggiornaCmbStagioni()
         {
             //seleziono la stagione nella combo
-            Excel.Worksheet ws = Workbook.Sheets[DefinedNames.GetSheetName("CT_TORINO")];
-            DefinedNames definedNames = new DefinedNames(ws.Name);
-            Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Date.SuffissoDATA1, Date.GetSuffissoOra(1));
+            string name = DefinedNames.GetSheetName("CT_TORINO");
+            if(name != "") 
+            {
+                Excel.Worksheet ws = Workbook.Sheets[name];
+                DefinedNames definedNames = new DefinedNames(ws.Name);
+                Range rng = definedNames.Get("CT_TORINO", "STAGIONE", Date.SuffissoDATA1, Date.GetSuffissoOra(1));
 
-            bool enabledEvents = Workbook.Application.EnableEvents;
-            if(enabledEvents)
-                Workbook.Application.EnableEvents = false;
+                bool enabledEvents = Workbook.Application.EnableEvents;
+                if(enabledEvents)
+                    Workbook.Application.EnableEvents = false;
 
-            ((RibbonDropDown)Globals.Ribbons.GetRibbon<ToolsExcelRibbon>().Controls["cmbStagione"]).SelectedItemIndex = (int)(ws.Range[rng.ToString()].Value ?? 1) - 1;
+                ((RibbonDropDown)Globals.Ribbons.GetRibbon<ToolsExcelRibbon>().Controls["cmbStagione"]).SelectedItemIndex = (int)(ws.Range[rng.ToString()].Value ?? 1) - 1;
             
-            if(enabledEvents)
-                Workbook.Application.EnableEvents = true;
+                if(enabledEvents)
+                    Workbook.Application.EnableEvents = true;
+            }
+            
         }
 
         public override bool Struttura(bool avoidRepositoryUpdate)

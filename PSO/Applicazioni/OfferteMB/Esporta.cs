@@ -258,12 +258,22 @@ namespace Iren.PSO.Applicazioni
                     prezzo = "0";
                     if (definedNames.TryGet(out rng, siglaEntita, "ACCENSIONE_MB"))
                     {
-                        //rng.StartColumn -= 1;
-                        prezzo = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
+                        //AGGIUNTO FIL
+                        rng = rng.Extend(colOffset: oreGiorno);
+                        //prezzo = (ws.Range[rng.ToString()].Value ?? "0").ToString().Replace(".", ",");
 
                         XElement gradino = new XElement(ns + "Accensione");
                         for (int j = oraInizio; j < oraFine; j++)
                         {
+                            //FIL
+                            //energia = (ws.Range[rng.Columns[j].ToString()].Value ?? "0").ToString().Replace(".", ",");
+
+                            object[,] prz = ws.Range[rng.Columns[j].ToString()].MergeArea.Value;
+
+                            //TODO controllare se non esiste mergearea...va in errore!!
+
+                            prezzo = (prz[1,1] ?? "0").ToString().Replace(".", ",");
+
                             gradino.Add(new XElement(ns + "SG1", (j + 1),
                                     new XAttribute("PRE", prezzo),
                                     new XAttribute("QUA", energia),

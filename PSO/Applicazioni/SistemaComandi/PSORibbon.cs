@@ -1043,6 +1043,7 @@ namespace Iren.PSO.Applicazioni
             try
             {
                 System.Diagnostics.Stopwatch wc = System.Diagnostics.Stopwatch.StartNew();
+                _errorPane.Clear();
                 _errorPane.RefreshCheck(_checkFunctions);
                 wc.Stop();
                 //quando non ci sono funzioni di check rischia di andare in errore perché non riesce ad inizializzare la splashscreen prima di chiuderla
@@ -1238,6 +1239,12 @@ namespace Iren.PSO.Applicazioni
                     else
                         newDate = DateTime.Today.AddDays(1);
                     break;
+                case 10:
+                    if (ora < 22)
+                        newDate = DateTime.Today;
+                    else
+                        newDate = DateTime.Today.AddDays(1);
+                    break;
                 case 11:
                     newDate = DateTime.Today.AddDays(-1);
                     break;
@@ -1262,14 +1269,16 @@ namespace Iren.PSO.Applicazioni
 
             if (done)
             {
-                
-                if (newDate != Workbook.DataAttiva)
+                if(Workbook.DaConsole && !Workbook.AccettaCambioData)
                 {
-                    SplashScreen.Close();
-                    refused = System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No;
-                    SplashScreen.Show();
-                    if(refused)
-                        newDate = Workbook.DataAttiva;
+                    if (newDate != Workbook.DataAttiva)
+                    {
+                        SplashScreen.Close();
+                        refused = System.Windows.Forms.MessageBox.Show("La data sta per essere cambiata in " + newDate.ToString("ddd dd MMM yyyy") + ".\nIl cambiamento della data comporta un aggiornamento di tutte le informazioni. Vuoi continuare?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.No;
+                        SplashScreen.Show();
+                        if (refused)
+                            newDate = Workbook.DataAttiva;
+                    }
                 }
             }
         }
@@ -1347,24 +1356,19 @@ namespace Iren.PSO.Applicazioni
                 if (Controls.Contains("cmbMSD"))
                     SetMercato(out newIdApplicazione);
 
-                //System.Windows.Forms.MessageBox.Show("Workbook.DataAttiva: " + Workbook.DataAttiva);
-                //System.Windows.Forms.MessageBox.Show("newDate: " + newDate);
-                //System.Windows.Forms.MessageBox.Show("rifiutatoCambioData: " + rifiutatoCambioData);
-                //System.Windows.Forms.MessageBox.Show("aggiornaDati (Workbook.DataAttiva != newDate): " + (Workbook.DataAttiva != newDate));
-
                 Riepilogo r = new Riepilogo(Workbook.Main);
 
                 Aggiorna aggiorna = new Aggiorna();
                 bool aggiornaStruttura = false;
-                bool aggiornaDati = Workbook.DataAttiva != newDate;
+                //
 
                 if (DataBase.OpenConnection())
                 {
-                    bool rifiutatoCambioData;
-                    AggiornaData(out newDate, out rifiutatoCambioData);
+                    bool rifiutatoCambioData = Workbook.RifiutaCambioData;
+                    if(Workbook.DaConsole && !Workbook.RifiutaCambioData)
+                        AggiornaData(out newDate, out rifiutatoCambioData);
 
-                    //System.Windows.Forms.MessageBox.Show("CheckCambioStruttura: " + CheckCambioStruttura(Workbook.DataAttiva, newDate));
-                    //System.Windows.Forms.MessageBox.Show("Workbook.DaAggiornare: " + Workbook.DaAggiornare);
+                    bool aggiornaDati = Workbook.DataAttiva != newDate || Workbook.AggiornaDati;
 
                     aggiornaStruttura = CheckCambioStruttura(Workbook.DataAttiva, newDate) || Workbook.IdApplicazione != newIdApplicazione || Workbook.DaAggiornare;
 
@@ -1378,7 +1382,7 @@ namespace Iren.PSO.Applicazioni
                         aggiorna.Struttura(avoidRepositoryUpdate: !switchEnv);
                     else if(!rifiutatoCambioData)
                     {
-                        if(aggiornaDati)
+                        if (aggiornaDati)
                             aggiorna.Dati();
                         else 
                         {
@@ -1431,6 +1435,16 @@ namespace Iren.PSO.Applicazioni
 
                 Sheet.Protected = true;
                 SplashScreen.Close();
+
+
+                //TODO inserire qui i metodi per fare il carica/genera/esporta automatizzato quando si esegue da console
+                //sarebbe auspicabile avere delle azioni per cui non serva passare la lista di entita o le date su cui operare
+                //chiedere a DOMENICO
+
+
+
+
+
             }
         }
 

@@ -83,7 +83,7 @@ namespace Iren.PSO.Applicazioni
             return true;
         }
 
-        protected bool CreaVariazioneDatiTecniciXML(object siglaEntita, string exportPath/*, Dictionary<string,int> assettoFasce*/)
+        protected bool CreaVariazioneDatiTecniciXML(object siglaEntita, string exportPath)
         {
             try
             {
@@ -105,11 +105,18 @@ namespace Iren.PSO.Applicazioni
 
                 XElement inserisci = new XElement("INSERISCI");
 
-                
-                for (int i = 0; i < oreGiorno && i < 24; i++)
+                bool salta3aOra = oreGiorno == 25;
+                int ora = 0;
+                for (int i = 0; i < oreGiorno; i++)
                 {
-                    string start = giorno.ToString("yyyy-MM-dd") + "T" + i.ToString("00") + ":00:00";
-                    string end = giorno.ToString("yyyy-MM-dd") + "T" + (i < 23 ? (i + 1).ToString("00") + ":00:00" : "23:59:00");
+                    if (salta3aOra && ora == 2)
+                    {
+                        salta3aOra = false;
+                        continue;
+                    }
+
+                    string start = giorno.ToString("yyyy-MM-dd") + "T" + ora.ToString("00") + ":00:00";
+                    string end = giorno.ToString("yyyy-MM-dd") + "T" + (oreGiorno - i > 1 ? (ora + 1).ToString("00") + ":00:00" : "23:59:00");
 
                     XElement vdt = new XElement("VDT", new XAttribute("DATAORAINIZIO", start), new XAttribute("DATAORAFINE", end),
                         new XElement("CODICEETSO", codiceRUP),
@@ -117,9 +124,7 @@ namespace Iren.PSO.Applicazioni
                         new XElement("NOTE", "Vincoli Tecnologici dell'Unita di Produzione")
                     );
 
-                    //int assetto = 1;
                     foreach (DataRowView assetto in entitaAssetto)
-                    //foreach (KeyValuePair<string, int> assettoFascia in assettoFasce)
                     {
                         for (int j = 1; j <= (int)assetto["NumeroFasce"]; j++)
                         {
@@ -182,7 +187,6 @@ namespace Iren.PSO.Applicazioni
                                 );
                             }
                         }
-                        //assetto++;
                     }
                     if (isTermo)
                     {
@@ -209,6 +213,7 @@ namespace Iren.PSO.Applicazioni
                     }
 
                     inserisci.Add(vdt);
+                    ora++;
                 }
 
                 XDocument variazioneDatiTecnici = new XDocument(new XDeclaration("1.0", "ISO-8859-1", "yes"),

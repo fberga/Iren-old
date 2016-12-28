@@ -31,6 +31,11 @@ namespace Iren.PSO.Forms
             this.Width = width;
         }
 
+        public void Clear()
+        {
+            treeViewErrori.Nodes.Clear();
+        }
+
         public void RefreshCheck(Check checkFunctions)
         {
             if (Struct.tipoVisualizzazione == "R")

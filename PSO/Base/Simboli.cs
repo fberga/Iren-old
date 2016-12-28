@@ -21,7 +21,7 @@ namespace Iren.PSO.Base
             {5, "ProgrammazioneImpianti"},
             {6, "UnitCommitment"},
             {7, "PrezziMSD"},
-            {8, "SistemaCmd1"}, //  <--prova Nicky     {8, "SistemaComandi"},
+            {8, "SistemaComandi"}, //  --> prova Nicky     {8, "SistemaCmd1"},
             {9, "OfferteMSD"},
             {10, "OfferteMB"},
             {11, "ValidazioneTL"},

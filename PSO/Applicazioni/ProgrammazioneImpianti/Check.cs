@@ -1,4 +1,5 @@
 ﻿using Iren.PSO.Base;
+using System;
 using System.Data;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -49,25 +50,19 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+            
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if(nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 //caricamento dati                
                 object temperaturaMTX = GetObject("CE_MTX", "TEMPERATURA", suffissoData, Date.GetSuffissoOra(ora));
                 object temperaturaTTX = GetObject("CE_TTX", "TEMPERATURA", suffissoData, Date.GetSuffissoOra(ora));
@@ -207,8 +202,8 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("Portata canale assente");
                     errore |= true;
                 }
-                if(portataCanale != null && (
-                        ((double)portataCanale < 7 && (unitCommMT2R.Equals("off") || unitCommMT2R.Equals("m") || unitCommMT3.Equals("off") || unitCommMT3.Equals("m"))) 
+                if (portataCanale != null && (
+                        ((double)portataCanale < 7 && (unitCommMT2R.Equals("off") || unitCommMT2R.Equals("m") || unitCommMT3.Equals("off") || unitCommMT3.Equals("m")))
                      || ((double)portataCanale < 14 && ((unitCommMT2R.Equals("off") || unitCommMT2R.Equals("m")) && (unitCommMT3.Equals("off") || unitCommMT3.Equals("m"))))
                      || ((double)portataCanale < 36 && unitCommMT2R.Equals("rav") && unitCommMT3.Equals("rav"))
                      || ((double)portataCanale < 25 && ((unitCommMT2R.Equals("rav") && unitCommMT3.Equals("m")) || (unitCommMT3.Equals("m") && unitCommMT3.Equals("rav"))))
@@ -237,7 +232,7 @@ namespace Iren.PSO.Applicazioni
                     nOra.Nodes.Add("Numero gruppi frigo > soglia massima");
                     errore |= true;
                 }
-                if(dispCalorePMinMT2R > 0 && (unitCommMT2R == "ind" || unitCommMT2R == "off"))
+                if (dispCalorePMinMT2R > 0 && (unitCommMT2R == "ind" || unitCommMT2R == "off"))
                 {
                     nOra.Nodes.Add("MT2R : disponibilità minima calore > 0");
                     errore |= true;
@@ -341,14 +336,43 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
+
+
+            //for (int i = 1; i <= rngCheck.ColOffset; i++)
+            //{
+            //    string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
+            //    if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
+            //    {
+            //        data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
+            //        if(nData.Nodes.Count > 0)
+            //            n.Nodes.Add(nData);
+
+            //        nData = new TreeNode(data);
+            //    }
+
+            //    int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
+            //}
             
             if (nData.Nodes.Count > 0)
             {
@@ -360,6 +384,7 @@ namespace Iren.PSO.Applicazioni
 
             return new CheckOutput();
         }
+
         private CheckOutput CheckFunc2()
         {
             Range rngCheck = new Range(_check.Range);
@@ -369,25 +394,19 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+            
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 //caricamento dati
                 decimal dispPMax = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal dispPMin = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
@@ -425,13 +444,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
 
             if (nData.Nodes.Count > 0)
@@ -453,25 +485,19 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+            
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 //caricamento dati
                 decimal dispPMaxCC = GetDecimal("GE_GRE1", "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
                 decimal dispPMinCC = GetDecimal("GE_GRE1", "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
@@ -513,13 +539,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
 
             if (nData.Nodes.Count > 0)
@@ -541,25 +580,19 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 //caricamento dati                
                 object temperatura = GetObject(_check.SiglaEntita, "TEMPERATURA", suffissoData, Date.GetSuffissoOra(ora));
                 object pressione = GetObject(_check.SiglaEntita, "PRESSIONE", suffissoData, Date.GetSuffissoOra(ora));
@@ -638,13 +671,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+                
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
 
             if (nData.Nodes.Count > 0)
@@ -666,25 +712,19 @@ namespace Iren.PSO.Applicazioni
 
             TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
             n.Name = _check.SiglaEntita;
-            TreeNode nData = new TreeNode();
-            string data = "";
 
             CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
 
-            for (int i = 1; i <= rngCheck.ColOffset; i++)
+            DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
             {
-                string suffissoData = Date.GetSuffissoData(DataBase.DataAttiva.AddHours(i - 1));
-                if (data != DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy"))
-                {
-                    data = DataBase.DataAttiva.AddHours(i - 1).ToString("dd-MM-yyyy");
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(data);
-                }
-
-                int ora = (i - 1) % Date.GetOreGiorno(suffissoData) + 1;
-
                 //caricamento dati                
                 object costoOCX = GetObject("UP_OCX", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
                 object costoOEX = GetObject("UP_OEX", "COSTO", suffissoData, Date.GetSuffissoOra(ora));
@@ -715,13 +755,26 @@ namespace Iren.PSO.Applicazioni
                         status = CheckOutput.CheckStatus.Alert;
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i - 1].ToString();
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
 
                 if (nOra.Nodes.Count > 0)
                     nData.Nodes.Add(nOra);
 
                 string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i - 1].ToString()].Value = value;
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
             }
 
             if (nData.Nodes.Count > 0)
