@@ -15,7 +15,7 @@
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>\\PC1009235\Applicazioni\Grafici IPEX\</PublishUrl>
+    <PublishUrl>\\srvpso\Applicazioni\Grafici IPEX\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -25,13 +25,12 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>\\PC1009235\Applicazioni\Grafici IPEX\</InstallUrl>
+    <InstallUrl>\\srvpso\Applicazioni\Grafici IPEX\</InstallUrl>
     <TargetCulture>it-IT</TargetCulture>
     <ProductName>Grafici IPEX</ProductName>
-    <PublisherName>Filippo Bergamin</PublisherName>
     <SuiteName>Iren Tools</SuiteName>
-    <ApplicationRevision>5</ApplicationRevision>
-    <ApplicationVersion>1.0.0.5</ApplicationVersion>
+    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationVersion>1.0.0.6</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -60,10 +59,10 @@
     <ApplicationIcon>Visualpharm-Finance-Line-chart.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>4AB39A485729DAD59379542A8E18056967555779</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>0500464466AC6D4FEC3B2EBBDE8204FD1995E041</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>Grafici IPEX 2014_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>CertificatoTemporaneo.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -103,7 +102,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.config" />
-    <None Include="Grafici IPEX 2014_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

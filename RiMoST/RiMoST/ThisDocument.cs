@@ -16,7 +16,7 @@ using DataRow = System.Data.DataRow;
 using DataView = System.Data.DataView;
 using Microsoft.Office.Interop.Word;
 using System.Reflection;
-using Iren.ToolsExcel.Core;
+using Iren.PSO.Core;
 using System.IO;
 using Microsoft.Office.Tools.Ribbon;
 

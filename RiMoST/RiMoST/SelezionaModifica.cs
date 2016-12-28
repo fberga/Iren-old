@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Iren.ToolsExcel.Core;
+using Iren.PSO.Core;
 using System.Globalization;
 using System.Configuration;
 
