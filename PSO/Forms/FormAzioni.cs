@@ -67,6 +67,10 @@ namespace Iren.PSO.Forms
             if (!DataBase.OpenConnection())
                 btnMeteo.Enabled = false;
             DataBase.CloseConnection();
+
+            this.Text = Simboli.NomeApplicazione + " - Azioni";
+            CaricaAzioni();
+            CaricaCategorie();
         }
 
         #endregion
@@ -265,15 +269,44 @@ namespace Iren.PSO.Forms
             return node.Nodes.Cast<TreeNode>().Any(n => n.Checked);
         }
 
+        public DialogResult ShowDialog(bool fromConsole, string[] azioni, string[] entita)
+        {
+            if (fromConsole)
+            {
+                if(azioni != null && azioni.Length > 0)
+                {
+                    foreach (string a in azioni)
+                        treeViewAzioni.Nodes.Find(a, true)[0].Checked = true; ;
+                }
+                else
+                {
+                    foreach (TreeNode n in treeViewAzioni.Nodes)
+                        n.Checked = true;
+                }
+                if(entita != null && entita.Length > 0)
+                {
+                    foreach (TreeNode n in treeViewUP.Nodes)
+                        n.Checked = false;
+                    
+                    foreach (string e in entita)
+                        treeViewUP.Nodes.Find(e, true)[0].Checked = true; ;
+                }
+
+                selDate.SelectAll();
+                btnApplica_Click(null, null);
+                return System.Windows.Forms.DialogResult.OK;
+            }
+
+            return base.ShowDialog();
+        }
+
         #endregion
 
         #region Eventi
 
         private void frmAZIONI_Load(object sender, EventArgs e)
         {
-            this.Text = Simboli.NomeApplicazione + " - Azioni";
-            CaricaAzioni();
-            CaricaCategorie();
+            
         }
         private void treeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
         {

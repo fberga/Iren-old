@@ -125,28 +125,36 @@ namespace Iren.PSO.Applicazioni
                 entitaProprieta.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_EXCEL' AND IdApplicazione = " + Workbook.IdApplicazione;
                 if (entitaProprieta.Count > 0)
                 {
-                    // 29/11/2016 - non creiamo più l'excel da inviare via e-mail
                     //creo file Excel da allegare
-                    //string excelExport = Path.Combine(@"C:\Emergenza", Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls");
-                    //attachments.Add(excelExport);
+                    string excelExport = Path.Combine(@"C:\Emergenza", Workbook.DataAttiva.ToString("yyyyMMdd") + "_" + entitaProprieta[0]["Valore"] + "_" + Workbook.Mercato + ".xls");
+                    attachments.Add(excelExport);
 
-                    //hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
+                    hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
-                    // 29/11/2016 - BEGIN - creiamo XML x unità produttiva di ORCO => siglaEntita.Equals("CE_ORX")
-                    string pathXmlOrcoExport = null;
-                    string fileName = null;
+                    //TODO prendere path export da parametri a DB nel caso si sia in release
+                    //18/01/2017 FIX: inizializzazione fuori dall'if: provocava errore invio mail
+                    string pathExport = @"C:\Emergenza\Export\";
+                    string fileNameXML = null;
+                    string fileNameCSV = null;
                     string pathXmlOrcoExportFull = null;
                     if (siglaEntita.Equals("CE_ORX"))
                     {
-                        pathXmlOrcoExport = @"C:\Emergenza";
-                        fileName = "FMS_UP_ORCO_1_" + Workbook.Mercato + "D_" + Workbook.DataAttiva.ToString("yyyyMMdd") + ".xml.OEIESRD.out.xml";
-                        pathXmlOrcoExportFull = pathXmlOrcoExport + "\\" + fileName;
+                        //pathOrcoExport = @"C:\Emergenza\Export\Orco" + DateTime.Now.ToString("yyyyMMdd") + "\\" + DateTime.Now.ToString("HHmmss");
 
-                        bool xmlCreated = CreaOutputXML(siglaEntita, pathXmlOrcoExport, fileName, Workbook.DataAttiva);
-                        
-                        attachments.Add(pathXmlOrcoExportFull);
+                        if (!Directory.Exists(pathExport))
+                            Directory.CreateDirectory(pathExport);
+
+                        fileNameXML = fileNameCSV = "FMS_UP_ORCO_1_" + Workbook.Mercato + "D_" + Workbook.DataAttiva.ToString("yyyyMMdd");
+
+                        fileNameXML += ".xml.OEIESRD.out.xml";
+                        fileNameCSV += ".csv.OEIESRD.out.csv";
+                        pathXmlOrcoExportFull = pathExport + "\\" + fileNameXML;
+
+                        bool xmlCreated = CreaOutputXML(siglaEntita, pathExport, fileNameXML, Workbook.DataAttiva);
+                        bool csvCreated = CreaOutputCSV(siglaEntita, pathExport, fileNameCSV, Workbook.DataAttiva);
+
+                        attachments.Add(Path.Combine(pathXmlOrcoExportFull));
                     }
-                    // 29/11/2016 - END
 
                     DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
                     categoriaEntita.RowFilter = "Gerarchia = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
@@ -169,14 +177,19 @@ namespace Iren.PSO.Applicazioni
 
                             if (files.Length == 0)
                             {
-                                if (System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
+                                if (!Workbook.DaConsole && System.Windows.Forms.MessageBox.Show("File FMS non presente nell'area di rete. Continuare con l'invio?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
                                 {
                                     interrupt = true;
                                     break;
                                 }
                             }
                             foreach (string file in files)
+                            {
                                 attachments.Add(file);
+                                //18/01/2017 FIX: non più utile per cambio requisiti
+                                //File.Copy(file, Path.Combine(pathExport, file.Split('\\').Last()));
+                            }
+                                
                         }
                         entitaProprieta.RowFilter = "SiglaEntita = '" + entita["SiglaEntita"] + "' AND SiglaProprieta = 'INVIO_PROGRAMMA_ALLEGATO_RS' AND IdApplicazione = " + Workbook.IdApplicazione;
                         if (entitaProprieta.Count > 0)
@@ -188,7 +201,7 @@ namespace Iren.PSO.Applicazioni
 
                             if (files.Length == 0)
                             {
-                                if (System.Windows.Forms.MessageBox.Show("File Riserva Secondaria non presente nell'area di rete. Continuare con l'invio?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
+                                if (!Workbook.DaConsole && System.Windows.Forms.MessageBox.Show("File Riserva Secondaria non presente nell'area di rete. Continuare con l'invio?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.No)
                                 {
                                     interrupt = true;
                                     break;
@@ -196,7 +209,11 @@ namespace Iren.PSO.Applicazioni
                             }
 
                             foreach (string file in files)
+                            {
                                 attachments.Add(file);
+                                //18/01/2017 FIX: non più utile per cambio requisiti
+                                //File.Copy(file, Path.Combine(pathExport, file.Split('\\').Last()));
+                            }
                         }
                     }
 
@@ -245,11 +262,11 @@ namespace Iren.PSO.Applicazioni
 
                         mail.Send();
                     }
-                    // 29/11/2016 - non creiamo più l'excel da inviare via e-mail
-                    //File.Delete(excelExport);
+                    File.Delete(excelExport);
                     if (pathXmlOrcoExportFull != null)
                     {
-                        File.Delete(pathXmlOrcoExportFull);
+                        //proviamo a lasciare il file come da richiesta!
+                        //File.Delete(pathXmlOrcoExportFull);
                     }
 
                     return !interrupt;
@@ -352,6 +369,65 @@ namespace Iren.PSO.Applicazioni
                         PIPEDocument
                     );
                 programmazioneImpianti.Save(Path.Combine(exportPath, fileName));
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // 10/01/2017 metod to create a CSV file for ORCO (from excel sheet named "Iren Idro")
+        protected bool CreaOutputCSV(object siglaEntita, string exportPath, string filename, DateTime dataRif)
+        {
+            try
+            {
+                string nomeFoglio = "Iren Idro";
+                DefinedNames definedNames = new DefinedNames(nomeFoglio);
+                Excel.Worksheet ws = Workbook.Sheets[nomeFoglio];
+                int oreGiorno = Date.GetOreGiorno(dataRif);
+
+                string[] lines = new string[oreGiorno];
+
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+               
+                object codiceRUP = "UP_OCX";
+                object companyName = "IREN ENERGIA SPA";
+                object companyID = "OEIESRD";
+                
+                DataView entitaAzioneInformazione = Workbook.Repository[DataBase.TAB.ENTITA_AZIONE_INFORMAZIONE].DefaultView;
+                entitaAzioneInformazione.RowFilter = "SiglaEntita = '" + siglaEntita + "' AND SiglaEntitaRif = 'UP_OCX' AND  IdApplicazione = " + Workbook.IdApplicazione;
+
+                string referenceNumber = codiceRUP.ToString().Replace("_", "") + "_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+                if (entitaAzioneInformazione.Count > 0)
+                {
+                    DataRowView info = entitaAzioneInformazione[0];
+                    string gradino = Regex.Match(info["SiglaInformazione"].ToString(), @"\d+").Value;
+                    object siglaEntitaRif = info["SiglaEntitaRif"] is DBNull ? siglaEntita : info["SiglaEntitaRif"];
+                    Range rng = definedNames.Get(siglaEntitaRif, "PROGRAMMAQ" + gradino + "_" + Workbook.Mercato)
+                        .Extend(rowOffset: 4, colOffset: oreGiorno);
+   
+                    for (int i = 0; i < oreGiorno; i++)
+                    {
+                        //Market
+                        string str=Workbook.Mercato + ";";
+                        //UnitReferenceNumber 
+                        str += codiceRUP + ";";
+                        //Date
+                        str += dataRif.ToString("yyyyMMdd") + ";";
+                        //Hour 
+                        str += (i+1);
+                        for (int quarter = 0; quarter < 4; quarter++)
+                        {
+                            //Quantity 1..4
+                            str +=  ";" + GetDecimal(ws, rng.Columns[i].Rows[quarter]);
+                        }
+                        lines[i] = str;
+                    }
+                    File.WriteAllLines(Path.Combine(exportPath, filename), lines);
+                }
                 return true;
             }
             catch

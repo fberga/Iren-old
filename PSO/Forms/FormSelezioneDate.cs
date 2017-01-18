@@ -179,6 +179,12 @@ namespace Iren.PSO.Forms
                 _workListOld = new Dictionary<DateTime, bool>(_workList);
         }
 
+        public void SelectAll()
+        {
+            if(checkClusterDate.Items.Count > 0)
+                checkClusterDate.SetItemChecked(0, true);
+        }
+
         #endregion
     }
 }

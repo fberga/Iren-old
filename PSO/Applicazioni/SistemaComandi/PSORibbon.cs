@@ -894,12 +894,16 @@ namespace Iren.PSO.Applicazioni
             string pathStr = Workbook.Repository.Applicazione["PathBackup"].ToString();
             try
             {
-                if (!Directory.Exists(pathStr))
-                    Directory.CreateDirectory(pathStr);
+                if (Workbook.Ambiente == Simboli.PROD)
+                {
+                    if (!Directory.Exists(pathStr))
+                        Directory.CreateDirectory(pathStr);
 
-                string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "_v" + Workbook.WorkbookVersion.ToString() +".xlsm";
+                    string filename = ti.ToTitleCase(Simboli.NomeApplicazione).Replace(" ", "") + "_Backup_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "_v" + Workbook.WorkbookVersion.ToString() + ".xlsm";
 
-                Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
+                    Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
+                }
+                
                 Globals.ThisWorkbook.Close(saveChanges: true);
             }
             catch(DirectoryNotFoundException)
@@ -1365,7 +1369,7 @@ namespace Iren.PSO.Applicazioni
                 if (DataBase.OpenConnection())
                 {
                     bool rifiutatoCambioData = Workbook.RifiutaCambioData;
-                    if(Workbook.DaConsole && !Workbook.RifiutaCambioData)
+                    if(!Workbook.DaConsole && !Workbook.RifiutaCambioData)
                         AggiornaData(out newDate, out rifiutatoCambioData);
 
                     bool aggiornaDati = Workbook.DataAttiva != newDate || Workbook.AggiornaDati;
@@ -1440,11 +1444,13 @@ namespace Iren.PSO.Applicazioni
                 //TODO inserire qui i metodi per fare il carica/genera/esporta automatizzato quando si esegue da console
                 //sarebbe auspicabile avere delle azioni per cui non serva passare la lista di entita o le date su cui operare
                 //chiedere a DOMENICO
+                if (Workbook.DaConsole && Workbook.HaAzioni && Workbook.HaEntita)
+                {
+                    FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
+                    frmAz.ShowDialog(true, Workbook.ListaAzioni, Workbook.ListaEntita);
 
-
-
-
-
+                    Globals.ThisWorkbook.Close(saveChanges: true);
+                }
             }
         }
 

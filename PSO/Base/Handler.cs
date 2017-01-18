@@ -116,7 +116,7 @@ namespace Iren.PSO.Base
         /// <param name="tableName">La tabella in cui inserire le modifiche. Di default Tab.Modifica. Utile specificarme una diversa nel caso di esportazione XML.</param>
         public static void StoreEdit(Excel.Range Target, int annotaModifica = -1, bool fromCalcolo = false, string tableName = DataBase.TAB.MODIFICA)
         {
-            if (Workbook.IdUtente != 0)        //non salva sulla tabella delle modifiche se l'utente non è configurato
+            if (Workbook.IdUtente != 0 && Workbook.CategorySheets.Contains(Target.Worksheet))        //non salva sulla tabella delle modifiche se l'utente non è configurato
             {
                 Excel.Worksheet ws = Target.Worksheet;
                 bool wasProtected = ws.ProtectContents;

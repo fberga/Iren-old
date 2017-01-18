@@ -18,10 +18,10 @@
     <SolutionID>43ea7656-5cc0-42ea-9249-92e09b933722</SolutionID>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\srvpso\Applicazioni\PSO\ValidazioneTL\</PublishUrl>
-    <InstallUrl>\\srvpso\Applicazioni\PSO\ValidazioneTL\</InstallUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO_TEST\ValidazioneTL\</PublishUrl>
+    <InstallUrl>\\srvpso\Applicazioni\PSO_TEST\ValidazioneTL\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>2.0.0.14</ApplicationVersion>
+    <ApplicationVersion>2.0.0.15</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

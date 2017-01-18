@@ -585,11 +585,14 @@ namespace Iren.PSO.Base
                 DataTable dt = Select(SP.APPLICAZIONE_LOG);
                 if (dt != null)
                 {
+                    //Workbook.RemoveStdStoreEdit();
                     Workbook.LogDataTable.Clear();
                     Workbook.LogDataTable.Merge(dt);
 
                     if (Workbook.Log.ListObjects.Count > 0)
                         Workbook.Log.ListObjects[1].Range.EntireColumn.AutoFit();
+
+                    //Workbook.AddStdStoreEdit();
                 }
             }
         }

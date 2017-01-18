@@ -25,11 +25,11 @@ namespace GeneraXls
         string pathInput;
         string pathOutput;
 
-        string nomeXmlRosone;
-        string nomeXmlOrco;
-        string nomeXmlTelessio;
-        string nomeXmlVilla;
-        string[] filesXmlToRead;
+        //string nomeXmlRosone;
+        //string nomeXmlOrco;
+        //string nomeXmlTelessio;
+        //string nomeXmlVilla;
+        List<string> _filesToRead;
         
         #endregion
 
@@ -133,7 +133,23 @@ namespace GeneraXls
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
-        
+
+        private void ReadCSV(string fileNameCSV, Excel.Workbook wb, string[] columns)
+        {
+            string[] lines = System.IO.File.ReadAllLines(fileNameCSV);
+
+            int row = 4;
+            foreach (string line in lines)
+            {
+                string[] cols = line.Split(';');
+                int hour = int.Parse(cols[3]) + row;
+                wb.Sheets[1].Range[columns[0] + hour] = cols[4];
+                wb.Sheets[1].Range[columns[1] + hour] = cols[5];
+                wb.Sheets[1].Range[columns[2] + hour] = cols[6];
+                wb.Sheets[1].Range[columns[3] + hour] = cols[7];
+            }
+        }
+
         #endregion
 
 
@@ -154,48 +170,62 @@ namespace GeneraXls
              * qui cerco se nella cartella di INPUT ho TUTTI i 4 files XML
              */
             string endOfPath = this.cmbMercato.SelectedItem + "D_" + this.dtpData.Value.ToString("yyyyMMdd") + ".xml.OEIESRD.out.xml";
-            nomeXmlRosone = this.txtPathInput.Text + @"\FMS_UP_ROSONE_1_" + endOfPath;
-            nomeXmlOrco = this.txtPathInput.Text + @"\FMS_UP_ORCO_1_" + endOfPath;
-            nomeXmlTelessio = this.txtPathInput.Text + @"\FMS_UP_TELESSIO_1_" + endOfPath;
-            nomeXmlVilla = this.txtPathInput.Text + @"\FMS_UP_VILLA_1_" + endOfPath;
+            //nomeXmlRosone = this.txtPathInput.Text + @"\FMS_UP_ROSONE_1_" + endOfPath;
+            //nomeXmlOrco = this.txtPathInput.Text + @"\FMS_UP_ORCO_1_" + endOfPath;
+            //nomeXmlTelessio = this.txtPathInput.Text + @"\FMS_UP_TELESSIO_1_" + endOfPath;
+            //nomeXmlVilla = this.txtPathInput.Text + @"\FMS_UP_VILLA_1_" + endOfPath;
 
             // search all file xml for "data" and "mercato"
-            filesXmlToRead = Directory.GetFiles(this.txtPathInput.Text, "FMS_UP_*" + endOfPath, SearchOption.TopDirectoryOnly);
+            _filesToRead = Directory.GetFiles(this.txtPathInput.Text, "FMS_UP_*" + endOfPath, SearchOption.TopDirectoryOnly).ToList<string>();
 
-            if (filesXmlToRead.Length > 0)
+            bool isOrcoXMLAvailable = _filesToRead.Where(s => s.Contains("ORCO")).Count() > 0;
+            if(!isOrcoXMLAvailable) 
             {
-                int count = 0;
-                foreach (string file in filesXmlToRead)
+                //prompt to choose csv
+                if(MessageBox.Show("Attenzione, il file xml di ORCO non è presente nella cartella. Selezionare un altro file?", "ATTENZIONE", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
-                    if (file.Equals(nomeXmlRosone))
+                    OpenFileDialog ofd = new OpenFileDialog();
+                    ofd.InitialDirectory = this.txtPathInput.Text;
+                    ofd.Filter = "*.xml|*.csv";
+
+                    if(ofd.ShowDialog() == DialogResult.OK) 
                     {
-                        this.lblXmlRosone.ForeColor = System.Drawing.Color.Green;
-                        count++;
-                    }
-                    else if (file.Equals(nomeXmlOrco))
-                    {
-                        this.lblXmlOrco.ForeColor = System.Drawing.Color.Green;
-                        count++;
-                    }
-                    else if (file.Equals(nomeXmlTelessio))
-                    {
-                        this.lblXmlTelessio.ForeColor = System.Drawing.Color.Green;
-                        count++;
-                    }
-                    else if (file.Equals(nomeXmlVilla))
-                    {
-                        this.lblXmlVilla.ForeColor = System.Drawing.Color.Green;
-                        count++;
+                        _filesToRead.Add(ofd.FileName);
                     }
                 }
-                if (count == 4)
+            }
+
+            int count = 0;
+            foreach (string file in _filesToRead)
+            {
+                if (file.Contains("ROSONE"))
                 {
-                    this.btnGenera.Enabled = true;
+                    this.lblXmlRosone.ForeColor = System.Drawing.Color.Green;
+                    count++;
                 }
+                else if (file.Contains("ORCO"))
+                {
+                    this.lblXmlOrco.ForeColor = System.Drawing.Color.Green;
+                    count++;
+                }
+                else if (file.Contains("TELESSIO"))
+                {
+                    this.lblXmlTelessio.ForeColor = System.Drawing.Color.Green;
+                    count++;
+                }
+                else if (file.Contains("VILLA"))
+                {
+                    this.lblXmlVilla.ForeColor = System.Drawing.Color.Green;
+                    count++;
+                }
+            }
+            if (count == 4)
+            {
+                this.btnGenera.Enabled = true;
             }
             else
             {
-                MessageBox.Show("Si è verificato un errore durante il processo: Non ho trovato i files XML");
+                MessageBox.Show("Si è verificato un errore durante il processo: non trovo il file per una centrale.");
             }
 
             folderBrowserDialogInput.Dispose();
@@ -217,6 +247,7 @@ namespace GeneraXls
         {
             // path and name of file excel
             string fileNameXls = @"\" + this.cmbMercato.SelectedItem + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls";
+            string fileNameCSV = @"\" + this.cmbMercato.SelectedItem + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".csv";
             string fileNameXlsFull = this.txtPathOutput.Text + fileNameXls;
 
             // we determine which model to use
@@ -238,23 +269,31 @@ namespace GeneraXls
             wb.Sheets[1].Range["C1"] = this.dtpData.Value;
             wb.Sheets[1].Range["F1"] = this.cmbMercato.SelectedItem;
 
-            if (filesXmlToRead.Length > 0)
+            if (_filesToRead.Count > 0)
             {
-                foreach (string file in filesXmlToRead)
+                foreach (string file in _filesToRead)
                 {
-                    if (file.Equals(nomeXmlRosone))
+                    if (file.Contains("ROSONE"))
                     {
                         ReadXml(file, wb, new string[] { "C", "D", "E", "F" });
                     }
-                    else if (file.Equals(nomeXmlOrco))
+                    else if (file.Contains("ORCO"))
                     {
-                        ReadXml(file, wb, new string[] { "H", "I", "J", "K" });
+                        try
+                        {
+                            ReadXml(file, wb, new string[] { "H", "I", "J", "K" });
+                        }
+                        catch
+                        {
+                            ReadCSV(file, wb, new string[] { "H", "I", "J", "K" });
+                        }
+                        
                     }
-                    else if (file.Equals(nomeXmlTelessio))
+                    else if (file.Contains("TELESSIO"))
                     {
                         ReadXml(file, wb, new string[] { "M", "N", "O", "P" });
                     }
-                    else if (file.Equals(nomeXmlVilla))
+                    else if (file.Contains("VILLA"))
                     {
                         ReadXml(file, wb, new string[] { "R", "S", "T", "U" });
                     }

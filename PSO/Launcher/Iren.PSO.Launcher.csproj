@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>\\srvpso\Applicazioni\PSO\PSOLauncher\</PublishUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO_TEST\PSOLauncher\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -22,7 +22,7 @@
     <UpdatePeriodically>true</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>\\srvpso\Applicazioni\PSO\PSOLauncher\</InstallUrl>
+    <InstallUrl>\\srvpso\Applicazioni\PSO_TEST\PSOLauncher\</InstallUrl>
     <TargetCulture>it-IT</TargetCulture>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <ApplicationRevision>1</ApplicationRevision>
@@ -51,10 +51,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>D01EAF197C60C63B2557688C91BB30669718FB3B</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>AC7332EB812040DD6F8F471EE3C13A2D9A2D5957</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>PSOLauncher_ChiaveTemporanea.pfx</ManifestKeyFile>
+    <ManifestKeyFile>Iren.PSO.CertificatoTemporaneo.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -111,6 +111,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Iren.PSO.CertificatoTemporaneo.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

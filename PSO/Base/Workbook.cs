@@ -252,13 +252,21 @@ namespace Iren.PSO.Base
         { get; private set; }
         public static bool AggiornaDati
         { get; private set; }
-        public static bool EseguiCarica
-        { get; private set; }
-        public static bool EseguiGenera
-        { get; private set; }
-        public static bool EseguiEsporta
-        { get; private set; }
 
+        public static bool HaAzioni
+        {
+            get;
+            private set;
+        }
+        public static string[] ListaAzioni
+        { get; private set; }
+        public static bool HaEntita
+        {
+            get;
+            private set;
+        }
+        public static string[] ListaEntita
+        { get; private set; }
 
         #endregion
 
@@ -678,8 +686,6 @@ namespace Iren.PSO.Base
 
             Repository = new Repository(wb);
 
-            System.Windows.Forms.MessageBox.Show("DaConsole = " + Workbook.DaConsole);
-
             if(!DaConsole)
                 DaAggiornare = false;
 
@@ -725,6 +731,8 @@ namespace Iren.PSO.Base
             if (File.Exists(path))
             {
                 XDocument doc = XDocument.Load(path);
+                HaAzioni = false;
+                HaEntita = false;
 
                 foreach (XElement ele in doc.Element("AvvioAutomatico").Elements())
                 {
@@ -742,14 +750,19 @@ namespace Iren.PSO.Base
                         case "AggiornaDati":
                             AggiornaDati = bool.Parse(ele.Value);
                             break;
-                        case "Carica":
-                            EseguiCarica = bool.Parse(ele.Value);
+                        case "ListaAzioni":
+                            HaAzioni = true;
+                            if (ele.Value.ToString().Length > 0)
+                                ListaAzioni = ele.Value.ToString().Split(';');
+                            else
+                                ListaAzioni = null;
                             break;
-                        case "Genera":
-                            EseguiGenera = bool.Parse(ele.Value);
-                            break;
-                        case "Esporta":
-                            EseguiEsporta = bool.Parse(ele.Value);
+                        case "ListaEntita":
+                            HaEntita = true;
+                            if (ele.Value.ToString().Length > 0)
+                                ListaEntita = ele.Value.ToString().Split(';');
+                            else
+                                ListaEntita = null;
                             break;
                     }
                 }

@@ -15,19 +15,9 @@ namespace GeneraXls
         [STAThread]
         static void Main()
         {
-            string tipoMercato;
-            string pathInput;
-            string pathOutput;
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FrmGeneraXls());
-
-            tipoMercato = ConfigurationManager.AppSettings.Get("tipoMercato");
-            pathInput = ConfigurationManager.AppSettings.Get("pathInput");
-            pathOutput = ConfigurationManager.AppSettings.Get("pathOutput");
-
-
+            Application.Run(new LoadForm());
         }
     }
 }

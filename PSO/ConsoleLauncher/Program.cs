@@ -28,9 +28,10 @@ namespace Iren.PSO.ConsoleLauncher
             bool rifiutaCambioData = false;
             bool aggiornaStruttura = false;
             bool aggiornaDati = false;
-            bool carica = false;
-            bool genera = false;
-            bool esporta = false;
+            bool eseguiAzioni = false;
+            string listaAzioni = "";
+            bool haEntita = false;
+            string listaEntita = "";
             bool shouldShowHelp = false;
 
             // thses are the available options, not that they set the variables
@@ -40,9 +41,16 @@ namespace Iren.PSO.ConsoleLauncher
                 { "r|rifdate", "rifiuta automaticamente il cambio data", cd => rifiutaCambioData = cd != null },
                 { "s|aggstr", "forza l'aggiornamento della struttura e dati", aggstr => aggiornaStruttura = aggstr != null},
                 { "d|aggdati", "forza l'aggiornamento dei dati ma non della struttura", aggdt => aggiornaDati = aggdt != null},
-                { "c|carica", "esegue l'azione Carica", c => carica = c != null},
-                { "g|genera", "esegue l'azione genera", g => genera = g != null},
-                { "e|esporta", "esegue l'azione Esporta", e => esporta = e != null},
+                { "l|laz=", "la lista di azioni separate da ; (\"\" per tutte le azioni)", lista => 
+                    {
+                        eseguiAzioni = lista != null;
+                        listaAzioni = lista;
+                    }},
+                { "e|ent=", "la lista delle entita separate da ; (\"\" per tutte le entita)", lista => 
+                    {
+                        haEntita = lista != null;
+                        listaEntita = lista;
+                    }},
                 { "h|help", "mostra questo help ed esce", h => shouldShowHelp = h != null }
             };
 
@@ -91,19 +99,28 @@ namespace Iren.PSO.ConsoleLauncher
                 if (wbs != null) Marshal.ReleaseComObject(wbs);
                 wbs = null;
             }
-
+            
             XDocument doc = new XDocument(new XDeclaration("1.0", "ISO-8859-1", "yes"),
-                new XElement("AvvioAutomatico",
-                new XElement("AccettaCambioData", accettaCambioData),
-                new XElement("RifiutaCambioData", rifiutaCambioData),
-                new XElement("AggiornaStruttura", aggiornaStruttura),
-                new XElement("AggiornaDati", aggiornaDati),
-                new XElement("Carica", carica),
-                new XElement("Genera", genera),
-                new XElement("Esporta", esporta)));
+               new XElement("AvvioAutomatico",
+               new XElement("AccettaCambioData", accettaCambioData),
+               new XElement("RifiutaCambioData", rifiutaCambioData),
+               new XElement("AggiornaStruttura", aggiornaStruttura),
+               new XElement("AggiornaDati", aggiornaDati)));
+
+            if (eseguiAzioni)
+            {
+                doc.Element("AvvioAutomatico").Add(
+                    new XElement("ListaAzioni", listaAzioni));
+            }
+            if (haEntita)
+            {
+                doc.Element("AvvioAutomatico").Add(
+                    new XElement("ListaEntita", listaEntita));
+            }
 
             doc.Save(@"C:\Emergenza\AvvioAutomatico.xml");
 
+            //COMMENTATA PER SCOPI DI TEST
             Workbook.AvviaApplicazione(_xlApp, idApplicazione);
         }
     }

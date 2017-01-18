@@ -527,7 +527,12 @@ namespace Iren.PSO.Base
                 });
 
             foreach(DataRow r in mercati)
-                dt.Rows.Add(r);
+            {
+                //TODO rimuovere quando MSD5 e 6 saranno configurati
+                if (!r["DesMercato"].Equals("MSD5") && !r["DesMercato"].Equals("MSD6"))
+                    dt.Rows.Add(r);
+            }
+                
 
             this[DataBase.TAB.MERCATI] = dt;
         }
