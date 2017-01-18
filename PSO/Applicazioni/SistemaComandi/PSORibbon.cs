@@ -1391,10 +1391,15 @@ namespace Iren.PSO.Applicazioni
                         else 
                         {
                             SplashScreen.Close();
-                            bool scelta = System.Windows.Forms.MessageBox.Show("Aggiornare i dati?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes;
+                            bool scelta = Workbook.AggiornaDati;
+                            if (!Workbook.DaConsole)
+                            {
+                                scelta = System.Windows.Forms.MessageBox.Show("Aggiornare i dati?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes;
+                            }
                             SplashScreen.Show();
-                            if(scelta)
+                            if (scelta)
                                 aggiorna.Dati();
+                            
                         }
                     }
                 }

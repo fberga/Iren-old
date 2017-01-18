@@ -129,8 +129,7 @@ namespace Iren.PSO.ConsoleLauncher
             doc.Save(@"C:\Emergenza\AvvioAutomatico.xml");
 
             //COMMENTATA PER SCOPI DI TEST
-            //Workbook.AvviaApplicazione(_xlApp, idApplicazione);
-            Console.ReadKey();
+            Workbook.AvviaApplicazione(_xlApp, idApplicazione);
             
         }
     }
