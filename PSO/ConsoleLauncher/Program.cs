@@ -34,19 +34,23 @@ namespace Iren.PSO.ConsoleLauncher
             string listaEntita = "";
             bool shouldShowHelp = false;
 
-            // thses are the available options, not that they set the variables
+            // these are the available options, not that they set the variables
             OptionSet options = new OptionSet { 
-                { "i|idApp=", "l'id dell'applicazione.", (int id) => idApplicazione = id }, 
-                { "a|accdate", "accetta automaticamente il cambio data", cd => accettaCambioData = cd != null }, 
-                { "r|rifdate", "rifiuta automaticamente il cambio data", cd => rifiutaCambioData = cd != null },
-                { "s|aggstr", "forza l'aggiornamento della struttura e dati", aggstr => aggiornaStruttura = aggstr != null},
-                { "d|aggdati", "forza l'aggiornamento dei dati ma non della struttura", aggdt => aggiornaDati = aggdt != null},
-                { "l|laz=", "la lista di azioni separate da ; (\"\" per tutte le azioni)", lista => 
+                { "i=", "l'id dell'applicazione.", (int id) => 
+                    {
+                        idApplicazione = id;
+                    }
+                }, 
+                { "a", "accetta automaticamente il cambio data", cd => accettaCambioData = cd != null }, 
+                { "r", "rifiuta automaticamente il cambio data", rd => rifiutaCambioData = rd != null },
+                { "s", "forza l'aggiornamento della struttura e dati", aggstr => aggiornaStruttura = aggstr != null},
+                { "d", "forza l'aggiornamento dei dati ma non della struttura", aggdt => aggiornaDati = aggdt != null},
+                { "l=", "la lista di azioni separate da ; (\"\" per tutte le azioni)", lista => 
                     {
                         eseguiAzioni = lista != null;
                         listaAzioni = lista;
                     }},
-                { "e|ent=", "la lista delle entita separate da ; (\"\" per tutte le entita)", lista => 
+                { "e=", "la lista delle entita separate da ; (\"\" per tutte le entita)", lista => 
                     {
                         haEntita = lista != null;
                         listaEntita = lista;
@@ -60,6 +64,9 @@ namespace Iren.PSO.ConsoleLauncher
             {
                 // parse the command line
                 extra = options.Parse(args);
+
+                if (idApplicazione == -1)
+                    throw new OptionException("Manca l'ID dell'applicazione da avviare.", "-i");
             }
             catch (OptionException e)
             {
@@ -67,6 +74,7 @@ namespace Iren.PSO.ConsoleLauncher
                 Console.Write("ConsoleLauncher: ");
                 Console.WriteLine(e.Message);
                 Console.WriteLine("Try `consolelauncher --help' for more information.");
+                Console.ReadKey();
                 return;
             }
 
@@ -121,7 +129,9 @@ namespace Iren.PSO.ConsoleLauncher
             doc.Save(@"C:\Emergenza\AvvioAutomatico.xml");
 
             //COMMENTATA PER SCOPI DI TEST
-            Workbook.AvviaApplicazione(_xlApp, idApplicazione);
+            //Workbook.AvviaApplicazione(_xlApp, idApplicazione);
+            Console.ReadKey();
+            
         }
     }
 }
