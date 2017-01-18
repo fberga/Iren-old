@@ -387,94 +387,100 @@ namespace Iren.PSO.Applicazioni
 
         private CheckOutput CheckFunc2()
         {
-            Range rngCheck = new Range(_check.Range);
-
-            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
-            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
-
-            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
-            n.Name = _check.SiglaEntita;
-
-            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
-
-            DateTime giorno = Workbook.DataAttiva;
-            int oreGiorno = Date.GetOreGiorno(giorno);
-            
-            string suffissoData = Date.GetSuffissoData(giorno);
-            int ora = 1;
-
-            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
-
-            for (int i = 0; i < rngCheck.ColOffset; i++)
+            //18/01/2016 NEW Check per Tecnoborgo
+            if (_check.SiglaEntita == "UP_INC_TECNOBORGO")
+                return CheckFunc6();
+            else
             {
-                //caricamento dati
-                decimal dispPMax = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
-                decimal dispPMin = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
-                decimal pMax = GetDecimal(_check.SiglaEntita, "PMAX", suffissoData, Date.GetSuffissoOra(ora));
-                decimal pMin = GetDecimal(_check.SiglaEntita, "PMIN", suffissoData, Date.GetSuffissoOra(ora));
-                //fine caricameto dati
+                Range rngCheck = new Range(_check.Range);
 
-                TreeNode nOra = new TreeNode("Ora " + ora);
+                DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+                categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
 
-                bool errore = false;
-                bool attenzione = false;
+                TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+                n.Name = _check.SiglaEntita;
 
-                //controlli
-                if(pMax > dispPMax) 
+                CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+                DateTime giorno = Workbook.DataAttiva;
+                int oreGiorno = Date.GetOreGiorno(giorno);
+
+                string suffissoData = Date.GetSuffissoData(giorno);
+                int ora = 1;
+
+                TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+                for (int i = 0; i < rngCheck.ColOffset; i++)
                 {
-                    nOra.Nodes.Add("PMax > disponibilità PMax");
-                    errore |= true;
+                    //caricamento dati
+                    decimal dispPMax = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                    decimal dispPMin = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                    decimal pMax = GetDecimal(_check.SiglaEntita, "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                    decimal pMin = GetDecimal(_check.SiglaEntita, "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                    //fine caricameto dati
+
+                    TreeNode nOra = new TreeNode("Ora " + ora);
+
+                    bool errore = false;
+                    bool attenzione = false;
+
+                    //controlli
+                    if (pMax > dispPMax)
+                    {
+                        nOra.Nodes.Add("PMax > disponibilità PMax");
+                        errore |= true;
+                    }
+                    if (pMin < dispPMin)
+                    {
+                        nOra.Nodes.Add("PMin < disponibilità PMin");
+                        errore |= true;
+                    }
+                    //fine controlli
+
+                    if (errore)
+                    {
+                        ErrorStyle(ref nOra);
+                        status = CheckOutput.CheckStatus.Error;
+                    }
+                    else if (attenzione)
+                    {
+                        AlertStyle(ref nOra);
+                        if (status != CheckOutput.CheckStatus.Error)
+                            status = CheckOutput.CheckStatus.Alert;
+                    }
+
+                    nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
+
+                    if (nOra.Nodes.Count > 0)
+                        nData.Nodes.Add(nOra);
+
+                    string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                    _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                    ora = ora < oreGiorno ? ora + 1 : 1;
+                    if (ora == 1)
+                    {
+                        giorno = giorno.AddDays(1);
+                        oreGiorno = Date.GetOreGiorno(giorno);
+                        suffissoData = Date.GetSuffissoData(giorno);
+
+                        if (nData.Nodes.Count > 0)
+                            n.Nodes.Add(nData);
+
+                        nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                    }
                 }
-                if(pMin < dispPMin) 
+
+                if (nData.Nodes.Count > 0)
                 {
-                    nOra.Nodes.Add("PMin < disponibilità PMin");
-                    errore |= true;
-                }
-                //fine controlli
-
-                if (errore)
-                {
-                    ErrorStyle(ref nOra);
-                    status = CheckOutput.CheckStatus.Error;
-                }
-                else if (attenzione)
-                {
-                    AlertStyle(ref nOra);
-                    if (status != CheckOutput.CheckStatus.Error)
-                        status = CheckOutput.CheckStatus.Alert;
+                    n.Nodes.Add(nData);
                 }
 
-                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
+                if (n.Nodes.Count > 0)
+                    return new CheckOutput(n, status);
 
-                if (nOra.Nodes.Count > 0)
-                    nData.Nodes.Add(nOra);
-
-                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
-                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
-
-                ora = ora < oreGiorno ? ora + 1 : 1;
-                if (ora == 1)
-                {
-                    giorno = giorno.AddDays(1);
-                    oreGiorno = Date.GetOreGiorno(giorno);
-                    suffissoData = Date.GetSuffissoData(giorno);
-
-                    if (nData.Nodes.Count > 0)
-                        n.Nodes.Add(nData);
-
-                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
-                }
+                return new CheckOutput();
             }
-
-            if (nData.Nodes.Count > 0)
-            {
-                n.Nodes.Add(nData);
-            }
-
-            if (n.Nodes.Count > 0)
-                return new CheckOutput(n, status);
-
-            return new CheckOutput();
         }
         private CheckOutput CheckFunc3()
         {
@@ -740,6 +746,111 @@ namespace Iren.PSO.Applicazioni
                 {
                     nOra.Nodes.Add("Costo marginale assente");
                     attenzione |= true;
+                }
+                //fine controlli
+
+                if (errore)
+                {
+                    ErrorStyle(ref nOra);
+                    status = CheckOutput.CheckStatus.Error;
+                }
+                else if (attenzione)
+                {
+                    AlertStyle(ref nOra);
+                    if (status != CheckOutput.CheckStatus.Error)
+                        status = CheckOutput.CheckStatus.Alert;
+                }
+
+                nOra.Name = "'" + _ws.Name + "'!" + rngCheck.Columns[i].ToString();
+
+                if (nOra.Nodes.Count > 0)
+                    nData.Nodes.Add(nOra);
+
+                string value = errore ? "ERRORE" : attenzione ? "ATTENZ." : "OK";
+                _ws.Range[rngCheck.Columns[i].ToString()].Value = value;
+
+                ora = ora < oreGiorno ? ora + 1 : 1;
+                if (ora == 1)
+                {
+                    giorno = giorno.AddDays(1);
+                    oreGiorno = Date.GetOreGiorno(giorno);
+                    suffissoData = Date.GetSuffissoData(giorno);
+
+                    if (nData.Nodes.Count > 0)
+                        n.Nodes.Add(nData);
+
+                    nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+                }
+            }
+
+            if (nData.Nodes.Count > 0)
+            {
+                n.Nodes.Add(nData);
+            }
+
+            if (n.Nodes.Count > 0)
+                return new CheckOutput(n, status);
+
+            return new CheckOutput();
+        }
+        //18/01/2017 NEW check per Tecnogorgo
+        private CheckOutput CheckFunc6()
+        {
+            Range rngCheck = new Range(_check.Range);
+
+            DataView categoriaEntita = Workbook.Repository[DataBase.TAB.CATEGORIA_ENTITA].DefaultView;
+            categoriaEntita.RowFilter = "SiglaEntita = '" + _check.SiglaEntita + "' AND IdApplicazione = " + Workbook.IdApplicazione;
+
+            TreeNode n = new TreeNode(categoriaEntita[0]["DesEntita"].ToString());
+            n.Name = _check.SiglaEntita;
+
+            CheckOutput.CheckStatus status = CheckOutput.CheckStatus.Ok;
+
+            DateTime giorno = Workbook.DataAttiva;
+            int oreGiorno = Date.GetOreGiorno(giorno);
+
+            string suffissoData = Date.GetSuffissoData(giorno);
+            int ora = 1;
+
+            TreeNode nData = new TreeNode(giorno.ToString("dd-MM-yyyy"));
+
+            for (int i = 0; i < rngCheck.ColOffset; i++)
+            {
+                //caricamento dati    
+                decimal dispPMax = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMAX_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal dispPMin = GetDecimal(_check.SiglaEntita, "DISPONIBILITA_PMIN_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal consultivoUltimo = GetDecimal(_check.SiglaEntita, "TEMP_PROG1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal dispPMAXUltimo = GetDecimal(_check.SiglaEntita, "TEMP_PROG2", suffissoData, Date.GetSuffissoOra(ora));
+                decimal ausiliari = GetDecimal(_check.SiglaEntita, "AUSILIARI_ASSETTO1", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMax = GetDecimal(_check.SiglaEntita, "PMAX", suffissoData, Date.GetSuffissoOra(ora));
+                decimal pMin = GetDecimal(_check.SiglaEntita, "PMIN", suffissoData, Date.GetSuffissoOra(ora));
+                //fine caricameto dati
+
+                TreeNode nOra = new TreeNode("Ora " + ora);
+
+                bool errore = false;
+                bool attenzione = false;
+
+                //controlli
+                if (Math.Max(1, (dispPMAXUltimo - ausiliari) * 0.25m) < Math.Abs(Math.Max(0, (dispPMAXUltimo - ausiliari) - consultivoUltimo)))
+                {
+                    nOra.Nodes.Add("Programma molto diverso dalla disponibilità");
+                    errore |= true;
+                }
+                if (dispPMax != dispPMAXUltimo)
+                {
+                    nOra.Nodes.Add("Variazione di disponibilità");
+                    attenzione |= true;
+                }
+                if (pMax > dispPMax)
+                {
+                    nOra.Nodes.Add("PMax > disponibilità PMax");
+                    errore |= true;
+                }
+                if (pMin < dispPMin)
+                {
+                    nOra.Nodes.Add("PMin < disponibilità PMin");
+                    errore |= true;
                 }
                 //fine controlli
 
