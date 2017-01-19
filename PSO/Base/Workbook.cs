@@ -678,7 +678,6 @@ namespace Iren.PSO.Base
         {
             DaConsole = CheckAvvioAutomatico();
 
-
             _wb = wb;
             Application.DisplayAlerts = true;
             Application.CellDragAndDrop = false;
@@ -833,6 +832,8 @@ namespace Iren.PSO.Base
                 Application.CellDragAndDrop = true;
                 Application.EnableAutoComplete = true;
                 _wb.Base.Save();
+
+
 
                 //try
                 //{

@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Excel = Microsoft.Office.Interop.Excel;
+//19/01/2017 FIX DomainUloadedException
+using System.Runtime.InteropServices;
 
 // ***************************************************** RIBBON ***************************************************** //
 
@@ -19,6 +21,15 @@ namespace Iren.PSO.Applicazioni
 {
     public partial class ToolsExcelRibbon
     {
+        //19/01/2017 FIX DomainUloadedException
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        //19/01/2017 FIX DomainUloadedException
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern Boolean PostMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+
         #region Variabili
         
         /// <summary>
@@ -345,8 +356,17 @@ namespace Iren.PSO.Applicazioni
         /// Al caricamento del Ribbon imposta i tasti e la tab da visualizzare
         /// </summary>       
         private void ToolsExcelRibbon_Load(object sender, RibbonUIEventArgs e)
-        {            
-            
+        {
+            //19/01/2017 FIX DomainUloadedException
+            if (Workbook.DaConsole)
+            {
+                //cerca la finestra ed invia il segnale di chiusura
+                int WM_CLOSE = 16;
+                IntPtr HWnd = FindWindow(null, "Microsoft Excel - " + Globals.ThisWorkbook.Application.ActiveWindow.Caption);
+                PostMessage(HWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                //avvia la chiusura del file
+                Globals.ThisWorkbook.Close(true, Type.Missing, Type.Missing);
+            }
         }
 
         private void StatoDB_Changed(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -903,13 +923,13 @@ namespace Iren.PSO.Applicazioni
 
                     Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
                 }
-                
-                Globals.ThisWorkbook.Close(saveChanges: true);
+
+                Globals.ThisWorkbook.Close(true, Type.Missing, Type.Missing);
             }
             catch(DirectoryNotFoundException)
             {
                 if(System.Windows.Forms.MessageBox.Show("Il percorso di backup non è raggiungibile. Chiudere comunque il file senza eseguire il backup?", Simboli.NomeApplicazione + " - ATTENZIONE!!!", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
-                    Globals.ThisWorkbook.Close(saveChanges: true);
+                    Globals.ThisWorkbook.Close(true, Type.Missing, Type.Missing);
             }
         }
         /// <summary>
@@ -1454,7 +1474,8 @@ namespace Iren.PSO.Applicazioni
                     FormAzioni frmAz = new FormAzioni(new Esporta(), new Riepilogo(), new Carica());
                     frmAz.ShowDialog(true, Workbook.ListaAzioni, Workbook.ListaEntita);
 
-                    Globals.ThisWorkbook.Close(saveChanges: true);
+                    //19/01/2017 FIX DomainUloadedException
+                    //spostata chiusura in ToolsExcelRibbon_Load()
                 }
             }
         }
