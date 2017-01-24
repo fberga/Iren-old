@@ -1293,7 +1293,8 @@ namespace Iren.PSO.Applicazioni
 
             if (done)
             {
-                if(Workbook.DaConsole && !Workbook.AccettaCambioData)
+                //25/01/2017 FIX: Cambio data da console non funzionava
+                if (!Workbook.DaConsole || (Workbook.DaConsole && !Workbook.AccettaCambioData))
                 {
                     if (newDate != Workbook.DataAttiva)
                     {
@@ -1384,12 +1385,13 @@ namespace Iren.PSO.Applicazioni
 
                 Aggiorna aggiorna = new Aggiorna();
                 bool aggiornaStruttura = false;
-                //
+                
 
                 if (DataBase.OpenConnection())
                 {
+                    //25/01/2017 FIX: Cambio data da console non funzionava
                     bool rifiutatoCambioData = Workbook.RifiutaCambioData;
-                    if(!Workbook.DaConsole && !Workbook.RifiutaCambioData)
+                    if(!Workbook.DaConsole || (Workbook.DaConsole && !Workbook.RifiutaCambioData))
                         AggiornaData(out newDate, out rifiutatoCambioData);
 
                     bool aggiornaDati = Workbook.DataAttiva != newDate || Workbook.AggiornaDati;
