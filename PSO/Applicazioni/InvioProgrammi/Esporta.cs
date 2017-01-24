@@ -131,16 +131,16 @@ namespace Iren.PSO.Applicazioni
 
                     hasVariations = CreaOutputXLS(ws, attachments.Last(), siglaEntita.Equals("CE_ORX"), rng);
 
-                    //TODO prendere path export da parametri a DB nel caso si sia in release
+                    //25/01/2017 ENH: path export da file di configurazione
+                    var cfgPath = Workbook.GetUsrConfigElement("pathExportFileRosone");
+
                     //18/01/2017 FIX: inizializzazione fuori dall'if: provocava errore invio mail
-                    string pathExport = @"C:\Emergenza\Export\";
+                    string pathExport = PreparePath(cfgPath);
                     string fileNameXML = null;
                     string fileNameCSV = null;
                     string pathXmlOrcoExportFull = null;
                     if (siglaEntita.Equals("CE_ORX"))
                     {
-                        //pathOrcoExport = @"C:\Emergenza\Export\Orco" + DateTime.Now.ToString("yyyyMMdd") + "\\" + DateTime.Now.ToString("HHmmss");
-
                         if (!Directory.Exists(pathExport))
                             Directory.CreateDirectory(pathExport);
 
