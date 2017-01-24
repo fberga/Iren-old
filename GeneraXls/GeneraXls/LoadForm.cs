@@ -271,65 +271,81 @@ namespace GeneraXls
         /// <param name="e"></param>
         private void Genera(object sender, EventArgs e)
         {
-            //get the number of hours for selected date
-            int oreGG = GetOreGiorno(this.dtpData.Value);
-
-            //template path
-            string pathTemplate = System.IO.Path.Combine(Environment.CurrentDirectory, @"template", "Template" + oreGG + ".xlt");
-
-            //output name
-            string fileNameXls = this.cmbMercato.SelectedItem + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls";
-
-            Excel.Application xlApp = new Excel.Application();
-
-            if (xlApp == null)
+            Excel.Application xlApp = null;
+            Excel.Workbook wb = null;
+            try
             {
-                MessageBox.Show("Excel is not properly installed!");
-                return;
+                btnGenera.Enabled = false;
+                btnChiudi.Enabled = false;
+                //get the number of hours for selected date
+                int oreGG = GetOreGiorno(this.dtpData.Value);
+
+                //template path
+                string pathTemplate = System.IO.Path.Combine(Environment.CurrentDirectory, @"template", "Template" + oreGG + ".xlt");
+
+                //output name
+                string fileNameXls = this.cmbMercato.SelectedItem + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xls";
+
+                xlApp = new Excel.Application();
+
+                if (xlApp == null)
+                {
+                    MessageBox.Show("Excel is not properly installed!");
+                    return;
+                }
+
+                //open template
+                wb = xlApp.Workbooks.Open(pathTemplate);
+
+                //write header data
+                wb.Sheets[1].Range["C1"] = this.dtpData.Value;
+                wb.Sheets[1].Range["F1"] = this.cmbMercato.SelectedItem;
+
+                bool finished = true;
+                foreach (DataRow r in _dtCentrali.Rows)
+                {
+                    //execute parsing for available extensions
+                    if (r["XML"].Equals("sì"))
+                    {
+                        if (!ReadXml(r["pathXML"].ToString(), wb, r["Centrale"].ToString()))
+                        {
+                            finished = false;
+                            break;
+                        }
+
+                    }
+                    else if (r["CSV"].Equals("sì"))
+                    {
+                        if (!ReadCSV(r["pathCSV"].ToString(), wb, r["Centrale"].ToString()))
+                        {
+                            finished = false;
+                            break;
+                        }
+                    }
+                }
+
+                //if everything worked, save a copy of the template
+                if (finished)
+                    wb.SaveAs(Path.Combine(txtPathOutput.Text, fileNameXls), Excel.XlFileFormat.xlExcel8);
+
+                //close and clean
+                wb.Close(SaveChanges: false);
+
+                Marshal.ReleaseComObject(wb);
+                Marshal.ReleaseComObject(xlApp);
+
             }
-
-            //open template
-            Excel.Workbook wb = xlApp.Workbooks.Open(pathTemplate);
-
-            //write header data
-            wb.Sheets[1].Range["C1"] = this.dtpData.Value;
-            wb.Sheets[1].Range["F1"] = this.cmbMercato.SelectedItem;
-
-            bool finished = true;
-            foreach (DataRow r in _dtCentrali.Rows)
+            catch(Exception ex)
             {
-                //execute parsing for available extensions
-                if (r["XML"].Equals("sì"))
-                {
-                    if (!ReadXml(r["pathXML"].ToString(), wb, r["Centrale"].ToString()))
-                    {
-                        finished = false;
-                        break;
-                    }
-
-                }
-                else if (r["CSV"].Equals("sì"))
-                {
-                    if (!ReadCSV(r["pathCSV"].ToString(), wb, r["Centrale"].ToString()))
-                    {
-                        finished = false;
-                        break;
-                    }
-                }
+                MessageBox.Show(ex.Message, "Genera XLS - ERRORE!!!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            //if everything worked, save a copy of the template
-            if (finished)
-                wb.SaveAs(Path.Combine(txtPathOutput.Text, fileNameXls), Excel.XlFileFormat.xlExcel8);
-
-            //close and clean
-            wb.Close(SaveChanges: false);
-
-            Marshal.ReleaseComObject(wb);
-            Marshal.ReleaseComObject(xlApp);
-
-            wb = null;
-            xlApp = null;
+            finally
+            {
+                wb = null;
+                xlApp = null;
+                btnGenera.Enabled = true;
+                btnChiudi.Enabled = true;
+            }
         }
 
         /// <summary>
