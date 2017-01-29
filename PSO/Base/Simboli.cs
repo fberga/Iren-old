@@ -36,8 +36,9 @@ namespace Iren.PSO.Base
             //TODO      
             // Modifica per InvioProgrammi MSD5 e MSD6 ***** BEGIN *****
             {16, "InvioProgrammi"},
-            {17, "InvioProgrammi"}
+            {17, "InvioProgrammi"},
             // Modifica per InvioProgrammi MSD5 e MSD6 ***** END *****
+            {18, "OfferteMI"}
         };
 
         public static Dictionary<int, string> FileApplicazione 

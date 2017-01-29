@@ -524,7 +524,7 @@ namespace Iren.PSO.Applicazioni
                 if(aggiorna.Struttura(avoidRepositoryUpdate: false))
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
-                //29/01/2017 FIX: errore caricamento quando numero mercati diverso tra un ambiente e l'altro (idem per stagioni)
+                //29/01/2017 FIX errore caricamento quando numero mercati diverso tra un ambiente e l'altro (idem per stagioni)
                 if (Controls.Contains("cmbMSD")) FillcmbMSD();
                 if (Controls.Contains("cmbStagione")) FillcmbStagioni();
                 

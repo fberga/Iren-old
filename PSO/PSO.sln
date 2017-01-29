@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iren.PSO.Applicazioni.Offer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iren.PSO.ConsoleLauncher", "ConsoleLauncher\Iren.PSO.ConsoleLauncher.csproj", "{F5F263E1-F221-4268-84A0-36888C915E6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iren.PSO.Applicazioni.OfferteMI", "Applicazioni\OfferteMI\Iren.PSO.Applicazioni.OfferteMI.csproj", "{D0BD940C-76BC-4606-990E-5896A6CBACAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -279,6 +281,16 @@ Global
 		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F5F263E1-F221-4268-84A0-36888C915E6C}.Release|x86.ActiveCfg = Release|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D0BD940C-76BC-4606-990E-5896A6CBACAF}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
