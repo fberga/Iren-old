@@ -527,13 +527,13 @@ namespace Iren.PSO.Base
                 });
 
             foreach(DataRow r in mercati)
-            {
-                //TODO rimuovere quando MSD5 e 6 saranno configurati
-                if (!r["DesMercato"].Equals("MSD5") && !r["DesMercato"].Equals("MSD6"))
+            {            
+                // Modifica per InvioProgrammi MSD5 e MSD6 e nuovi orari  ***** BEGIN *****
+                //TODO scommentare per passare in produzione prima del 01/02
+                // if (!r["DesMercato"].Equals("MSD5") && !r["DesMercato"].Equals("MSD6"))
+                // Modifica per InvioProgrammi MSD5 e MSD6 e nuovi orari ***** END ****
                     dt.Rows.Add(r);
             }
-                
-
             this[DataBase.TAB.MERCATI] = dt;
         }
 

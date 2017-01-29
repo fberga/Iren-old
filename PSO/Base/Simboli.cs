@@ -10,7 +10,11 @@ namespace Iren.PSO.Base
         public static string LocalBasePath 
         { get { return @"%APPDATA%\PSO\"; } }
         public static string RemoteBasePath
-        { get { return @"\\srvpso\Applicazioni\PSO_TEST"; } } //TODO Riportare a PSO per rilasci in prod
+        {   /* Modifica per rliascio in Test ***** BEGIN ***** */
+            get { return @"\\srvpso\Applicazioni\PSO_TEST"; } //TODO Riportare a PSO per rilasci in prod
+          //   get { return @"\\srvpso\Applicazioni\PSO"; }
+            /* Modifica per rliascio in Test ***** END ***** */
+        } 
 
         private readonly static Dictionary<int, string> _fileApplicazione = new Dictionary<int, string>()
         {
@@ -21,14 +25,19 @@ namespace Iren.PSO.Base
             {5, "ProgrammazioneImpianti"},
             {6, "UnitCommitment"},
             {7, "PrezziMSD"},
-            {8, "SistemaComandi"}, //  --> prova Nicky     {8, "SistemaCmd1"},
+            {8, "SistemaComandi"},
             {9, "OfferteMSD"},
             {10, "OfferteMB"},
             {11, "ValidazioneTL"},
             {12, "PrevisioneCT"},
             {13, "InvioProgrammi"},
             {14, "ValidazioneGAS"},
-            {15, "PrevisioneGAS"}
+            {15, "PrevisioneGAS"},
+            //TODO      
+            // Modifica per InvioProgrammi MSD5 e MSD6 ***** BEGIN *****
+            {16, "InvioProgrammi"},
+            {17, "InvioProgrammi"}
+            // Modifica per InvioProgrammi MSD5 e MSD6 ***** END *****
         };
 
         public static Dictionary<int, string> FileApplicazione 
@@ -159,6 +168,36 @@ namespace Iren.PSO.Base
 
         private readonly static Dictionary<int, string> oreMSD = new Dictionary<int, string>() 
         { 
+            //TODO modificare in base ai nuovi orari
+             // Modifica per InvioProgrammi MSD5 e MSD6 e nuovi orari ***** BEGIN *****
+            {0, "MSD2"},
+            {1, "MSD2"},
+            {2, "MSD2"},
+            {3, "MSD2"},
+            {4, "MSD3"},
+            {5, "MSD3"},
+            {6, "MSD3"},
+            {7, "MSD3"},
+            {8, "MSD4"},
+            {9, "MSD4"},
+            {10, "MSD4"},
+            {11, "MSD4"},
+            {12, "MSD5"},
+            {13, "MSD5"},
+            {14, "MSD5"},
+            {15, "MSD5"},
+            {16, "MSD6"},
+            {17, "MSD6"},
+            {18, "MSD6"},
+            {19, "MSD6"},
+            {20, "MSD1"},
+            {21, "MSD1"},
+            {22, "MSD1"},
+            {23, "MSD1"},
+            // Modifica per InvioProgrammi MSD5 e MSD6 e nuovi orari ***** END *****
+
+             /*
+             // Orari fino al 01/02/2017
             {0, "MSD1"},
             {1, "MSD1"},
             {2, "MSD1"},
@@ -183,6 +222,7 @@ namespace Iren.PSO.Base
             {21, "MSD1"},
             {22, "MSD1"},
             {23, "MSD1"},
+              */
         };
 
         public static Dictionary<int, string> OreMSD
@@ -202,24 +242,9 @@ namespace Iren.PSO.Base
 
         }
 
-        /* MB2 9;12
-         * MB3 13;16
-         * MB4 17;22
-         * MB5 23;24
-         */
-
-        //private readonly static Dictionary<string, Tuple<int, int>> mercatiMB = new Dictionary<string, Tuple<int, int>>()
-        //{
-        //    {"MB1", Tuple.Create(1,8)},
-        //    {"MB2", Tuple.Create(9,12)},
-        //    {"MB3", Tuple.Create(13,16)},
-        //    {"MB4", Tuple.Create(17,22)},
-        //    {"MB5", Tuple.Create(23,25)}
-        //};
-        //public static Dictionary<string, Tuple<int, int>> MercatiMB { get { return mercatiMB; } }
-
         private readonly static Dictionary<string, MB> mercatiMB = new Dictionary<string, MB>()
         {
+            //TODO modificare in base a nuovi orari
             {"MB1", new MB(0,1,8)},
             {"MB2", new MB(7,9,12)},
             {"MB3", new MB(11,13,16)},
@@ -257,16 +282,6 @@ namespace Iren.PSO.Base
 
             return new Range(rng.StartRow, rng.StartColumn + orario[0] - 1, 1, orario[1] - orario[0] + 1);
         }
-
-        //private readonly static Dictionary<string, int> chiusuraMB = new Dictionary<string, int>()
-        //{
-        //    {"MB1", 0},
-        //    {"MB2", 7},
-        //    {"MB3", 11},
-        //    {"MB4", 15},
-        //    {"MB5", 21}
-        //};
-        //public static Dictionary<string, int> ChiusuraMB { get { return chiusuraMB; } }
     }
 }
 

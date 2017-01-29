@@ -97,7 +97,8 @@ namespace Iren.PSO.Applicazioni
             //TODO Ripristinare DEV
             ambiente = Simboli.TEST;
 #else
-            //ambiente = Simboli.TEST;
+            /*********************** Modifica per ambient di Test *********************/
+            //ambiente = Simboli.TEST;  //TODO Commentare per passaggio in produzione
 #endif
             PSO.Base.Workbook.StartUp(this);
             Globals.Ribbons.GetRibbon<ToolsExcelRibbon>().InitRibbon();

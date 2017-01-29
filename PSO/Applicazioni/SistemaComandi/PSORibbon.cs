@@ -315,6 +315,7 @@ namespace Iren.PSO.Applicazioni
         private void FillcmbMSD()
         {
             RibbonDropDownItem selItem = null;
+            ((RibbonDropDown)Controls["cmbMSD"]).Items.Clear();
             foreach (DataRow mercato in Workbook.Repository[DataBase.TAB.MERCATI].Rows)
             {
                 RibbonDropDownItem i = Factory.CreateRibbonDropDownItem();
@@ -523,6 +524,10 @@ namespace Iren.PSO.Applicazioni
                 if(aggiorna.Struttura(avoidRepositoryUpdate: false))
                     Workbook.InsertLog(Core.DataBase.TipologiaLOG.LogModifica, "Aggiorna struttura");
 
+                //29/01/2017 FIX: errore caricamento quando numero mercati diverso tra un ambiente e l'altro (idem per stagioni)
+                if (Controls.Contains("cmbMSD")) FillcmbMSD();
+                if (Controls.Contains("cmbStagione")) FillcmbStagioni();
+                
                 RefreshChecks();
 
                 Sheet.Protected = true;
@@ -1218,6 +1223,7 @@ namespace Iren.PSO.Applicazioni
 
             newAppId = ((RibbonDropDown)Controls["cmbMSD"]).SelectedItem.Tag;
         }
+
         /// <summary>
         /// Aggiorna la data per le applicazione Validazione TL e Previsione CT.
         /// </summary>
@@ -1378,8 +1384,7 @@ namespace Iren.PSO.Applicazioni
                 DateTime newDate = Workbook.DataAttiva;
                 int newIdApplicazione = Workbook.IdApplicazione;
 
-                if (Controls.Contains("cmbMSD"))
-                    SetMercato(out newIdApplicazione);
+                if (Controls.Contains("cmbMSD")) SetMercato(out newIdApplicazione);
 
                 Riepilogo r = new Riepilogo(Workbook.Main);
 

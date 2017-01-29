@@ -28,7 +28,7 @@
     <PublishUrl>\\srvpso\Applicazioni\PSO_TEST\InvioProgrammi\</PublishUrl>
     <InstallUrl>\\srvpso\Applicazioni\PSO_TEST\InvioProgrammi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>2.0.1.0</ApplicationVersion>
+    <ApplicationVersion>2.0.2.2</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>
