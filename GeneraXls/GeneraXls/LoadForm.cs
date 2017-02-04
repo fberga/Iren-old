@@ -181,7 +181,17 @@ namespace GeneraXls
                     foreach (XElement quantity in hourDetail.Elements(ns + "Quantity"))
                     {
                         int quarter = int.Parse(quantity.Attribute("QuarterInterval").Value) - 1;
-                        wb.Sheets[1].Cells[row + hour, col + quarter].Value =  Double.Parse((quantity.Value.Replace('.',',')));
+                        
+                        /************************ Modifica calcolo valori potenza da xml ********************/
+                        /************************           02/02/2017    BEGIN          ********************/
+                        /*
+                        wb.Sheets[1].Cells[row + hour, col + quarter].Value = (Double.Parse((quantity.Value.Replace('.', ','))));
+                         */
+                        Double val = Double.Parse((quantity.Value.Replace('.', ',')));
+                        val = val*4;
+                        wb.Sheets[1].Cells[row + hour, col + quarter].Value = val;
+                        /************************ Modifica calcolo valori potenza da xml ********************/
+                        /************************            02/02/2017    END           ********************/
                     }
                 }
             }

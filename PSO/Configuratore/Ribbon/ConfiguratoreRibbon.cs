@@ -50,8 +50,8 @@ namespace Iren.ToolsExcel.ConfiguratoreRibbon
 
             //inizializzazione connessione
             //_ambienti = Workbook.AppSettings("Ambienti").Split('|');
-            btnProd.Checked = true;
-            ChangeAmbiente(btnProd, null);
+            btnTest.Checked = true;
+            //ChangeAmbiente(btnTest, null);
             //
             //DataBase.DB.SetParameters(idUtente: 62);
 

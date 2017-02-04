@@ -354,11 +354,23 @@ namespace Iren.PSO.Applicazioni
 
                         for (int quarter = 0; quarter < 4; quarter++)
                         {
+                            /************************** 01/02/2017 **************************/
+                            /***** Modifica valori espressi nel fiile xml  ****/
+                            /************************** 01/02/2017 **************************/ 
+ 
+                            /*
                             XElement quarterElement = new XElement(ns + "Quantity",
                                     new XAttribute("Minute", "0"),
                                     new XAttribute("QuarterInterval", quarter + 1),
                                     GetDecimal(ws, rng.Columns[i].Rows[quarter])
                                 );
+                             */
+                            XElement quarterElement = new XElement(ns + "Quantity",
+                                    new XAttribute("Minute", "0"),
+                                    new XAttribute("QuarterInterval", quarter + 1),
+                                    (GetDecimal(ws, rng.Columns[i].Rows[quarter])) / 4
+                                );
+
                             hourDetail.Add(quarterElement);
                         }
                         fifteenMinuteSchedule.Add(hourDetail);

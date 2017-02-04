@@ -34,6 +34,11 @@
             this.btnAnnulla = new System.Windows.Forms.Button();
             this.panelTop = new System.Windows.Forms.Panel();
             this.groupMB = new System.Windows.Forms.GroupBox();
+
+            /******************** Modifica nuovi mercati MB  BEGIN ********************/
+            this.checkMB6 = new System.Windows.Forms.CheckBox();
+            /******************** Modifica nuovi mercati MB  END ********************/
+
             this.checkMB5 = new System.Windows.Forms.CheckBox();
             this.checkMB4 = new System.Windows.Forms.CheckBox();
             this.checkMB3 = new System.Windows.Forms.CheckBox();
@@ -44,10 +49,10 @@
             this.comboGiorni = new System.Windows.Forms.Button();
             this.panelCentrale = new System.Windows.Forms.Panel();
             this.panelUP = new System.Windows.Forms.Panel();
-            this.treeViewUP = new Iren.PSO.Forms.BugFixedTreeView();
             this.panelCategorie = new System.Windows.Forms.Panel();
-            this.treeViewCategorie = new Iren.PSO.Forms.BugFixedTreeView();
             this.panelAzioni = new System.Windows.Forms.Panel();
+            this.treeViewUP = new Iren.PSO.Forms.BugFixedTreeView();
+            this.treeViewCategorie = new Iren.PSO.Forms.BugFixedTreeView();
             this.treeViewAzioni = new Iren.PSO.Forms.BugFixedTreeView();
             this.panelButtons.SuspendLayout();
             this.panelTop.SuspendLayout();
@@ -123,6 +128,11 @@
             // 
             // groupMB
             // 
+
+            /******************** Modifica nuovi mercati MB  BEGIN ********************/
+            this.groupMB.Controls.Add(this.checkMB6);
+            /******************** Modifica nuovi mercati MB  BEGIN ********************/
+
             this.groupMB.Controls.Add(this.checkMB5);
             this.groupMB.Controls.Add(this.checkMB4);
             this.groupMB.Controls.Add(this.checkMB3);
@@ -131,10 +141,24 @@
             this.groupMB.Dock = System.Windows.Forms.DockStyle.Left;
             this.groupMB.Location = new System.Drawing.Point(350, 0);
             this.groupMB.Name = "groupMB";
-            this.groupMB.Size = new System.Drawing.Size(350, 53);
+            this.groupMB.Size = new System.Drawing.Size(421, 53);
             this.groupMB.TabIndex = 3;
             this.groupMB.TabStop = false;
             this.groupMB.Text = "Mercati MB";
+
+            /******************** Modifica nuovi mercati MB  BEGIN ********************/
+            // 
+            // checkMB6
+            // 
+            this.checkMB6.AutoSize = true;
+            this.checkMB6.Location = new System.Drawing.Point(367, 25);
+            this.checkMB6.Name = "checkMB6";
+            this.checkMB6.Size = new System.Drawing.Size(48, 17);
+            this.checkMB6.TabIndex = 5;
+            this.checkMB6.Text = "MB6";
+            this.checkMB6.UseVisualStyleBackColor = true;
+            /******************** Modifica nuovi mercati MB  END ********************/
+
             // 
             // checkMB5
             // 
@@ -251,6 +275,26 @@
             this.panelUP.Size = new System.Drawing.Size(350, 435);
             this.panelUP.TabIndex = 6;
             // 
+            // panelCategorie
+            // 
+            this.panelCategorie.Controls.Add(this.treeViewCategorie);
+            this.panelCategorie.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelCategorie.Location = new System.Drawing.Point(350, 5);
+            this.panelCategorie.Name = "panelCategorie";
+            this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.panelCategorie.Size = new System.Drawing.Size(350, 435);
+            this.panelCategorie.TabIndex = 5;
+            // 
+            // panelAzioni
+            // 
+            this.panelAzioni.Controls.Add(this.treeViewAzioni);
+            this.panelAzioni.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelAzioni.Location = new System.Drawing.Point(0, 5);
+            this.panelAzioni.Name = "panelAzioni";
+            this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.panelAzioni.Size = new System.Drawing.Size(350, 435);
+            this.panelAzioni.TabIndex = 4;
+            // 
             // treeViewUP
             // 
             this.treeViewUP.CheckBoxes = true;
@@ -266,16 +310,6 @@
             this.treeViewUP.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeViewUP_AfterCheck);
             this.treeViewUP.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
             // 
-            // panelCategorie
-            // 
-            this.panelCategorie.Controls.Add(this.treeViewCategorie);
-            this.panelCategorie.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelCategorie.Location = new System.Drawing.Point(350, 5);
-            this.panelCategorie.Name = "panelCategorie";
-            this.panelCategorie.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelCategorie.Size = new System.Drawing.Size(350, 435);
-            this.panelCategorie.TabIndex = 5;
-            // 
             // treeViewCategorie
             // 
             this.treeViewCategorie.CheckBoxes = true;
@@ -290,16 +324,6 @@
             this.treeViewCategorie.TabIndex = 1;
             this.treeViewCategorie.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCheck);
             this.treeViewCategorie.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeView_BeforeCollapse);
-            // 
-            // panelAzioni
-            // 
-            this.panelAzioni.Controls.Add(this.treeViewAzioni);
-            this.panelAzioni.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelAzioni.Location = new System.Drawing.Point(0, 5);
-            this.panelAzioni.Name = "panelAzioni";
-            this.panelAzioni.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.panelAzioni.Size = new System.Drawing.Size(350, 435);
-            this.panelAzioni.TabIndex = 4;
             // 
             // treeViewAzioni
             // 
@@ -362,6 +386,11 @@
         private System.Windows.Forms.CheckBox checkTutte;
         private System.Windows.Forms.Button comboGiorni;
         private System.Windows.Forms.GroupBox groupMB;
+
+        /******************** Modifica nuovi mercati MB  BEGIN ********************/
+        private System.Windows.Forms.CheckBox checkMB6;
+        /******************** Modifica nuovi mercati MB  END ********************/
+
         private System.Windows.Forms.CheckBox checkMB5;
         private System.Windows.Forms.CheckBox checkMB4;
         private System.Windows.Forms.CheckBox checkMB3;

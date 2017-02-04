@@ -223,17 +223,21 @@ namespace Iren.PSO.Launcher
 
         private static void CheckIfLast(Excel.Workbook Wb, ref bool Cancel)
         {
-            //Excel.Workbooks wbs = _xlApp.Workbooks;
+            try
+            {
+                Excel.Workbooks wbs = _xlApp.Workbooks;
 
-            //int count = wbs.OfType<Excel.Workbook>()
-            //    .Count(wb => !wb.Equals(Wb) && wb.Windows[1].Visible);
+                int count = wbs.OfType<Excel.Workbook>()
+                    .Count(wb => !wb.Equals(Wb) && wb.Windows[1].Visible);
 
-            //if (count <= 1)
-            //{
-            //    _xlApp.Quit();
-            //    Marshal.ReleaseComObject(_xlApp);
-            //    _xlApp = null;
-            //}
+                if (count <= 1)
+                {
+                    _xlApp.Quit();
+                    Marshal.ReleaseComObject(_xlApp);
+                    _xlApp = null;
+                }
+            }
+            catch { }
 
         }
 
