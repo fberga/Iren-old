@@ -690,13 +690,9 @@ namespace Iren.PSO.Applicazioni
             {
                 Workbook.ScreenUpdating = false;
                 Sheet.Protected = false;
-
-                foreach (Excel.Worksheet ws in Workbook.CategorySheets)
-                {
-                    Sheet s = new Sheet(ws);
-                    s.MakeCellsDisabled();
-                    s.UpdateDayColor();
-                }
+                
+                //04/02/2017 FIX: aggiornamento celle disabilitate all'avvio
+                RefreshDisabledCells();
 
                 Sheet.Protected = true;
                 Workbook.ScreenUpdating = true;
@@ -742,12 +738,8 @@ namespace Iren.PSO.Applicazioni
                     
                     if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
                     {
-                        foreach (Excel.Worksheet ws in Workbook.CategorySheets)
-                        {
-                            Sheet s = new Sheet(ws);
-                            s.MakeCellsDisabled();
-                            s.UpdateDayColor();
-                        }
+                        //04/02/2017 FIX: aggiornamento celle disabilitate all'avvio
+                        RefreshDisabledCells();
                     }
                 }
                 else
@@ -929,6 +921,12 @@ namespace Iren.PSO.Applicazioni
                     Globals.ThisWorkbook.SaveCopyAs(Path.Combine(pathStr, filename));
                 }
 
+                //02/02/2017 FIX: provo a terminare excel alla chiusura
+                //cerca la finestra ed invia il segnale di chiusura
+                //int WM_CLOSE = 16;
+                //IntPtr HWnd = FindWindow(null, "Microsoft Excel - " + Globals.ThisWorkbook.Name);
+                //PostMessage(HWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+
                 Globals.ThisWorkbook.Close(true, Type.Missing, Type.Missing);
             }
             catch(DirectoryNotFoundException)
@@ -1085,6 +1083,17 @@ namespace Iren.PSO.Applicazioni
             if(autoCalc)
                 Workbook.Application.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
         }
+
+        //04/02/2017 FIX: Aggiornamento celle disabilitate all'avvio
+        private void RefreshDisabledCells()
+        {
+            foreach (Excel.Worksheet ws in Workbook.CategorySheets)
+            {
+                Sheet s = new Sheet(ws);
+                s.MakeCellsDisabled();
+                s.UpdateDayColor();
+            }
+        }
         /// <summary>
         /// Metodo di inizializzazione della Tab Front Office. Visualizza e abilita i tasti in base alle specifiche da DB. Da notare che se ci sono aggiornamenti, bisogna caricare la struttura e riavviare l'applicativo.
         /// </summary>
@@ -1216,8 +1225,6 @@ namespace Iren.PSO.Applicazioni
         {
             //configuro la data attiva
             int ora = DateTime.Now.Hour;
-            
-            ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged -= cmbMSD_SelectionChanged;
             ((RibbonDropDown)Controls["cmbMSD"]).SelectedItem = ((RibbonDropDown)Controls["cmbMSD"]).Items.Where(i => i.Label == Simboli.OreMSD[ora]).First();
             ((RibbonDropDown)Controls["cmbMSD"]).SelectionChanged += cmbMSD_SelectionChanged;
 
@@ -1244,11 +1251,14 @@ namespace Iren.PSO.Applicazioni
                     else
                         newDate = DateTime.Today.AddDays(2);
                     break;
+                //FIX aggiunti MSD5/6 e mandato avanti orario
                 case 2:
                 case 3:
                 case 4:
                 case 13:
-                    if (ora > 17)
+                case 16:
+                case 17:
+                    if (ora > 19)
                         newDate = DateTime.Today.AddDays(1);
                     else
                         newDate = DateTime.Today;
@@ -1452,6 +1462,13 @@ namespace Iren.PSO.Applicazioni
                     Globals.ThisWorkbook.ActionsPane.AutoScroll = false;
                     Globals.ThisWorkbook.ActionsPane.SizeChanged += ActionsPane_SizeChanged;
                 }
+
+                //04/02/2017 FIX: aggiornamento celle disabilitate all'avvio
+                if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
+                {
+                    RefreshDisabledCells();
+                }
+
                 RefreshChecks();
 
                 try
