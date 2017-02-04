@@ -246,11 +246,21 @@ namespace Iren.PSO.Base
         private readonly static Dictionary<string, MB> mercatiMB = new Dictionary<string, MB>()
         {
             //TODO modificare in base a nuovi orari
+            /*
             {"MB1", new MB(0,1,8)},
             {"MB2", new MB(7,9,12)},
             {"MB3", new MB(11,13,16)},
             {"MB4", new MB(15,17,22)},
             {"MB5", new MB(21,23,25)}
+            */
+            /******************** Modifica nuovi mercati MB  BEGIN ********************/
+            {"MB1", new MB(0,1,4)}, // Da modificare
+            {"MB2", new MB(3,5,25)},
+            {"MB3", new MB(7,9,25)},
+            {"MB4", new MB(11,13,25)},
+            {"MB5", new MB(15,17,25)},
+            {"MB6", new MB(19,21,25)}
+            /******************** Modifica nuovi mercati MB  END ********************/
         };
 
         public static Dictionary<string, MB> MercatiMB { get { return mercatiMB; } }
@@ -259,14 +269,28 @@ namespace Iren.PSO.Base
         {
             if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
             {
+                //01/02/2017 FIX: Nuova logica mercati
+                //int offset = Simboli.MercatiMB["MB1"].Fine;
+                //if (hour >= Simboli.MercatiMB["MB2"].Chiusura)
+                //{
+                //    string mercatoChiuso = Simboli.MercatiMB
+                //        .Where(kv => kv.Value.Chiusura <= hour)
+                //        .Select(kv => kv.Key)
+                //        .Last();
+                //    offset = Simboli.MercatiMB[mercatoChiuso].Fine;
+                //}
+
                 int offset = Simboli.MercatiMB["MB1"].Fine;
                 if (hour >= Simboli.MercatiMB["MB2"].Chiusura)
                 {
-                    string mercatoChiuso = Simboli.MercatiMB
-                        .Where(kv => kv.Value.Chiusura <= hour)
+                    string primoMercatoAperto = Simboli.MercatiMB
+                        .Where(kv => kv.Value.Chiusura > hour)
                         .Select(kv => kv.Key)
-                        .Last();
-                    offset = Simboli.MercatiMB[mercatoChiuso].Fine;
+                        .FirstOrDefault();
+                    if (primoMercatoAperto == null)
+                        offset = Date.GetOreGiorno(Workbook.DataAttiva);
+                    else
+                        offset = Simboli.MercatiMB[primoMercatoAperto].Inizio - 1;
                 }
 
                 return offset;
