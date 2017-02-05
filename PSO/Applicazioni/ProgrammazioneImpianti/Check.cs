@@ -835,10 +835,13 @@ namespace Iren.PSO.Applicazioni
                 bool attenzione = false;
 
                 //controlli
-                if (Math.Max(1, (dispPMAXUltimo - ausiliari) * 0.25m) < Math.Abs(Math.Max(0, (dispPMAXUltimo - ausiliari) - consultivoUltimo)))
+                if (Math.Max(1, (dispPMAXUltimo - ausiliari) * 0.25m) < Math.Abs(Math.Max(0, (dispPMAXUltimo - ausiliari) -
+                    //04/02/2017 ENH: modifica specifiche
+                    pMax)))
                 {
                     nOra.Nodes.Add("Programma molto diverso dalla disponibilità");
-                    errore |= true;
+                    //04/02/2017 ENH: modifica specifiche
+                    attenzione |= true;
                 }
                 if (dispPMax != dispPMAXUltimo)
                 {
