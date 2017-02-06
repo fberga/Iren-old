@@ -76,7 +76,7 @@ namespace Iren.PSO.Applicazioni
                     XElement suggested = new XElement(ns + "Suggested");
 
                     // verifico il mercato MB e le ore di quel mercato
-                    MB m = Simboli.MercatiMB["MB" + mercato];
+                    SpecMercato m = Simboli.MercatiMB["MB" + mercato];
                     //controllo se ci sono dei vincoli di orario
                     int oraInizio = m.Inizio - 1;
                     int oraFine = Math.Min(oreGiorno, m.Fine);

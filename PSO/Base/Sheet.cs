@@ -357,7 +357,8 @@ namespace Iren.PSO.Base
                     if (Workbook.Repository.Applicazione["ModificaDinamica"].Equals("1"))
                     {
                         int offset = Simboli.GetMarketOffset(DateTime.Now.Hour);
-                        Range rngDisabled = new Range(row + 1, _definedNames.GetColFromDate(giorno), 1, offset);
+                        //06/02/2017 MOD: prendo il minimo tra l'ora del mercato e le ore giorno
+                        Range rngDisabled = new Range(row + 1, _definedNames.GetColFromDate(giorno), 1, Math.Min(offset, oreGiorno));
                         Style.RangeStyle(_ws.Range[rngDisabled.ToString()], pattern: Excel.XlPattern.xlPatternGray50);
                     }
 
@@ -2056,7 +2057,7 @@ namespace Iren.PSO.Base
 
         #endregion  
       
-        #region Disabilita celle per mercati MB
+        #region Disabilita celle per mercati MB/MI
         
         /// <summary>
         /// Applica un pattern alle informazioni nella parte che non è editabile a causa della chiusura del mercato.
@@ -2078,7 +2079,9 @@ namespace Iren.PSO.Base
 
                     foreach (DataRowView info in informazioni)
                     {
-                        int col = _definedNames.GetFirstCol();
+                        //int col = _definedNames.GetFirstCol();
+                        //06/02/2017 MOD: shift se visualizzo DATA0.H24
+                        int col = _definedNames.GetColData1H1();
                         object siglaEntita = info["SiglaEntitaRif"] is DBNull ? info["SiglaEntita"] : info["SiglaEntitaRif"];
 
                         if (Struct.tipoVisualizzazione == "O")

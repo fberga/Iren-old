@@ -243,7 +243,7 @@ namespace Iren.PSO.Base
 
         }
 
-        private readonly static Dictionary<string, MB> mercatiMB = new Dictionary<string, MB>()
+        private readonly static Dictionary<string, SpecMercato> mercatiMB = new Dictionary<string, SpecMercato>()
         {
             //TODO modificare in base a nuovi orari
             /*
@@ -254,16 +254,31 @@ namespace Iren.PSO.Base
             {"MB5", new MB(21,23,25)}
             */
             /******************** Modifica nuovi mercati MB  BEGIN ********************/
-            {"MB1", new MB(0,1,4)}, // Da modificare
-            {"MB2", new MB(3,5,25)},
-            {"MB3", new MB(7,9,25)},
-            {"MB4", new MB(11,13,25)},
-            {"MB5", new MB(15,17,25)},
-            {"MB6", new MB(19,21,25)}
+            {"MB1", new SpecMercato(0,1,4)}, // Da modificare
+            {"MB2", new SpecMercato(3,5,25)},
+            {"MB3", new SpecMercato(7,9,25)},
+            {"MB4", new SpecMercato(11,13,25)},
+            {"MB5", new SpecMercato(15,17,25)},
+            {"MB6", new SpecMercato(19,21,25)}
             /******************** Modifica nuovi mercati MB  END ********************/
         };
 
-        public static Dictionary<string, MB> MercatiMB { get { return mercatiMB; } }
+        //06/02/2017 MOD: aggiunta orari mercati MI
+        private readonly static Dictionary<string, SpecMercato> mercatiMI = new Dictionary<string, SpecMercato>()
+        {
+            //TODO controllo orari effettivi
+            {"MI1", new SpecMercato(15,1,4)}, //boohh
+            {"MI2", new SpecMercato(16,1,4)},
+            {"MI3", new SpecMercato(24,5,8)},
+            {"MI4", new SpecMercato(3,9,12)},
+            {"MI5", new SpecMercato(7,13,16)},
+            {"MI6", new SpecMercato(11,17,20)},
+            {"MI7", new SpecMercato(15,20,25)}
+        };
+
+
+        public static Dictionary<string, SpecMercato> MercatiMB { get { return mercatiMB; } }
+        public static Dictionary<string, SpecMercato> MercatiMI { get { return mercatiMI; } }
 
         public static int GetMarketOffset(int hour)
         {
@@ -279,18 +294,44 @@ namespace Iren.PSO.Base
                 //        .Last();
                 //    offset = Simboli.MercatiMB[mercatoChiuso].Fine;
                 //}
-
-                int offset = Simboli.MercatiMB["MB1"].Fine;
-                if (hour >= Simboli.MercatiMB["MB2"].Chiusura)
+                //06/02/2017 MOD: distinzione tra MB e MI
+                int offset = 0;
+                if (Workbook.IdApplicazione == 10)
                 {
-                    string primoMercatoAperto = Simboli.MercatiMB
-                        .Where(kv => kv.Value.Chiusura > hour)
-                        .Select(kv => kv.Key)
-                        .FirstOrDefault();
-                    if (primoMercatoAperto == null)
-                        offset = Date.GetOreGiorno(Workbook.DataAttiva);
-                    else
-                        offset = Simboli.MercatiMB[primoMercatoAperto].Inizio - 1;
+                    offset = Simboli.MercatiMB["MB1"].Fine;
+                    if (hour >= Simboli.MercatiMB["MB2"].Chiusura)
+                    {
+                        string primoMercatoAperto = Simboli.MercatiMB
+                            .Where(kv => kv.Value.Chiusura > hour)
+                            .Select(kv => kv.Key)
+                            .FirstOrDefault();
+                        if (primoMercatoAperto == null)
+                            offset = Date.GetOreGiorno(Workbook.DataAttiva);
+                        else
+                            offset = Simboli.MercatiMB[primoMercatoAperto].Inizio - 1;
+                    }
+                }
+                else if (Workbook.IdApplicazione == 18)
+                {
+                    /* //TODO rivedere logica
+                     * esempio: ore 23:20
+                     *  - sono in MI3 e lavoro su D + 1
+                     *  - l'applicativo è posizionato correttamente su D + 1
+                     *  - le ore da visualizzare sbloccate sono (credo) da 5 in avanti
+                     *  - 
+                     */
+                    offset = Simboli.MercatiMI["MI1"].Fine;
+                    if (hour >= Simboli.MercatiMI["MI2"].Chiusura)
+                    {
+                        string primoMercatoAperto = Simboli.MercatiMI
+                            .Where(kv => kv.Value.Chiusura > hour)
+                            .Select(kv => kv.Key)
+                            .FirstOrDefault();
+                        if (primoMercatoAperto == null)
+                            offset = Date.GetOreGiorno(Workbook.DataAttiva);
+                        else
+                            offset = Simboli.MercatiMI[primoMercatoAperto].Inizio - 1;
+                    }
                 }
 
                 return offset;
@@ -309,14 +350,15 @@ namespace Iren.PSO.Base
         }
     }
 }
-
-public class MB
+//06/02/2017 MOD: Cambiato nome per utilizzare con MI
+//public class MB
+public class SpecMercato
 {
     public int Chiusura { get; private set; }
     public int Inizio { get; private set; }
     public int Fine { get; private set; }
 
-    public MB(int chiusura, int inizio, int fine)
+    public SpecMercato(int chiusura, int inizio, int fine)
     {
         Chiusura = chiusura;
         Inizio = inizio;

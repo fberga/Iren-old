@@ -55,7 +55,7 @@ namespace Iren.PSO.Base
                         {
                             foreach (string mercato in mercati)
                             {
-                                MB m = Simboli.MercatiMB["MB" + mercato];
+                                SpecMercato m = Simboli.MercatiMB["MB" + mercato];
                                 ElaborazioneInformazione(siglaEntita, siglaAzione, definedNames, giorno, m.Inizio, Math.Min(Date.GetOreGiorno(giorno), m.Fine));
                             }
                         }

@@ -25,7 +25,7 @@
     <VSTO_TrustAssembliesLocation>
     </VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\srvpso\Applicazioni\PSO\InvioProgrammi\</PublishUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO_TEST\InvioProgrammi\</PublishUrl>
     <InstallUrl>\\srvpso\Applicazioni\PSO\InvioProgrammi\</InstallUrl>
     <TargetCulture>it</TargetCulture>
     <ApplicationVersion>2.0.2.4</ApplicationVersion>

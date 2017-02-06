@@ -1302,6 +1302,13 @@ namespace Iren.PSO.Applicazioni
                 case 15:
                     newDate = DateTime.Today;
                     break;
+                //06/02/2017 MOD: Aggiunto cambio giorno mercati MI
+                case 18:
+                    if (ora > 12)
+                        newDate = DateTime.Today.AddDays(1);
+                    else
+                        newDate = DateTime.Today;
+                    break;
                 default:
                     done = false;
                     break;

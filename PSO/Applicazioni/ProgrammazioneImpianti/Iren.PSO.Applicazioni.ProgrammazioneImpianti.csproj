@@ -25,10 +25,10 @@
     <VSTO_TrustAssembliesLocation>
     </VSTO_TrustAssembliesLocation>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>\\srvpso\Applicazioni\PSO\ProgrammazioneImpianti\</PublishUrl>
-    <InstallUrl>\\srvpso\Applicazioni\PSO\ProgrammazioneImpianti\</InstallUrl>
+    <PublishUrl>\\srvpso\Applicazioni\PSO_TEST\ProgrammazioneImpianti\</PublishUrl>
+    <InstallUrl>\\srvpso\Applicazioni\PSO_TEST\ProgrammazioneImpianti\</InstallUrl>
     <TargetCulture>it</TargetCulture>
-    <ApplicationVersion>2.0.0.24</ApplicationVersion>
+    <ApplicationVersion>2.0.0.26</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

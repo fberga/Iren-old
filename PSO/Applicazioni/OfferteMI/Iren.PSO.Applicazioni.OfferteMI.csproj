@@ -145,6 +145,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggiorna.cs" />
     <Compile Include="Log.cs">
       <DependentUpon>OfferteMI.xlsm</DependentUpon>
     </Compile>
@@ -158,6 +159,7 @@
       <DependentUpon>Main.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sheet.cs" />
     <Compile Include="ThisWorkbook.cs">
       <DependentUpon>OfferteMI.xlsm</DependentUpon>
     </Compile>
